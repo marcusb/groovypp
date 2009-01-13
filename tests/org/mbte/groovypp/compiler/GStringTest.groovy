@@ -16,7 +16,7 @@ class Counter {
   String toString () { value.toString() }
 }
 
-@CompileStatic
+@Compile
 def m () {
   def counter = new Counter ()
   def gs = "counter \$counter"

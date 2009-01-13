@@ -4,7 +4,7 @@ public class TypeInferenceTest extends GroovyShellTestCase {
 
   void testCast () {
       def res = shell.evaluate ("""
-  @CompileStatic
+  @Compile
   def m (val) {
     (List)val
     val.size ()
@@ -17,7 +17,7 @@ public class TypeInferenceTest extends GroovyShellTestCase {
 
   void testInference () {
     def res = shell.evaluate ("""
-@CompileStatic
+@Compile
 def m () {
    def x = [1, 2, 3]
    x.leftShift(4)

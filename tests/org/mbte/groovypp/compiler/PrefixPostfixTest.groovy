@@ -9,7 +9,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
             println it
 
             def res = shell.evaluate("""
-          @CompileStatic
+          @Compile
           def u ($it val, List res) {
             while(val) {
               res.add(val--)
@@ -39,7 +39,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
                 public $st $it prop
               }
 
-              @CompileStatic
+              @Compile
               def u (U u, List res) {
                 while(u.prop) {
                   res.add(u.prop--)
@@ -71,7 +71,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
                 public $st $it prop
               }
 
-              @CompileStatic
+              @Compile
               def u (U u, List res) {
                 while(u.prop) {
                   res.add(--u.prop)
@@ -97,7 +97,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
             println it
 
             def res = shell.evaluate("""
-    @CompileStatic
+    @Compile
     def U ($it[] val, List res) {
       while(val[0]) {
         res.add(val[0]--)
@@ -122,7 +122,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
             println it
 
             def res = shell.evaluate("""
-          @CompileStatic
+          @Compile
           def u ($it val, List res) {
             while(val) {
               res.add(--val)
@@ -147,7 +147,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
             println it
 
             def res = shell.evaluate("""
-      @CompileStatic
+      @Compile
       def U ($it[] val, List res) {
         while(val[0]) {
           res.add(--val[0])
@@ -174,7 +174,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
             println "$it, $jt"
 
             def res = shell.evaluate("""
-      @CompileStatic
+      @Compile
       def U (List res) {
         $it val = ($jt)5
         while(val) {

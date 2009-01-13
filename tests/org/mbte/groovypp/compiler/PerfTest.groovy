@@ -12,7 +12,7 @@ public class PerfTest extends GroovyShellTestCase {
              sum
           }
 
-          @CompileStatic
+          @Compile
           double fastMethod(long count) {
              double sum = 0
              while(--count){
@@ -21,7 +21,7 @@ public class PerfTest extends GroovyShellTestCase {
              sum
           }
 
-          @CompileStatic
+          @Compile
           double fastMethodWithInference(long count) {
              def sum = 0d
              while(--count){

@@ -4,7 +4,7 @@ public class CastTest extends GroovyShellTestCase {
 
     void testCoerceObject () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile(debug=true)
 def m () {
   [1,2,3] as Set
 }
@@ -17,7 +17,7 @@ m()
 
     void testCoercePrimitive () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile
 def m () {
   1 as Long
 }
@@ -29,7 +29,7 @@ m()
 
     void testNumber () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile
 def m () {
   (Number)0
 }
@@ -41,7 +41,7 @@ m()
 
     void testNoCoerce () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile
 def m () {
   def u = (Serializable)[:]
   u.put("k","v")
@@ -55,7 +55,7 @@ m()
 
     void testPrimitiveNoCoerce () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile
 def m () {
   Object u = (byte)3;
   [(long)1, (int)u]
@@ -69,7 +69,7 @@ m()
 
     void testNoCoerceWithInference () {
         def res = shell.evaluate("""
-@CompileStatic
+@Compile
 def m () {
   def u = (byte)3;
   [(long)1, (int)u]

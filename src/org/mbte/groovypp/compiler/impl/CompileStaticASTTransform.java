@@ -1,6 +1,8 @@
 package org.mbte.groovypp.compiler.impl;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -14,7 +16,7 @@ import org.objectweb.asm.*;
 import java.util.LinkedList;
 
 /**
- * Handles generation of code for the @CompileStatic annotation
+ * Handles generation of code for the @Compile annotation
  *
  * @author 2008-2009 Copyright (C) MBTE Sweden AB. All Rights Reserved.
  */
@@ -47,11 +49,14 @@ public class CompileStaticASTTransform implements ASTTransformation, Opcodes {
                 int line = parent.getLineNumber();
                 int col = parent.getColumnNumber();
                 source.getErrorCollector().addError(
-                        new SyntaxErrorMessage(new SyntaxException("@CompileStatic applicable only to classes or methods" + '\n', line, col), source), true
+                        new SyntaxErrorMessage(new SyntaxException("@Compile applicable only to classes or methods" + '\n', line, col), source), true
                 );
                 return;
             }
         }
+
+        final Expression member = ((AnnotationNode) nodes[0]).getMember("debug");
+        boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression)member).getValue().equals(Boolean.TRUE);
 
         new OVerifier().addDefaultParameterMethods(classNode);
         while (toProcess.size() > 0) {
@@ -59,10 +64,7 @@ public class CompileStaticASTTransform implements ASTTransformation, Opcodes {
             final Statement code = mn.getCode();
             if (!(code instanceof BytecodeSequence)) {
                 code.visit(new ClosureExtractor(source, toProcess, mn, classNode));
-                StaticMethodBytecode.replaceMethodCode(source, mn, new CompilerStack(null));
-            }
-            else {
-                continue;
+                StaticMethodBytecode.replaceMethodCode(source, mn, new CompilerStack(null), debug);
             }
         }
     }

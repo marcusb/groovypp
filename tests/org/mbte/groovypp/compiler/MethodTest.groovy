@@ -4,7 +4,7 @@ public class MethodTest extends GroovyShellTestCase {
 
   void testListPlus () {
     def res = shell.evaluate ("""
-@CompileStatic
+@Compile
 def m () {
   [[1, 2, 3] + [4, 5], (([2, 3, 1, 4] as Set) - 4).sort() ]
 }
@@ -17,7 +17,7 @@ m ()
 
   void testDgm () {
     def res = shell.evaluate ("""
-@CompileStatic
+@Compile
 def m () {
   [1, 2, 3, 4, 5, 6].each { 
     println it
@@ -38,7 +38,7 @@ int method(List l1, List l2, I i) {
    i.oneMethod(l1, l2)
 }
 
-@CompileStatic
+@Compile
 int test () {
    method([1, 2], [3, 4, 5]) {
       List l1, List l2 ->
@@ -60,13 +60,13 @@ class X {
     value
   }
 
-  @CompileStatic
+  @Compile
   def u () {
      v(3)
      assert 5 == method((int)v(5))
   }
 
-  @CompileStatic
+  @Compile
   static long v (int u) {
     u
   }
@@ -86,7 +86,7 @@ class X {
           def method1 () {
           }
 
-          @CompileStatic
+          @Compile
           static method2 () {
             U239.method()
           }

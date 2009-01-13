@@ -19,7 +19,7 @@ public class LoopTest extends GroovyShellTestCase {
          }
       }
 
-      @CompileStatic
+      @Compile
       def u (Counter val, List res) {
         while(true) {
           if (!val.positive())
@@ -40,7 +40,7 @@ public class LoopTest extends GroovyShellTestCase {
 
     void testWhileWithDecrement() {
         def res = shell.evaluate("""
-      @CompileStatic
+      @Compile
       def u (int val, List res) {
         while(val) {
           res.add(val--)
