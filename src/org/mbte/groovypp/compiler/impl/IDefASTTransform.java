@@ -45,7 +45,7 @@ public class IDefASTTransform implements ASTTransformation, Opcodes {
             newType.addMethod(mn.getName(), ACC_PUBLIC|ACC_ABSTRACT, mn.getReturnType(), mn.getParameters(), ClassNode.EMPTY_ARRAY, null);
 
             final PropertyNode propertyNode = mn.getDeclaringClass().addProperty(mn.getName(), ACC_PUBLIC, newType, null, null, null);
-            new OVerifier().addPropertyMethods(propertyNode);
+            new OpenVerifier().addPropertyMethods(propertyNode);
 
             ArgumentListExpression args = new ArgumentListExpression();
             for(Parameter p : mn.getParameters()) {

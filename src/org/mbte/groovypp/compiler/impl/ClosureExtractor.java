@@ -127,7 +127,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                         }
                     }));
 
-            OVerifier v = new OVerifier();
+            OpenVerifier v = new OpenVerifier();
             v.addDefaultParameterMethods(newType);
 
             for (Iterator it = newType.getMethods("doCall").iterator(); it.hasNext(); ) {

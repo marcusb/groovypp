@@ -5,7 +5,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.reflection.CachedField;
 
-class OVerifier extends Verifier {
+class OpenVerifier extends Verifier {
     static CachedField classNodeField = null;
 
     static {

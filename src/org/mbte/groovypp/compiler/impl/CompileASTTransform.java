@@ -21,7 +21,7 @@ import java.util.LinkedList;
  * @author 2008-2009 Copyright (C) MBTE Sweden AB. All Rights Reserved.
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class CompileStaticASTTransform implements ASTTransformation, Opcodes {
+public class CompileASTTransform implements ASTTransformation, Opcodes {
 
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         if (!(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
@@ -58,7 +58,7 @@ public class CompileStaticASTTransform implements ASTTransformation, Opcodes {
         final Expression member = ((AnnotationNode) nodes[0]).getMember("debug");
         boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression)member).getValue().equals(Boolean.TRUE);
 
-        new OVerifier().addDefaultParameterMethods(classNode);
+        new OpenVerifier().addDefaultParameterMethods(classNode);
         while (toProcess.size() > 0) {
             final MethodNode mn = toProcess.removeFirst();
             final Statement code = mn.getCode();

@@ -9,7 +9,7 @@ import java.lang.annotation.ElementType;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.TYPE})
-@GroovyASTTransformationClass("org.mbte.groovypp.compiler.impl.CompileStaticASTTransform")
+@GroovyASTTransformationClass("org.mbte.groovypp.compiler.impl.CompileASTTransform")
 public @interface Compile {
     boolean debug () default false;
 
