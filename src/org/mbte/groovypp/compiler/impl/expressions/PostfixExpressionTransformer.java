@@ -7,6 +7,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
 import org.mbte.groovypp.compiler.impl.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.TypeUtil;
+import org.mbte.groovypp.compiler.impl.ClassNodeCache;
 
 public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpression>{
     public Expression transform(PostfixExpression exp, CompilerTransformer compiler) {
@@ -214,11 +215,20 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 //            return null;
 //        }
 
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile() {
+                        load(var.getType(), var.getIndex());
+                        dup(getType());
+                    }
+                },
+                "next",
+                new ArgumentListExpression()
+        ));
+
         return new BytecodeExpr(exp, vtype) {
             protected void compile() {
-                load(var.getType(), var.getIndex());
-                dup(getType());
-                mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(getType()), "next", BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), Parameter.EMPTY_ARRAY));
+                nextCall.visit(mv);
                 store (var);
             }
         };

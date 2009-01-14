@@ -2,6 +2,35 @@ package org.mbte.groovypp.compiler
 
 public class TypeInferenceTest extends GroovyShellTestCase {
 
+    void testAssert () {
+        def res = shell.evaluate ("""
+@Compile(debug=true)
+class A extends GroovyTestCase {
+    def m () {
+        def list = []
+        list.leftShift 1
+        list.leftShift 2
+        assertEquals ([1,2], list)
+
+        if (list.size() == 2) {
+            list = (Number)list [0]
+            list++
+            assertTrue (list instanceof Integer)
+        }
+        else {
+            list = 239G
+            assertTrue list instanceof BigDecimal
+        }
+        list instanceof Number
+    }
+}
+
+new A().m ()
+        """)
+        assertTrue res 
+    }
+
+
   void testCast () {
       def res = shell.evaluate ("""
   @Compile

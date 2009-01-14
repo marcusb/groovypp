@@ -554,6 +554,8 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
 
     private void popArgs(String s2) {
         s2 = s2.substring(1, s2.lastIndexOf(')'));
+        byte [] args = new byte [256];
+        int count = 0;
         while (s2.length() > 0) {
             switch (s2.charAt(0)) {
                 case 'I':
@@ -561,29 +563,33 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                 case 'S':
                 case 'Z':
                 case 'C':
-                    stack.pop(BytecodeStack.KIND_INT);
+                    args[count++] = BytecodeStack.KIND_INT;
                     s2 = s2.substring(1);
                     break;
 
                 case 'F':
-                    stack.pop(BytecodeStack.KIND_FLOAT);
+                    args[count++] = BytecodeStack.KIND_FLOAT;
                     s2 = s2.substring(1);
                     break;
 
                 case 'D':
-                    stack.pop(BytecodeStack.KIND_DOUBLE);
+                    args[count++] = BytecodeStack.KIND_DOUBLE;
                     s2 = s2.substring(1);
                     break;
 
                 case 'J':
-                    stack.pop(BytecodeStack.KIND_LONG);
+                    args[count++] = BytecodeStack.KIND_LONG;
                     s2 = s2.substring(1);
                     break;
 
                 default:
-                    stack.pop(BytecodeStack.KIND_OBJ);
+                    args[count++] = BytecodeStack.KIND_OBJ;
                     s2 = s2.substring(s2.indexOf(';')+1);
             }
+        }
+
+        while (count > 0) {
+            stack.pop(args[--count]);
         }
     }
 

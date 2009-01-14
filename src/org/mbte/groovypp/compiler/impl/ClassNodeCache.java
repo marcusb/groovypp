@@ -77,7 +77,7 @@ public class ClassNodeCache {
             }
 
             for (ClassNode cn : getSuperClasses(type)) {
-                addMethods(nameMap, type.getMethods(), cn == type);
+                addMethods(nameMap, cn.getMethods(), cn == type);
 
                 final List<MethodNode> list = dgmMethods.get(cn);
                 if (list != null) {
@@ -147,14 +147,19 @@ public class ClassNodeCache {
     }
 
     static void getAllInterfaces(ClassNode type, Set<ClassNode> res) {
+        if (type == null)
+          return;
+
         if (type.isInterface())
           res.add(type);
 
         ClassNode[] interfaces = type.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            res.add(interfaces[i]);
-            getAllInterfaces(interfaces[i], res);
+        for (ClassNode anInterface : interfaces) {
+            res.add(anInterface);
+            getAllInterfaces(anInterface, res);
         }
+
+        getAllInterfaces(type.getSuperClass(), res);
     }
 
     static Set<ClassNode> getAllInterfaces(ClassNode type) {
@@ -305,7 +310,7 @@ public class ClassNodeCache {
         }
     }
 
-    static class DGM extends MethodNode{
+    public static class DGM extends MethodNode{
         String descr;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
