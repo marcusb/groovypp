@@ -3,7 +3,6 @@ package org.mbte.groovypp.compiler.impl;
 import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -104,6 +103,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
         return nodes;
     }
+
     public void mathOp(ClassNode type, Token op, BinaryExpression be) {
         switch (op.getType()) {
             case Types.PLUS:
@@ -115,12 +115,6 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 else
                 if (type == ClassHelper.long_TYPE)
                     mv.visitInsn(LADD);
-                else
-                if (type == ClassHelper.BigDecimal_TYPE)
-                    mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(ClassHelper.BigDecimal_TYPE), "add", "(Ljava/math/BigDecimal;)Ljava/math/BigDecimal;");
-                else
-                if (type == ClassHelper.BigInteger_TYPE)
-                    mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(ClassHelper.BigInteger_TYPE), "add", "(Ljava/math/BigInteger;)Ljava/math/BigInteger;");
                 else
                     throw new RuntimeException("Internal Error");
                 break;
@@ -163,6 +157,90 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 else
                     throw new RuntimeException("Internal Error");
                 break;
+
+            case Types.BITWISE_XOR:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IXOR);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LXOR);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.BITWISE_AND:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IAND);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LAND);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.INTDIV:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IDIV);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LDIV);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.LEFT_SHIFT:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(ISHL);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LSHL);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.RIGHT_SHIFT:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(ISHR);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LSHR);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.RIGHT_SHIFT_UNSIGNED:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IUSHR);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LUSHR);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.MOD:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IREM);
+                else
+                if (type == ClassHelper.double_TYPE)
+                    mv.visitInsn(DREM);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LREM);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
+            case Types.BITWISE_OR:
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitInsn(IOR);
+                else
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LOR);
+                else
+                    throw new RuntimeException("Internal Error");
+                break;
+
 
             default:
                 addError("Operation " + op.getDescription() + " doesn't supported", be);

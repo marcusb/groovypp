@@ -1,19 +1,20 @@
 package org.mbte.groovypp.compiler.impl.expressions;
 
-import org.codehaus.groovy.ast.expr.*;
+import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.mbte.groovypp.compiler.impl.*;
+import org.mbte.groovypp.compiler.impl.CompiledMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.impl.CompilerTransformer;
+import org.mbte.groovypp.compiler.impl.TypeUtil;
 import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.List;
-
-import groovy.lang.CompilePolicy;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression>{
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
@@ -222,6 +223,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             protected void compile() {
                 mv.visitInsn(ACONST_NULL);
                 object.visit(mv);
+                box(object.getType());
+
                 methodExpr.visit(mv);
 
                 final List args = ((ArgumentListExpression) exp.getArguments()).getExpressions();

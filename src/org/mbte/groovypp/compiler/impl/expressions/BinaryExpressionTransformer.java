@@ -43,14 +43,37 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.PLUS:
                 return evaluateMathOperation(exp, "plus", compiler);
 
+            case Types.BITWISE_XOR:
+                return evaluateMathOperation(exp, "xor", compiler);
+
+            case Types.BITWISE_AND:
+                return evaluateMathOperation(exp, "and", compiler);
+
+            case Types.INTDIV:
+                return evaluateMathOperation(exp, "intdiv", compiler);
+
+            case Types.LEFT_SHIFT:
+                return evaluateMathOperation(exp, "leftShift", compiler);
+
+            case Types.RIGHT_SHIFT:
+                return evaluateMathOperation(exp, "rightShift", compiler);
+
+            case Types.RIGHT_SHIFT_UNSIGNED:
+                return evaluateMathOperation(exp, "rightShiftUnsigned", compiler);
+
+            case Types.MOD:
+                return evaluateMathOperation(exp, "mod", compiler);
+
+            case Types.BITWISE_OR:
+                return evaluateMathOperation(exp, "or", compiler);
+
+            case Types.POWER:
+                return evaluateMathOperation(exp, "power", compiler);
+
             case Types.KEYWORD_INSTANCEOF:
                 return evaluateInstanceof(exp, compiler);
 
 /*
-            case Types.POWER:
-                evaluateBinaryExpression("power", expression);
-                break;
-
             case Types.COMPARE_IDENTICAL: // ===
                 evaluateBinaryExpression(compareIdenticalMethod, expression);
                 break;
@@ -79,24 +102,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 evaluateBinaryExpression(compareLessThanEqualMethod, expression);
                 break;
 
-            case Types.BITWISE_AND:
-                evaluateBinaryExpression("and", expression);
-                break;
-
             case Types.BITWISE_AND_EQUAL:
                 evaluateBinaryExpressionWithAssignment("and", expression);
                 break;
 
-            case Types.BITWISE_OR:
-                evaluateBinaryExpression("or", expression);
-                break;
-
             case Types.BITWISE_OR_EQUAL:
                 evaluateBinaryExpressionWithAssignment("or", expression);
-                break;
-
-            case Types.BITWISE_XOR:
-                evaluateBinaryExpression("xor", expression);
                 break;
 
             case Types.BITWISE_XOR_EQUAL:
@@ -121,16 +132,8 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 evaluateBinaryExpressionWithAssignment("div", expression);
                 break;
 
-            case Types.INTDIV:
-                evaluateBinaryExpression("intdiv", expression);
-                break;
-
             case Types.INTDIV_EQUAL:
                 evaluateBinaryExpressionWithAssignment("intdiv", expression);
-                break;
-
-            case Types.MOD:
-                evaluateBinaryExpression("mod", expression);
                 break;
 
             case Types.MOD_EQUAL:
@@ -141,24 +144,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 evaluateBinaryExpressionWithAssignment("power", expression);
                 break;
 
-            case Types.LEFT_SHIFT:
-                evaluateBinaryExpression("leftShift", expression);
-                break;
-
             case Types.LEFT_SHIFT_EQUAL:
                 evaluateBinaryExpressionWithAssignment("leftShift", expression);
                 break;
 
-            case Types.RIGHT_SHIFT:
-                evaluateBinaryExpression("rightShift", expression);
-                break;
-
             case Types.RIGHT_SHIFT_EQUAL:
                 evaluateBinaryExpressionWithAssignment("rightShift", expression);
-                break;
-
-            case Types.RIGHT_SHIFT_UNSIGNED:
-                evaluateBinaryExpression("rightShiftUnsigned", expression);
                 break;
 
             case Types.RIGHT_SHIFT_UNSIGNED_EQUAL:
@@ -200,7 +191,27 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
+            if (be.getOperation().getType() == Types.POWER)
+                return callMethod(be, method, compiler, l, r);
+
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
+
+            if (mathType == ClassHelper.BigDecimal_TYPE || mathType == ClassHelper.BigInteger_TYPE)
+                return callMethod(be, method, compiler, l, r);
+
+            if (mathType != ClassHelper.Integer_TYPE && mathType != ClassHelper.Long_TYPE) {
+                switch (be.getOperation().getType()) {
+                    case Types.BITWISE_XOR:
+                    case Types.BITWISE_AND:
+                    case Types.INTDIV:
+                    case Types.LEFT_SHIFT:
+                    case Types.RIGHT_SHIFT:
+                    case Types.RIGHT_SHIFT_UNSIGNED:
+                    case Types.BITWISE_OR:
+                        return callMethod(be, method, compiler, l, r);
+                }
+            }
+
             return new BytecodeExpr(be, mathType) {
                 protected void compile() {
                     l.visit(mv);
@@ -220,10 +231,14 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             };
         }
         else {
-            final MethodCallExpression mce = new MethodCallExpression(l, method, new ArgumentListExpression(r));
-            mce.setSourcePosition(be);
-            return compiler.transform(mce);
+            return callMethod(be, method, compiler, l, r);
         }
+    }
+
+    private Expression callMethod(BinaryExpression be, String method, CompilerTransformer compiler, BytecodeExpr l, BytecodeExpr r) {
+        final MethodCallExpression mce = new MethodCallExpression(l, method, new ArgumentListExpression(r));
+        mce.setSourcePosition(be);
+        return compiler.transform(mce);
     }
 
     private Expression evaluateAssign(BinaryExpression be, CompilerTransformer compiler) {

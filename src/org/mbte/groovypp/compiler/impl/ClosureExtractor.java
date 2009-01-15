@@ -2,7 +2,9 @@ package org.mbte.groovypp.compiler.impl;
 
 import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
@@ -11,13 +13,11 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes{
@@ -26,7 +26,6 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     private final MethodNode methodNode;
     private final ClassNode classNode;
     private final CompilePolicy policy;
-    private Parameter self;
 
     public ClosureExtractor(SourceUnit source, LinkedList toProcess, MethodNode methodNode, ClassNode classNode, CompilePolicy policy) {
         this.source = source;
@@ -46,21 +45,6 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     }
 
     public Expression transform(Expression exp) {
-//        if (exp instanceof PrefixExpression) {
-//            return transformPrefixExpression((PrefixExpression) exp);
-//        }
-//        if (exp instanceof PostfixExpression) {
-//            return transformPostfixExpression((PostfixExpression) exp);
-//        }
-//        if (exp instanceof VariableExpression) {
-//            return transformVariableExpression((VariableExpression) exp);
-//        }
-//        if (exp instanceof BinaryExpression) {
-//            if (exp instanceof DeclarationExpression)
-//                return transformDeclarationExpression((DeclarationExpression) exp);
-//            else
-//                return transformBinaryExpression((BinaryExpression) exp);
-//        }
         if (exp instanceof ClosureExpression) {
             return transformClosure(exp);
         }
@@ -117,9 +101,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         for (Parameter pp : newParams)
             current.put(pp.getName (), new VarInfo(currentClosure, pp));
 
-        self = newParams[0];
         ce.getCode().visit(this);
-        self = null;
 
         currentClosure = old;
         popState();
@@ -210,8 +192,8 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         OpenVerifier v = new OpenVerifier();
         v.addDefaultParameterMethods(newType);
 
-        for (Iterator it = newType.getMethods("doCall").iterator(); it.hasNext(); ) {
-            MethodNode mn = (MethodNode) it.next();
+        for (Object o : newType.getMethods("doCall")) {
+            MethodNode mn = (MethodNode) o;
             toProcess.add(mn);
             toProcess.add(policy);
         }
@@ -268,7 +250,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     }
 
     private void popState() {
-        final VarScope scope = stack.pop();
+        final VarScope scope = stack.removeLast();
         current = scope.parent;
 
         for (VarInfo vi : scope.externalRefs) {
@@ -289,7 +271,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
     private void pushState() {
         final VarScope scope = new VarScope(current);
-        stack.push(scope);
+        stack.addLast(scope);
         current = scope;
     }
 
@@ -300,100 +282,5 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
             current.put (p.getName(), new VarInfo(currentClosure, p));
         super.visitForLoop(forLoop);
         popState();
-    }
-
-    private Expression transformBinaryExpression(BinaryExpression expression) {
-        if(expression.getLeftExpression() instanceof VariableExpression) {
-            switch (expression.getOperation().getType()) {
-                case Types.EQUAL: // = assignment
-                case Types.BITWISE_AND_EQUAL:
-                case Types.BITWISE_OR_EQUAL:
-                case Types.BITWISE_XOR_EQUAL:
-                case Types.PLUS_EQUAL:
-                case Types.MINUS_EQUAL:
-                case Types.MULTIPLY_EQUAL:
-                case Types.DIVIDE_EQUAL:
-                case Types.INTDIV_EQUAL:
-                case Types.MOD_EQUAL:
-                case Types.POWER_EQUAL:
-                case Types.LEFT_SHIFT_EQUAL:
-                case Types.RIGHT_SHIFT_EQUAL:
-                case Types.RIGHT_SHIFT_UNSIGNED_EQUAL:
-                    if (expression.getLeftExpression() == VariableExpression.THIS_EXPRESSION
-                            || expression.getLeftExpression() == VariableExpression.SUPER_EXPRESSION) {
-
-                    }
-                    else {
-                        final VarInfo varInfo = current.get(((VariableExpression)expression.getLeftExpression()).getName());
-                        if(varInfo.closure != currentClosure) {
-                            current.mutableRefs.add(varInfo);
-                        }
-                    }
-                    break;
-
-                default:
-            }
-        }
-
-        return super.transform(expression);
-    }
-
-    private Expression transformPostfixExpression(PostfixExpression expression) {
-        if(expression.getExpression() instanceof VariableExpression) {
-            // if in closure and external then set mutable in closure
-            if (expression.getExpression() == VariableExpression.THIS_EXPRESSION
-                    || expression.getExpression() == VariableExpression.SUPER_EXPRESSION) {
-
-            }
-            else {
-                final VarInfo varInfo = current.get(((VariableExpression)expression.getExpression()).getName());
-                if(varInfo.closure != currentClosure) {
-                    current.mutableRefs.add(varInfo);
-                }
-            }
-        }
-
-        return super.transform(expression);
-    }
-
-    private Expression transformPrefixExpression(PrefixExpression expression) {
-        if(expression.getExpression() instanceof VariableExpression) {
-            // if in closure and external then set mutable in closure
-            if (expression.getExpression() == VariableExpression.THIS_EXPRESSION
-                    || expression.getExpression() == VariableExpression.SUPER_EXPRESSION) {
-
-            }
-            else {
-                final VarInfo varInfo = current.get(((VariableExpression)expression.getExpression()).getName());
-                if(varInfo.closure != currentClosure) {
-                    current.mutableRefs.add(varInfo);
-                }
-            }
-        }
-
-        return super.transform(expression);
-    }
-
-    private Expression transformVariableExpression(VariableExpression expression) {
-        // if external in closure mark as accessed
-        if (expression == VariableExpression.THIS_EXPRESSION || expression == VariableExpression.SUPER_EXPRESSION) {
-            return expression;
-        }
-        else {
-            final VarInfo varInfo = current.get(expression.getName());
-//            expression.setAccessedVariable(varInfo);
-            if(varInfo.closure != currentClosure) {
-                current.externalRefs.add(varInfo);
-                return new PropertyExpression(transformVariableExpression(new VariableExpression(self)), varInfo.getName());
-            }
-            return expression;
-        }
-    }
-
-    private Expression transformDeclarationExpression(DeclarationExpression expression) {
-        final VariableExpression ve = expression.getVariableExpression();
-        current.put(ve.getName(), new VarInfo(currentClosure, ve));
-
-        return super.transform(expression);
     }
 }

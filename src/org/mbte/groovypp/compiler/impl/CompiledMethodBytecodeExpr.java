@@ -4,7 +4,6 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class CompiledMethodBytecodeExpr extends BytecodeExpr {
@@ -42,10 +41,14 @@ public class CompiledMethodBytecodeExpr extends BytecodeExpr {
         if (methodNode instanceof ClassNodeCache.DGM) {
             op = INVOKESTATIC;
 
-            if (object != null)
+            if (object != null) {
                 object.visit(mv);
+                box(object.getType());
+                if (methodNode.getDeclaringClass() != ClassHelper.OBJECT_TYPE);
+                   mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
+            }
 
-            classInternalName = BytecodeHelper.getClassInternalName(DefaultGroovyMethods.class);
+            classInternalName = BytecodeHelper.getClassInternalName(((ClassNodeCache.DGM)methodNode).callClass);
             methodDescriptor = ((ClassNodeCache.DGM)methodNode).descr;
         }
         else {

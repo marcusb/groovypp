@@ -7,8 +7,8 @@ public class TypeInference extends GroovyTestCase {
 
     void testInference () {
         def list = []
-        list.leftShift 1
-        list.leftShift 2
+        list << 1
+        list << 2
         assertEquals ([1,2], list)
 
         if (list.size() == 2) {

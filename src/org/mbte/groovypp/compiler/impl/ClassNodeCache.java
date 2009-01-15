@@ -9,6 +9,7 @@ import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.objectweb.asm.Opcodes;
+import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 
 import java.util.*;
 import java.lang.ref.SoftReference;
@@ -30,7 +31,8 @@ public class ClassNodeCache {
     static final Map<ClassNode,List<MethodNode>> dgmMethods = new HashMap<ClassNode,List<MethodNode>> ();
 
     static {
-        initDgm();
+        initDgm(DefaultGroovyMethods.class);
+        initDgm(DefaultGroovyPPMethods.class);
     }
 
     static ClassNodeInfo getClassNodeInfo (ClassNode classNode) {
@@ -291,8 +293,8 @@ public class ClassNodeCache {
         return -1;
     }
 
-    private static void initDgm() {
-        final CachedMethod[] methods = ReflectionCache.getCachedClass(DefaultGroovyMethods.class).getMethods();
+    private static void initDgm(final Class klazz) {
+        final CachedMethod[] methods = ReflectionCache.getCachedClass(klazz).getMethods();
         for (int i = 0; i < methods.length; i++) {
             CachedMethod method = methods[i];
             if (method.isPublic() && method.isStatic()) {
@@ -317,6 +319,7 @@ public class ClassNodeCache {
                             exs,
                             null);
                     mn.setDeclaringClass(declaringClass);
+                    mn.callClass = klazz;
                     mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(),method.getCachedMethod().getParameterTypes());
 
                     List<MethodNode> list = dgmMethods.get(declaringClass);
@@ -331,7 +334,8 @@ public class ClassNodeCache {
     }
 
     public static class DGM extends MethodNode{
-        String descr;
+        String    descr;
+        Class     callClass;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);
