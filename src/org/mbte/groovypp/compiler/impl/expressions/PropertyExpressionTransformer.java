@@ -62,8 +62,6 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             super(expression, propertyNode.getType());
             this.propertyNode = propertyNode;
             this.object = object;
-            if (getType().equals(ClassHelper.REFERENCE_TYPE))
-                setType(expression.getType());
         }
 
         protected void compile() {
@@ -82,11 +80,6 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             }
 
             mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
-
-            if (propertyNode.getType().equals(ClassHelper.REFERENCE_TYPE)) {
-                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Reference", "get", "()Ljava/lang/Object;");
-                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
-            }
         }
     }
 }

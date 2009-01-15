@@ -1,22 +1,24 @@
 package org.mbte.groovypp.compiler.impl;
 
+import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import groovy.lang.CompilePolicy;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes{
     private final SourceUnit source;
@@ -178,8 +180,28 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
                             for (int i = 1, k = 2; i != constrParams.length; i++) {
                                 mv.visitVarInsn(ALOAD, 0);
-                                mv.visitVarInsn(ALOAD, k++);
-                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), "Lgroovy/lang/Reference;");
+
+                                final ClassNode type = constrParams[i].getType();
+                                if (ClassHelper.isPrimitiveType(type)) {
+                                    if (type == ClassHelper.long_TYPE) {
+                                        mv.visitVarInsn(LLOAD, k++);
+                                        k++;
+                                    }
+                                    else if (type == ClassHelper.double_TYPE) {
+                                        mv.visitVarInsn(DLOAD, k++);
+                                        k++;
+                                    }
+                                    else if (type == ClassHelper.float_TYPE) {
+                                        mv.visitVarInsn(FLOAD, k++);
+                                    }
+                                    else {
+                                        mv.visitVarInsn(ILOAD, k++);
+                                    }
+                                }
+                                else {
+                                    mv.visitVarInsn(ALOAD, k++);
+                                }
+                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
                             }
                             mv.visitInsn(RETURN);
                         }

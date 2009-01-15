@@ -392,7 +392,6 @@ public class CompilerStack implements Opcodes {
         }
         Variable answer = new Variable(index, type, name, prevCurrent);
         usedVariables.add(answer);
-        answer.setHolder(methodParameterUsedInClosure);
         return answer;
     }
 
@@ -419,15 +418,7 @@ public class CompilerStack implements Opcodes {
             String name = paras[i].getName();
             Variable answer;
             ClassNode type = paras[i].getType();
-//            if (paras[i].isClosureSharedVariable()) {
-//                answer = defineVar(name, type, true);
-//                helper.load(type,currentVariableIndex);
-//                helper.box(type);
-//                createReference(answer);
-//                hasHolder = true;
-//            } else {
-                answer = defineVar(name,type,false);
-//            }
+            answer = defineVar(name,type,false);
             answer.setStartLabel(startLabel);
             stackVariables.put(name, answer);
         }
@@ -435,14 +426,6 @@ public class CompilerStack implements Opcodes {
         if (hasHolder) {
             nextVariableIndex = localVariableOffset;
         }
-    }
-
-    private void createReference(Variable reference) {
-        mv.visitTypeInsn(NEW, "groovy/lang/Reference");
-        mv.visitInsn(DUP_X1);
-        mv.visitInsn(SWAP);
-        mv.visitMethodInsn(INVOKESPECIAL, "groovy/lang/Reference", "<init>", "(Ljava/lang/Object;)V");
-        mv.visitVarInsn(ASTORE, reference.getIndex());
     }
 
     /**
@@ -456,47 +439,43 @@ public class CompilerStack implements Opcodes {
         String name = v.getName();
         final ClassNode type = v.getType();
         Variable answer = defineVar(name, type,false);
-        if (v.isClosureSharedVariable()) answer.setHolder(true);
         stackVariables.put(name, answer);
 
         Label startLabel  = new Label();
         answer.setStartLabel(startLabel);
-        if (answer.isHolder())  {
-            if (!initFromStack) mv.visitInsn(ACONST_NULL);
-            createReference(answer);
-        } else {
-            if (!initFromStack) {
-                if (ClassHelper.isPrimitiveType(type)) {
-                    if (type == ClassHelper.long_TYPE)
-                        mv.visitInsn(LCONST_0);
-                    else
-                    if (type == ClassHelper.float_TYPE)
-                        mv.visitInsn(FCONST_0);
-                    else
-                    if (type == ClassHelper.double_TYPE)
-                        mv.visitInsn(DCONST_0);
-                    else
-                        mv.visitInsn(ICONST_0);
-                }
-                else
-                    mv.visitInsn(ACONST_NULL);
-            }
 
+        if (!initFromStack) {
             if (ClassHelper.isPrimitiveType(type)) {
                 if (type == ClassHelper.long_TYPE)
-                    mv.visitVarInsn(LSTORE, currentVariableIndex);
+                    mv.visitInsn(LCONST_0);
                 else
                 if (type == ClassHelper.float_TYPE)
-                    mv.visitVarInsn(FSTORE, currentVariableIndex);
+                    mv.visitInsn(FCONST_0);
                 else
                 if (type == ClassHelper.double_TYPE)
-                    mv.visitVarInsn(DSTORE, currentVariableIndex);
+                    mv.visitInsn(DCONST_0);
                 else
-                    mv.visitVarInsn(ISTORE, currentVariableIndex);
+                    mv.visitInsn(ICONST_0);
             }
             else
-                mv.visitVarInsn(ASTORE, currentVariableIndex);
+                mv.visitInsn(ACONST_NULL);
         }
+
+        if (ClassHelper.isPrimitiveType(type)) {
+            if (type == ClassHelper.long_TYPE)
+                mv.visitVarInsn(LSTORE, currentVariableIndex);
+            else
+            if (type == ClassHelper.float_TYPE)
+                mv.visitVarInsn(FSTORE, currentVariableIndex);
+            else
+            if (type == ClassHelper.double_TYPE)
+                mv.visitVarInsn(DSTORE, currentVariableIndex);
+            else
+                mv.visitVarInsn(ISTORE, currentVariableIndex);
+        }
+        else
+            mv.visitVarInsn(ASTORE, currentVariableIndex);
+
         mv.visitLabel(startLabel);
         return answer;
     }

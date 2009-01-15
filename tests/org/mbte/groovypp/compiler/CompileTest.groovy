@@ -120,7 +120,7 @@ def v (Closure cl) {
   cl.call()
 }
 
-@Compile
+@Compile(debug=true)
 def u () {
    List s = [1, 2, 3, 4]
 

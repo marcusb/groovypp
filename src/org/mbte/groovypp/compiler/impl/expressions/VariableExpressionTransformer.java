@@ -1,11 +1,12 @@
 package org.mbte.groovypp.compiler.impl.expressions;
 
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
     public Expression transform(final VariableExpression exp, final CompilerTransformer compiler) {
@@ -82,10 +83,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                     GETFIELD,
                     BytecodeHelper.getClassInternalName(compiler.methodNode.getParameters()[0].getType()),
                     exp.getName(),
-                    "Lgroovy/lang/Reference;");
-            mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Reference", "get", "()Ljava/lang/Object;");
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(ClassHelper.getWrapper(vtype)));
-            unbox(vtype);
+                    BytecodeHelper.getTypeDescription(vtype));
         }
     }
 

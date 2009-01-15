@@ -34,7 +34,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
                 mv.visitVarInsn(ALOAD, var.getIndex());
             else {
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(transformer.methodNode.getParameters()[0].getType()), name, "Lgroovy/lang/Reference;");
+                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(transformer.methodNode.getParameters()[0].getType()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
             }
         }
         mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
@@ -44,7 +44,8 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
         ArrayList<FieldNode> refs = new ArrayList<FieldNode> ();
         for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
             Variable var = (Variable) it.next();
-            final PropertyNode propertyNode = newType.addProperty(var.getName(), ACC_PUBLIC, ClassHelper.REFERENCE_TYPE, null, null, null);
+            final ClassNode vtype = ClassHelper.getUnwrapper(var.getType());
+            final PropertyNode propertyNode = newType.addProperty(var.getName(), ACC_PUBLIC|ACC_FINAL, vtype, null, null, null);
             refs.add(propertyNode.getField());
         }
 

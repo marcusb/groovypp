@@ -450,28 +450,16 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
      */
     public void loadVar(Variable variable) {
         int index = variable.getIndex();
-        if (variable.isHolder()) {
-            mv.visitVarInsn(Opcodes.ALOAD, index);
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "groovy/lang/Reference", "get", "()Ljava/lang/Object;");
-        } else {
-            load(variable);
-            if (variable != Variable.THIS_VARIABLE && variable != Variable.SUPER_VARIABLE) {
-                box(variable.getType());
-            }
+        load(variable);
+        if (variable != Variable.THIS_VARIABLE && variable != Variable.SUPER_VARIABLE) {
+            box(variable.getType());
         }
     }
 
     public void storeVar(Variable variable) {
         String type = variable.getTypeName();
         int index = variable.getIndex();
-
-        if (variable.isHolder()) {
-            mv.visitVarInsn(Opcodes.ALOAD, index);
-            mv.visitInsn(Opcodes.SWAP);
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "groovy/lang/Reference", "set", "(Ljava/lang/Object;)V");
-        } else {
-            store(variable, false);
-        }
+        store(variable, false);
     }
 
     public void putField(FieldNode fld) {
