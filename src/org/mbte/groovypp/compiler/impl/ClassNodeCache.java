@@ -14,10 +14,10 @@ import java.util.*;
 import java.lang.ref.SoftReference;
 
 public class ClassNodeCache {
-
     public static class ClassNodeInfo {
         Map<String,Object> methods;
         Map<String,Object> fields;
+        public FastArray constructors;
     }
 
     public static class CompileUnitInfo extends HashMap<ClassNode, ClassNodeInfo>{
@@ -61,6 +61,26 @@ public class ClassNodeCache {
             }
             return cni;
         }
+    }
+
+    static synchronized FastArray getConstructors(ClassNode type) {
+        final ClassNodeInfo info = getClassNodeInfo(type);
+
+        FastArray list = info.constructors;
+        if (list == null) {
+            list = new FastArray ();
+            info.constructors = list;
+
+            List constructors = type.redirect().getDeclaredConstructors();
+            if (constructors.isEmpty())
+                list.add(new ConstructorNode(Opcodes.ACC_PUBLIC, null));
+            else
+                for (Object o : constructors) {
+                    ConstructorNode cn = (ConstructorNode) o;
+                    list.add(cn);
+                }
+        }
+        return list;
     }
 
     static synchronized Object getMethods (ClassNode type, String methodName) {

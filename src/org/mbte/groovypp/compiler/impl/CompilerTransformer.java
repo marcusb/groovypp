@@ -1,21 +1,21 @@
 package org.mbte.groovypp.compiler.impl;
 
+import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.classgen.*;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
+import org.codehaus.groovy.util.FastArray;
+import org.mbte.groovypp.compiler.impl.bytecode.LocalVarTypeInferenceState;
+import org.mbte.groovypp.compiler.impl.expressions.ExprTransformer;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.mbte.groovypp.compiler.impl.expressions.ExprTransformer;
-import org.mbte.groovypp.compiler.impl.bytecode.LocalVarTypeInferenceState;
 
-import java.util.*;
-
-import groovy.lang.CompilePolicy;
+import java.util.List;
 
 public abstract class CompilerTransformer extends ReturnsAdder implements Opcodes, LocalVarTypeInferenceState {
 
@@ -83,6 +83,16 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         if (res instanceof MethodNode)
             return (MethodNode)res;
 
+        return null;
+    }
+
+
+    public MethodNode findConstructor(ClassNode type, ClassNode[] args) {
+        FastArray methods = ClassNodeCache.getConstructors(type) ;
+
+        final Object res = MethodSelection.chooseMethod("<init>", methods, args);
+        if (res instanceof MethodNode)
+            return (MethodNode)res;
         return null;
     }
 
