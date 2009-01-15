@@ -1,6 +1,6 @@
 package groovy.lang;
 
-public enum CompileType {
+public enum CompilePolicy {
     STATIC,
 
     DYNAMIC,

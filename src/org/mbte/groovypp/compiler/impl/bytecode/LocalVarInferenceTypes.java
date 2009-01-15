@@ -1,9 +1,11 @@
-package org.mbte.groovypp.compiler.impl;
+package org.mbte.groovypp.compiler.impl.bytecode;
 
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeLabelInfo;
+import org.mbte.groovypp.compiler.impl.TypeUtil;
 
 import java.util.IdentityHashMap;
 import java.util.Map;

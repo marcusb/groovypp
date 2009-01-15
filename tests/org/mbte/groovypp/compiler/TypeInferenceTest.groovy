@@ -46,7 +46,7 @@ new A().m ()
 
   void testInference () {
     def res = shell.evaluate ("""
-@Compile
+@Compile(debug=true)
 def m () {
    def x = [1, 2, 3]
    x.leftShift(4)

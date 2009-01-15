@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler.impl.expressions;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.StaticCompiler;
 import org.objectweb.asm.Label;
 

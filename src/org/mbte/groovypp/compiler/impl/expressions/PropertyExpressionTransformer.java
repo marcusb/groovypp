@@ -6,7 +6,7 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
     public Expression transform(PropertyExpression expression, CompilerTransformer compiler) {
@@ -62,6 +62,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             super(expression, propertyNode.getType());
             this.propertyNode = propertyNode;
             this.object = object;
+            if (getType().equals(ClassHelper.REFERENCE_TYPE))
+                setType(expression.getType());
         }
 
         protected void compile() {
@@ -80,6 +82,11 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             }
 
             mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
+
+            if (propertyNode.getType().equals(ClassHelper.REFERENCE_TYPE)) {
+                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Reference", "get", "()Ljava/lang/Object;");
+                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+            }
         }
     }
 }

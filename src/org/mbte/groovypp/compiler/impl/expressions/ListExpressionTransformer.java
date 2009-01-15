@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler.impl.expressions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.TypeUtil;
 import org.mbte.groovypp.compiler.impl.BytecodeSpreadExpr;
 

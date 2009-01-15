@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 import java.util.ArrayList;
 import java.util.Iterator;

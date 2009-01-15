@@ -13,5 +13,5 @@ import java.lang.annotation.ElementType;
 public @interface Compile {
     boolean debug () default false;
 
-    CompileType value () default CompileType.STATIC;
+    CompilePolicy value () default CompilePolicy.STATIC;
 }

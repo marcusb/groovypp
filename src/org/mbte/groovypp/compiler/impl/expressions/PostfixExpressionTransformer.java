@@ -5,9 +5,8 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.TypeUtil;
-import org.mbte.groovypp.compiler.impl.ClassNodeCache;
 
 public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpression>{
     public Expression transform(PostfixExpression exp, CompilerTransformer compiler) {
@@ -62,69 +61,74 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
             return null;
         }
 
-        if (!TypeUtil.isNumericalType(propertyNode.getType())) {
-            compiler.addError("Prefix/Postfix operations applicable only to numerical types", exp);
-            return null;
-        }
+        if (TypeUtil.isNumericalType(propertyNode.getType())) {
+            return new BytecodeExpr(exp, propertyNode.getType()) {
+                protected void compile() {
+                    final ClassNode type = propertyNode.getType();
+                    final ClassNode primType = ClassHelper.getUnwrapper(type);
+                    int op = GETFIELD;
+                    if (propertyNode.isStatic()) {
+                        op = GETSTATIC;
+                    }
 
-        return new BytecodeExpr(exp, propertyNode.getType()) {
-            protected void compile() {
-                final ClassNode type = propertyNode.getType();
-                final ClassNode primType = ClassHelper.getUnwrapper(type);
-                int op = GETFIELD;
-                if (propertyNode.isStatic()) {
-                    op = GETSTATIC;
-                }
+                    if (object != null) {
+                        object.visit(mv);
+                        if (op == GETSTATIC) {
+                            if (ClassHelper.long_TYPE == object.getType() || ClassHelper.double_TYPE == object.getType())
+                                mv.visitInsn(POP2);
+                            else
+                                mv.visitInsn(POP);
+                        }
+                        else {
+                            mv.visitInsn(DUP);
+                        }
+                    }
 
-                if (object != null) {
-                    object.visit(mv);
+                    // ?obj, ?obj
+                    mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
+
+                    // value, ?obj
                     if (op == GETSTATIC) {
-                        if (ClassHelper.long_TYPE == object.getType() || ClassHelper.double_TYPE == object.getType())
-                            mv.visitInsn(POP2);
-                        else
-                            mv.visitInsn(POP);
+                        // value
+                        dup (type);
+                        // value value
                     }
                     else {
-                        mv.visitInsn(DUP);
+                        // value obj
+                        if (ClassHelper.long_TYPE == type || ClassHelper.double_TYPE == type)
+                            mv.visitInsn(DUP2_X1);
+                        else
+                            mv.visitInsn(DUP_X1);
+                        // value obj value
                     }
-                }
 
-                // ?obj, ?obj
-                mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
+                    // value ?obj value
+                    if (type != primType)
+                       unbox(primType);
+                    incOrDecPrimitive(primType, exp.getOperation().getType());
+                    if (type != primType) {
+                       box(primType);
+                       mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                    }
+                    // newvalue ?obj value
 
-                // value, ?obj
-                if (op == GETSTATIC) {
-                    // value
-                    dup (type);
-                    // value value
-                }
-                else {
-                    // value obj
-                    if (ClassHelper.long_TYPE == type || ClassHelper.double_TYPE == type)
-                        mv.visitInsn(DUP2_X1);
-                    else
-                        mv.visitInsn(DUP_X1);
-                    // value obj value
-                }
+                    op = PUTFIELD;
+                    if (propertyNode.isStatic()) {
+                        op = PUTSTATIC;
+                    }
 
-                // value ?obj value
-                if (type != primType)
-                   unbox(primType);
-                incOrDecPrimitive(primType, exp.getOperation().getType());
-                if (type != primType) {
-                   box(primType);
-                   mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                    mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
                 }
-                // newvalue ?obj value
-
-                op = PUTFIELD;
-                if (propertyNode.isStatic()) {
-                    op = PUTSTATIC;
+            };
+        }
+        else {
+            return new BytecodeExpr(exp, propertyNode.getType()) {
+                protected void compile() {
+                    if (object != null)
+                        object.visit(mv);
                 }
-
-                mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
-            }
-        };
+            };
+        }
     }
 
     private Expression transformArrayPostfixExpression(final PostfixExpression exp, CompilerTransformer compiler) {
@@ -180,8 +184,31 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
             return null;
         }
 
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), true);
-        ClassNode vtype = compiler.getLocalVarInferenceTypes().get(ve);
+        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        ClassNode vtype;
+        if (var == null) {
+            if (ve.isClosureSharedVariable()) {
+                final PropertyExpression prop = new PropertyExpression(new VariableExpression("$self"), ve.getName());
+                prop.setType(ve.getType());
+                prop.setSourcePosition(exp);
+
+                final PostfixExpression pe = new PostfixExpression(prop, exp.getOperation());
+                pe.setSourcePosition(exp);
+
+                return compiler.transform(pe);
+            }
+            else {
+                final PropertyExpression prop = new PropertyExpression(VariableExpression.THIS_EXPRESSION, ve.getName());
+                prop.setSourcePosition(exp);
+
+                final PostfixExpression pe = new PostfixExpression(prop, exp.getOperation());
+                pe.setSourcePosition(exp);
+
+                return compiler.transform(pe);
+            }
+        }
+
+        vtype = compiler.getLocalVarInferenceTypes().get(ve);
         if (vtype == null)
            vtype = var.getType();
 

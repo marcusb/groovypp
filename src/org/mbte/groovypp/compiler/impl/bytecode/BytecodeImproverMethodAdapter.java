@@ -1,15 +1,15 @@
-package org.mbte.groovypp.compiler.impl;
+package org.mbte.groovypp.compiler.impl.bytecode;
 
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter implements Opcodes {
+public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter implements Opcodes {
     private String boxingDesc = null;
     private static final String DTT = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
 

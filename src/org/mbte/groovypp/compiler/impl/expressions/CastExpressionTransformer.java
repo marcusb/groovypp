@@ -4,7 +4,7 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.TypeUtil;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
 

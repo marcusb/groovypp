@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class CompiledMethodBytecodeExpr extends BytecodeExpr {
     private final MethodNode methodNode;

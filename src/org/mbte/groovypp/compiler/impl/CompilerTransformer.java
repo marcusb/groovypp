@@ -11,19 +11,24 @@ import org.codehaus.groovy.syntax.Token;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.mbte.groovypp.compiler.impl.expressions.ExprTransformer;
+import org.mbte.groovypp.compiler.impl.bytecode.LocalVarTypeInferenceState;
 
 import java.util.*;
 
-public abstract class CompilerTransformer extends ReturnsAdder implements Opcodes, LocalVarTypeInferenceState  {
+import groovy.lang.CompilePolicy;
+
+public abstract class CompilerTransformer extends ReturnsAdder implements Opcodes, LocalVarTypeInferenceState {
 
     public final CompilerStack compileStack;
     public final ClassNode classNode;
     protected final MethodVisitor mv;
+    public final CompilePolicy policy;
 
-    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack) {
+    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, CompilePolicy policy) {
         super(source, methodNode);
         this.classNode = classNode;
         this.mv = mv;
+        this.policy = policy;
         this.compileStack = new CompilerStack(compileStack);
     }
 

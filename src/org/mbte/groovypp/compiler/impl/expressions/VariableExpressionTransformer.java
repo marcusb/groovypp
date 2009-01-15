@@ -4,38 +4,37 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
     public Expression transform(final VariableExpression exp, final CompilerTransformer compiler) {
-            if (exp.isThisExpression())
-              return new This(exp, compiler);
+        if (exp.isThisExpression())
+          return new This(exp, compiler);
 
-            final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(exp.getName(), false);
-            if (var != null) {
-                ClassNode vtype = compiler.getLocalVarInferenceTypes().get(exp);
-                return new Var(exp, vtype, var);
+        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(exp.getName(), false);
+
+        if (var == null) {
+            if (exp.isClosureSharedVariable()) {
+                // we are in closure
+                final VariableExpression ve = new VariableExpression("$self");
+                final PropertyExpression pe = new PropertyExpression(ve, exp.getName());
+                pe.setType(exp.getType());
+                pe.setSourcePosition(exp);
+                return compiler.transform(pe);
             }
-            else
-                if (exp.isClosureSharedVariable()) {
-                    VariableExpression v = exp;
-                    while (v != null && v.getType() == ClassHelper.OBJECT_TYPE && v != v.getAccessedVariable())
-                        v = (VariableExpression) v.getAccessedVariable();
+            else if (exp.getAccessedVariable() != null) {
+                // it is property
+                final PropertyExpression pe = new PropertyExpression(VariableExpression.THIS_EXPRESSION, exp.getName());
+                pe.setSourcePosition(exp);
+                return compiler.transform(pe);
+            }
+        } else {
+            ClassNode vtype = compiler.getLocalVarInferenceTypes().get(exp);
+            return new Var(exp, vtype, var);
+        }
 
-                    final ClassNode vtype = v == null ? ClassHelper.OBJECT_TYPE : v.getType();
-                    return new ClosureShared(exp, vtype, compiler);
-                }
-                else if (exp.getAccessedVariable() != null) {
-                    VariableExpression v = exp;
-                    while (v != null && v.getType() == ClassHelper.OBJECT_TYPE && v != v.getAccessedVariable())
-                        v = (VariableExpression) v.getAccessedVariable();
-
-                    final ClassNode vtype = v == null ? ClassHelper.OBJECT_TYPE : v.getType();
-                    return new ClosureShared2(exp, vtype, compiler);
-                }
-
-            compiler.addError("Can't find variable " + exp.getName(), exp);
+        compiler.addError("Can't find variable " + exp.getName(), exp);
             return null;
     }
 

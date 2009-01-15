@@ -11,12 +11,16 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Label;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeImproverMethodAdapter;
+import org.mbte.groovypp.compiler.impl.bytecode.LocalVarInferenceTypes;
+import groovy.lang.CompilePolicy;
 
 public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private StaticMethodBytecode methodBytecode;
 
-    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack) {
-        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack);
+    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, CompilePolicy policy) {
+        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, policy);
         this.methodBytecode = methodBytecode;
     }
 

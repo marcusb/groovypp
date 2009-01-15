@@ -7,14 +7,18 @@ import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.impl.*;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 
+import groovy.lang.CompilePolicy;
+
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression>{
-    public Expression transform(MethodCallExpression exp, final CompilerTransformer compiler) {
+    public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
         Expression args = compiler.transform(exp.getArguments());
+        exp.setArguments(args);
 
         if (exp.isSpreadSafe()) {
             compiler.addError("Spread operator is not supported by static compiler", exp);
@@ -24,8 +28,13 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         Object method = exp.getMethod();
         String methodName = null;
         if (!(method instanceof ConstantExpression) || !(((ConstantExpression) method).getValue() instanceof String)) {
-          compiler.addError("Non-static method name", exp);
-          return null;
+          if (compiler.policy == CompilePolicy.STATIC) {
+              compiler.addError("Non-static method name", exp);
+              return null;
+          }
+          else {
+              return createDynamicCall(exp, compiler);
+          }
         }
         else {
           methodName = (String) ((ConstantExpression) method).getValue();
@@ -180,13 +189,23 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         if (foundMethod == null) {
-            compiler.addError("Can't find or choose method '" + methodName + "' for type " + type.getName(), exp);
-            return null;
+            if (compiler.policy == CompilePolicy.STATIC) {
+                compiler.addError("Can't find or choose method '" + methodName + "' for type " + type.getName(), exp);
+                return null;
+            }
+            else {
+                return createDynamicCall(exp, compiler);
+            }
         }
 
         if (object == null && !foundMethod.isStatic()) {
-            compiler.addError("Can't call non-static method '" + methodName + "' for type " + type.getName(), exp);
-            return null;
+            if (compiler.policy == CompilePolicy.STATIC) {
+                compiler.addError("Can't call non-static method '" + methodName + "' for type " + type.getName(), exp);
+                return null;
+            }
+            else {
+                return createDynamicCall(exp, compiler);
+            }
         }
 
         final boolean safe = exp.isSafe();
@@ -194,5 +213,28 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
         result.setSourcePosition(exp);
         return result;
+    }
+
+    private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
+        final BytecodeExpr methodExpr = (BytecodeExpr) compiler.transform(exp.getMethod());
+        final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+        return new BytecodeExpr(exp, ClassHelper.OBJECT_TYPE) {
+            protected void compile() {
+                mv.visitInsn(ACONST_NULL);
+                object.visit(mv);
+                methodExpr.visit(mv);
+
+                final List args = ((ArgumentListExpression) exp.getArguments()).getExpressions();
+                mv.visitLdcInsn(args.size());
+                mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+                for (int j = 0; j != args.size(); ++j) {
+                    mv.visitInsn(DUP);
+                    mv.visitLdcInsn(j);
+                    ((BytecodeExpr)args.get(j)).visit(mv);
+                    mv.visitInsn(AASTORE);
+                }
+                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "invokeMethodN", "(Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+            }
+        };
     }
 }

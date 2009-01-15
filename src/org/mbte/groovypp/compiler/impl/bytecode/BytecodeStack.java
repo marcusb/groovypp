@@ -1,4 +1,4 @@
-package org.mbte.groovypp.compiler.impl;
+package org.mbte.groovypp.compiler.impl.bytecode;
 
 class BytecodeStack {
     public static final byte KIND_INT    = 0;

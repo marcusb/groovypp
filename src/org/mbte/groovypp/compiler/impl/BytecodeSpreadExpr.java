@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler.impl;
 
 import org.codehaus.groovy.ast.expr.SpreadExpression;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class BytecodeSpreadExpr extends BytecodeExpr {
     private final BytecodeExpr internal;

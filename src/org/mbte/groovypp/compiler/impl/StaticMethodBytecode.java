@@ -6,17 +6,21 @@ import org.codehaus.groovy.ast.GroovyCodeVisitor;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.objectweb.asm.MethodVisitor;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeImproverMethodAdapter;
+import groovy.lang.CompilePolicy;
 
 class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;
     final SourceUnit su;
     Statement code;
+    private final CompilePolicy policy;
     final StaticCompiler compiler;
 
-    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, boolean debug) {
+    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, boolean debug, CompilePolicy policy) {
         this.methodNode = methodNode;
         this.su = su;
         this.code = code;
+        this.policy = policy;
 
         MethodVisitor mv = createStorage();
         if (debug)
@@ -26,7 +30,8 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
                 su,
                 this,
                 mv,
-                compileStack);
+                compileStack,
+                policy);
 //
         if (debug)
            System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName());
@@ -35,10 +40,10 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
            System.out.println("------------");
     }
 
-    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, boolean debug) {
+    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, boolean debug, CompilePolicy policy) {
         final Statement code = methodNode.getCode();
         if (!(code instanceof BytecodeSequence)) {
-            final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug);
+            final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug, policy);
             methodNode.setCode(new MyBytecodeSequence(methodBytecode){});
         }
     }

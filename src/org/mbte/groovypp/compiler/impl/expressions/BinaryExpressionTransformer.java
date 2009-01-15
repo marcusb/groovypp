@@ -6,7 +6,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.impl.TypeUtil;
 import org.mbte.groovypp.compiler.impl.StaticCompiler;
 import org.objectweb.asm.Label;

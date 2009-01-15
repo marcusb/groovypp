@@ -5,7 +5,7 @@ import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.mbte.groovypp.compiler.impl.CompilerTransformer;
-import org.mbte.groovypp.compiler.impl.BytecodeExpr;
+import org.mbte.groovypp.compiler.impl.bytecode.BytecodeExpr;
 
 public class DeclarationExpressionTransformer extends ExprTransformer<DeclarationExpression> {
     public Expression transform(DeclarationExpression exp, final CompilerTransformer compiler) {

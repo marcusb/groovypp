@@ -1,10 +1,10 @@
-package org.mbte.groovypp.compiler.impl;
+package org.mbte.groovypp.compiler.impl.bytecode;
 
-import org.objectweb.asm.*;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ClassHelper;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodAdapter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
-import java.util.LinkedList;
 import java.util.IdentityHashMap;
 
 public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, LocalVarTypeInferenceState {
