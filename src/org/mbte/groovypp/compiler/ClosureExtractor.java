@@ -146,49 +146,6 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         _doCallMethod.getCode().visit(this);
         popState();
 
-        final Parameter[] constrParams = CompiledClosureBytecodeExpr.createClosureParams(ce, newType);
-
-        newType.addMethod(
-                    "<init>",
-                    ACC_PUBLIC,
-                    ClassHelper.VOID_TYPE,
-                    constrParams,
-                    ClassNode.EMPTY_ARRAY,
-                    new BytecodeSequence(new BytecodeInstruction(){
-                        public void visit(MethodVisitor mv) {
-                            mv.visitVarInsn(ALOAD, 0);
-                            mv.visitVarInsn(ALOAD, 1);
-                            mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(newType.getSuperClass()), "<init>", "(Ljava/lang/Object;)V");
-
-                            for (int i = 1, k = 2; i != constrParams.length; i++) {
-                                mv.visitVarInsn(ALOAD, 0);
-
-                                final ClassNode type = constrParams[i].getType();
-                                if (ClassHelper.isPrimitiveType(type)) {
-                                    if (type == ClassHelper.long_TYPE) {
-                                        mv.visitVarInsn(LLOAD, k++);
-                                        k++;
-                                    }
-                                    else if (type == ClassHelper.double_TYPE) {
-                                        mv.visitVarInsn(DLOAD, k++);
-                                        k++;
-                                    }
-                                    else if (type == ClassHelper.float_TYPE) {
-                                        mv.visitVarInsn(FLOAD, k++);
-                                    }
-                                    else {
-                                        mv.visitVarInsn(ILOAD, k++);
-                                    }
-                                }
-                                else {
-                                    mv.visitVarInsn(ALOAD, k++);
-                                }
-                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
-                            }
-                            mv.visitInsn(RETURN);
-                        }
-                }));
-
         OpenVerifier v = new OpenVerifier();
         v.addDefaultParameterMethods(newType);
 
@@ -198,7 +155,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
             toProcess.add(policy);
         }
 
-        classNode.getModule().addClass(newType);
+        newType.setModule(classNode.getModule());
         ce.setType(newType);
 
         return ce;

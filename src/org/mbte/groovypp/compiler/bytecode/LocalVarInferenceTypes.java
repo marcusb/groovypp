@@ -26,6 +26,10 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
         return defVars == null ? ClassHelper.OBJECT_TYPE : defVars.get(ve.getAccessedVariable());
     }
 
+    public ClassNode get(Variable ve) {
+        return defVars == null ? ClassHelper.OBJECT_TYPE : defVars.get(ve);
+    }
+
     public void addWeak(VariableExpression ve, ClassNode type) {
         final ClassNode oldType = defVars.get(ve.getAccessedVariable());
         if (oldType == null) {

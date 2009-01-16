@@ -9,6 +9,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import java.util.*;
 
 import groovy.lang.TypedClosure;
+import groovy.lang.Range;
 
 public class TypeUtil {
     private static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
@@ -17,6 +18,7 @@ public class TypeUtil {
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
+    public static final ClassNode RANGE_TYPE = make(Range.class);
 
     private static class Null {}
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);

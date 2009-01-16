@@ -4,25 +4,32 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class CompiledClosureBytecodeExpr extends BytecodeExpr {
-    private final Parameter[] constrParams;
     private CompilerTransformer transformer;
 
     ClassNode delegateType;
+    private final ClosureExpression ce;
 
-    public CompiledClosureBytecodeExpr(CompilerTransformer compileExpressionTransformer, ClosureExpression ce, ClassNode newType, Parameter[] constrParams) {
+    public CompiledClosureBytecodeExpr(CompilerTransformer compileExpressionTransformer, ClosureExpression ce, ClassNode newType) {
         super(ce, newType);
         this.transformer = compileExpressionTransformer;
         setType(newType);
-        this.constrParams = constrParams;
+        this.ce = ce;
     }
 
     protected void compile() {
+        getType().getModule().addClass(getType());
+        Parameter [] constrParams = createClosureParams(ce, getType());
+        createClosureConstructor(getType(), constrParams);
+
         final String classInternalName = BytecodeHelper.getClassInternalName(getType());
         mv.visitTypeInsn(NEW, classInternalName);
         mv.visitInsn(DUP);
@@ -30,8 +37,12 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
         for (int i = 1; i != constrParams.length; i++) {
             final String name = constrParams[i].getName();
             final org.codehaus.groovy.classgen.Variable var = transformer.compileStack.getVariable(name, false);
-            if (var != null)
-                mv.visitVarInsn(ALOAD, var.getIndex());
+            if (var != null) {
+                loadVar(var);
+                if (!constrParams[i].getType().equals(var.getType())) {
+                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(constrParams[i].getType()));
+                }
+            }
             else {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(transformer.methodNode.getParameters()[0].getType()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
@@ -40,12 +51,23 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
         mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
     }
 
-    static Parameter[] createClosureParams(ClosureExpression ce, ClassNode newType) {
+    private Parameter[] createClosureParams(ClosureExpression ce, ClassNode newType) {
         ArrayList<FieldNode> refs = new ArrayList<FieldNode> ();
         for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
-            Variable var = (Variable) it.next();
-            final ClassNode vtype = ClassHelper.getUnwrapper(var.getType());
-            final PropertyNode propertyNode = newType.addProperty(var.getName(), ACC_PUBLIC|ACC_FINAL, vtype, null, null, null);
+
+            Variable astVar = (Variable) it.next();
+            final org.codehaus.groovy.classgen.Variable var = transformer.compileStack.getVariable(astVar.getName(), false);
+
+            ClassNode vtype;
+            if (var != null) {
+                vtype = transformer.getLocalVarInferenceTypes().get(astVar);
+                if (vtype == null)
+                   vtype = var.getType();
+            }
+            else {
+                vtype = transformer.methodNode.getParameters()[0].getType().getProperty(astVar.getName()).getType();
+            }
+            final PropertyNode propertyNode = newType.addProperty(astVar.getName(), ACC_PUBLIC|ACC_FINAL, vtype, null, null, null);
             refs.add(propertyNode.getField());
         }
 
@@ -60,7 +82,49 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
 
     public static Expression createCompiledClosureBytecodeExpr(final CompilerTransformer transformer, final ClosureExpression ce) {
         final ClassNode newType = ce.getType();
-        final Parameter[] constrParams = createClosureParams(ce, newType);
-        return new CompiledClosureBytecodeExpr(transformer, ce, newType, constrParams);
+        return new CompiledClosureBytecodeExpr(transformer, ce, newType);
+    }
+
+    void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams) {
+        newType.addMethod(
+                    "<init>",
+                    ACC_PUBLIC,
+                    ClassHelper.VOID_TYPE,
+                    constrParams,
+                    ClassNode.EMPTY_ARRAY,
+                    new BytecodeSequence(new BytecodeInstruction(){
+                        public void visit(MethodVisitor mv) {
+                            mv.visitVarInsn(ALOAD, 0);
+                            mv.visitVarInsn(ALOAD, 1);
+                            mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(newType.getSuperClass()), "<init>", "(Ljava/lang/Object;)V");
+
+                            for (int i = 1, k = 2; i != constrParams.length; i++) {
+                                mv.visitVarInsn(ALOAD, 0);
+
+                                final ClassNode type = constrParams[i].getType();
+                                if (ClassHelper.isPrimitiveType(type)) {
+                                    if (type == ClassHelper.long_TYPE) {
+                                        mv.visitVarInsn(LLOAD, k++);
+                                        k++;
+                                    }
+                                    else if (type == ClassHelper.double_TYPE) {
+                                        mv.visitVarInsn(DLOAD, k++);
+                                        k++;
+                                    }
+                                    else if (type == ClassHelper.float_TYPE) {
+                                        mv.visitVarInsn(FLOAD, k++);
+                                    }
+                                    else {
+                                        mv.visitVarInsn(ILOAD, k++);
+                                    }
+                                }
+                                else {
+                                    mv.visitVarInsn(ALOAD, k++);
+                                }
+                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
+                            }
+                            mv.visitInsn(RETURN);
+                        }
+                }));
     }
 }
