@@ -12,7 +12,7 @@ import java.lang.annotation.ElementType;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
-@GroovyASTTransformationClass("org.mbte.groovypp.compiler.impl.IDefASTTransform")
+@GroovyASTTransformationClass("org.mbte.groovypp.compiler.IDefASTTransform")
 public @interface IDef {
     /**
      * Name of interface

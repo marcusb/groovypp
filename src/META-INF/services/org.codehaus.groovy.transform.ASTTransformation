@@ -1,2 +1,2 @@
 # global annotation to handle @IDef annotation
-org.mbte.groovypp.compiler.impl.IDefASTTransform
+org.mbte.groovypp.compiler.IDefASTTransform
