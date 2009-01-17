@@ -39,6 +39,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             final org.codehaus.groovy.classgen.Variable var = transformer.compileStack.getVariable(name, false);
             if (var != null) {
                 loadVar(var);
+                unbox(var.getType());
                 if (!constrParams[i].getType().equals(var.getType())) {
                     mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(constrParams[i].getType()));
                 }

@@ -1,11 +1,11 @@
 package org.mbte.groovypp.compiler.expressions;
 
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.CompiledMethodBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
@@ -34,6 +34,21 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         else {
             object = (BytecodeExpr) compiler.transform(expression.getObjectExpression());
             type = object.getType();
+        }
+
+        final String getterName = "get" + Verifier.capitalize(propName);
+        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+        if (mn != null)
+            return new CompiledMethodBytecodeExpr(expression, mn, object, new ArgumentListExpression());
+
+        final PropertyNode pnode = object != null ? object.getType().getProperty(expression.getPropertyAsString()) : null;
+        if (pnode != null) {
+            return new BytecodeExpr(expression, pnode.getType()) {
+                protected void compile() {
+                    object.visit(mv);
+                    mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(object.getType()), getterName, "()" + BytecodeHelper.getTypeDescription(pnode.getType()));
+                }
+            };
         }
 
         final FieldNode propertyNode = compiler.findField (type, propName);

@@ -96,7 +96,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public ClassNode[] exprToTypeArray(Expression args) {
-        final List list = ((ArgumentListExpression) args).getExpressions();
+        final List list = ((TupleExpression) args).getExpressions();
         final ClassNode[] nodes = new ClassNode[list.size()];
         for (int i = 0; i < nodes.length; i++) {
             nodes [i] = ((Expression)list.get(i)).getType();

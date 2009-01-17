@@ -3,19 +3,41 @@ package org.mbte.groovypp.compiler.expressions;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.StaticCompiler;
+import org.mbte.groovypp.compiler.CompiledMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression>{
-    public Expression transform(BinaryExpression exp, CompilerTransformer compiler) {
+    public Expression transform(final BinaryExpression exp, final CompilerTransformer compiler) {
         switch (exp.getOperation().getType()) {
+            case Types.COMPARE_IDENTICAL: // ===
+                final BytecodeExpr l = (BytecodeExpr) compiler.transform(exp.getLeftExpression());
+                final BytecodeExpr r = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+                return new BytecodeExpr(exp, ClassHelper.boolean_TYPE) {
+                    protected void compile() {
+                        l.visit(mv);
+                        r.visit(mv);
+                        Label tr = new Label();
+                        mv.visitJumpInsn(IF_ACMPEQ,tr);
+                        mv.visitInsn(ICONST_0);
+                        Label end = new Label();
+                        mv.visitJumpInsn(GOTO, end);
+                        mv.visitLabel(tr);
+                        mv.visitInsn(ICONST_1);
+                        mv.visitLabel(end);
+                    }
+                };
+
             case Types.COMPARE_EQUAL:
                 return evaluateEqual(exp, compiler);
 
@@ -74,10 +96,6 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 return evaluateInstanceof(exp, compiler);
 
 /*
-            case Types.COMPARE_IDENTICAL: // ===
-                evaluateBinaryExpression(compareIdenticalMethod, expression);
-                break;
-
             case Types.COMPARE_NOT_EQUAL:
                 evaluateBinaryExpression(compareNotEqualMethod, expression);
                 break;
@@ -251,12 +269,45 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 //            return transformArrayPostfixExpression(exp);
 //        }
 //
-//        if (left instanceof PropertyExpression) {
-//            return transformPostfixPropertyExpression(exp, (PropertyExpression)left);
-//        }
+        if (left instanceof PropertyExpression) {
+            return transformPropertyExpression(be, compiler);
+        }
 
         compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
         return null;
+    }
+
+    private Expression transformPropertyExpression(BinaryExpression be, CompilerTransformer compiler) {
+        PropertyExpression pe = (PropertyExpression) be.getLeftExpression();
+        final BytecodeExpr object = (BytecodeExpr) compiler.transform(pe.getObjectExpression());
+        final BytecodeExpr value = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        final String setterName = "set" + Verifier.capitalize(pe.getPropertyAsString());
+        MethodNode mn = compiler.findMethod(object.getType(), setterName, new ClassNode[] {value.getType()});
+        if (mn != null)
+           return new CompiledMethodBytecodeExpr(be, mn, object, new ArgumentListExpression(value));
+        else {
+            final PropertyNode pnode = object.getType().getProperty(pe.getPropertyAsString());
+            if (pnode != null) {
+                return new BytecodeExpr(be, value.getType()) {
+                    protected void compile() {
+                        object.visit(mv);
+                        value.visit(mv);
+                        if (value.getType() == ClassHelper.long_TYPE || value.getType() == ClassHelper.double_TYPE)
+                            mv.visitInsn(DUP2_X1);
+                        else
+                            mv.visitInsn(DUP_X1);
+                        box(value.getType());
+                        cast(ClassHelper.getWrapper(value.getType()), ClassHelper.getWrapper(pnode.getType()));
+                        unbox(pnode.getType());
+                        mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(object.getType()), setterName, "(" + BytecodeHelper.getTypeDescription(pnode.getType())+ ")V");
+                    }
+                };
+            }
+            else {
+                compiler.addError("Internal Error", be);
+                return null;
+            }
+        }
     }
 
     private Expression evaluateAssignVariable(BinaryExpression be, final VariableExpression ve, final Expression right, CompilerTransformer compiler) {

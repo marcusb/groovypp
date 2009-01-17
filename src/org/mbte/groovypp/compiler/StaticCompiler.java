@@ -39,6 +39,13 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     @Override
     protected void visitStatement(Statement statement) {
         super.visitStatement(statement);
+
+        int line = statement.getLineNumber();
+        if (line >= 0 && mv != null) {
+            Label l = new Label();
+            mv.visitLabel(l);
+            mv.visitLineNumber(line, l);
+        }
     }
 
     @Override
@@ -112,6 +119,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitExpressionStatement(ExpressionStatement statement) {
+        visitStatement(statement);
+
         super.visitExpressionStatement(statement);
 
         final BytecodeExpr be = (BytecodeExpr) statement.getExpression();
@@ -130,11 +139,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     @Override
     public void visitForLoop(ForStatement forLoop) {
         visitStatement(forLoop);
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void visitIfElse(IfStatement ifElse) {
+        visitStatement(ifElse);
+
         final BooleanExpression ifExpr = ifElse.getBooleanExpression();
         final BytecodeExpr be = (BytecodeExpr) transform(ifExpr.getExpression());
         be.visit(mv);
@@ -164,6 +176,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitReturnStatement(ReturnStatement statement) {
+        visitStatement(statement);
+
         super.visitReturnStatement(statement);
 
         final BytecodeExpr bytecodeExpr = (BytecodeExpr) statement.getExpression();
@@ -203,24 +217,32 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitCaseStatement(CaseStatement statement) {
+        visitStatement(statement);
+
         super.visitCaseStatement(statement);
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void visitDoWhileLoop(DoWhileStatement loop) {
+        visitStatement(loop);
+
         super.visitDoWhileLoop(loop);
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void visitSynchronizedStatement(SynchronizedStatement sync) {
+        visitStatement(sync);
+
         super.visitSynchronizedStatement(sync);
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void visitThrowStatement(ThrowStatement ts) {
+        visitStatement(ts);
+
         super.visitThrowStatement(ts);
         throw new UnsupportedOperationException();
     }
@@ -234,6 +256,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     public void visitBytecodeSequence(BytecodeSequence sequence) {
         visitStatement(sequence);
+
         ((BytecodeInstruction)sequence.getInstructions().get(0)).visit(mv);
     }
 
