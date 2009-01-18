@@ -27,7 +27,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(PropertyExpression.class, new PropertyExpressionTransformer());
         transformers.put(BinaryExpression.class, new BinaryExpressionTransformer());
         transformers.put(GStringExpression.class, new GStringExpressionTransformer());
-        transformers.put(ConstructorCallExpression.class, new ConstructorCallExpressionTransformer());
+        transformers.put(ConstructorCallExpression.class, new org.mbte.groovypp.compiler.transformers.ConstructorCallExpressionTransformer());
         transformers.put(RangeExpression.class, new RangeExpressionTransformer());
 
         final BooleanExpressionTransformer bool = new BooleanExpressionTransformer();
