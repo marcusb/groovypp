@@ -1,12 +1,12 @@
-package org.mbte.groovypp.compiler.expressions;
+package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
-import org.mbte.groovypp.compiler.CompiledMethodBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
     public Expression transform(PropertyExpression expression, CompilerTransformer compiler) {
@@ -39,7 +39,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         final String getterName = "get" + Verifier.capitalize(propName);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
         if (mn != null)
-            return new CompiledMethodBytecodeExpr(expression, mn, object, new ArgumentListExpression());
+            return new ResolvedMethodBytecodeExpr(expression, mn, object, new ArgumentListExpression());
 
         final PropertyNode pnode = object != null ? object.getType().getProperty(expression.getPropertyAsString()) : null;
         if (pnode != null) {
