@@ -1,24 +1,30 @@
-package org.mbte.groovypp.compiler;
+package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.ClassNodeCache;
+import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
+import org.mbte.groovypp.compiler.TypeUtil;
 
-public class CompiledMethodBytecodeExpr extends BytecodeExpr {
+public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final MethodNode methodNode;
     private final BytecodeExpr object;
     private final String methodName;
     private final ArgumentListExpression bargs;
 
-    public CompiledMethodBytecodeExpr(Expression parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
+    public ResolvedMethodBytecodeExpr(Expression parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
         super (parent, methodNode.getReturnType());
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
         this.bargs = bargs;
 
+        tryImproveClosureType(methodNode, bargs);
+    }
+
+    private void tryImproveClosureType(MethodNode methodNode, ArgumentListExpression bargs) {
         final Parameter[] parameters = methodNode.getParameters();
         if (parameters.length > 0) {
             final Parameter lastParam = parameters[parameters.length - 1];
