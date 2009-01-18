@@ -15,7 +15,7 @@ public class ActorTest extends GroovyTestCase {
         mb.loop {
             receive { int msg ->
                 if (msg == -1) {
-                  done.set (0)
+                  done.set (null)
                   breakLoop ()
                 }
 
@@ -37,7 +37,7 @@ public class ActorTest extends GroovyTestCase {
 
 @Compile(debug = true)
 class MailBox {
-    private final LinkedList queue = new LinkedList()
+    private final LinkedBlockingQueue queue = new LinkedBlockingQueue()
 
     private volatile boolean suspended;
 
@@ -113,20 +113,14 @@ class MailBox {
      * Receive message synchroniously
      */
     protected final def receive(TypedClosure<MailBox> operation) {
-       lock.lock ()
-//       try {
-           MailBoxElement mbe = (MailBoxElement)queue.take ()
-           operation.delegate = this 
-           def result = operation.call (mbe.message)
-           if (mbe.continuation) {
-               executor.submit {
-                   mbe.continuation.call (result)
-               }
+       MailBoxElement mbe = (MailBoxElement)queue.take ()
+       operation.delegate = this
+       def result = operation.call (mbe.message)
+       if (mbe.continuation) {
+           executor.submit {
+               mbe.continuation.call (result)
            }
-//       }
-//       finally {
-           lock.unlock ()
-//       }
+       }
     }
 }
 
