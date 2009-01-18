@@ -10,7 +10,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
-import org.mbte.groovypp.compiler.expressions.ExprTransformer;
+import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 

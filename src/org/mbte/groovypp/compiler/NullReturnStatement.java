@@ -1,10 +1,10 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GroovyCodeVisitor;
+import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 

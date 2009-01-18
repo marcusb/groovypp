@@ -1,13 +1,13 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.GroovyCodeVisitor;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.control.SourceUnit;
-import org.objectweb.asm.MethodVisitor;
-import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
 import groovy.lang.CompilePolicy;
+import org.codehaus.groovy.ast.GroovyCodeVisitor;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.control.SourceUnit;
+import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
+import org.objectweb.asm.MethodVisitor;
 
 class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;

@@ -1,13 +1,17 @@
 package org.mbte.groovypp.compiler;
 
-import org.objectweb.asm.*;
-import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.reflection.CachedField;
+import org.codehaus.groovy.reflection.ReflectionCache;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
-import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 class DebugMethodAdapter{
 

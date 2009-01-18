@@ -1,22 +1,24 @@
 package org.mbte.groovypp.compiler;
 
+import groovy.lang.Compile;
+import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.objectweb.asm.*;
+import org.objectweb.asm.Opcodes;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import groovy.lang.CompilePolicy;
-import groovy.lang.Compile;
 
 /**
  * Handles generation of code for the @Compile annotation

@@ -2,17 +2,17 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.util.FastArray;
-import org.codehaus.groovy.reflection.ReflectionCache;
-import org.codehaus.groovy.reflection.CachedMethod;
-import org.codehaus.groovy.reflection.CachedClass;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.objectweb.asm.Opcodes;
+import org.codehaus.groovy.reflection.CachedClass;
+import org.codehaus.groovy.reflection.CachedMethod;
+import org.codehaus.groovy.reflection.ReflectionCache;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
+import org.objectweb.asm.Opcodes;
 
-import java.util.*;
 import java.lang.ref.SoftReference;
+import java.util.*;
 
 public class ClassNodeCache {
     public static class ClassNodeInfo {
@@ -334,8 +334,8 @@ public class ClassNodeCache {
     }
 
     public static class DGM extends MethodNode{
-        String    descr;
-        Class     callClass;
+        public String    descr;
+        public Class     callClass;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);

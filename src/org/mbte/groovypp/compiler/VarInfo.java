@@ -1,7 +1,7 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;

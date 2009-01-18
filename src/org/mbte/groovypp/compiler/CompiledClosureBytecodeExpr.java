@@ -4,8 +4,8 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
@@ -66,10 +66,10 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
                    vtype = var.getType();
             }
             else {
-                vtype = transformer.methodNode.getParameters()[0].getType().getProperty(astVar.getName()).getType();
+                vtype = transformer.methodNode.getParameters()[0].getType().getField(astVar.getName()).getType();
             }
-            final PropertyNode propertyNode = newType.addProperty(astVar.getName(), ACC_PUBLIC|ACC_FINAL, vtype, null, null, null);
-            refs.add(propertyNode.getField());
+            final FieldNode fieldNode = newType.addField(astVar.getName(), ACC_FINAL, vtype, null);
+            refs.add(fieldNode);
         }
 
         final Parameter constrParams [] = new Parameter[refs.size()+1];

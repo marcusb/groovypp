@@ -1,13 +1,15 @@
 package org.mbte.groovypp.compiler;
 
-import org.objectweb.asm.*;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.objectweb.asm.MethodVisitor;
 
-import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class StoredBytecodeInstruction extends BytecodeInstruction {
 

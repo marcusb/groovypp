@@ -1,9 +1,11 @@
 package org.mbte.groovypp.compiler;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.classgen.Verifier;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.reflection.CachedField;
+import org.codehaus.groovy.reflection.ReflectionCache;
 
 class OpenVerifier extends Verifier {
     static CachedField classNodeField = null;

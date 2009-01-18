@@ -5,9 +5,6 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.CatchStatement;
-import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
@@ -16,8 +13,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes{
@@ -26,6 +21,8 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     private final MethodNode methodNode;
     private final ClassNode classNode;
     private final CompilePolicy policy;
+
+    private ClosureMethodNode currentClosureMethod;
 
     public ClosureExtractor(SourceUnit source, LinkedList toProcess, MethodNode methodNode, ClassNode classNode, CompilePolicy policy) {
         this.source = source;
@@ -82,29 +79,24 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         }
         newParams[0] = new Parameter(newType, "$self");
 
-        final MethodNode _doCallMethod = methodNode.getDeclaringClass().addMethod(
+        ClosureMethodNode _doCallMethod = new ClosureMethodNode(
                 "$doCall",
                 Opcodes.ACC_STATIC,
                 ClassHelper.OBJECT_TYPE,
                 newParams,
-                ClassNode.EMPTY_ARRAY,
                 ce.getCode());
+
+        methodNode.getDeclaringClass().addMethod(_doCallMethod);
 
         toProcess.add(_doCallMethod);
         toProcess.add(policy);
 
+        _doCallMethod.setOwner(currentClosureMethod);
 
-        pushState();
-        ClosureExpression old = currentClosure;
-        currentClosure = ce;
-
-        for (Parameter pp : newParams)
-            current.put(pp.getName (), new VarInfo(currentClosure, pp));
-
+        ClosureMethodNode oldCmn = currentClosureMethod;
+        currentClosureMethod = _doCallMethod;
         ce.getCode().visit(this);
-
-        currentClosure = old;
-        popState();
+        currentClosureMethod = oldCmn;
 
         newType.addMethod(
                     "doCall",
@@ -142,10 +134,6 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                     }
                 }));
 
-        pushState();
-        _doCallMethod.getCode().visit(this);
-        popState();
-
         OpenVerifier v = new OpenVerifier();
         v.addDefaultParameterMethods(newType);
 
@@ -159,85 +147,5 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         ce.setType(newType);
 
         return ce;
-    }
-
-    private static class VarScope extends HashMap<String, VarInfo> {
-        private HashSet<VarInfo> externalRefs = new HashSet<VarInfo>();
-
-        private HashSet<VarInfo> mutableRefs = new HashSet<VarInfo>();
-        public VarScope parent;
-
-        VarScope () {
-            parent = null;
-        }
-
-        VarScope (VarScope parent) {
-            putAll(parent);
-            this.parent = parent;
-        }
-    }
-
-    private LinkedList<VarScope> stack = new LinkedList<VarScope> ();
-
-    private VarScope current = new VarScope();
-
-    private ClosureExpression currentClosure;
-
-    public void resolve(Statement code, Parameter p []) {
-        pushState();
-        for (Parameter pp : p) {
-            current.put (pp.getName(), new VarInfo(currentClosure, pp));
-        }
-        code.visit(this);
-        popState();
-    }
-
-    public void visitBlockStatement(BlockStatement block) {
-        pushState();
-        super.visitBlockStatement(block);
-        popState();
-    }
-
-    public void visitCatchStatement(CatchStatement statement) {
-        pushState();
-        final Parameter p = statement.getVariable();
-        current.put (p.getName(), new VarInfo(currentClosure, p));
-        super.visitCatchStatement(statement);
-        popState();
-    }
-
-    private void popState() {
-        final VarScope scope = stack.removeLast();
-        current = scope.parent;
-
-        for (VarInfo vi : scope.externalRefs) {
-            if (currentClosure != vi.closure) {
-                current.externalRefs.add(vi);
-            }
-            else {
-                vi.setClosureSharedVariable(true);
-            }
-        }
-
-        for (VarInfo vi : scope.mutableRefs) {
-            if (currentClosure != vi.closure) {
-                current.mutableRefs.add(vi);
-            }
-        }
-    }
-
-    private void pushState() {
-        final VarScope scope = new VarScope(current);
-        stack.addLast(scope);
-        current = scope;
-    }
-
-    public void visitForLoop(ForStatement forLoop) {
-        pushState();
-        Parameter p = forLoop.getVariable();
-        if (p != ForStatement.FOR_LOOP_DUMMY)
-            current.put (p.getName(), new VarInfo(currentClosure, p));
-        super.visitForLoop(forLoop);
-        popState();
     }
 }
