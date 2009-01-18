@@ -1,4 +1,4 @@
-package org.mbte.groovypp.compiler.expressions;
+package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassNode;
@@ -9,11 +9,12 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.StaticCompiler;
+import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression>{
+public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
     public Expression transform(BinaryExpression exp, CompilerTransformer compiler) {
         switch (exp.getOperation().getType()) {
             case Types.COMPARE_EQUAL:
