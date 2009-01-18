@@ -184,12 +184,15 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         bytecodeExpr.visit(mv);
         final ClassNode exprType = bytecodeExpr.getType();
         final ClassNode returnType = methodNode.getReturnType();
-        if (exprType.equals(ClassHelper.VOID_TYPE))
-            mv.visitInsn(ACONST_NULL);
-        else {
-            bytecodeExpr.box(exprType);
-            bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType));
-            bytecodeExpr.unbox(returnType);
+        if (!returnType.equals(ClassHelper.VOID_TYPE)) {
+            if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
+                mv.visitInsn(ACONST_NULL);
+            }
+            else {
+                bytecodeExpr.box(exprType);
+                bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType));
+                bytecodeExpr.unbox(returnType);
+            }
         }
         bytecodeExpr.doReturn(returnType);
     }
@@ -244,7 +247,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         visitStatement(ts);
 
         super.visitThrowStatement(ts);
-        throw new UnsupportedOperationException();
+        ((BytecodeExpr)ts.getExpression()).visit(mv);
+        mv.visitInsn(ATHROW);
     }
 
     public void execute() {

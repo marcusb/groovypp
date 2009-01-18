@@ -26,8 +26,11 @@ public class CompiledMethodBytecodeExpr extends BytecodeExpr {
                 if (lastParam.getType().isUsingGenerics()) {
                     final GenericsType[] genericsTypes = lastParam.getType().getGenericsTypes();
                     if (genericsTypes != null) {
-                        CompiledClosureBytecodeExpr ce = (CompiledClosureBytecodeExpr) bargs.getExpressions().get(parameters.length-1);
-                        ce.getType().getInterfaces()[0].setGenericsTypes(new GenericsType[]{new GenericsType(genericsTypes[0].getType())});
+                        Object param = bargs.getExpressions().get(parameters.length - 1);
+                        if (param instanceof CompiledClosureBytecodeExpr) {
+                            CompiledClosureBytecodeExpr ce = (CompiledClosureBytecodeExpr) param;
+                            ce.getType().getInterfaces()[0].setGenericsTypes(new GenericsType[]{new GenericsType(genericsTypes[0].getType())});
+                        }
                     }
                 }
             }

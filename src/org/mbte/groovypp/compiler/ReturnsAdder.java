@@ -30,15 +30,16 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
               setCode(addReturnsIfNeeded(statement, methodNode.getVariableScope()));
         }
         else if (!methodNode.isAbstract()) {
-            BlockStatement newBlock = new BlockStatement();
-            if (statement instanceof BlockStatement) {
-                newBlock.addStatements(filterStatements(((BlockStatement)statement).getStatements()));
-            } else {
-                newBlock.addStatement(filterStatement(statement));
-            }
-            newBlock.addStatement(ReturnStatement.RETURN_NULL_OR_VOID);
-            newBlock.setSourcePosition(statement);
-            setCode(newBlock);
+//            BlockStatement newBlock = new BlockStatement();
+//            if (statement instanceof BlockStatement) {
+//                newBlock.addStatements(filterStatements(((BlockStatement)statement).getStatements()));
+//            } else {
+//                newBlock.addStatement(filterStatement(statement));
+//            }
+//            newBlock.addStatement(ReturnStatement.RETURN_NULL_OR_VOID);
+//            newBlock.setSourcePosition(statement);
+//            setCode(newBlock);
+            setCode(addReturnsIfNeeded(statement, methodNode.getVariableScope()));
         }
     }
 
