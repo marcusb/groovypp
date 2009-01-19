@@ -9,6 +9,7 @@ import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -30,6 +31,37 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     }
 
     protected abstract void compile();
+
+
+    public BytecodeExpr createIndexed(ASTNode parent, BytecodeExpr index, CompilerTransformer compiler) {
+        if (getType().isArray() && TypeUtil.isAssignableFrom(ClassHelper.int_TYPE, index.getType()))
+           return new ResolvedArrayBytecodeExpr(parent, this, index);
+        else {
+            MethodNode getter = compiler.findMethod(getType(), "getAt", new ClassNode[]{index.getType()});
+            MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType()});
+
+            if (getter == null) {
+                compiler.addError("Can't find method 'getAt' for type: " + getType().getName(), parent);
+                return null;
+            }
+
+            if (setter == null) {
+                compiler.addError("Can't find method 'putAt' for type: " + getType().getName(), parent);
+                return null;
+            }
+
+            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, setter);
+        }
+    }
+
+
+    public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {
+        return null;
+    }
+
+    public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
+        return null;
+    }
 
     /**
      * box the primitive value on the stack
@@ -451,9 +483,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     public void loadVar(Variable variable) {
         int index = variable.getIndex();
         load(variable);
-        if (variable != Variable.THIS_VARIABLE && variable != Variable.SUPER_VARIABLE) {
-            box(variable.getType());
-        }
+        box(variable.getType());
     }
 
     public void storeVar(Variable variable) {

@@ -7,6 +7,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedLeftExpr;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.StaticCompiler;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
@@ -20,6 +21,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.COMPARE_EQUAL:
                 return evaluateEqual(exp, compiler);
 
+            case Types.EQUAL:
+                return evaluateAssign(exp, compiler);
+
             case Types.LOGICAL_AND:
                 return evaluateLogicalAnd(exp, compiler);
 
@@ -28,9 +32,6 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
             case Types.LEFT_SQUARE_BRACKET:
                 return evaluateArraySubscript(exp, compiler);
-
-            case Types.EQUAL:
-                return evaluateAssign(exp, compiler);
 
             case Types.MULTIPLY:
                 return evaluateMathOperation(exp, "multiply", compiler);
@@ -243,21 +244,14 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateAssign(BinaryExpression be, CompilerTransformer compiler) {
-        final Expression left = be.getLeftExpression();
-        if (left instanceof VariableExpression) {
-            return evaluateAssignVariable(be, (VariableExpression)left, compiler.transform(be.getRightExpression()), compiler);
+        final Expression left = compiler.transform(be.getLeftExpression());
+
+        if (!(left instanceof ResolvedLeftExpr)) {
+            compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
+            return null;
         }
 
-//        if (left instanceof BinaryExpression && ((BinaryExpression)left).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
-//            return transformArrayPostfixExpression(exp);
-//        }
-//
-//        if (left instanceof PropertyExpression) {
-//            return transformPostfixPropertyExpression(exp, (PropertyExpression)left);
-//        }
-
-        compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
-        return null;
+        return ((ResolvedLeftExpr)left).createAssign(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
     }
 
     private Expression evaluateAssignVariable(BinaryExpression be, final VariableExpression ve, final Expression right, CompilerTransformer compiler) {

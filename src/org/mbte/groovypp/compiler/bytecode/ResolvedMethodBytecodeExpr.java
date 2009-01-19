@@ -14,7 +14,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final String methodName;
     private final ArgumentListExpression bargs;
 
-    public ResolvedMethodBytecodeExpr(Expression parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
+    public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
         super (parent, methodNode.getReturnType());
         this.methodNode = methodNode;
         this.object = object;

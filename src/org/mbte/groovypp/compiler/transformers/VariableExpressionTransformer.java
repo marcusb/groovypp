@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
     public Expression transform(final VariableExpression exp, final CompilerTransformer compiler) {
@@ -43,7 +44,9 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
             }
         } else {
             ClassNode vtype = compiler.getLocalVarInferenceTypes().get(exp);
-            return new Var(exp, vtype, var);
+            if (vtype == null)
+              vtype = var.getType();
+            return new ResolvedVarBytecodeExpr(vtype, exp, compiler);
         }
 
         compiler.addError("Can't find variable " + exp.getName(), exp);
