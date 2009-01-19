@@ -5,20 +5,24 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.ClosureMethodNode;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedPropertyBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
-    public Expression transform(PropertyExpression expression, CompilerTransformer compiler) {
-        if (expression.isSpreadSafe()) {
-            compiler.addError("Spread operator is not supported yet by static compiler", expression);
+    public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
+        if (exp.isSpreadSafe()) {
+            compiler.addError("Spread operator is not supported yet by static compiler", exp);
             return null;
         }
 
-        Object property = expression.getProperty();
+        Object property = exp.getProperty();
         String propName = null;
         if (!(property instanceof ConstantExpression) || !(((ConstantExpression) property).getValue() instanceof String)) {
-          compiler.addError("Non-static property name", expression);
+          compiler.addError("Non-static property name", exp);
           return null;
         }
         else {
@@ -27,46 +31,133 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
         final BytecodeExpr object;
         final ClassNode type;
-        if (expression.getObjectExpression() instanceof ClassExpression) {
+
+        if (exp.getObjectExpression() instanceof ClassExpression) {
             object = null;
-            type = expression.getObjectExpression().getType();
+            type = ClassHelper.getWrapper(exp.getObjectExpression().getType());
+
+            Object prop = resolveGetProperty(type, propName, compiler);
+
+            return createResultExpr(exp, compiler, propName, object, prop);
         }
         else {
-            object = (BytecodeExpr) compiler.transform(expression.getObjectExpression());
-            type = object.getType();
-        }
+            if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
+                int level = 0;
+                for( ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode; cmn != null; cmn = cmn.getOwner(), level++ ) {
+                    ClassNode thisType = cmn.getParameters()[0].getType();
 
-        final String getterName = "get" + Verifier.capitalize(propName);
+                    Object prop = resolveGetProperty(thisType, propName, compiler);
+                    if (prop != null) {
+                        final int level1 = level;
+                        object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
+                            protected void compile() {
+                                mv.visitVarInsn(ALOAD, 0);
+                                for (int i = 0; i != level1; ++i) {
+                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
+                                    mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                }
+                                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                            }
+                        };
+
+                        return createResultExpr(exp, compiler, propName, object, prop);
+                    }
+
+                    // checkDelegate
+                    if (thisType.implementsInterface(TypeUtil.TCLOSURE)) {
+                        final ClassNode tclosure = thisType.getInterfaces()[0];
+                        final GenericsType[] genericsTypes = tclosure.getGenericsTypes();
+                        if (genericsTypes != null) {
+                            final ClassNode delegateType = genericsTypes[0].getType();
+                            prop = resolveGetProperty(delegateType, propName, compiler);
+                            if (prop != null) {
+                                final int level3 = level;
+                                object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
+                                    protected void compile() {
+                                        mv.visitVarInsn(ALOAD, 0);
+                                        for (int i = 0; i != level3; ++i) {
+                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
+                                            mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                        }
+                                        mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
+                                        mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
+                                        mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                                    }
+                                };
+                                return createResultExpr(exp, compiler, propName, object, prop);
+                            }
+                        }
+                    }
+                }
+
+                Object prop = resolveGetProperty(compiler.classNode, propName, compiler);
+                if (prop != null) {
+                    final int level2 = level;
+                    object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
+                        protected void compile() {
+                            mv.visitVarInsn(ALOAD, 0);
+                            for (int i = 0; i != level2; ++i) {
+                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
+                                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                            }
+                            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                        }
+                    };
+                    return createResultExpr(exp, compiler, propName, object, prop);
+                }
+
+                compiler.addError("Can't resolve property " + propName, exp);
+                return null;
+            } else {
+                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                type = ClassHelper.getWrapper(object.getType());
+
+                Object prop = resolveGetProperty(type, propName, compiler);
+                return createResultExpr(exp, compiler, propName, object, prop);
+            }
+        }
+    }
+
+    private Expression createResultExpr(PropertyExpression exp, CompilerTransformer compiler, String propName, BytecodeExpr object, Object prop) {
+        if (prop instanceof MethodNode)
+            return new ResolvedMethodBytecodeExpr(exp, (MethodNode) prop, object, new ArgumentListExpression());
+
+        if (prop instanceof PropertyNode)
+            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null);
+
+        if (prop instanceof FieldNode)
+            return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null);
+
+        compiler.addError("Can't resolve property " + propName, exp);
+        return null;
+    }
+
+    public Object resolveGetProperty (ClassNode type, String name, CompilerTransformer compiler) {
+        final String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
         if (mn != null)
-            return new ResolvedMethodBytecodeExpr(expression, mn, object, new ArgumentListExpression());
+            return mn;
 
-        final PropertyNode pnode = object != null ? object.getType().getProperty(expression.getPropertyAsString()) : null;
+        final PropertyNode pnode = type.getProperty(name);
         if (pnode != null) {
-            return new BytecodeExpr(expression, pnode.getType()) {
-                protected void compile() {
-                    object.visit(mv);
-                    mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(object.getType()), getterName, "()" + BytecodeHelper.getTypeDescription(pnode.getType()));
-                }
-            };
+            return pnode;
         }
 
-        final FieldNode propertyNode = compiler.findField (type, propName);
-        if (propertyNode == null) {
-            compiler.addError("Can't find property '" + propName + "' for type " + type.getName(), expression);
-            return null;
+        return compiler.findField (type, name);
+    }
+
+    public Object resolveSetProperty (ClassNode type, String name, CompilerTransformer compiler) {
+        final String getterName = "set" + Verifier.capitalize(name);
+        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+        if (mn != null)
+            return mn;
+
+        final PropertyNode pnode = type.getProperty(name);
+        if (pnode != null) {
+            return pnode;
         }
 
-        if (object == null && !propertyNode.isStatic()) {
-            compiler.addError("Can't access non-static property '" + propName + "' for type " + type.getName(), expression);
-            return null;
-        }
-
-        final boolean safe = expression.isSafe();
-        final BytecodeExpr result = new MyBytecodeExpr(expression, propertyNode, object);
-
-        result.setSourcePosition(expression);
-        return result;
+        return compiler.findField (type, name);
     }
 
     private static class MyBytecodeExpr extends BytecodeExpr {
