@@ -45,11 +45,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 return null;
             }
 
-            if (setter == null) {
-                compiler.addError("Can't find method 'putAt' for type: " + getType().getName(), parent);
-                return null;
-            }
-
             return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, setter);
         }
     }
@@ -632,6 +627,20 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(Opcodes.DUP2);
         else
             mv.visitInsn(Opcodes.DUP);
+    }
+
+    public void dup_x1(ClassNode type) {
+        if (type == ClassHelper.double_TYPE || type == ClassHelper.long_TYPE)
+            mv.visitInsn(Opcodes.DUP2_X1);
+        else
+            mv.visitInsn(Opcodes.DUP_X1);
+    }
+
+    public void dup_x2(ClassNode type) {
+        if (type == ClassHelper.double_TYPE || type == ClassHelper.long_TYPE)
+            mv.visitInsn(Opcodes.DUP2_X2);
+        else
+            mv.visitInsn(Opcodes.DUP_X2);
     }
 
     public void pop(ClassNode type) {

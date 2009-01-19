@@ -38,7 +38,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
                 cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()));
                 unbox(getType());
                 storeVar(var);
-                loadVar(var);
+                load(var);
             }
         };
     }
@@ -55,10 +55,6 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
-    }
-
-    public BytecodeExpr createIndexed(ASTNode parent, BytecodeExpr index, CompilerTransformer compiler) {
         return null;
     }
 }

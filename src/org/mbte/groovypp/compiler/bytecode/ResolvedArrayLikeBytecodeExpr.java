@@ -20,10 +20,15 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
     }
 
     protected void compile() {
-        getter.compile();
+        getter.visit(mv);
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
+        if (setter == null) {
+            compiler.addError("Can't find method 'putAt' for type: " + getType().getName(), parent);
+            return null;
+        }
+
         return new ResolvedMethodBytecodeExpr(parent, setter, array, new ArgumentListExpression(index, right));
     }
 

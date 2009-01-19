@@ -95,7 +95,37 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
 
     public void visitLdcInsn(Object cst) {
         dropBoxing ();
-        if (cst instanceof BigDecimal) {
+        if (cst instanceof Integer) {
+            Integer value = (Integer) cst;
+            switch (value) {
+                case 0:
+                    super.visitInsn(Opcodes.ICONST_0);
+                    break;
+                case 1:
+                    super.visitInsn(Opcodes.ICONST_1);
+                    break;
+                case 2:
+                    super.visitInsn(Opcodes.ICONST_2);
+                    break;
+                case 3:
+                    super.visitInsn(Opcodes.ICONST_3);
+                    break;
+                case 4:
+                    super.visitInsn(Opcodes.ICONST_4);
+                    break;
+                case 5:
+                    super.visitInsn(Opcodes.ICONST_5);
+                    break;
+                default:
+                    if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+                        super.visitIntInsn(Opcodes.BIPUSH, value);
+                    } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+                        super.visitIntInsn(Opcodes.SIPUSH, value);
+                    } else {
+                        super.visitLdcInsn(Integer.valueOf(value));
+                    }
+            }
+        } else if (cst instanceof BigDecimal) {
             super.visitTypeInsn(NEW, "java/math/BigDecimal");
             super.visitInsn(DUP);
             super.visitLdcInsn(cst.toString());
@@ -106,6 +136,9 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
             super.visitInsn(DUP);
             super.visitLdcInsn(cst.toString());
             super.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
+        }
+        else if (cst == null) {
+            super.visitInsn(ACONST_NULL);
         }
         else
             super.visitLdcInsn(cst);

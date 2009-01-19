@@ -32,12 +32,11 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
                 box(index.getType());
                 cast(ClassHelper.getWrapper(index.getType()), ClassHelper.Integer_TYPE);
                 unbox(ClassHelper.int_TYPE);
-                mv.visitInsn(DUP2);
-                loadArray(getType());
                 right.visit(mv);
                 box(right.getType());
-                cast(right.getType(), ClassHelper.getWrapper(getType()));
+                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()));
                 unbox(getType());
+                dup_x2(getType());
                 storeArray(getType());
             }
         };

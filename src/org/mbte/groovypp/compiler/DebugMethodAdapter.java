@@ -28,7 +28,7 @@ class DebugMethodAdapter{
 
     static MethodVisitor create(final MethodVisitor mv) {
         final Set codes = new HashSet();
-        codes.addAll(Arrays.asList("visitVarInsn", "visitMethodInsn", "visitInsn", "visitJumpInsn", "visitTypeInsn", "visitFieldInsn"));
+        codes.addAll(Arrays.asList("visitVarInsn", "visitMethodInsn", "visitInsn", "visitJumpInsn", "visitTypeInsn", "visitFieldInsn", "visitIntInsn"));
         return (MethodVisitor) Proxy.newProxyInstance(DebugMethodAdapter.class.getClassLoader(), new Class[]{MethodVisitor.class}, new InvocationHandler(){
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() != Class.class) {

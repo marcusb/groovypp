@@ -286,25 +286,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         final BytecodeExpr arrExp = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
 
-        if (arrExp.getType().isArray()) {
-            final ClassNode type = arrExp.getType().getComponentType();
-
-            if (!TypeUtil.isNumericalType(indexExp.getType())) {
-                compiler.addError("Array subscript index should be integer", bin);
-                return null;
-            }
-
-            return new BytecodeExpr(bin, arrExp.getType().getComponentType()) {
-                public void compile() {
-                    arrExp.visit(mv);
-                    indexExp.visit(mv);
-                    toInt(indexExp.getType());
-                    loadArray(type);
-                }
-            };
-        } else {
-            return compiler.transform(new MethodCallExpression(arrExp, "getAt", new ArgumentListExpression(indexExp)));
-        }
+        return arrExp.createIndexed(bin, indexExp, compiler);
     }
 
     private Expression evaluateLogicalOr(final BinaryExpression be, CompilerTransformer compiler) {
