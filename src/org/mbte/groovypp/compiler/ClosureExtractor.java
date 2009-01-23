@@ -24,6 +24,9 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
     private ClosureMethodNode currentClosureMethod;
 
+    private int currentClosureIndex;
+    private String currentClosureName;
+
     public ClosureExtractor(SourceUnit source, LinkedList toProcess, MethodNode methodNode, ClassNode classNode, CompilePolicy policy) {
         this.source = source;
         this.toProcess = toProcess;
@@ -33,7 +36,10 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     }
 
     void extract (Statement code) {
-        if (!methodNode.getName().equals("$doCall"))
+        currentClosureName = classNode.getName() + "$" + methodNode.getName().replace('<','_').replace('>','_');
+        currentClosureIndex = 1;
+
+        if (!methodNode.getName().equals("$doCall") && !methodNode.isAbstract())
            code.visit(this);
     }
 
@@ -43,7 +49,17 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
     public Expression transform(Expression exp) {
         if (exp instanceof ClosureExpression) {
-            return transformClosure(exp);
+            String oldCCN = currentClosureName;
+            currentClosureName = currentClosureName + "_" + currentClosureIndex++;
+            int oldCCI = currentClosureIndex;
+            currentClosureIndex = 1;
+
+            Expression res = transformClosure(exp);
+
+            currentClosureIndex = oldCCI;
+            currentClosureName = oldCCN;
+
+            return res;
         }
 
         return super.transform(exp);
@@ -59,12 +75,11 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
             final VariableScope scope = ce.getVariableScope();
             ce = new ClosureExpression(new Parameter[1], ce.getCode());
             ce.setVariableScope(scope);
-            ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it");
-            ce.getParameters()[0].setInitialExpression(ConstantExpression.NULL);
+            ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it", ConstantExpression.NULL);
         }
 
         final ClassNode newType = new ClassNode(
-                classNode.getName() + "$" + System.identityHashCode(ce),
+                currentClosureName,
                 0,
                 ClassHelper.CLOSURE_TYPE);
         newType.setInterfaces(new ClassNode[]{TypeUtil.TCLOSURE});
@@ -95,11 +110,36 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
         ClosureMethodNode oldCmn = currentClosureMethod;
         currentClosureMethod = _doCallMethod;
+        String oldCCN = currentClosureName;
+        currentClosureName = currentClosureName + "$" + currentClosureIndex++;
+        int oldCCI = currentClosureIndex;
+        currentClosureIndex = 1;
         ce.getCode().visit(this);
+        currentClosureIndex = oldCCI;
+        currentClosureName = oldCCN;
         currentClosureMethod = oldCmn;
 
+        createCallMethod(ce, newType, newParams, "doCall");
+        createCallMethod(ce, newType, newParams, "call");
+
+        OpenVerifier v = new OpenVerifier();
+        v.addDefaultParameterMethods(newType);
+
+        for (Object o : newType.getMethods("doCall")) {
+            MethodNode mn = (MethodNode) o;
+            toProcess.add(mn);
+            toProcess.add(policy);
+        }
+
+        newType.setModule(classNode.getModule());
+        ce.setType(newType);
+
+        return ce;
+    }
+
+    private void createCallMethod(ClosureExpression ce, ClassNode newType, final Parameter[] newParams, final String name) {
         newType.addMethod(
-                    "doCall",
+                name,
                     Opcodes.ACC_PROTECTED,
                     ClassHelper.OBJECT_TYPE,
                     ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
@@ -133,19 +173,5 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                         mv.visitInsn(ARETURN);
                     }
                 }));
-
-        OpenVerifier v = new OpenVerifier();
-        v.addDefaultParameterMethods(newType);
-
-        for (Object o : newType.getMethods("doCall")) {
-            MethodNode mn = (MethodNode) o;
-            toProcess.add(mn);
-            toProcess.add(policy);
-        }
-
-        newType.setModule(classNode.getModule());
-        ce.setType(newType);
-
-        return ce;
     }
 }

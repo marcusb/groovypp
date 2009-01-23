@@ -26,11 +26,61 @@ u (new int [10])
     }
 
     void testArrayAssignViaProperty () {
+        def res = shell.evaluate("""
+@Compile(debug=true)
+class A {
+  int [] a
 
+  def u (int [] aa) {
+     a = aa
+    (0..9).each { int it ->
+        a [it] = it
+    }
+    a as List
+  }
+}
+
+new A().u (new int[10])
+""")
+        assertEquals (0..9, res)
     }
 
     void testAssignProperty () {
+        def res = shell.evaluate("""
+@Compile(debug=true)
+class A {
+  protected int a
 
+  A u () {
+    (0..10).each { int it ->
+        a = it
+    }
+    this
+  }
+}
+
+new A().u ().a
+""")
+        assertEquals 10, res
+    }
+
+    void testAssignField () {
+        def res = shell.evaluate("""
+@Compile(debug=true)
+class A {
+  protected int a
+
+  A u () {
+    (0..10).each { int it ->
+        a = it
+    }
+    this
+  }
+}
+
+new A().u ().a
+""")
+        assertEquals 10, res
     }
 
     void testAssignFinalVar () {

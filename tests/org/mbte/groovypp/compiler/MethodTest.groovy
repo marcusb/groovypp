@@ -2,6 +2,59 @@ package org.mbte.groovypp.compiler
 
 public class MethodTest extends GroovyShellTestCase {
 
+    void testSubclass () {
+        def res = shell.evaluate ("""
+    @Compile(debug=true)
+  abstract class A {
+      abstract define ()
+
+      void onMessage (Runnable r) {
+        r.run ()
+      }
+
+      def static act(A a) {
+         a.define ()
+      }
+
+      static def test() {
+        def out = []
+        act {
+           onMessage {
+             out << 239
+           }
+           out
+        }
+      }
+  }
+A.test ()
+        """)
+        assertEquals ([239], res)
+    }
+
+    void testNullParam () {
+      def res = shell.evaluate ("""
+  @Compile
+class A {
+  def u (int msg, Closure when) {
+    if (when)
+      msg + (int)when.call ()
+    else
+      msg
+  }
+
+  def test () {
+    [ u(2, null), u(3, {4}) ]
+  }
+}
+
+new A().test ()
+      """)
+      assertEquals ([2,7], res)
+
+    }
+
+
+
   void testListPlus () {
     def res = shell.evaluate ("""
 @Compile

@@ -3,14 +3,10 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.ClosureMethodNode;
 import org.mbte.groovypp.compiler.TypeUtil;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedPropertyBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.*;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
     public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
@@ -36,9 +32,9 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             object = null;
             type = ClassHelper.getWrapper(exp.getObjectExpression().getType());
 
-            Object prop = resolveGetProperty(type, propName, compiler);
+            Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
 
-            return createResultExpr(exp, compiler, propName, object, prop);
+            return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
         }
         else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
@@ -46,7 +42,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 for( ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode; cmn != null; cmn = cmn.getOwner(), level++ ) {
                     ClassNode thisType = cmn.getParameters()[0].getType();
 
-                    Object prop = resolveGetProperty(thisType, propName, compiler);
+                    Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
                     if (prop != null) {
                         final int level1 = level;
                         object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
@@ -60,7 +56,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             }
                         };
 
-                        return createResultExpr(exp, compiler, propName, object, prop);
+                        return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
                     }
 
                     // checkDelegate
@@ -69,7 +65,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         final GenericsType[] genericsTypes = tclosure.getGenericsTypes();
                         if (genericsTypes != null) {
                             final ClassNode delegateType = genericsTypes[0].getType();
-                            prop = resolveGetProperty(delegateType, propName, compiler);
+                            prop = PropertyUtil.resolveGetProperty(delegateType, propName, compiler);
                             if (prop != null) {
                                 final int level3 = level;
                                 object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
@@ -84,13 +80,13 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                                         mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                                     }
                                 };
-                                return createResultExpr(exp, compiler, propName, object, prop);
+                                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
                             }
                         }
                     }
                 }
 
-                Object prop = resolveGetProperty(compiler.classNode, propName, compiler);
+                Object prop = PropertyUtil.resolveGetProperty(compiler.classNode, propName, compiler);
                 if (prop != null) {
                     final int level2 = level;
                     object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
@@ -103,89 +99,24 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                         }
                     };
-                    return createResultExpr(exp, compiler, propName, object, prop);
+                    return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
                 }
 
                 compiler.addError("Can't resolve property " + propName, exp);
                 return null;
             } else {
-                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                type = ClassHelper.getWrapper(object.getType());
+                if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode.isStatic() && !(compiler.methodNode instanceof ClosureMethodNode)) {
+                    object = null;
+                    type = compiler.classNode;
+                }
+                else {
+                    object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                    type = ClassHelper.getWrapper(object.getType());
+                }
 
-                Object prop = resolveGetProperty(type, propName, compiler);
-                return createResultExpr(exp, compiler, propName, object, prop);
+                Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
             }
-        }
-    }
-
-    private Expression createResultExpr(PropertyExpression exp, CompilerTransformer compiler, String propName, BytecodeExpr object, Object prop) {
-        if (prop instanceof MethodNode)
-            return new ResolvedMethodBytecodeExpr(exp, (MethodNode) prop, object, new ArgumentListExpression());
-
-        if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null);
-
-        if (prop instanceof FieldNode)
-            return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null);
-
-        compiler.addError("Can't resolve property " + propName, exp);
-        return null;
-    }
-
-    public Object resolveGetProperty (ClassNode type, String name, CompilerTransformer compiler) {
-        final String getterName = "get" + Verifier.capitalize(name);
-        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null)
-            return mn;
-
-        final PropertyNode pnode = type.getProperty(name);
-        if (pnode != null) {
-            return pnode;
-        }
-
-        return compiler.findField (type, name);
-    }
-
-    public Object resolveSetProperty (ClassNode type, String name, CompilerTransformer compiler) {
-        final String getterName = "set" + Verifier.capitalize(name);
-        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null)
-            return mn;
-
-        final PropertyNode pnode = type.getProperty(name);
-        if (pnode != null) {
-            return pnode;
-        }
-
-        return compiler.findField (type, name);
-    }
-
-    private static class MyBytecodeExpr extends BytecodeExpr {
-        private final FieldNode propertyNode;
-        private final BytecodeExpr object;
-
-        public MyBytecodeExpr(PropertyExpression expression, FieldNode propertyNode, BytecodeExpr object) {
-            super(expression, propertyNode.getType());
-            this.propertyNode = propertyNode;
-            this.object = object;
-        }
-
-        protected void compile() {
-            int op = GETFIELD;
-            if (propertyNode.isStatic()) {
-                op = GETSTATIC;
-            }
-            if (object != null)
-                object.visit(mv);
-
-            if (op == GETSTATIC && object != null) {
-                if (ClassHelper.long_TYPE == object.getType() || ClassHelper.double_TYPE == object.getType())
-                    mv.visitInsn(POP2);
-                else
-                    mv.visitInsn(POP);
-            }
-
-            mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(propertyNode.getDeclaringClass()), propertyNode.getName(), BytecodeHelper.getTypeDescription(propertyNode.getType()));
         }
     }
 }

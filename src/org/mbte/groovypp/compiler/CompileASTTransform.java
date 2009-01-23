@@ -56,10 +56,12 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 CompilePolicy classPolicy = getPolicy(classNode, source, CompilePolicy.DYNAMIC);
                 external:
                 for (MethodNode mn : classNode.getMethods() ) {
-                    CompilePolicy methodPolicy = getPolicy(mn, source, classPolicy);
-                    if (methodPolicy != CompilePolicy.DYNAMIC) {
-                        toProcess.addLast(mn);
-                        toProcess.addLast(methodPolicy);
+                    if (!mn.isAbstract()) {
+                        CompilePolicy methodPolicy = getPolicy(mn, source, classPolicy);
+                        if (methodPolicy != CompilePolicy.DYNAMIC) {
+                            toProcess.addLast(mn);
+                            toProcess.addLast(methodPolicy);
+                        }
                     }
                 }
             }

@@ -155,18 +155,33 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         for (int i = 0; i != argTypes.length; i++) {
             if (i!=0)
                 sb.append(", ");
-            sb.append(argTypes[i].getName());
+            if (argTypes[i] != null)
+              sb.append(argTypes[i].getName());
+            else
+              sb.append("null");  
         }
         sb.append(")");
         return sb.toString();
     }
 
-    private void makeOneMethodClass(final ClassNode oarg, ClassNode tp, List am) {
-        final ClassNode[] oifaces = oarg.getInterfaces();
-        ClassNode [] ifaces = new ClassNode[oifaces.length+1];
-        System.arraycopy(oifaces, 0, ifaces, 1, oifaces.length);
-        ifaces [0] = tp;
-        oarg.setInterfaces(ifaces);
+    public static void makeOneMethodClass(final ClassNode oarg, ClassNode tp, List am) {
+        if (tp.isInterface()) {
+            final ClassNode[] oifaces = oarg.getInterfaces();
+            ClassNode [] ifaces = new ClassNode[oifaces.length+1];
+            System.arraycopy(oifaces, 0, ifaces, 1, oifaces.length);
+            ifaces [0] = tp;
+            oarg.setInterfaces(ifaces);
+        }
+        else {
+            final ClassNode[] oifaces = oarg.getInterfaces();
+            ClassNode [] ifaces = new ClassNode[oifaces.length-1];
+            for (int i = 0, k = 0; i != oifaces.length; i++) {
+                if (oifaces[i] != TypeUtil.TCLOSURE)
+                    ifaces[k++] = oifaces[i];
+            }
+            oarg.setInterfaces(ifaces);
+            oarg.setSuperClass(tp);
+        }
 
         if (am.size() == 1) {
             final MethodNode missed = (MethodNode) am.get(0);
@@ -210,13 +225,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 BytecodeHelper.getMethodDescriptor(ClassHelper.OBJECT_TYPE,pp)
                         );
 
-                        if (ClassHelper.isPrimitiveType(missed.getReturnType())) {
-                            String returnString = "(Ljava/lang/Object;)" + BytecodeHelper.getTypeDescription(missed.getReturnType());
-                            mv.visitMethodInsn(
-                                    Opcodes.INVOKESTATIC,
-                                    BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName()),
-                                    missed.getReturnType().getName() + "Unbox",
-                                    returnString);
+                        if (missed.getReturnType() != ClassHelper.VOID_TYPE) {
+                            if (ClassHelper.isPrimitiveType(missed.getReturnType())) {
+                                String returnString = "(Ljava/lang/Object;)" + BytecodeHelper.getTypeDescription(missed.getReturnType());
+                                mv.visitMethodInsn(
+                                        Opcodes.INVOKESTATIC,
+                                        BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName()),
+                                        missed.getReturnType().getName() + "Unbox",
+                                        returnString);
+                            }
+                            else {
+                                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(missed.getReturnType()));
+                            }
                         }
                         BytecodeExpr.doReturn(mv, missed.getReturnType());
                     }
@@ -252,25 +272,27 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private MethodNode findMethodWithClosureCoercion (ClassNode type, String methodName, ClassNode [] argTypes, CompilerTransformer compiler) {
         MethodNode foundMethod = compiler.findMethod(type, methodName, argTypes);
-        if (foundMethod == null) {
-            if (argTypes.length > 0 && argTypes[argTypes.length-1].implementsInterface(TypeUtil.TCLOSURE)) {
-                final ClassNode oarg = argTypes[argTypes.length-1];
-                argTypes[argTypes.length-1] = null;
-                foundMethod = compiler.findMethod(type, methodName, argTypes);
-                if (foundMethod != null) {
-                    Parameter p [] = foundMethod.getParameters();
-                    if (p.length == argTypes.length) {
-                        if (p[p.length-1].getType().isInterface()) {
-                            final ClassNode tp = p[p.length - 1].getType();
-                            final List am = tp.getAbstractMethods();
-                            if (am.size() <= 1) {
-                                makeOneMethodClass(oarg, tp, am);
-                            }
+        if (foundMethod != null) {
+            return foundMethod;
+        }
+
+        if (argTypes.length > 0 && argTypes[argTypes.length-1] != null && argTypes[argTypes.length-1].implementsInterface(TypeUtil.TCLOSURE)) {
+            final ClassNode oarg = argTypes[argTypes.length-1];
+            argTypes[argTypes.length-1] = null;
+            foundMethod = compiler.findMethod(type, methodName, argTypes);
+            if (foundMethod != null) {
+                Parameter p [] = foundMethod.getParameters();
+                if (p.length == argTypes.length) {
+                    ClassNode argType = p[p.length - 1].getType();
+                    if (argType.isInterface() || (argType.getModifiers() & ACC_ABSTRACT) != 0) {
+                        final List am = argType.getAbstractMethods();
+                        if (am.size() <= 1) {
+                            makeOneMethodClass(oarg, argType, am);
                         }
                     }
                 }
-                argTypes[argTypes.length-1] = oarg;
             }
+            argTypes[argTypes.length-1] = oarg;
         }
 
         return foundMethod;

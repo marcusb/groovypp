@@ -582,6 +582,17 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                     s2 = s2.substring(1);
                     break;
 
+                case '[':
+                    args[count++] = BytecodeStack.KIND_OBJ;
+                    int k = 1;
+                    while (s2.charAt(k) == '[')
+                      k++;
+                    if (s2.charAt(k) == 'L')
+                        s2 = s2.substring(s2.indexOf(';')+1);
+                    else
+                        s2 = s2.substring(k+1);
+                    break;
+
                 default:
                     args[count++] = BytecodeStack.KIND_OBJ;
                     s2 = s2.substring(s2.indexOf(';')+1);

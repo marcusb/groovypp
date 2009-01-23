@@ -70,7 +70,8 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
                 if (cur.defVars != null)
                     for (Map.Entry<Variable,ClassNode> e : cur.defVars.entrySet()) {
                         final ClassNode oldType = defVars.get(e.getKey());
-                        defVars.put(e.getKey(), ClassHelper.getWrapper(TypeUtil.commonType(e.getValue(),oldType)));
+                        if (oldType != null)
+                            defVars.put(e.getKey(), ClassHelper.getWrapper(TypeUtil.commonType(e.getValue(),oldType)));
                     }
             }
         }

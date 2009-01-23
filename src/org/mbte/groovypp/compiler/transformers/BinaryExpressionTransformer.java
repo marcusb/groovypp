@@ -254,34 +254,6 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         return ((ResolvedLeftExpr)left).createAssign(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
     }
 
-    private Expression evaluateAssignVariable(BinaryExpression be, final VariableExpression ve, final Expression right, CompilerTransformer compiler) {
-        if (ve.isThisExpression() || ve.isSuperExpression()) {
-            compiler.addError("Can't assign value to 'this' or 'super'", be );
-        }
-
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), true);
-
-        final ClassNode vtype;
-        if (ve.getAccessedVariable().isDynamicTyped()) {
-            vtype = ClassHelper.getWrapper(right.getType());
-            compiler.getLocalVarInferenceTypes().add(ve, vtype);
-        }
-        else {
-            vtype = right.getType();
-        }
-
-        return new BytecodeExpr(ve, vtype) {
-            public void compile() {
-                ((BytecodeExpr)right).visit(mv);
-                box (right.getType());
-                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(ve.getType()));
-                unbox(vtype);
-                dup(vtype);
-                storeVar(var);
-            }
-          };
-    }
-
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
         final BytecodeExpr arrExp = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
@@ -354,37 +326,5 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "box", "(Z)Ljava/lang/Object;");
             }
         };
-    }
-
-
-    public void pushConstant(MethodVisitor mv, int value) {
-        switch (value) {
-            case 0:
-                mv.visitInsn(Opcodes.ICONST_0);
-                break;
-            case 1:
-                mv.visitInsn(Opcodes.ICONST_1);
-                break;
-            case 2:
-                mv.visitInsn(Opcodes.ICONST_2);
-                break;
-            case 3:
-                mv.visitInsn(Opcodes.ICONST_3);
-                break;
-            case 4:
-                mv.visitInsn(Opcodes.ICONST_4);
-                break;
-            case 5:
-                mv.visitInsn(Opcodes.ICONST_5);
-                break;
-            default:
-                if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
-                    mv.visitIntInsn(Opcodes.BIPUSH, value);
-                } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
-                    mv.visitIntInsn(Opcodes.SIPUSH, value);
-                } else {
-                    mv.visitLdcInsn(Integer.valueOf(value));
-                }
-        }
     }
 }

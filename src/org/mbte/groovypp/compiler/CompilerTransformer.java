@@ -85,6 +85,14 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         return null;
     }
 
+    public PropertyNode findProperty(ClassNode type, String property) {
+        for (;type != null; type = type.getSuperClass()) {
+            PropertyNode propertyNode = type.getProperty(property);
+            if (propertyNode != null)
+                return propertyNode;
+        }
+        return null;
+    }
 
     public MethodNode findConstructor(ClassNode type, ClassNode[] args) {
         FastArray methods = ClassNodeCache.getConstructors(type) ;
@@ -99,7 +107,11 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         final List list = ((TupleExpression) args).getExpressions();
         final ClassNode[] nodes = new ClassNode[list.size()];
         for (int i = 0; i < nodes.length; i++) {
-            nodes [i] = ((Expression)list.get(i)).getType();
+            ClassNode type = ((Expression) list.get(i)).getType();
+            if (type == TypeUtil.NULL_TYPE)
+                nodes [i] = null;
+            else
+                nodes [i] = type;
         }
         return nodes;
     }

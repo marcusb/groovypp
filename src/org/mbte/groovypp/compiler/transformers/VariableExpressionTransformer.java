@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
@@ -18,8 +19,8 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                  return compiler.transform(new VariableExpression("$self"));
              }
              else {
-                 compiler.addError("Can't use 'this' in static method", exp);
-                 return null;
+//                 compiler.addError("Can't use 'this' in static method", exp);
+                 return compiler.transform(new ClassExpression(compiler.classNode));
              }
           }
         }
@@ -60,22 +61,6 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
 
         public void compile() {
             mv.visitVarInsn(ALOAD, 0);
-        }
-    }
-
-    private static class Var extends BytecodeExpr {
-        private final org.codehaus.groovy.classgen.Variable var;
-
-        public Var(VariableExpression exp, ClassNode vtype, org.codehaus.groovy.classgen.Variable var) {
-            super(exp, vtype != null ? vtype : var.getType());
-            this.var = var;
-        }
-
-        protected void compile() {
-            loadVar(var);
-//                    if (!vtype.equals(var.getType()))
-//                       mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(vtype));
-            unbox(getType());
         }
     }
 }

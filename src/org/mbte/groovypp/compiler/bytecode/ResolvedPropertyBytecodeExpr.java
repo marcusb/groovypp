@@ -8,14 +8,15 @@ import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.ClassNodeCache;
 import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.CompilerTransformer;
 
-public class ResolvedPropertyBytecodeExpr extends BytecodeExpr {
+public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final PropertyNode propertyNode;
     private final BytecodeExpr object;
     private final String methodName;
     private final BytecodeExpr bargs;
 
-    public ResolvedPropertyBytecodeExpr(Expression parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs) {
+    public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs) {
         super (parent, propertyNode.getType());
         this.propertyNode = propertyNode;
         this.object = object;
@@ -57,13 +58,32 @@ public class ResolvedPropertyBytecodeExpr extends BytecodeExpr {
             box(type);
             bargs.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType));
             bargs.unbox(paramType);
-
-            methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), new Parameter[]{new Parameter(paramType, "")});
+            if (object != null)
+                dup_x1(paramType);
+            else
+                dup(paramType);
+            methodDescriptor = BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, new Parameter[]{new Parameter(paramType, "")});
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         }
         else {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         }
+    }
+
+    public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
+        return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, right);
+    }
+
+    public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {
+        return null;
+    }
+
+    public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {
+        return null;
+    }
+
+    public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
+        return null;
     }
 }
