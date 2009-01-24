@@ -16,6 +16,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression>{
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
@@ -70,8 +72,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             protected void compile() {
                                 mv.visitVarInsn(ALOAD, 0);
                                 for (int i = 0; i != level1; ++i) {
-                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                    mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                    mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                                 }
                                 mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                             }
@@ -92,8 +94,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     protected void compile() {
                                         mv.visitVarInsn(ALOAD, 0);
                                         for (int i = 0; i != level3; ++i) {
-                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                            mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                            mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                                         }
                                         mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
                                         mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
@@ -113,8 +115,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         protected void compile() {
                             mv.visitVarInsn(ALOAD, 0);
                             for (int i = 0; i != level2; ++i) {
-                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                             }
                             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                         }
@@ -174,13 +176,15 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
         else {
             final ClassNode[] oifaces = oarg.getInterfaces();
-            ClassNode [] ifaces = new ClassNode[oifaces.length-1];
+            ClassNode [] ifaces = new ClassNode[oifaces.length];
             for (int i = 0, k = 0; i != oifaces.length; i++) {
                 if (oifaces[i] != TypeUtil.TCLOSURE)
                     ifaces[k++] = oifaces[i];
             }
+            ifaces[oifaces.length-1] = TypeUtil.OWNER_AWARE_SETTER;
             oarg.setInterfaces(ifaces);
             oarg.setSuperClass(tp);
+            oarg.addProperty("owner", ACC_PUBLIC, ClassHelper.OBJECT_TYPE, null, null, null);
         }
 
         if (am.size() == 1) {
@@ -286,6 +290,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     ClassNode argType = p[p.length - 1].getType();
                     if (argType.isInterface() || (argType.getModifiers() & ACC_ABSTRACT) != 0) {
                         final List am = argType.getAbstractMethods();
+
+                        ArrayList<MethodNode> props = null;
+                        for (Iterator it = am.iterator(); it.hasNext(); ) {
+                            MethodNode mn = (MethodNode) it.next();
+                            if (likeGetter(mn) || likeSetter(mn)) {
+                                it.remove();
+                                if (props == null)
+                                    props = new ArrayList<MethodNode>();
+                                props.add(mn);
+                            }
+                        }
+
                         if (am.size() <= 1) {
                             makeOneMethodClass(oarg, argType, am);
                         }
@@ -296,5 +312,19 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         return foundMethod;
+    }
+
+    static boolean likeGetter(MethodNode method) {
+        return method.getName().length() > 3
+                && method.getName().startsWith("get")
+                && ClassHelper.VOID_TYPE != method.getReturnType()
+                && method.getParameters().length == 0;
+    }
+
+    static boolean likeSetter(MethodNode method) {
+        return method.getName().length() > 3
+                && method.getName().startsWith("set")
+                && ClassHelper.VOID_TYPE == method.getReturnType()
+                && method.getParameters().length == 1;
     }
 }

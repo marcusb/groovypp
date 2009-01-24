@@ -111,7 +111,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         ClosureMethodNode oldCmn = currentClosureMethod;
         currentClosureMethod = _doCallMethod;
         String oldCCN = currentClosureName;
-        currentClosureName = currentClosureName + "$" + currentClosureIndex++;
+        currentClosureName = currentClosureName + "_" + currentClosureIndex++;
         int oldCCI = currentClosureIndex;
         currentClosureIndex = 1;
         ce.getCode().visit(this);
@@ -140,7 +140,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     private void createCallMethod(ClosureExpression ce, ClassNode newType, final Parameter[] newParams, final String name) {
         newType.addMethod(
                 name,
-                    Opcodes.ACC_PROTECTED,
+                    Opcodes.ACC_PUBLIC,
                     ClassHelper.OBJECT_TYPE,
                     ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
                 ClassNode.EMPTY_ARRAY,

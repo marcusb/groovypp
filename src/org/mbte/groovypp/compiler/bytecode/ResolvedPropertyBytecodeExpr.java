@@ -1,13 +1,8 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
-import org.mbte.groovypp.compiler.ClassNodeCache;
-import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
-import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
 public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
@@ -15,12 +10,14 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr object;
     private final String methodName;
     private final BytecodeExpr bargs;
+    private final boolean needsObjectIfStatic;
 
-    public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs) {
+    public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs, boolean needsObjectIfStatic) {
         super (parent, propertyNode.getType());
         this.propertyNode = propertyNode;
         this.object = object;
         this.bargs = bargs;
+        this.needsObjectIfStatic = needsObjectIfStatic;
 
         if (bargs != null) {
             methodName = "set" + Verifier.capitalize(propertyNode.getName());
@@ -38,12 +35,12 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         if (propertyNode.isStatic())
           op = INVOKESTATIC;
 
-        if (object != null) {
+        if (object != null && !(propertyNode.isStatic() && !needsObjectIfStatic)) {
             object.visit(mv);
             box(object.getType());
         }
 
-        if (op == INVOKESTATIC && object != null) {
+        if (op == INVOKESTATIC && object != null && needsObjectIfStatic) {
             if (ClassHelper.long_TYPE == object.getType() || ClassHelper.double_TYPE == object.getType())
                 mv.visitInsn(POP2);
             else
@@ -72,7 +69,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
-        return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, right);
+        return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, right, needsObjectIfStatic);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {

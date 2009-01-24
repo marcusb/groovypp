@@ -851,8 +851,9 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             else {
                 if (type.equals(ClassHelper.STRING_TYPE))
                    mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;"); 
-                else
+                else {
                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                }
             }
         }
     }

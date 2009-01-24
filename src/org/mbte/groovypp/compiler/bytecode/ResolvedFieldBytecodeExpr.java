@@ -1,7 +1,6 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
@@ -9,12 +8,14 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     private final FieldNode fieldNode;
     private final BytecodeExpr object;
     private final BytecodeExpr value;
+    private final boolean needsObjectIfStatic;
 
-    public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value) {
+    public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value, boolean needsObjectIfStatic) {
         super (parent, fieldNode.getType());
         this.fieldNode = fieldNode;
         this.object = object;
         this.value = value;
+        this.needsObjectIfStatic = needsObjectIfStatic;
     }
 
     public void compile() {
@@ -49,7 +50,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
-        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right);
+        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right, needsObjectIfStatic);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {

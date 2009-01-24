@@ -34,7 +34,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
             Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
 
-            return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+            return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
         }
         else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
@@ -49,14 +49,14 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             protected void compile() {
                                 mv.visitVarInsn(ALOAD, 0);
                                 for (int i = 0; i != level1; ++i) {
-                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                    mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                    mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                                 }
                                 mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                             }
                         };
 
-                        return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                        return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
                     }
 
                     // checkDelegate
@@ -72,15 +72,15 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                                     protected void compile() {
                                         mv.visitVarInsn(ALOAD, 0);
                                         for (int i = 0; i != level3; ++i) {
-                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                            mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                            mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                                         }
                                         mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
                                         mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
                                         mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                                     }
                                 };
-                                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
                             }
                         }
                     }
@@ -93,13 +93,13 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         protected void compile() {
                             mv.visitVarInsn(ALOAD, 0);
                             for (int i = 0; i != level2; ++i) {
-                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getOwner", "()Ljava/lang/Object;");
+                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
+                                mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                             }
                             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                         }
                     };
-                    return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                    return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
                 }
 
                 compiler.addError("Can't resolve property " + propName, exp);
@@ -115,7 +115,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 }
 
                 Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
-                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         }
     }

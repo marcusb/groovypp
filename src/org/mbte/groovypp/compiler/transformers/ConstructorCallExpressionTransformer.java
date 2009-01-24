@@ -36,7 +36,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             ArrayList<MethodNode> props = null;
                             for (Iterator it = am.iterator(); it.hasNext(); ) {
                                 MethodNode mn = (MethodNode) it.next();
-                                if (likeGetter(mn) || likeSetter(mn)) {
+                                if (MethodCallExpressionTransformer.likeGetter(mn) || MethodCallExpressionTransformer.likeSetter(mn)) {
                                     it.remove();
                                     if (props == null)
                                         props = new ArrayList<MethodNode>();
@@ -49,13 +49,13 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
                                 if (props != null) {
                                    for (MethodNode mn : props) {
-                                       if (likeGetter(mn)) {
+                                       if (MethodCallExpressionTransformer.likeGetter(mn)) {
                                            String pname = mn.getName().substring(3);
                                            pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                                            oarg.addProperty(pname, ACC_PUBLIC, mn.getReturnType(), null, null, null);
                                        }
 
-                                       if (likeSetter(mn)) {
+                                       if (MethodCallExpressionTransformer.likeSetter(mn)) {
                                            String pname = mn.getName().substring(3);
                                            pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                                            oarg.addProperty(pname, ACC_PUBLIC, mn.getParameters()[0].getType(), null, null, null);
@@ -144,17 +144,4 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         return null;
     }
 
-    private boolean likeGetter(MethodNode method) {
-        return method.getName().length() > 3
-                && method.getName().startsWith("get")
-                && ClassHelper.VOID_TYPE != method.getReturnType()
-                && method.getParameters().length == 0;
-    }
-
-    private boolean likeSetter(MethodNode method) {
-        return method.getName().length() > 3
-                && method.getName().startsWith("set")
-                && ClassHelper.VOID_TYPE == method.getReturnType()
-                && method.getParameters().length == 1;
-    }
 }

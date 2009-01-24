@@ -9,7 +9,7 @@ import java.io.Serializable;
  *
  * @param <T> type of delegate
  */
-public interface TypedClosure<T> extends GroovyObject, Cloneable, Runnable, Serializable {
+public interface TypedClosure<T> extends GroovyObject, Cloneable, Runnable, Serializable, OwnerAware {
 
     /**
      * Sets the strategy which the closure uses to resolve property references. The default is Closure.OWNER_FIRST

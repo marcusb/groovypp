@@ -58,7 +58,6 @@ public class ExecutorTest extends GroovyTestCase {
         es.shutdown()
     }
 
-    @Compile(debug = true)
     void testExecutorGroovy () {
         def es = Executors.newFixedThreadPool(10)
         def queue = new LinkedBlockingQueue ()

@@ -60,6 +60,14 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             }
         }
         mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
+        if (needsOwner == 0) {
+            mv.visitInsn(DUP);
+            if (!compiler.methodNode.isStatic() || (compiler.methodNode instanceof ClosureMethodNode))
+                mv.visitVarInsn(ALOAD, 0);
+            else
+                mv.visitInsn(ACONST_NULL);
+            mv.visitMethodInsn(INVOKEINTERFACE, BytecodeHelper.getClassInternalName(TypeUtil.OWNER_AWARE_SETTER), "setOwner", "(Ljava/lang/Object;)V");
+        }
     }
 
     private Parameter[] createClosureParams(ClosureExpression ce, ClassNode newType) {
