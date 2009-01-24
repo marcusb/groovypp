@@ -49,13 +49,13 @@ public class ActorTest extends GroovyTestCase {
     }
 }
 
-abstract class ScheduledJob {
+abstract class AsyncJob {
     Execution execution
 
-    ScheduledJob () {
+    AsyncJob () {
     }
 
-    ScheduledJob (Execution exec) {
+    AsyncJob (Execution exec) {
         execution = exec
     }
 
@@ -143,14 +143,14 @@ class Actor {
 
     void react(Reaction reaction) {
         this.reaction = reaction
-        reaction.mailBox = this
+        reaction.actor = this
         reaction.define()
     }
 }
 
 @Compile
 abstract class Reaction extends HashMap {
-    Actor mailBox
+    Actor actor
 
     private AsyncHandler universal
 
@@ -167,15 +167,15 @@ abstract class Reaction extends HashMap {
     }
 
     void send(AsyncMessage msg) {
-        mailBox.send msg
+        actor.send msg
     }
 
     void post (AsyncMessage msg) {
-        mailBox.post(msg)
+        actor.post(msg)
     }
 
     void post (AsyncMessage msg, Continuation whenDone) {
-        mailBox.post msg, whenDone
+        actor.post msg, whenDone
     }
 }
 
@@ -221,9 +221,9 @@ interface AsyncHandler {
 }
 
 class AsyncMessage {
-    Continuation whenDone
     Actor        sender
     Actor        receiver
+    Continuation whenDone
 }
 
 final class SqureMessage extends AsyncMessage {int value}
@@ -231,25 +231,6 @@ final class SqureMessage extends AsyncMessage {int value}
 final class CollectMessage extends AsyncMessage {int value}
 
 final class PrintMessage extends AsyncMessage {String value}
-
-@Compile
-class SyncVar<T> extends CountDownLatch {
-    private T value
-
-    SyncVar () {
-        super (1)
-    }
-
-    T get () {
-        await ()
-        value
-    }
-
-    void set (T v) {
-        value = v
-        countDown()
-    }
-}
 
 @Compile
 class Scheduler {
@@ -260,7 +241,7 @@ class Scheduler {
 
     static final Random random = new Random ()
 
-    static void async (ScheduledJob run) {
+    static void async (AsyncJob run) {
         def thread = Thread.currentThread()
         if (thread instanceof WorkerThread) {
             ((WorkerThread)thread).schedule run
@@ -275,7 +256,7 @@ class Scheduler {
         execution.await()
     }
 
-    private static def startWorkers(ScheduledJob run) {
+    private static def startWorkers(AsyncJob run) {
         lock.lock()
         if (threads.size() == 0) {
             3.times {
@@ -297,10 +278,10 @@ class Scheduler {
         lock.unlock()
     }
 
-    static ScheduledJob steel() {
+    static AsyncJob steel() {
         lock.lock ()
         def index = random.nextInt (threads.size())
-        def res = (ScheduledJob)((WorkerThread)threads [index]).queue.poll()
+        def res = (AsyncJob)((WorkerThread)threads [index]).queue.poll()
         lock.unlock()
         res
     }
@@ -311,7 +292,7 @@ class WorkerThread extends Thread {
 
     final static ThreadLocal current = new ThreadLocal()
 
-    private ScheduledJob currentJob
+    private AsyncJob currentJob
 
     private Actor currentA
 
@@ -341,7 +322,7 @@ class WorkerThread extends Thread {
             current.set actor
     }
 
-    void schedule (ScheduledJob job) {
+    void schedule (AsyncJob job) {
         if (!job.execution)
             job.execution = currentExecution
 
@@ -352,7 +333,7 @@ class WorkerThread extends Thread {
 
     void run () {
         while(true) {
-            def job = (ScheduledJob)queue.poll()
+            def job = (AsyncJob)queue.poll()
             if (!job)
                job = Scheduler.steel ()
 
