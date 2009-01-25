@@ -5,7 +5,7 @@ public class PerfTest extends GroovyShellTestCase {
     void testPerf() {
         def res = shell.parse("""
           double normalMethod(long count) {
-             double sum = 0
+             double sum = 0d
              while(--count != 0){
                sum = 5l + sum / 3f + count * 2d
              }
@@ -14,14 +14,14 @@ public class PerfTest extends GroovyShellTestCase {
 
           @Compile
           double fastMethod(long count) {
-             double sum = 0
+             double sum = 0d
              while(--count != 0){
                sum = 5l + sum / 3f + count * 2d
              }
              sum
           }
 
-          @Compile(debug=true)
+          @Compile
           double fastMethodWithInference(long count) {
              def sum = 0d
              while(--count != 0){
