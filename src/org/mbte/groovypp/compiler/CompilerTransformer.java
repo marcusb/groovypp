@@ -9,10 +9,14 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
+import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Label;
 
 import java.util.List;
 
@@ -44,6 +48,17 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     public Expression transform(Expression exp) {
         try {
             return ExprTransformer.transformExpression(exp, this);
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+            addError(e.getMessage(), exp);
+            return null;
+        }
+    }
+
+    public BytecodeExpr transformLogical(Expression exp, Label label, boolean onTrue) {
+        try {
+            return ExprTransformer.transformLogicalExpression(exp, this, label, onTrue);
         }
         catch (Throwable e) {
             e.printStackTrace();
@@ -130,6 +145,36 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 else
                     throw new RuntimeException("Internal Error");
                 break;
+
+            case Types.COMPARE_NOT_EQUAL: {
+                Label _true = new Label();
+                if (type == ClassHelper.int_TYPE)
+                    mv.visitJumpInsn(IF_ICMPEQ, _true);
+                else
+                if (type == ClassHelper.double_TYPE) {
+                    mv.visitInsn(DCMPG);
+                    mv.visitJumpInsn(IFEQ, _true);
+                }
+                else
+                if (type == ClassHelper.float_TYPE) {
+                    mv.visitInsn(FCMPG);
+                    mv.visitJumpInsn(IFEQ, _true);
+                }
+                else
+                if (type == ClassHelper.long_TYPE) {
+                    mv.visitInsn(LCMP);
+                    mv.visitJumpInsn(IFEQ, _true);
+                }
+                else
+                    throw new RuntimeException("Internal Error");
+                mv.visitInsn(ICONST_1);
+                Label _false = new Label();
+                mv.visitJumpInsn(GOTO, _false);
+                mv.visitLabel(_true);
+                mv.visitInsn(ICONST_0);
+                mv.visitLabel(_false);
+                break;
+            }
 
             case Types.MULTIPLY:
                 if (type == ClassHelper.int_TYPE)

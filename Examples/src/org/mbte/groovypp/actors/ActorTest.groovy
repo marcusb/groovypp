@@ -212,7 +212,6 @@ class Execution {
 }
 
 interface Continuation {
-
     def action (Object data)
 }
 

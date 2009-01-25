@@ -4,6 +4,7 @@ import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
@@ -51,15 +52,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitAssertStatement(AssertStatement statement) {
-        super.visitAssertStatement(statement);
-
-        final BytecodeExpr be = (BytecodeExpr) statement.getBooleanExpression().getExpression();
-        be.visit(mv);
         Label noError = new Label();
-        branch(be, IFNE, noError, mv);
+
+        BytecodeExpr condition = transformLogical(statement.getBooleanExpression().getExpression(), noError, true);
+        BytecodeExpr msgExpr = (BytecodeExpr) transform(statement.getMessageExpression());
+
+        condition.visit(mv);
         mv.visitTypeInsn(NEW, "java/lang/AssertionError");
         mv.visitInsn(DUP);
-        final BytecodeExpr msgExpr = (BytecodeExpr) statement.getMessageExpression();
         if (msgExpr != null)
           msgExpr.visit(mv);
         else
@@ -200,16 +200,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitWhileLoop(WhileStatement loop) {
-        loop.setBooleanExpression((BooleanExpression) this.transform(loop.getBooleanExpression()));
-
         compileStack.pushLoop(loop.getStatementLabel());
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
 
+        final BytecodeExpr be = transformLogical(loop.getBooleanExpression().getExpression(), breakLabel, false);
+
         mv.visitLabel(continueLabel);
-        final BytecodeExpr be = (BytecodeExpr) loop.getBooleanExpression().getExpression();
         be.visit(mv);
-        branch(be,IFEQ, breakLabel,mv);
 
         loop.getLoopBlock().visit(this);
 

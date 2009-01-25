@@ -145,7 +145,7 @@ u()
     void testAssert() {
         shouldFail(AssertionError) {
             shell.evaluate """
-    @Compile
+    @Compile(debug=true)
     def u () {
        assert 4
 

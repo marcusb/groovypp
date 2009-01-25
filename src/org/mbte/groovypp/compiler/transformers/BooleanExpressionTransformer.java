@@ -29,6 +29,15 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
         }
     }
 
+    public BytecodeExpr transformLogical(BooleanExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
+        if (exp instanceof NotExpression) {
+            return compiler.transformLogical(exp.getExpression(), label, !onTrue);
+        }
+        else {
+            return compiler.transformLogical(exp.getExpression(), label, onTrue);
+        }
+    }
+
     private Expression transformNotExpression(final NotExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr internal = (BytecodeExpr) compiler.transform(exp.getExpression());
         return new MyBytecodeExpr(exp, internal);

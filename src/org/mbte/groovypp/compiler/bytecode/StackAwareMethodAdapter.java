@@ -63,6 +63,26 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
     @Override
     public void visitInsn(int i) {
         switch (i) {
+            case LCMP:
+                stack.pop(BytecodeStack.KIND_LONG);
+                stack.pop(BytecodeStack.KIND_LONG);
+                stack.push(BytecodeStack.KIND_INT);
+                break;
+
+            case FCMPL:
+            case FCMPG:
+                stack.pop(BytecodeStack.KIND_FLOAT);
+                stack.pop(BytecodeStack.KIND_FLOAT);
+                stack.push(BytecodeStack.KIND_INT);
+                break;
+
+            case DCMPL:
+            case DCMPG:
+                stack.pop(BytecodeStack.KIND_DOUBLE);
+                stack.pop(BytecodeStack.KIND_DOUBLE);
+                stack.push(BytecodeStack.KIND_INT);
+                break;
+
             case NOP:
                 break;
 
@@ -635,26 +655,6 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
             case IFNULL:
             case IFNONNULL:
                 stack.pop(BytecodeStack.KIND_OBJ);
-                break;
-
-            case LCMP:
-                stack.pop(BytecodeStack.KIND_LONG);
-                stack.pop(BytecodeStack.KIND_LONG);
-                stack.push(BytecodeStack.KIND_INT);
-                break;
-
-            case FCMPL:
-            case FCMPG:
-                stack.pop(BytecodeStack.KIND_FLOAT);
-                stack.pop(BytecodeStack.KIND_FLOAT);
-                stack.push(BytecodeStack.KIND_INT);
-                break;
-
-            case DCMPL:
-            case DCMPG:
-                stack.pop(BytecodeStack.KIND_DOUBLE);
-                stack.pop(BytecodeStack.KIND_DOUBLE);
-                stack.push(BytecodeStack.KIND_INT);
                 break;
 
             case GOTO:

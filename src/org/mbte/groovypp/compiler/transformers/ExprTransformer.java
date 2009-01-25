@@ -1,8 +1,14 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Label;
 
 import java.util.IdentityHashMap;
 
@@ -47,5 +53,45 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         return t.transform(exp, compiler);
     }
 
+    public static BytecodeExpr transformLogicalExpression(Expression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
+        ExprTransformer t = transformers.get(exp.getClass());
+        return t.transformLogical(exp, compiler, label, onTrue);
+    }
+
     public abstract Expression transform (T exp, CompilerTransformer compiler);
+
+    public BytecodeExpr transformLogical (T exp, CompilerTransformer compiler, final Label label, final boolean onTrue) {
+        final BytecodeExpr be = (BytecodeExpr) transform(exp, compiler);
+        final ClassNode type = be.getType();
+
+        if (type == ClassHelper.VOID_TYPE) {
+            return be;
+        }
+        return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
+            protected void compile() {
+                be.visit(mv);
+
+                if (ClassHelper.isPrimitiveType(type)) {
+                    if (type == ClassHelper.byte_TYPE
+                     || type == ClassHelper.short_TYPE
+                     || type == ClassHelper.char_TYPE
+                     || type == ClassHelper.boolean_TYPE
+                     || type == ClassHelper.int_TYPE) {
+                    } else if (type == ClassHelper.long_TYPE) {
+                        mv.visitInsn(L2I);
+                    } else if (type == ClassHelper.float_TYPE) {
+                        mv.visitInsn(F2I);
+                    } else if (type == ClassHelper.double_TYPE) {
+                        mv.visitInsn(D2I);
+                    }
+                }
+                else {
+                    mv.visitMethodInsn(INVOKESTATIC, DTT, "castToBoolean", "(Ljava/lang/Object;)Z");
+                }
+                mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+            }
+        };
+    }
+
+    private static final String DTT = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
 }
