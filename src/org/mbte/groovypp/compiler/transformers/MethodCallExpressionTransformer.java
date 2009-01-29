@@ -18,6 +18,7 @@ import org.objectweb.asm.Opcodes;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Collections;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression>{
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
@@ -289,7 +290,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 if (p.length == argTypes.length) {
                     ClassNode argType = p[p.length - 1].getType();
                     if (argType.isInterface() || (argType.getModifiers() & ACC_ABSTRACT) != 0) {
-                        final List am = argType.getAbstractMethods();
+                        List am = argType.getAbstractMethods();
+
+                        if (am == null) {
+                            am = Collections.EMPTY_LIST;
+                        }
 
                         ArrayList<MethodNode> props = null;
                         for (Iterator it = am.iterator(); it.hasNext(); ) {
