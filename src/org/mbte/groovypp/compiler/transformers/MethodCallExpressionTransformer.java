@@ -14,6 +14,7 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Label;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -28,6 +29,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         if (exp.isSpreadSafe()) {
             compiler.addError("Spread operator is not supported by static compiler", exp);
             return null;
+        }
+
+        if (exp.isSafe()) {
+            return transformSafe (exp, compiler);
         }
 
         Object method = exp.getMethod();
@@ -139,6 +144,29 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression)args);
             }
         }
+    }
+
+    private Expression transformSafe(MethodCallExpression exp, CompilerTransformer compiler) {
+        final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+        ClassNode type = ClassHelper.getWrapper(object.getType());
+
+        final BytecodeExpr call = (BytecodeExpr) compiler.transform(new MethodCallExpression(new BytecodeExpr(object, type) {
+            protected void compile() {
+                // nothing to do
+                // expect parent on stack
+            }
+        }, exp.getMethod(), exp.getArguments()));
+
+        return new BytecodeExpr(exp, call.getType()) {
+            protected void compile() {
+                object.visit(mv);
+                Label nullLabel = new Label();
+                mv.visitInsn(DUP);
+                mv.visitJumpInsn(IFNULL, nullLabel);
+                call.visit(mv);
+                mv.visitLabel(nullLabel);
+            }
+        };
     }
 
     private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName, ClassNode type, ClassNode[] argTypes, final String msg) {

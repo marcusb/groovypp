@@ -12,19 +12,26 @@
     </content>
     <orderEntry type="jdk" jdkName="1.5" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="Groovypp" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../libs" />
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../../Groovy-Dev/src/main" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/../libs" recursive="false" />
+        <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="Groovypp" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../GroovyDev/target/install/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/../../GroovyDev/target/install/lib" recursive="false" />
+      </library>
+    </orderEntry>
   </component>
   <component name="copyright">
     <Base>

@@ -162,8 +162,8 @@ abstract class Reaction extends HashMap {
 
     protected final def handleMessage (AsyncMessage msg) {
         def handler = (AsyncHandler) get(msg.class)
-        handler = handler ? handler : universal
-        handler ? handler.handleMessage(msg) : null
+        handler = handler ?: universal
+        handler?.handleMessage(msg)
     }
 
     void send(AsyncMessage msg) {

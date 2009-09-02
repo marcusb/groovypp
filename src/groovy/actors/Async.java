@@ -9,7 +9,7 @@ import java.lang.annotation.ElementType;
 
 /**
  * Methods annotated by @Async will lead to creating another one, which can be called asynchroniously
- * New method will alway retun void and have same parameters plus one additional parameter of type 
+ * New method will always return void and have same parameters plus one additional parameter of type 
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)

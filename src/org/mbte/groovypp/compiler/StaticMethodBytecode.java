@@ -23,8 +23,14 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
         this.policy = policy;
 
         MethodVisitor mv = createStorage();
-        if (debug)
-            mv = DebugMethodAdapter.create(mv);
+        if (debug) {
+            try {
+                mv = DebugMethodAdapter.create(mv);
+            }
+            catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
         mv = new BytecodeImproverMethodAdapter(mv);
         compiler = new StaticCompiler(
                 su,

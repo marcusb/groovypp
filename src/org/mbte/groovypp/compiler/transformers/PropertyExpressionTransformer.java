@@ -7,12 +7,17 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.ClosureMethodNode;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.*;
+import org.objectweb.asm.Label;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression>{
     public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
         if (exp.isSpreadSafe()) {
             compiler.addError("Spread operator is not supported yet by static compiler", exp);
             return null;
+        }
+
+        if (exp.isSafe()) {
+            return transformSafe(exp, compiler);
         }
 
         Object property = exp.getProperty();
@@ -118,5 +123,28 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         }
+    }
+
+    private Expression transformSafe(final PropertyExpression exp, CompilerTransformer compiler) {
+        final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+        ClassNode type = ClassHelper.getWrapper(object.getType());
+
+        final BytecodeExpr call = (BytecodeExpr) compiler.transform(new PropertyExpression(new BytecodeExpr(object, type) {
+            protected void compile() {
+                // nothing to do
+                // expect parent on stack
+            }
+        }, exp.getProperty()));
+
+        return new BytecodeExpr(exp, call.getType()) {
+            protected void compile() {
+                object.visit(mv);
+                Label nullLabel = new Label();
+                mv.visitInsn(DUP);
+                mv.visitJumpInsn(IFNULL, nullLabel);
+                call.visit(mv);
+                mv.visitLabel(nullLabel);
+            }
+        };
     }
 }

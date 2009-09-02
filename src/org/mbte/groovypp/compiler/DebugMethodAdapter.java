@@ -21,8 +21,9 @@ class DebugMethodAdapter{
         final CachedField[] cachedFields = ReflectionCache.getCachedClass(Opcodes.class).getFields();
         for (int i = 0; i < cachedFields.length; i++) {
             CachedField cachedField = cachedFields[i];
-            final Integer v = (Integer)cachedField.getProperty(null);
-            map.put (v, cachedField.getName());
+            final Object v = cachedField.getProperty(null);
+            if (v instanceof Integer)
+                map.put ((Integer) v, cachedField.getName());
         }
     }
 

@@ -151,4 +151,17 @@ class X {
 
         assertEquals 239, res
     }
+
+      void testSafe () {
+          def res = shell.evaluate("""
+          @Compile
+          def u () {
+             String x = null, y = "null"
+             [x?.getChars(), x?.chars, y?.substring(1), y?.chars?.getAt([0,1])]
+          }
+          u ()
+          """)
+          assertEquals ([null,null, "ull", ['n', 'u']], res)
+      }
+
 }

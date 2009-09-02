@@ -84,6 +84,9 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             final MethodNode mn = (MethodNode) toProcess.removeFirst();
             final CompilePolicy policy = (CompilePolicy) toProcess.removeFirst();
 
+            if ((mn.getModifiers() & Opcodes.ACC_BRIDGE) != 0)
+                continue;
+
             final Statement code = mn.getCode();
             if (!(code instanceof BytecodeSequence)) {
                 final ClosureExtractor extractor = new ClosureExtractor(source, toProcess, mn, classNode, policy);

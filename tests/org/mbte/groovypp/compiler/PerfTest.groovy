@@ -54,7 +54,7 @@ public class PerfTest extends GroovyShellTestCase {
             long ti2 = System.currentTimeMillis() - start
             println " $ti2 ${1d * t1 / ti2}"
 
-//            assertEquals nsum, fsum
+            assertEquals nsum, fsum
         }
     }
 }
