@@ -157,13 +157,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
         }, exp.getMethod(), exp.getArguments()));
 
-        return new BytecodeExpr(exp, call.getType()) {
+        return new BytecodeExpr(exp, ClassHelper.getWrapper(call.getType())) {
             protected void compile() {
                 object.visit(mv);
                 Label nullLabel = new Label();
                 mv.visitInsn(DUP);
                 mv.visitJumpInsn(IFNULL, nullLabel);
                 call.visit(mv);
+                box(call.getType());
                 mv.visitLabel(nullLabel);
             }
         };

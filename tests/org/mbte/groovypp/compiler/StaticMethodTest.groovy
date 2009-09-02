@@ -17,7 +17,7 @@ u (3)
 
     void testStatic () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 class A {
   def u = 10
 

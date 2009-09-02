@@ -4,7 +4,7 @@ public class MethodTest extends GroovyShellTestCase {
 
     void testSubclass () {
         def res = shell.evaluate ("""
-    @Compile(debug=true)
+    @Compile
   abstract class A {
       abstract define ()
 
@@ -154,10 +154,13 @@ class X {
 
       void testSafe () {
           def res = shell.evaluate("""
-          @Compile
+          @Compile(debug=true)
           def u () {
              String x = null, y = "null"
-             [x?.getChars(), x?.chars, y?.substring(1), y?.chars?.getAt([0,1])]
+             if (!x?.equals("abc"))
+               [x?.getChars(), x?.chars, y?.substring(1), y?.chars?.getAt([0,1])]
+             else
+               []
           }
           u ()
           """)

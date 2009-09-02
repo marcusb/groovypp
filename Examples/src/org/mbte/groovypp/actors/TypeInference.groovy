@@ -2,7 +2,7 @@ package org.mbte.groovypp.typeinference
 
 import groovy.xml.MarkupBuilder
 
-@Compile(debug = true)
+@Compile
 public class TypeInference extends GroovyTestCase {
 
     void testInference () {

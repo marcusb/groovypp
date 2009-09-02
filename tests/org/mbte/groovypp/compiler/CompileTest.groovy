@@ -120,7 +120,7 @@ def v (Closure cl) {
   cl.call()
 }
 
-@Compile(debug=true)
+@Compile
 def u () {
    List s = [1, 2, 3, 4]
 
@@ -145,7 +145,7 @@ u()
     void testAssert() {
         shouldFail(AssertionError) {
             shell.evaluate """
-    @Compile(debug=true)
+    @Compile
     def u () {
        assert 4
 

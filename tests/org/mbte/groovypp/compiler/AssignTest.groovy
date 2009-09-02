@@ -16,7 +16,7 @@ u ()
 
     void testArrayAssign () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 def u (int [] x) {
   (x [1] = 10) + x [1]
 }
@@ -27,7 +27,7 @@ u (new int [10])
 
     void testArrayAssignViaProperty () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 class A {
   int [] a
 
@@ -47,7 +47,7 @@ new A().u (new int[10])
 
     void testAssignProperty () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 class A {
   protected int a
 
@@ -66,7 +66,7 @@ new A().u ().a
 
     void testAssignField () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 class A {
   protected int a
 

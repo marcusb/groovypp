@@ -4,12 +4,12 @@ public class TypeInferenceTest extends GroovyShellTestCase {
 
     void testAssert () {
         def res = shell.evaluate ("""
-@Compile(debug=true)
+@Compile
 class A extends GroovyTestCase {
     def m () {
         def list = []
         list.leftShift 1
-        list.leftShift 2
+        list << 2
         assertEquals ([1,2], list)
 
         if (list.size() == 2) {
@@ -46,7 +46,7 @@ new A().m ()
 
   void testInference () {
     def res = shell.evaluate ("""
-@Compile(debug=true)
+@Compile
 def m () {
    def x = [1, 2, 3]
    x.leftShift(4)
@@ -82,6 +82,6 @@ m ()
     assertEquals ([1,2,3,4,5,6.0d, 1, 10, "10 9"], res)
   }
 
-  void testAt () {
+  void testSafe () {
   }
 }

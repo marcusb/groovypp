@@ -4,7 +4,7 @@ public class CastTest extends GroovyShellTestCase {
 
     void testCoerceObject () {
         def res = shell.evaluate("""
-@Compile(debug=true)
+@Compile
 def m () {
   [1,2,3] as Set
 }
