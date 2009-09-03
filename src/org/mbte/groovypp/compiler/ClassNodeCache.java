@@ -311,16 +311,7 @@ public class ClassNodeCache {
                     for (int j = 0; j != params.length; ++j)
                       params[j] = new Parameter(ClassHelper.make(classes[j+1].getTheClass()), "$"+j);
 
-                    DGM mn = new DGM(
-                            method.getName(),
-                            Opcodes.ACC_PUBLIC,
-                            ClassHelper.make(method.getReturnType()),
-                            params,
-                            exs,
-                            null);
-                    mn.setDeclaringClass(declaringClass);
-                    mn.callClass = klazz;
-                    mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(),method.getCachedMethod().getParameterTypes());
+                    DGM mn = createDGM(klazz, method, declaringClass, exs, params);
 
                     List<MethodNode> list = dgmMethods.get(declaringClass);
                     if (list == null) {
@@ -333,9 +324,23 @@ public class ClassNodeCache {
         }
     }
 
+    private static DGM createDGM(Class klazz, CachedMethod method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params) {
+        DGM mn = new DGM(
+                method.getName(),
+                Opcodes.ACC_PUBLIC,
+                ClassHelper.make(method.getReturnType()),
+                params,
+                exs,
+                null);
+        mn.setDeclaringClass(declaringClass);
+        mn.callClassInternalName = BytecodeHelper.getClassInternalName(klazz);
+        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(),method.getCachedMethod().getParameterTypes());
+        return mn;
+    }
+
     public static class DGM extends MethodNode{
         public String    descr;
-        public Class     callClass;
+        public String    callClassInternalName;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);

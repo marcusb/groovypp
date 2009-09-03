@@ -708,4 +708,8 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
     public void visitMultiANewArrayInsn(String s, int i) {
         super.visitMultiANewArrayInsn(s, i);
     }
+
+    public void startExceptionBlock () {
+        stack.push(BytecodeStack.KIND_OBJ);
+    }
 }

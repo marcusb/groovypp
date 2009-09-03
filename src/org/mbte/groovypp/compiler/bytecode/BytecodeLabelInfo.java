@@ -16,7 +16,7 @@ public class BytecodeLabelInfo {
 
     void initFromStack(BytecodeStack other) {
         if (labelStack == null) {
-            if (other.elementCount == -1) {
+            if (other.elementCount == 0) {
                 labelStack = new byte [0];
             }
             else {
@@ -26,7 +26,7 @@ public class BytecodeLabelInfo {
             }
         }
         else {
-            if (other.elementCount == -1) {
+            if (other.elementCount == 0) {
                 // it happens after GOTO/RETURN etc.
                 other.elements = new byte [Math.max(other.elements.length, labelStack.length)];
                 for (int i = 0; i != labelStack.length; ++i)

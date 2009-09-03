@@ -11,15 +11,23 @@ import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.codehaus.groovy.GroovyBugError;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
 import org.mbte.groovypp.compiler.bytecode.LocalVarInferenceTypes;
+import org.mbte.groovypp.compiler.bytecode.StackAwareMethodAdapter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private StaticMethodBytecode methodBytecode;
+
+    // exception blocks list
+    private List<Runnable> exceptionBlocks = new ArrayList<Runnable>();
 
     public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, CompilePolicy policy) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, policy);
@@ -185,15 +193,24 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         bytecodeExpr.visit(mv);
         final ClassNode exprType = bytecodeExpr.getType();
         final ClassNode returnType = methodNode.getReturnType();
-        if (!returnType.equals(ClassHelper.VOID_TYPE)) {
+        if (returnType.equals(ClassHelper.VOID_TYPE)) {
+            compileStack.applyFinallyBlocks();
+        }
+        else {
             if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
                 mv.visitInsn(ACONST_NULL);
             }
             else {
                 bytecodeExpr.box(exprType);
                 bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType));
-                bytecodeExpr.unbox(returnType);
             }
+
+            if (compileStack.hasFinallyBlocks()) {
+                int returnValueIdx = compileStack.defineTemporaryVariable("returnValue", ClassHelper.OBJECT_TYPE, true);
+                compileStack.applyFinallyBlocks();
+                mv.visitVarInsn(ALOAD, returnValueIdx);
+            }
+            bytecodeExpr.unbox(returnType);
         }
         bytecodeExpr.doReturn(returnType);
     }
@@ -250,11 +267,108 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitInsn(ATHROW);
     }
 
+    public void visitTryCatchFinally(TryCatchStatement statement) {
+        visitStatement(statement);
+
+        Statement tryStatement = statement.getTryStatement();
+        final Statement finallyStatement = statement.getFinallyStatement();
+
+        int anyExceptionIndex = compileStack.defineTemporaryVariable("exception", false);
+        if (!finallyStatement.isEmpty()) {
+            compileStack.pushFinallyBlock(
+                    new Runnable() {
+                        public void run() {
+                            compileStack.pushFinallyBlockVisit(this);
+                            finallyStatement.visit(StaticCompiler.this);
+                            compileStack.popFinallyBlockVisit(this);
+                        }
+                    }
+            );
+        }
+
+        // start try block, label needed for exception table
+        final Label tryStart = new Label();
+        mv.visitLabel(tryStart);
+        tryStatement.visit(this);
+
+        // goto finally part
+        final Label finallyStart = new Label();
+        mv.visitJumpInsn(GOTO, finallyStart);
+
+        // marker needed for Exception table
+        final Label greEnd = new Label();
+        mv.visitLabel(greEnd);
+
+        final Label tryEnd = new Label();
+        mv.visitLabel(tryEnd);
+
+        for (CatchStatement catchStatement : statement.getCatchStatements()) {
+            ClassNode exceptionType = catchStatement.getExceptionType();
+            // start catch block, label needed for exception table
+            final Label catchStart = new Label();
+            mv.visitLabel(catchStart);
+            // create exception variable and store the exception
+            compileStack.pushState();
+            compileStack.defineVariable(catchStatement.getVariable(), true);
+            // handle catch body
+            catchStatement.visit(this);
+            compileStack.pop();
+            // goto finally start
+            mv.visitJumpInsn(GOTO, finallyStart);
+            // add exception to table
+            final String exceptionTypeInternalName = BytecodeHelper.getClassInternalName(exceptionType);
+            exceptionBlocks.add(new Runnable() {
+                public void run() {
+                    mv.visitTryCatchBlock(tryStart, tryEnd, catchStart, exceptionTypeInternalName);
+                }
+            });
+        }
+
+        // marker needed for the exception table
+        final Label endOfAllCatches = new Label();
+        mv.visitLabel(endOfAllCatches);
+
+        // remove the finally, don't let it visit itself
+        if (!finallyStatement.isEmpty()) compileStack.popFinallyBlock();
+
+        // start finally
+        mv.visitLabel(finallyStart);
+        finallyStatement.visit(this);
+        // goto end of finally
+        Label afterFinally = new Label();
+        mv.visitJumpInsn(GOTO, afterFinally);
+
+        // start a block catching any Exception
+        final Label catchAny = new Label();
+        mv.visitLabel(catchAny);
+        ((StackAwareMethodAdapter)mv).startExceptionBlock();
+        //store exception
+        mv.visitVarInsn(ASTORE, anyExceptionIndex);
+        finallyStatement.visit(this);
+        // load the exception and rethrow it
+        mv.visitVarInsn(ALOAD, anyExceptionIndex);
+        mv.visitInsn(ATHROW);
+
+        // end of all catches and finally parts
+        mv.visitLabel(afterFinally);
+        mv.visitInsn(NOP);
+
+        // add catch any block to exception table
+        exceptionBlocks.add(new Runnable() {
+            public void run() {
+                mv.visitTryCatchBlock(tryStart, endOfAllCatches, catchAny, null);
+            }
+        });
+    }
+
     public void execute() {
         addReturnIfNeeded();
         compileStack.init(methodNode.getVariableScope(), methodNode.getParameters(), mv, methodNode.getDeclaringClass());
         getCode().visit(this);
         compileStack.clear();
+        for (Runnable runnable : exceptionBlocks) {
+            runnable.run();
+        }
     }
 
     public void visitBytecodeSequence(BytecodeSequence sequence) {

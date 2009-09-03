@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler;
 
 import groovy.lang.CompilePolicy;
+import groovy.lang.Use;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.control.SourceUnit;
@@ -9,8 +10,8 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
@@ -26,6 +27,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     public final ClassNode classNode;
     protected final MethodVisitor mv;
     public final CompilePolicy policy;
+    private static final ClassNode USE = ClassHelper.make(Use.class);
 
     public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, CompilePolicy policy) {
         super(source, methodNode);
@@ -97,7 +99,77 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         if (res instanceof MethodNode)
             return (MethodNode)res;
 
+        Object candidates = null;
+        final List<AnnotationNode> list = classNode.getAnnotations(USE);
+        for (AnnotationNode annotationNode : list) {
+            final Expression member = annotationNode.getMember("value");
+            if (member != null && (member instanceof ClassExpression)) {
+                ClassExpression expression = (ClassExpression) member;
+                final ClassNode category = expression.getType();
+
+                final Object o = ClassNodeCache.getMethods(category, methodName);
+                if (o instanceof MethodNode) {
+                    MethodNode mn = (MethodNode) o;
+                    if (mn.isStatic()) {
+                        final Parameter[] parameters = mn.getParameters();
+                        if (parameters.length > 0 && type.isDerivedFrom(parameters[0].getType())) {
+                            candidates = createDGM(mn);
+                        }
+                    }
+                }
+                else {
+                    FastArray ms = (FastArray) o;
+                    if (ms==null) return null;
+                    for (int i = 0; i != ms.size(); ++i) {
+                        MethodNode mn = (MethodNode) ms.get(i);
+                        if (mn.isStatic()) {
+                            final Parameter[] parameters = mn.getParameters();
+                            if (parameters.length > 0 && type.isDerivedFrom(parameters[0].getType())) {
+                                if (candidates == null)
+                                    candidates = createDGM(mn);
+                                else
+                                    if (candidates instanceof FastArray) {
+                                        ((FastArray)candidates).add(createDGM(mn));
+                                    }
+                                    else {
+                                        MethodNode _1st = (MethodNode)candidates;
+                                        candidates = new FastArray(2);
+                                        ((FastArray)candidates).add(_1st);
+                                        ((FastArray)candidates).add(createDGM(mn));
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (candidates != null) {
+            final Object r = MethodSelection.chooseMethod(methodName, candidates, args);
+            if (r instanceof MethodNode)
+                return (MethodNode)r;
+        }
+
         return null;
+    }
+
+    private static ClassNodeCache.DGM createDGM(MethodNode method) {
+        final Parameter[] pp = method.getParameters();
+        Parameter params [] = pp.length > 1 ? new Parameter[pp.length-1] : Parameter.EMPTY_ARRAY;
+        for (int j = 0; j != params.length; ++j)
+          params[j] = new Parameter(pp[j+1].getType(), "$"+j);
+
+        ClassNodeCache.DGM mn = new ClassNodeCache.DGM(
+                method.getName(),
+                Opcodes.ACC_PUBLIC,
+                method.getReturnType(),
+                params,
+                method.getExceptions(),
+                null);
+        mn.setDeclaringClass(pp[0].getType());
+        mn.callClassInternalName = BytecodeHelper.getClassInternalName(method.getDeclaringClass());
+        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(),method.getParameters());
+        return mn;
     }
 
     public PropertyNode findProperty(ClassNode type, String property) {

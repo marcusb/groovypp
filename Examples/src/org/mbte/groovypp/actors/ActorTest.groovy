@@ -1,3 +1,4 @@
+@Compile(debug=true)
 package org.mbte.groovypp.actors
 
 import java.util.concurrent.LinkedBlockingQueue
@@ -7,8 +8,8 @@ import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.Callable
 
-@Compile
 public class ActorTest extends GroovyTestCase {
     void testActor () {
         def printer = Actor.actor {
@@ -62,7 +63,7 @@ abstract class AsyncJob {
     public abstract void run()
 }
 
-@Compile
+@Use(ConcurrentLockCategory)
 class Actor {
     Reaction reaction
 
@@ -82,22 +83,18 @@ class Actor {
      * Send synchroniously and wait for execution result
      */
     def send (AsyncMessage msg) {
-        lock.writeLock().lock()
-
-        WorkerThread.setCurrentActor(msg.receiver)
-        def result = reaction.handleMessage(msg)
-        WorkerThread.setCurrentActor(null)
-
-        lock.writeLock().unlock()
-
-        result
+        lock.writeLock().withLock {
+          WorkerThread.setCurrentActor(msg.receiver)
+          def result = reaction.handleMessage(msg)
+          WorkerThread.setCurrentActor(null)
+          result
+        }
     }
 
     def send (Continuation run) {
-        lock.writeLock().lock()
-        def result = run.action (null)
-        lock.writeLock().unlock()
-        result
+        lock.writeLock().withLock {
+          run.action (null)
+        }
     }
 
     /**
@@ -123,17 +120,21 @@ class Actor {
             def newMessage = (AsyncMessage)queue.take()
 
             if (newMessage) {
+              def result = null
+              try {
                 WorkerThread.setCurrentActor(newMessage.receiver)
-                def result = newMessage.receiver.reaction.handleMessage(newMessage)
+                result = newMessage.receiver.reaction.handleMessage(newMessage)
                 WorkerThread.setCurrentActor(null)
-
+              }
+              finally {
                 lock.readLock().unlock()
+              }
 
-                if (newMessage.whenDone) {
-                    WorkerThread.setCurrentActor(newMessage.sender)
-                    newMessage.whenDone.action result
-                    WorkerThread.setCurrentActor(null)
-                }
+              if (newMessage.whenDone) {
+                  WorkerThread.setCurrentActor(newMessage.sender)
+                  newMessage.whenDone.action result
+                  WorkerThread.setCurrentActor(null)
+              }
             }
             else {
                 lock.readLock().unlock()
@@ -148,7 +149,6 @@ class Actor {
     }
 }
 
-@Compile
 abstract class Reaction extends HashMap {
     Actor actor
 
@@ -179,7 +179,6 @@ abstract class Reaction extends HashMap {
     }
 }
 
-@Compile
 class Execution {
     final CountDownLatch sync = new CountDownLatch(1)
     final AtomicInteger count = new AtomicInteger(1)
@@ -231,7 +230,6 @@ final class CollectMessage extends AsyncMessage {int value}
 
 final class PrintMessage extends AsyncMessage {String value}
 
-@Compile
 class Scheduler {
 
     static final ArrayList threads = new ArrayList()
@@ -286,7 +284,6 @@ class Scheduler {
     }
 }
 
-@Compile
 class WorkerThread extends Thread {
 
     final static ThreadLocal current = new ThreadLocal()
@@ -344,5 +341,22 @@ class WorkerThread extends Thread {
                currentJob = null
             }
         }
+    }
+}
+
+@Category(Lock)
+public class ConcurrentLockCategory {
+
+  /**
+   * Execute given calculation under lock and returns calculated value
+   */
+    public <V> V withLock (Callable<V> action) {
+      try {
+        lock ()
+        action.call()
+      }
+      finally {
+        unlock ()
+      }
     }
 }

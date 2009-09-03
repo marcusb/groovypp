@@ -6,13 +6,12 @@ class BytecodeStack {
     public static final byte KIND_LONG   = 2;
     public static final byte KIND_DOUBLE = 3;
     public static final byte KIND_FLOAT  = 4;
-    protected boolean visited;
 
     protected byte[] elements  = new byte [8];
     protected int elementCount;
 
     public void clear() {
-        elementCount = -1;
+        elementCount = 0;
     }
 
     void push (byte kind) {

@@ -57,7 +57,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
             }
 
-            classInternalName = BytecodeHelper.getClassInternalName(((ClassNodeCache.DGM)methodNode).callClass);
+            classInternalName = ((ClassNodeCache.DGM)methodNode).callClassInternalName;
             methodDescriptor = ((ClassNodeCache.DGM)methodNode).descr;
         }
         else {

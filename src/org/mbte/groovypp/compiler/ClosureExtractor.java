@@ -14,6 +14,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.LinkedList;
+import java.io.Serializable;
 
 class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes{
     private final SourceUnit source;
@@ -35,8 +36,8 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         this.policy = policy;
     }
 
-    void extract (Statement code) {
-        currentClosureName = classNode.getName() + "$" + methodNode.getName().replace('<','_').replace('>','_');
+    void extract(Statement code, String baseName) {
+        currentClosureName = classNode.getName() + "$" + baseName.replace('<','_').replace('>','_');
         currentClosureIndex = 1;
 
         if (!methodNode.getName().equals("$doCall") && !methodNode.isAbstract())
