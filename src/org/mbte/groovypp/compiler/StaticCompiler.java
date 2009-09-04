@@ -307,6 +307,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             // start catch block, label needed for exception table
             final Label catchStart = new Label();
             mv.visitLabel(catchStart);
+
+            ((StackAwareMethodAdapter)mv).startExceptionBlock();
+
             // create exception variable and store the exception
             compileStack.pushState();
             compileStack.defineVariable(catchStatement.getVariable(), true);

@@ -32,6 +32,10 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         final String methodDescriptor;
 
         int op = INVOKEVIRTUAL;
+
+        if (propertyNode.getDeclaringClass().isInterface())
+            op = INVOKEINTERFACE;
+
         if (propertyNode.isStatic())
           op = INVOKESTATIC;
 

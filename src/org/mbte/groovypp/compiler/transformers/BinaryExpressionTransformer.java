@@ -3,18 +3,15 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedLeftExpr;
 import org.mbte.groovypp.compiler.TypeUtil;
-import org.mbte.groovypp.compiler.StaticCompiler;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
     public Expression transform(BinaryExpression exp, CompilerTransformer compiler) {
@@ -156,11 +153,8 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
     public BytecodeExpr transformLogical(BinaryExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
         switch (exp.getOperation().getType()) {
-            case Types.COMPARE_EQUAL:
-                return evaluateEqual(exp, compiler, label, onTrue);
-
             case Types.COMPARE_NOT_EQUAL:
-                return evaluateEqual(exp, compiler, label, !onTrue);
+                return evaluateCompare(exp, compiler, label, !onTrue);
 
             case Types.LOGICAL_AND:
                 return evaluateLogicalAnd(exp, compiler, label, onTrue);
@@ -170,103 +164,35 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
             case Types.KEYWORD_INSTANCEOF:
                 return evaluateInstanceof(exp, compiler, label, onTrue);
-/*
-            case Types.COMPARE_IDENTICAL: // ===
-                evaluateBinaryExpression(compareIdenticalMethod, expression);
-                break;
+
+
+
+            case Types.COMPARE_EQUAL:
+                return evaluateCompare(exp, compiler, label, onTrue);
 
             case Types.COMPARE_TO:
-                evaluateCompareTo(expression);
-                break;
+                throw new UnsupportedOperationException();
+
+            case Types.COMPARE_IDENTICAL: // ===
+                throw new UnsupportedOperationException();
 
             case Types.COMPARE_GREATER_THAN:
-                evaluateBinaryExpression(compareGreaterThanMethod, expression);
-                break;
+                return evaluateCompare(exp, compiler, label, onTrue);
 
             case Types.COMPARE_GREATER_THAN_EQUAL:
-                evaluateBinaryExpression(compareGreaterThanEqualMethod, expression);
-                break;
+                return evaluateCompare(exp, compiler, label, onTrue);
 
             case Types.COMPARE_LESS_THAN:
-                evaluateBinaryExpression(compareLessThanMethod, expression);
-                break;
+                return evaluateCompare(exp, compiler, label, onTrue);
 
             case Types.COMPARE_LESS_THAN_EQUAL:
-                evaluateBinaryExpression(compareLessThanEqualMethod, expression);
-                break;
+                return evaluateCompare(exp, compiler, label, onTrue);
 
-            case Types.BITWISE_AND_EQUAL:
-                evaluateBinaryExpressionWithAssignment("and", expression);
-                break;
-
-            case Types.BITWISE_OR_EQUAL:
-                evaluateBinaryExpressionWithAssignment("or", expression);
-                break;
-
-            case Types.BITWISE_XOR_EQUAL:
-                evaluateBinaryExpressionWithAssignment("xor", expression);
-                break;
-
-            case Types.PLUS_EQUAL:
-                evaluateBinaryExpressionWithAssignment("plus", expression);
-                break;
-
-            case Types.MINUS_EQUAL:
-                evaluateBinaryExpressionWithAssignment("minus", expression);
-                break;
-
-            case Types.MULTIPLY_EQUAL:
-                evaluateBinaryExpressionWithAssignment("multiply", expression);
-                break;
-
-            case Types.DIVIDE_EQUAL:
-                //SPG don't use divide since BigInteger implements directly
-                //and we want to dispatch through DefaultGroovyMethods to get a BigDecimal result
-                evaluateBinaryExpressionWithAssignment("div", expression);
-                break;
-
-            case Types.INTDIV_EQUAL:
-                evaluateBinaryExpressionWithAssignment("intdiv", expression);
-                break;
-
-            case Types.MOD_EQUAL:
-                evaluateBinaryExpressionWithAssignment("mod", expression);
-                break;
-
-            case Types.POWER_EQUAL:
-                evaluateBinaryExpressionWithAssignment("power", expression);
-                break;
-
-            case Types.LEFT_SHIFT_EQUAL:
-                evaluateBinaryExpressionWithAssignment("leftShift", expression);
-                break;
-
-            case Types.RIGHT_SHIFT_EQUAL:
-                evaluateBinaryExpressionWithAssignment("rightShift", expression);
-                break;
-
-            case Types.RIGHT_SHIFT_UNSIGNED_EQUAL:
-                evaluateBinaryExpressionWithAssignment("rightShiftUnsigned", expression);
-                break;
-
-            case Types.FIND_REGEX:
-                evaluateBinaryExpression(findRegexMethod, expression);
-                break;
-
-            case Types.MATCH_REGEX:
-                evaluateBinaryExpression(matchRegexMethod, expression);
-                break;
-
-            case Types.KEYWORD_IN:
-                evaluateBinaryExpression(isCaseMethod, expression);
-                break;
-*/
             default: {
                 return super.transformLogical(exp, compiler, label, onTrue);
             }
         }
     }
-
 
     private BytecodeExpr evaluateInstanceof(BinaryExpression be, CompilerTransformer compiler, final Label label, final boolean onTrue) {
         final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
@@ -337,11 +263,11 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateAssign(BinaryExpression be, CompilerTransformer compiler) {
-        final Expression left = compiler.transform(be.getLeftExpression());
+        Expression left = compiler.transform(be.getLeftExpression());
 
         if (!(left instanceof ResolvedLeftExpr)) {
-            compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
-            return null;
+                compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
+                return null;
         }
 
         return ((ResolvedLeftExpr)left).createAssign(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
@@ -405,6 +331,95 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private BytecodeExpr evaluateEqual(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue) {
+        final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
+        be.setLeftExpression(l);
+        final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        be.setRightExpression(r);
+        if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
+            final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
+            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
+                public void compile() {
+                    l.visit(mv);
+                    box(l.getType());
+                    cast(ClassHelper.getWrapper(l.getType()), ClassHelper.getWrapper(mathType));
+                    if (ClassHelper.isPrimitiveType(mathType))
+                       unbox(mathType);
+
+                    r.visit(mv);
+                    box(r.getType());
+                    cast(ClassHelper.getWrapper(r.getType()), ClassHelper.getWrapper(mathType));
+                    if (ClassHelper.isPrimitiveType(mathType))
+                       unbox(mathType);
+
+                    if (mathType == ClassHelper.int_TYPE) {
+                        mv.visitInsn(ISUB);
+                        compareOperation(be, mv, onTrue, label);
+                    }
+                    else
+                    if (mathType == ClassHelper.double_TYPE) {
+                        mv.visitInsn(DCMPG);
+                        compareOperation(be, mv, onTrue, label);
+                    }
+                    else
+                    if (mathType == ClassHelper.float_TYPE) {
+                        mv.visitInsn(FCMPG);
+                        compareOperation(be, mv, onTrue, label);
+                    }
+                    else
+                    if (mathType == ClassHelper.long_TYPE) {
+                        mv.visitInsn(LCMP);
+                        compareOperation(be, mv, onTrue, label);
+                    }
+                    else
+                        throw new RuntimeException("Internal Error");
+                }
+            };
+        }
+        else
+            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
+                public void compile() {
+                    final BytecodeExpr l = (BytecodeExpr) be.getLeftExpression();
+                    l.visit(mv);
+                    box(l.getType());
+
+                    final BytecodeExpr r = (BytecodeExpr) be.getRightExpression();
+                    r.visit(mv);
+                    box(r.getType());
+
+                    mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+                    compareOperation(be, mv, onTrue, label);
+                }
+            };
+    }
+
+
+    private void compareOperation(final BinaryExpression be, final MethodVisitor mv, final boolean onTrue, final Label label) {
+        switch (be.getOperation().getType()) {
+            case Types.COMPARE_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
+                break;
+
+            case Types.COMPARE_GREATER_THAN:
+                mv.visitJumpInsn(onTrue ? IFGT : IFLE, label);
+                break;
+
+            case Types.COMPARE_GREATER_THAN_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFGE : IFLT, label);
+                break;
+
+            case Types.COMPARE_LESS_THAN:
+                mv.visitJumpInsn(onTrue ? IFLT : IFGE, label);
+                break;
+
+            case Types.COMPARE_LESS_THAN_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFLE : IFGT, label);
+                break;
+
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+    private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue) {
         final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
         be.setLeftExpression(l);
         final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());

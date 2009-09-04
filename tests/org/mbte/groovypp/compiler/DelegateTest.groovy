@@ -1,4 +1,7 @@
-package org.mbte.groovypp.compiler;
+package org.mbte.groovypp.compiler
+
+import org.codehaus.groovy.runtime.InvokerInvocationException
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 public class DelegateTest extends GroovyShellTestCase { 
   void testDelegate () {
@@ -43,4 +46,29 @@ new CommonActorImpl ()
     res.sendRepliesFlag = true
     assertTrue  res.sendRepliesFlag
   }
+
+  void testIfaceSetter () {
+    def res = shell.evaluate ("""
+interface I {
+  void setValue (def x)
 }
+
+@Compile
+class CI implements I {
+  def v
+
+  void setValue(def x) { v = x }
+
+  def test (def newV) {
+    I ci = new CI ()
+    ci.value = newV
+    ((CI)ci).v
+  }
+}
+
+new CI ()
+    """)
+    assertEquals (10, InvokerHelper.invokeMethod(res, "test", 10))
+  }
+}
+
