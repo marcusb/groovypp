@@ -35,6 +35,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(GStringExpression.class, new GStringExpressionTransformer());
         transformers.put(ConstructorCallExpression.class, new ConstructorCallExpressionTransformer());
         transformers.put(RangeExpression.class, new RangeExpressionTransformer());
+        transformers.put(FieldExpression.class, new FieldExpressionTransformer());
 
         final BooleanExpressionTransformer bool = new BooleanExpressionTransformer();
         transformers.put(BooleanExpression.class, bool);

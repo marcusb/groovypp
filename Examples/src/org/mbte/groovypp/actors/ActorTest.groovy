@@ -1,4 +1,4 @@
-@Compile(debug=true)
+@Compile
 package org.mbte.groovypp.actors
 
 import java.util.concurrent.LinkedBlockingQueue
@@ -82,6 +82,7 @@ class Actor {
     /**
      * Send synchroniously and wait for execution result
      */
+    @Compile(debug=true)
     def send (AsyncMessage msg) {
         lock.writeLock().withLock {
           WorkerThread.setCurrentActor(msg.receiver)

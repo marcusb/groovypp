@@ -28,6 +28,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         String name = methodNode.getName().substring(3);
+        name = name.substring(0,1).toLowerCase() + name.substring(1);
         Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), name, right.getType(), compiler);
         return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop, needsObjectIfStatic);
     }

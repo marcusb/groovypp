@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.objectweb.asm.Opcodes;
 
 public class PropertyUtil {
     public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {

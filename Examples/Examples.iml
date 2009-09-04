@@ -22,16 +22,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/../../GroovyDev/target/install/lib" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/../../GroovyDev/target/install/lib" recursive="false" />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="groovy-1.7-beta-2-SNAPSHOT" level="application" />
   </component>
   <component name="copyright">
     <Base>
