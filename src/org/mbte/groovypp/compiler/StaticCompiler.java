@@ -256,7 +256,42 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         visitStatement(sync);
 
         super.visitSynchronizedStatement(sync);
-        throw new UnsupportedOperationException();
+
+        ((BytecodeExpr)sync.getExpression()).visit(mv);
+        final int index = compileStack.defineTemporaryVariable("synchronized", ClassHelper.OBJECT_TYPE, true);
+
+        final Label synchronizedStart = new Label();
+        final Label synchronizedEnd = new Label();
+        final Label catchAll = new Label();
+
+        mv.visitVarInsn(ALOAD, index);
+        mv.visitInsn(MONITORENTER);
+        mv.visitLabel(synchronizedStart);
+
+        Runnable finallyPart = new Runnable() {
+            public void run() {
+                mv.visitVarInsn(ALOAD, index);
+                mv.visitInsn(MONITOREXIT);
+            }
+        };
+        compileStack.pushFinallyBlock(finallyPart);
+
+        sync.getCode().visit(this);
+
+        finallyPart.run();
+        mv.visitJumpInsn(GOTO, synchronizedEnd);
+        ((StackAwareMethodAdapter)mv).startExceptionBlock(); // exception variable
+        mv.visitLabel(catchAll);
+        finallyPart.run();
+        mv.visitInsn(ATHROW);
+        mv.visitLabel(synchronizedEnd);
+
+        compileStack.popFinallyBlock();
+        exceptionBlocks.add(new Runnable() {
+            public void run() {
+                mv.visitTryCatchBlock(synchronizedStart, catchAll, catchAll, null);
+            }
+        });
     }
 
     @Override
