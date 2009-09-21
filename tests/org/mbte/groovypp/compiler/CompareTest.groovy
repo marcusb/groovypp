@@ -11,6 +11,8 @@ public class CompareTest extends GroovyShellTestCase{
         assert (10 >= 5)
         assert !(10d <= 5)
         assert (10l != 5d)
+        assert (10g != 5d)
+        assert (10  >  5d)
       }
       u ()
     """)
