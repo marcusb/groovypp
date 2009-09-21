@@ -152,10 +152,8 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     public BytecodeExpr transformLogical(BinaryExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
-        switch (exp.getOperation().getType()) {
-            case Types.COMPARE_NOT_EQUAL:
-                return evaluateCompare(exp, compiler, label, !onTrue);
-
+        final int op = exp.getOperation().getType();
+        switch (op) {
             case Types.LOGICAL_AND:
                 return evaluateLogicalAnd(exp, compiler, label, onTrue);
 
@@ -167,8 +165,11 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
 
 
+            case Types.COMPARE_NOT_EQUAL:
+                return evaluateCompare(exp, compiler, label, onTrue, op);
+
             case Types.COMPARE_EQUAL:
-                return evaluateCompare(exp, compiler, label, onTrue);
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             case Types.COMPARE_TO:
                 throw new UnsupportedOperationException();
@@ -177,16 +178,16 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 throw new UnsupportedOperationException();
 
             case Types.COMPARE_GREATER_THAN:
-                return evaluateCompare(exp, compiler, label, onTrue);
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             case Types.COMPARE_GREATER_THAN_EQUAL:
-                return evaluateCompare(exp, compiler, label, onTrue);
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             case Types.COMPARE_LESS_THAN:
-                return evaluateCompare(exp, compiler, label, onTrue);
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             case Types.COMPARE_LESS_THAN_EQUAL:
-                return evaluateCompare(exp, compiler, label, onTrue);
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             default: {
                 return super.transformLogical(exp, compiler, label, onTrue);
@@ -330,7 +331,38 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         }
     }
 
-    private BytecodeExpr evaluateEqual(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue) {
+    private void intCmp(int op, boolean onTrue, MethodVisitor mv, Label label) {
+        switch (op) {
+            case Types.COMPARE_NOT_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+                break;
+
+            case Types.COMPARE_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
+                break;
+
+            case Types.COMPARE_LESS_THAN:
+                mv.visitJumpInsn(onTrue ? IFLT : IFGE, label);
+                break;
+
+            case Types.COMPARE_LESS_THAN_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFLE : IFGT, label);
+                break;
+
+            case Types.COMPARE_GREATER_THAN:
+                mv.visitJumpInsn(onTrue ? IFGT : IFLE, label);
+                break;
+
+            case Types.COMPARE_GREATER_THAN_EQUAL:
+                mv.visitJumpInsn(onTrue ? IFGE : IFLT, label);
+                break;
+
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue, final int op) {
         final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
         be.setLeftExpression(l);
         final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
@@ -352,113 +384,62 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                        unbox(mathType);
 
                     if (mathType == ClassHelper.int_TYPE) {
-                        mv.visitInsn(ISUB);
-                        compareOperation(be, mv, onTrue, label);
+                        switch (op) {
+                            case Types.COMPARE_EQUAL:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPEQ : IF_ICMPNE, label);
+                                break;
+
+                            case Types.COMPARE_NOT_EQUAL:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPNE : IF_ICMPEQ, label);
+                                break;
+
+                            case Types.COMPARE_LESS_THAN:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPLT : IF_ICMPGE, label);
+                                break;
+
+                            case Types.COMPARE_LESS_THAN_EQUAL:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPLE : IF_ICMPGT, label);
+                                break;
+
+                            case Types.COMPARE_GREATER_THAN:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPGT : IF_ICMPLE, label);
+                                break;
+
+                            case Types.COMPARE_GREATER_THAN_EQUAL:
+                                mv.visitJumpInsn(onTrue ? IF_ICMPGE : IF_ICMPLT, label);
+                                break;
+
+                            default:
+                                throw new IllegalStateException();
+                        }
                     }
                     else
                     if (mathType == ClassHelper.double_TYPE) {
                         mv.visitInsn(DCMPG);
-                        compareOperation(be, mv, onTrue, label);
+                        intCmp(op, onTrue, mv, label);
                     }
                     else
                     if (mathType == ClassHelper.float_TYPE) {
                         mv.visitInsn(FCMPG);
-                        compareOperation(be, mv, onTrue, label);
+                        intCmp(op, onTrue, mv, label);
                     }
                     else
                     if (mathType == ClassHelper.long_TYPE) {
                         mv.visitInsn(LCMP);
-                        compareOperation(be, mv, onTrue, label);
+                        intCmp(op, onTrue, mv, label);
                     }
                     else
-                        throw new RuntimeException("Internal Error");
-                }
-            };
-        }
-        else
-            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
-                public void compile() {
-                    final BytecodeExpr l = (BytecodeExpr) be.getLeftExpression();
-                    l.visit(mv);
-                    box(l.getType());
-
-                    final BytecodeExpr r = (BytecodeExpr) be.getRightExpression();
-                    r.visit(mv);
-                    box(r.getType());
-
-                    mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
-                    compareOperation(be, mv, onTrue, label);
-                }
-            };
-    }
-
-
-    private void compareOperation(final BinaryExpression be, final MethodVisitor mv, final boolean onTrue, final Label label) {
-        switch (be.getOperation().getType()) {
-            case Types.COMPARE_EQUAL:
-                mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
-                break;
-
-            case Types.COMPARE_GREATER_THAN:
-                mv.visitJumpInsn(onTrue ? IFGT : IFLE, label);
-                break;
-
-            case Types.COMPARE_GREATER_THAN_EQUAL:
-                mv.visitJumpInsn(onTrue ? IFGE : IFLT, label);
-                break;
-
-            case Types.COMPARE_LESS_THAN:
-                mv.visitJumpInsn(onTrue ? IFLT : IFGE, label);
-                break;
-
-            case Types.COMPARE_LESS_THAN_EQUAL:
-                mv.visitJumpInsn(onTrue ? IFLE : IFGT, label);
-                break;
-
-            default:
-                throw new UnsupportedOperationException();
-        }
-    }
-    private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue) {
-        final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
-        be.setLeftExpression(l);
-        final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
-        be.setRightExpression(r);
-        if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
-            final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
-            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
-                public void compile() {
-                    l.visit(mv);
-                    box(l.getType());
-                    cast(ClassHelper.getWrapper(l.getType()), ClassHelper.getWrapper(mathType));
-                    if (ClassHelper.isPrimitiveType(mathType))
-                       unbox(mathType);
-
-                    r.visit(mv);
-                    box(r.getType());
-                    cast(ClassHelper.getWrapper(r.getType()), ClassHelper.getWrapper(mathType));
-                    if (ClassHelper.isPrimitiveType(mathType))
-                       unbox(mathType);
-
-                    if (mathType == ClassHelper.int_TYPE)
-                        mv.visitJumpInsn(onTrue ? IF_ICMPEQ : IF_ICMPNE, label);
-                    else
-                    if (mathType == ClassHelper.double_TYPE) {
-                        mv.visitInsn(DCMPG);
-                        mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
-                    }
-                    else
-                    if (mathType == ClassHelper.float_TYPE) {
-                        mv.visitInsn(FCMPG);
-                        mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
-                    }
-                    else
-                    if (mathType == ClassHelper.long_TYPE) {
-                        mv.visitInsn(LCMP);
-                        mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
-                    }
-                    else
-                        throw new RuntimeException("Internal Error");
+                        if (mathType == ClassHelper.BigInteger_TYPE) {
+                            mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigInteger", "compareTo", "(Ljava/math/BigInteger;)I");
+                            intCmp(op, onTrue, mv, label);
+                        }
+                        else
+                            if (mathType == ClassHelper.BigDecimal_TYPE) {
+                                mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigDecimal", "compareTo", "(Ljava/math/BigDecimal;)I");
+                                intCmp(op, onTrue, mv, label);
+                            }
+                            else
+                                throw new RuntimeException("Internal Error");
                 }
             };
         }
