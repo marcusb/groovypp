@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="Groovy Compiler" default="build">
+
+	<property name="app.name" value="groovycompiler" />
+
+	<property name="classes.dir" location="bin" />
+	<property name="test.classes.dir" location="test.bin" />
+	<property name="src.dir" location="src" />
+	<property name="test.src.dir" location="tests" />
+
+	<property name="jar.name" location="${app.name}.jar"/>
+	<property name="target.jvm" value="5" />
+
+
+	<path id="libs">
+		<fileset dir="libs" includes="*.jar"/>
+	</path>
+
+    <path id="test.compile.cp">
+		<path refid="libs"/>
+		<pathelement location="${classes.dir}"/>
+	</path>
+
+    <taskdef name="groovyc"
+         classname="org.codehaus.groovy.ant.Groovyc"
+         classpathref="libs"/>
+
+	<target name="clean">
+		<delete dir="${classes.dir}"/>
+        <delete dir="${test.classes.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+	</target>
+
+	<target name="compile" depends="clean" description="compiles all source files">
+		<javac classpathref="libs" srcdir="${src.dir}"
+			destdir="${classes.dir}" target="${target.jvm}"
+			debug="yes" debuglevel="lines,vars,source" />
+		<copy todir="${classes.dir}">
+			<fileset dir="src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="test.compile" depends="clean, compile" >
+		<groovyc classpathref="libs" srcdir="${test.src.dir}"
+			destdir="${test.classes.dir}">
+		</groovyc >
+	</target>
+
+    <target  name="test.run" depends="test.compile" description="Runs unit tests">
+        <junit printsummary="yes">
+            <classpath>
+                <path refid="test.compile.cp" />
+                <pathelement location="${test.classes.dir}"/>
+            </classpath>
+
+            <batchtest>
+                <fileset dir="${test.classes.dir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+
+	<target name="make.jar" depends="compile" description="Build application jar file">
+		<jar destfile="${jar.name}" >
+			<fileset dir="${classes.dir}" />
+		</jar>
+	</target>
+
+
+	<target name="build"
+		depends="test.run, make.jar" description="Build application, run tests &amp; create jar file" />
+
+</project>
