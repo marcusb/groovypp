@@ -3,9 +3,7 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
@@ -23,6 +21,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private StaticMethodBytecode methodBytecode;
@@ -235,12 +234,88 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         compileStack.pop();
     }
 
-    @Override
-    public void visitCaseStatement(CaseStatement statement) {
+    public void visitSwitch(SwitchStatement statement) {
         visitStatement(statement);
 
-        super.visitCaseStatement(statement);
-        throw new UnsupportedOperationException();
+        BytecodeExpr cond = (BytecodeExpr) transform(statement.getExpression());
+        cond.visit(mv);
+        if (ClassHelper.isPrimitiveType(cond.getType()))
+           cond.box(cond.getType());
+
+        // switch does not have a continue label. use its parent's for continue
+        Label breakLabel = compileStack.pushSwitch();
+
+        int switchVariableIndex = compileStack.defineTemporaryVariable("switch", true);
+
+        List caseStatements = statement.getCaseStatements();
+        int caseCount = caseStatements.size();
+        Label[] labels = new Label[caseCount + 1];
+        for (int i = 0; i < caseCount; i++) {
+            labels[i] = new Label();
+        }
+
+        int i = 0;
+        for (Iterator iter = caseStatements.iterator(); iter.hasNext(); i++) {
+            CaseStatement caseStatement = (CaseStatement) iter.next();
+            compileCaseStatement(cond, caseStatement, switchVariableIndex, labels[i], labels[i + 1]);
+        }
+
+        statement.getDefaultStatement().visit(this);
+
+        mv.visitLabel(breakLabel);
+
+        compileStack.pop();
+    }
+
+    @Override
+    public void visitCaseStatement(CaseStatement statement) {
+    }
+
+    private void compileCaseStatement(
+            BytecodeExpr cond, CaseStatement statement,
+            int switchVariableIndex,
+            Label thisLabel,
+            Label nextLabel) {
+        visitStatement(statement);
+        
+        mv.visitVarInsn(ALOAD, switchVariableIndex);
+        final BytecodeExpr option = (BytecodeExpr) transform(statement.getExpression());
+        option.visit(mv);
+        if (ClassHelper.isPrimitiveType(option.getType()))
+           option.box(option.getType());
+
+        Label l0 = new Label();
+
+        Label notNull = new Label ();
+        mv.visitInsn(DUP);
+        mv.visitJumpInsn(IFNONNULL, notNull);
+        mv.visitJumpInsn(IF_ACMPEQ, thisLabel);
+        mv.visitJumpInsn(GOTO, l0);
+
+        mv.visitLabel(notNull);
+
+        final BytecodeExpr caseValue = new BytecodeExpr(option, ClassHelper.getWrapper(option.getType())) {
+            protected void compile() {
+            }
+        };
+
+        final BytecodeExpr switchValue = new BytecodeExpr(cond, ClassHelper.getWrapper(cond.getType())) {
+            protected void compile() {
+                mv.visitInsn(SWAP);
+            }
+        };
+        transformLogical(new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue)), l0, false).visit(mv);
+        mv.visitLabel(thisLabel);
+
+        statement.getCode().visit(this);
+
+        // now if we don't finish with a break we need to jump past
+        // the next comparison
+        if (nextLabel != null) {
+            mv.visitJumpInsn(GOTO, nextLabel);
+        }
+
+        mv.visitLabel(l0);
     }
 
     @Override
