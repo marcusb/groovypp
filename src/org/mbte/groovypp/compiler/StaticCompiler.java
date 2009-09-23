@@ -3,11 +3,13 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.CompilePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.GroovyBugError;
@@ -145,11 +147,94 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
     }
 
+    private void visitForLoopWithCollection(ForStatement forLoop) {
+        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
+
+        Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
+
+        Label continueLabel = compileStack.getContinueLabel();
+        Label breakLabel = compileStack.getBreakLabel();
+        BytecodeHelper helper = new BytecodeHelper(mv);
+
+        MethodCallExpression iterator = new MethodCallExpression(
+                forLoop.getCollectionExpression(), "iterator", new ArgumentListExpression());
+        BytecodeExpr expr = (BytecodeExpr) transform(iterator);
+        expr.visit(mv);
+
+        final int iteratorIdx = compileStack.defineTemporaryVariable(
+                "iterator", ClassHelper.make(java.util.Iterator.class), true);
+
+        mv.visitLabel(continueLabel);
+        mv.visitVarInsn(ALOAD, iteratorIdx);
+        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "hasNext", "()Z");
+        mv.visitJumpInsn(IFEQ, breakLabel);
+
+        mv.visitVarInsn(ALOAD, iteratorIdx);
+        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;");
+        helper.storeVar(variable);
+
+        forLoop.getLoopBlock().visit(this);
+
+        mv.visitJumpInsn(GOTO, continueLabel);
+        mv.visitLabel(breakLabel);
+        compileStack.pop();
+    }
+
+	private void visitForLoopWithClosures(ForStatement forLoop) {
+
+        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
+
+        ClosureListExpression closureExpression = (ClosureListExpression) forLoop.getCollectionExpression();
+        compileStack.pushVariableScope(closureExpression.getVariableScope());
+
+        Label continueLabel = compileStack.getContinueLabel();
+        Label breakLabel = compileStack.getBreakLabel();
+        List<Expression> loopExpr = closureExpression.getExpressions();
+
+        if (!(loopExpr.get(0) instanceof EmptyExpression)) {
+            final BytecodeExpr initExpression = (BytecodeExpr) transform(loopExpr.get(0));
+            initExpression.visit(mv);
+        }
+
+        mv.visitLabel(continueLabel);
+
+        if (!(loopExpr.get(1) instanceof EmptyExpression)) {
+            final BytecodeExpr binaryExpression =  transformLogical(loopExpr.get(1), breakLabel, false);
+            binaryExpression.visit(mv);
+        }
+
+        forLoop.getLoopBlock().visit(this);
+
+        if (!(loopExpr.get(2) instanceof EmptyExpression)) {
+            final BytecodeExpr incrementExpression = (BytecodeExpr) transform(loopExpr.get(2));
+
+            incrementExpression.visit(mv);
+            final ClassNode type = incrementExpression.getType();
+            if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
+                if (type == ClassHelper.long_TYPE || type == ClassHelper.double_TYPE) {
+                    mv.visitInsn(POP2);
+                }
+                else {
+                    mv.visitInsn(POP);
+                }
+            }
+        }
+
+        mv.visitJumpInsn(GOTO, continueLabel);
+        mv.visitLabel(breakLabel);
+
+        compileStack.pop();
+        compileStack.pop();
+    }
+
     @Override
     public void visitForLoop(ForStatement forLoop) {
-        visitStatement(forLoop);
-
-        throw new UnsupportedOperationException();
+        Parameter loopVar = forLoop.getVariable();
+        if (loopVar == ForStatement.FOR_LOOP_DUMMY) {
+            visitForLoopWithClosures(forLoop);
+        } else {
+            visitForLoopWithCollection(forLoop);
+        }
     }
 
     @Override
