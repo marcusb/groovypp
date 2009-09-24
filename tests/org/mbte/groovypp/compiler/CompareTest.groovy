@@ -101,13 +101,13 @@ public class CompareTest extends GroovyShellTestCase{
 
   void testNegativeZeros () {
     shell.evaluate("""
-      @Compile
+      @Compile(debug=true)
       def u () {
-        assert 0.0f != -(0.0f)
-        assert 0.0f == -0.0f
+        assert !(0.0f != -(0.0f))
+        assert 0.0f == -0.0
 
-        assert 0.0d != -(0.0d)
-        assert 0.0d != -0.0d
+        assert 0.0d == -(0.0d)
+        assert +0.0d == +0.0d
       }
       u ()
     """)
