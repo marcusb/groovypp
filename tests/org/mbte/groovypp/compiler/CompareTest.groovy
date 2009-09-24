@@ -44,7 +44,7 @@ public class CompareTest extends GroovyShellTestCase{
 
     void testDoubleConstants () {
     shell.evaluate("""
-      @Compile
+      @Compile(debug=true)
       def u () {
           assert (10.0  >  5.0)
           assert (5.0  <  10.0)
@@ -103,10 +103,10 @@ public class CompareTest extends GroovyShellTestCase{
     shell.evaluate("""
       @Compile(debug=true)
       def u () {
-        assert !(0.0f != -(0.0f))
+        assert (0.0f != -(0.0f))
         assert 0.0f == -0.0
 
-        assert 0.0d == -(0.0d)
+        assert 0.0d != -(0.0d)
         assert +0.0d == +0.0d
       }
       u ()
@@ -120,10 +120,7 @@ public class CompareTest extends GroovyShellTestCase{
         assert (Float.TYPE == float)
         assert (Double.TYPE == double)
 
-        // Doesn't work here
         assert (1.2d.class == Double)
-
-        
       }
       u ()
     """)

@@ -18,13 +18,8 @@ public class ClassExpressionTransformer extends ExprTransformer<ClassExpression>
                 if (ClassHelper.isPrimitiveType(type)) {
                     mv.visitFieldInsn(GETSTATIC, BytecodeHelper.getClassInternalName(ClassHelper.getWrapper(type)), "TYPE", "Ljava/lang/Class;");
                 } else {
-                    if (ClassHelper.isPrimitiveType(ClassHelper.getUnwrapper(type))) {
-                        mv.visitFieldInsn(GETSTATIC, BytecodeHelper.getClassInternalName(type), "TYPE", "Ljava/lang/Class;");
-                    }
-                    else {
-                        mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
-                        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
-                    }
+                    mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
+                    mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
                 }
             }
         };

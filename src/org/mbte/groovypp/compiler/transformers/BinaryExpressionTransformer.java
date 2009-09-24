@@ -415,12 +415,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     }
                     else
                     if (mathType == ClassHelper.double_TYPE) {
-                        mv.visitInsn(DCMPG);
-                        intCmp(op, onTrue, mv, label);
-                    }
-                    else
-                    if (mathType == ClassHelper.float_TYPE) {
-                        mv.visitInsn(FCMPG);
+                        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "compare", "(DD)I");
                         intCmp(op, onTrue, mv, label);
                     }
                     else
