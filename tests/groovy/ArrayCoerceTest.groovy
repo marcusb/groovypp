@@ -10,9 +10,9 @@ class ArrayCoerceTest extends GroovyShellTestCase {
 
     void testStaticallyTypedPrimitiveTypeArrays() {
       shell.evaluate("""
-        @Compile
+        @Compile(debug=true)
         def u(List res) {
-          int[] a = [1, 2, 3]
+          int[] a = [1, 2, 3] as int []
           assert a instanceof int[]
           assert a.length == 3
         }
@@ -41,7 +41,7 @@ class ArrayCoerceTest extends GroovyShellTestCase {
         shell.evaluate("""
           @Compile
           def u() {
-            Object[] b = [1, 2, 3]
+            Object[] b = [1, 2, 3] as Object []
             assert b instanceof Object[]
             assert b.length == 3
             def c = b.getClass()
@@ -57,7 +57,7 @@ class ArrayCoerceTest extends GroovyShellTestCase {
           shell.evaluate("""
             @Compile
             def u() {
-              Integer[] b = [1, 2, 3]
+              Integer[] b = [1, 2, 3] as Integer []
               assert b instanceof Integer[]
               assert b.length == 3
               def c = b.getClass()
@@ -72,12 +72,15 @@ class ArrayCoerceTest extends GroovyShellTestCase {
     void testStaticallyTypedObjectFieldArrays() {
       shell.evaluate("""
         @Compile
-        def u() {
-          field = [1, 2, 3]
-          assert field instanceof Object[]
-          assert field.length == 3
+        class U {
+          static Object [] numberField
+          static def u() {
+            numberField = [1, 2, 3] as Object []
+            assert numberField instanceof Object[]
+            assert numberField.length == 3
+          }
         }
-        u();
+        U.u();
       """
       )
     }
@@ -85,12 +88,15 @@ class ArrayCoerceTest extends GroovyShellTestCase {
   void testStaticallyTypedFieldArrays() {
       shell.evaluate("""
         @Compile
-        def u() {
-          numberField = [1, 2, 3]
-          assert numberField instanceof Long[]
-          assert numberField.length == 3
+        class U {
+          static int [] numberField
+          static def u() {
+            numberField = [1, 2, 3] as int []
+            assert numberField instanceof int[]
+            assert numberField.length == 3
+          }
         }
-        u();
+        U.u();
       """
       )
   }

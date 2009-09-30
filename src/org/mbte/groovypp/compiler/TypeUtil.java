@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.Range;
 import groovy.lang.TypedClosure;
 import groovy.lang.OwnerAware;
+import groovy.lang.IntRange;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
@@ -21,6 +22,7 @@ public class TypeUtil {
     public static final ClassNode RANGE_TYPE = make(Range.class);
     public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
+    public static final ClassNode INT_RANGE_TYPE = make(IntRange.class);
 
     private static class Null {}
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);

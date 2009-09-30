@@ -156,8 +156,16 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Label breakLabel = compileStack.getBreakLabel();
         BytecodeHelper helper = new BytecodeHelper(mv);
 
+        final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
+
+        ClassNode etype = ClassHelper.OBJECT_TYPE;
+        if (collectionExpression.getType() == TypeUtil.INT_RANGE_TYPE) {
+            variable.setType(ClassHelper.Integer_TYPE);
+            etype = ClassHelper.Integer_TYPE;
+        }
+
         MethodCallExpression iterator = new MethodCallExpression(
-                forLoop.getCollectionExpression(), "iterator", new ArgumentListExpression());
+                collectionExpression, "iterator", new ArgumentListExpression());
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
         expr.visit(mv);
 
@@ -171,6 +179,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         mv.visitVarInsn(ALOAD, iteratorIdx);
         mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;");
+        if (etype != ClassHelper.OBJECT_TYPE)
+            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(etype));
         helper.storeVar(variable);
 
         forLoop.getLoopBlock().visit(this);
@@ -194,9 +204,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (!(loopExpr.get(0) instanceof EmptyExpression)) {
             final BytecodeExpr initExpression = (BytecodeExpr) transform(loopExpr.get(0));
             initExpression.visit(mv);
+            initExpression.pop(initExpression.getType());
         }
 
-        mv.visitLabel(continueLabel);
+        Label cond = new Label ();
+        mv.visitLabel(cond);
 
         if (!(loopExpr.get(1) instanceof EmptyExpression)) {
             final BytecodeExpr binaryExpression =  transformLogical(loopExpr.get(1), breakLabel, false);
@@ -204,6 +216,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
 
         forLoop.getLoopBlock().visit(this);
+
+        mv.visitLabel(continueLabel);
 
         if (!(loopExpr.get(2) instanceof EmptyExpression)) {
             final BytecodeExpr incrementExpression = (BytecodeExpr) transform(loopExpr.get(2));
@@ -220,7 +234,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             }
         }
 
-        mv.visitJumpInsn(GOTO, continueLabel);
+        mv.visitJumpInsn(GOTO, cond);
         mv.visitLabel(breakLabel);
 
         compileStack.pop();
@@ -461,6 +475,16 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         super.visitThrowStatement(ts);
         ((BytecodeExpr)ts.getExpression()).visit(mv);
         mv.visitInsn(ATHROW);
+    }
+
+    public void visitContinueStatement(ContinueStatement statement) {
+        visitStatement(statement);
+
+        String name = statement.getLabel();
+        Label continueLabel = compileStack.getContinueLabel();
+        if (name != null) continueLabel = compileStack.getNamedContinueLabel(name);
+        compileStack.applyFinallyBlocks(continueLabel, false);
+        mv.visitJumpInsn(GOTO, continueLabel);
     }
 
     public void visitTryCatchFinally(TryCatchStatement statement) {

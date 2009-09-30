@@ -5,13 +5,15 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter implements Opcodes {
     private String boxingDesc = null;
-    private static final String DTT = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
+    private static final String DTT  = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
+    private static final String DGPP = BytecodeHelper.getClassInternalName(DefaultGroovyPPMethods.class.getName());
 
     public BytecodeImproverMethodAdapter(MethodVisitor mv) {
         super(mv);
@@ -19,7 +21,7 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
 
     private void dropBoxing () {
         if (boxingDesc != null) {
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, DTT, "box", boxingDesc);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, DGPP, "box", boxingDesc);
             boxingDesc = null;
         }
     }
@@ -76,7 +78,7 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
     }
 
     private boolean boxing(int opcode, String owner, String name) {
-        return opcode == Opcodes.INVOKESTATIC && owner.equals(DTT) && name.equals("box");
+        return opcode == Opcodes.INVOKESTATIC && owner.equals(DGPP) && name.equals("box");
     }
 
     private boolean unboxing(int opcode, String owner, String name) {

@@ -24,6 +24,6 @@ class ArrayAutoboxingTest extends GroovyShellTestCase {
         """
         )
 
-        assertEquals(["[I", "[J", "[S", "[Z", "[C", "[D", "[F]"], res);
+        assertEquals(["[I", "[J", "[S", "[Z", "[C", "[D", "[F"], res);
     }
 } 

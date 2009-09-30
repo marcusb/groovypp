@@ -79,9 +79,9 @@ class SwitchTest extends GroovyShellTestCase {
     void testSwitchScope() {
       shell.evaluate("""
         @Compile
-        def u() {
-          def i = 0
-          def j = 0
+        void u() {
+          int i = 0
+          int j = 0
           while (true) {
               ++i;
               switch (i) {
@@ -90,7 +90,7 @@ class SwitchTest extends GroovyShellTestCase {
                   case 5:
                       break;
                   default:
-                      j += i;
+                      j = j + i;
                       break;
               }
               if (i == 5) break;

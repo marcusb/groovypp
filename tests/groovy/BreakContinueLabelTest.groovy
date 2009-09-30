@@ -133,12 +133,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
       def res = shell.evaluate("""
         @Compile
         def u() {
-          def log = ''
+          String log = ''
           for (i in [1,2]) {
-              log += i
+              log = log + i
               for (j in [3,4]){
                   if (j==3) continue
-                  log += j
+                  log = log + j
               }
           }
           return log;
@@ -153,15 +153,16 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
       def res = shell.evaluate("""
         @Compile
         def u() {
-          def log = ''
+          String log = ''
           label: for (i in [1,2]) {
-              log += i
+              log = log + i
               for (j in [3,4]){
                   if (j==4) continue label
-                  log += j
+                  log = log + j
               }
-              log += 'never reached'
+              log = log + 'never reached'
           }
+          log
         }
         u();
       """

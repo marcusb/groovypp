@@ -10,6 +10,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -83,33 +84,13 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void quickUnboxIfNecessary(ClassNode type) {
-        if (ClassHelper.isPrimitiveType(type) && type != ClassHelper.VOID_TYPE) { // todo care when BigDecimal or BigIneteger on stack
-            ClassNode wrapper = ClassHelper.getWrapper(type);
-            String internName = getClassInternalName(wrapper);
-            if (type == ClassHelper.boolean_TYPE) {
-                mv.visitTypeInsn(Opcodes.CHECKCAST, internName);
-                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internName, type.getName() + "Value", "()" + getTypeDescription(type));
-            } else { // numbers
-                mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Number");
-                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, /*internName*/"java/lang/Number", type.getName() + "Value", "()" + getTypeDescription(type));
-            }
-        }
-    }
-
-    /**
-     * Generates the bytecode to autobox the current value on the stack
-     */
-    public void box(Class type) {
-        if (ReflectionCache.getCachedClass(type).isPrimitive && type != void.class) {
-            String returnString = "(" + getTypeDescription(type) + ")Ljava/lang/Object;";
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassInternalName(DefaultTypeTransformation.class.getName()), "box", returnString);
-        }
-    }
-
     public void box(ClassNode type) {
         if (type.isPrimaryClassNode()) return;
-        box(type.getTypeClass());
+        Class type1 = type.getTypeClass();
+        if (ReflectionCache.getCachedClass(type1).isPrimitive && type1 != void.class) {
+            String returnString = "(" + getTypeDescription(type) + ")" + getTypeDescription(ClassHelper.getWrapper(type));
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassInternalName(DefaultGroovyPPMethods.class.getName()), "box", returnString);
+        }
     }
 
     /**

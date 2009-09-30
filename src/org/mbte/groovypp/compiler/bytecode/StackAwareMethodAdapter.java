@@ -15,8 +15,6 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
 //    int RET = 169;
 //    int TABLESWITCH = 170;
 //    int LOOKUPSWITCH = 171;
-//    int ARRAYLENGTH = 190;
-//    int MULTIANEWARRAY = 197;
 
     private BytecodeStack stack = new BytecodeStack();
     private IdentityHashMap<Label, LocalVarInferenceTypes> labelMap = new IdentityHashMap<Label, LocalVarInferenceTypes>();
@@ -400,6 +398,11 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                 stack.pop(BytecodeStack.KIND_OBJ);
                 break;
 
+            case ARRAYLENGTH:
+                stack.pop(BytecodeStack.KIND_OBJ);
+                stack.push(BytecodeStack.KIND_INT);
+                break;
+
             default:
                 throw new RuntimeException("Unrecognized operation");
 
@@ -706,6 +709,9 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
 
     @Override
     public void visitMultiANewArrayInsn(String s, int i) {
+        for (int ii = i; ii > 0; --ii)
+            stack.pop(BytecodeStack.KIND_INT);
+        stack.push(BytecodeStack.KIND_OBJ);
         super.visitMultiANewArrayInsn(s, i);
     }
 

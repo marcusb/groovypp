@@ -4,7 +4,9 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
 public class DeclarationExpressionTransformer extends ExprTransformer<DeclarationExpression> {
@@ -15,7 +17,16 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         final VariableExpression ve = (VariableExpression) exp.getLeftExpression();
         if (ve.getOriginType() != ve.getType())
           ve.setType(ve.getOriginType());
-        final BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+        final BytecodeExpr right0 = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+        final BytecodeExpr right;
+        if (right0.getType() != TypeUtil.NULL_TYPE || !ClassHelper.isPrimitiveType(ve.getType()))
+           right = right0;
+        else {
+            final ConstantExpression cnst = new ConstantExpression(0);
+            cnst.setColumnNumber(exp.getColumnNumber());
+            cnst.setLineNumber(exp.getLineNumber());
+            right = (BytecodeExpr) compiler.transform(cnst);
+        }
         if (!ve.isDynamicTyped())
             return new NonDynamic(exp, ve, right, compiler);
         else {

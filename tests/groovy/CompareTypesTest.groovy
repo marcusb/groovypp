@@ -96,14 +96,11 @@ class CompareTypesTest extends GroovyShellTestCase {
     
     void testCompareCharToLong() {
       shell.evaluate("""
-        @Compile
+        @Compile(debug=true)
         def u() {
           def a = Integer.MAX_VALUE
           def b = ((long) a)+1
           a=(char) a
-
-          assert a instanceof Character
-          assert b instanceof Long
 
           assert a < b
         }

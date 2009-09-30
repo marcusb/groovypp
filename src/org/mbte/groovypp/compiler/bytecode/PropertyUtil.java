@@ -9,7 +9,7 @@ import org.mbte.groovypp.compiler.TypeUtil;
 import groovy.lang.CompilePolicy;
 
 public class PropertyUtil {
-    public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
+    public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
         if (prop instanceof MethodNode)
             return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic);
 
@@ -18,6 +18,15 @@ public class PropertyUtil {
 
         if (prop instanceof FieldNode)
             return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null, needsObjectIfStatic);
+
+        if (object.getType().isArray() && "length".equals(propName)) {
+            return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
+                protected void compile() {
+                    object.visit(mv);
+                    mv.visitInsn(ARRAYLENGTH);
+                }
+            };
+        }
 
         return dynamicOrFail(exp, compiler, propName, object, null);
     }
