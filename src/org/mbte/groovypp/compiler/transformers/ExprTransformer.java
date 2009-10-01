@@ -39,6 +39,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(UnaryMinusExpression.class, new UnaryMinusExpressionTransformer());
         transformers.put(UnaryPlusExpression.class, new UnaryPlusExpressionTransformer());
         transformers.put(ArrayExpression.class, new ArrayExpressionTransformer());
+        transformers.put(BitwiseNegationExpression.class, new BitwiseNegationExpressionTransformer());
 
         final BooleanExpressionTransformer bool = new BooleanExpressionTransformer();
         transformers.put(BooleanExpression.class, bool);
