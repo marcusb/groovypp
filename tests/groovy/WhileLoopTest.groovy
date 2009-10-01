@@ -2,9 +2,9 @@ package groovy
 
 class WhileLoopTest extends GroovyShellTestCase {
 
-    void testVerySimpleWhile() {
-      def res = shell.evaluate("""
-        @Compile
+  void testVerySimpleWhile() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def x = 0;
           def m = 5;
@@ -16,13 +16,13 @@ class WhileLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals(5, res); 
-    }
+    )
+    assertEquals(5, res);
+  }
 
-    void testWhileWithEmptyBody() {
-      def res = shell.evaluate("""
-        @Compile
+  void testWhileWithEmptyBody() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           int x = 3
           while (--x);
@@ -30,14 +30,14 @@ class WhileLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-      assertEquals (0, res)
-    }
+    assertEquals(0, res)
+  }
 
-    void testMoreComplexWhile() {
-      shell.evaluate("""
-        @Compile
+  void testMoreComplexWhile() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def x = 0
           def y = 5
@@ -51,6 +51,6 @@ class WhileLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 }

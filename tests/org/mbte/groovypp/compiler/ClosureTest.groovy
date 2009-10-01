@@ -1,13 +1,13 @@
 package org.mbte.groovypp.compiler
 
-public class ClosureTest extends GroovyShellTestCase{
+public class ClosureTest extends GroovyShellTestCase {
 
-    void testClosure () {
-        def res = shell.evaluate("""
+  void testClosure() {
+    def res = shell.evaluate("""
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-@Compile
+@Typed
 class MailBox {
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -22,14 +22,14 @@ class MailBox {
 
 1
 """)
-    }
+  }
 
-    void testClosureAsObj () {
-            def res = shell.evaluate("""
+  void testClosureAsObj() {
+    def res = shell.evaluate("""
     import java.util.concurrent.ExecutorService
     import java.util.concurrent.Executors
 
-    @Compile
+    @Typed
     class MailBox {
         private static final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -44,5 +44,5 @@ class MailBox {
 
     1
     """)
-        }
+  }
 }

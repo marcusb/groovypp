@@ -2,14 +2,14 @@ package groovy
 
 class ArrayAutoboxingTest extends GroovyShellTestCase {
 
-     void testUnwantedAutoboxingWhenInvokingMethods() {
-        def res = shell.evaluate("""
-          @Compile
+  void testUnwantedAutoboxingWhenInvokingMethods() {
+    def res = shell.evaluate("""
+          @Typed
           def getClassName(Object o) {
              return o.class.name
           }
 
-          @Compile
+          @Typed
           def u(List res) {
             res << getClassName(new int[2*2])
             res << getClassName(new long[2*2])
@@ -22,8 +22,8 @@ class ArrayAutoboxingTest extends GroovyShellTestCase {
           }
           u([]);
         """
-        )
+    )
 
-        assertEquals(["[I", "[J", "[S", "[Z", "[C", "[D", "[F"], res);
-    }
+    assertEquals(["[I", "[J", "[S", "[Z", "[C", "[D", "[F"], res);
+  }
 } 

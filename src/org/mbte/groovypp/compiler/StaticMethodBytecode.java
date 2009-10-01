@@ -1,6 +1,6 @@
 package org.mbte.groovypp.compiler;
 
-import groovy.lang.CompilePolicy;
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.GroovyCodeVisitor;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -13,10 +13,10 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;
     final SourceUnit su;
     Statement code;
-    private final CompilePolicy policy;
+    private final TypePolicy policy;
     final StaticCompiler compiler;
 
-    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, boolean debug, CompilePolicy policy) {
+    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, boolean debug, TypePolicy policy) {
         this.methodNode = methodNode;
         this.su = su;
         this.code = code;
@@ -40,17 +40,18 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
                 policy);
 //
         if (debug)
-           System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName());
+            System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName());
         compiler.execute();
         if (debug)
-           System.out.println("------------");
+            System.out.println("------------");
     }
 
-    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, boolean debug, CompilePolicy policy) {
+    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, boolean debug, TypePolicy policy) {
         final Statement code = methodNode.getCode();
         if (!(code instanceof BytecodeSequence)) {
             final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug, policy);
-            methodNode.setCode(new MyBytecodeSequence(methodBytecode){});
+            methodNode.setCode(new MyBytecodeSequence(methodBytecode) {
+            });
         }
     }
 
@@ -61,7 +62,7 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
 
         @Override
         public void visit(GroovyCodeVisitor visitor) {
-            ((StaticMethodBytecode)getInstructions().get(0)).code.visit(visitor);
+            ((StaticMethodBytecode) getInstructions().get(0)).code.visit(visitor);
         }
     }
 }

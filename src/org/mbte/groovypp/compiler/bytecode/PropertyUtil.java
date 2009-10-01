@@ -1,12 +1,12 @@
 package org.mbte.groovypp.compiler.bytecode;
 
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
-import groovy.lang.CompilePolicy;
 
 public class PropertyUtil {
     public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
@@ -44,7 +44,7 @@ public class PropertyUtil {
         return dynamicOrFail(parent, compiler, propName, object, value);
     }
 
-    public static Object resolveGetProperty (ClassNode type, String name, CompilerTransformer compiler) {
+    public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler) {
         final String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
         if (mn != null)
@@ -60,7 +60,7 @@ public class PropertyUtil {
             return field;
 
         final String setterName = "set" + Verifier.capitalize(name);
-        mn = compiler.findMethod(type, setterName, new ClassNode[] {TypeUtil.NULL_TYPE});
+        mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE});
         if (mn != null) {
             final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, null, null);
             res.setDeclaringClass(mn.getDeclaringClass());
@@ -70,9 +70,9 @@ public class PropertyUtil {
         return null;
     }
 
-    public static Object resolveSetProperty (ClassNode type, String name, ClassNode arg, CompilerTransformer compiler) {
+    public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler) {
         final String getterName = "set" + Verifier.capitalize(name);
-        MethodNode mn = compiler.findMethod(type, getterName, new ClassNode[] {arg});
+        MethodNode mn = compiler.findMethod(type, getterName, new ClassNode[]{arg});
         if (mn != null)
             return mn;
 
@@ -81,15 +81,14 @@ public class PropertyUtil {
             return pnode;
         }
 
-        return compiler.findField (type, name);
+        return compiler.findField(type, name);
     }
 
     private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value) {
-        if (compiler.policy == CompilePolicy.STATIC) {
-            compiler.addError("Can't resolve property "+ propName, exp);
+        if (compiler.policy == TypePolicy.STATIC) {
+            compiler.addError("Can't resolve property " + propName, exp);
             return null;
-        }
-        else
+        } else
             return createDynamicCall(exp, propName, object, value);
     }
 

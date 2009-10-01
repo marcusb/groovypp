@@ -7,9 +7,9 @@ package groovy
  */
 class BreakContinueLabelTest extends GroovyShellTestCase {
 
-    void testDeclareSimpleLabel() {
-      shell.evaluate("""
-        @Compile
+  void testDeclareSimpleLabel() {
+    shell.evaluate("""
+        @Typed
         def u() {
           label_1: assert true
           label_2:
@@ -17,12 +17,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-  
-    void testBreakLabelInSimpleForLoop() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testBreakLabelInSimpleForLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
           label_1: for (i in [1]) {
               break label_1
@@ -31,12 +31,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testBreakLabelInNestedForLoop() {
-      shell.evaluate("""
-        @Compile
+  void testBreakLabelInNestedForLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
           label: for (i in [1]) {
               for (j in [1]){
@@ -48,12 +48,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testUnlabelledBreakInNestedForLoop() {
-      shell.evaluate("""
-        @Compile
+  void testUnlabelledBreakInNestedForLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def reached = false
           for (i in [1]) {
@@ -67,12 +67,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testBreakLabelInSimpleWhileLoop() {
-      shell.evaluate("""
-        @Compile
+  void testBreakLabelInSimpleWhileLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
           label_1: while (true) {
               break label_1
@@ -81,12 +81,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testBreakLabelInNestedWhileLoop() {
-      shell.evaluate("""
-        @Compile
+  void testBreakLabelInNestedWhileLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def count = 0
           label: while (count < 1) {
@@ -100,12 +100,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testBreakLabelInNestedMixedForAndWhileLoop() {
-       shell.evaluate("""
-        @Compile
+  void testBreakLabelInNestedMixedForAndWhileLoop() {
+    shell.evaluate("""
+        @Typed
         def u() {
         def count = 0
           label_1: while (count < 1) {
@@ -126,12 +126,12 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testUnlabelledContinueInNestedForLoop() {
-      def res = shell.evaluate("""
-        @Compile
+  void testUnlabelledContinueInNestedForLoop() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           String log = ''
           for (i in [1,2]) {
@@ -145,13 +145,13 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals '1424',res
-    }
+    )
+    assertEquals '1424', res
+  }
 
-    void testContinueLabelInNestedForLoop() {
-      def res = shell.evaluate("""
-        @Compile
+  void testContinueLabelInNestedForLoop() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           String log = ''
           label: for (i in [1,2]) {
@@ -166,13 +166,13 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals '1323', res
-    }
+    )
+    assertEquals '1323', res
+  }
 
-    void testBreakToLastLabelSucceeds() {
-      def res = shell.evaluate("""
-        @Compile
+  void testBreakToLastLabelSucceeds() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           one:
           two:
@@ -185,23 +185,23 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertTrue res;
-    }
+    )
+    assertTrue res;
+  }
 
-    void testBreakToOtherThanLastLabelCausesSyntaxError() {
-      CompileTestSupport.shouldNotCompile """
-        @Compile
+  void testBreakToOtherThanLastLabelCausesSyntaxError() {
+    CompileTestSupport.shouldNotCompile """
+        @Typed
         def u() {
           one: two: three: while (true)\nbreak one;
         }
         u();
        """;
-    }
+  }
 
-    void testContinueToLastLabelSucceeds() {
-      def res = shell.evaluate("""
-        @Compile
+  void testContinueToLastLabelSucceeds() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           one:
           two:
@@ -214,17 +214,17 @@ class BreakContinueLabelTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertTrue res;
-    }
+    )
+    assertTrue res;
+  }
 
-    void testContinueToOtherThanLastLabelCausesSyntaxError() {
-      CompileTestSupport.shouldNotCompile """
-        @Compile
+  void testContinueToOtherThanLastLabelCausesSyntaxError() {
+    CompileTestSupport.shouldNotCompile """
+        @Typed
         def u() {
           one: two: three: while (true)\ncontinue two
         }
         u();
        """;
-    }
+  }
 }

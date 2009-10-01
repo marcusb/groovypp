@@ -2,9 +2,9 @@ package org.mbte.groovypp.compiler
 
 public class CastTest extends GroovyShellTestCase {
 
-    void testCoerceObject () {
-        def res = shell.evaluate("""
-@Compile
+  void testCoerceObject() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   [1,2,3] as Set
 }
@@ -12,36 +12,36 @@ def m () {
 m()
         """)
 
-        assertTrue res instanceof Set
-    }
+    assertTrue res instanceof Set
+  }
 
-    void testCoercePrimitive () {
-        def res = shell.evaluate("""
-@Compile
+  void testCoercePrimitive() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   1 as Long
 }
 
 m()
         """)
-        assertTrue res instanceof Long
-    }
+    assertTrue res instanceof Long
+  }
 
-    void testNumber () {
-        def res = shell.evaluate("""
-@Compile
+  void testNumber() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   (Number)0
 }
 
 m()
         """)
-        assertTrue res instanceof Integer
-    }
+    assertTrue res instanceof Integer
+  }
 
-    void testNoCoerce () {
-        def res = shell.evaluate("""
-@Compile
+  void testNoCoerce() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   def u = (Serializable)[:]
   u.put("k","v")
@@ -50,12 +50,12 @@ def m () {
 
 m()
         """)
-        assertEquals ([k:"v"], res) 
-    }
+    assertEquals([k: "v"], res)
+  }
 
-    void testPrimitiveNoCoerce () {
-        def res = shell.evaluate("""
-@Compile
+  void testPrimitiveNoCoerce() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   Object u = (byte)3;
   [(long)1, (int)u]
@@ -63,13 +63,13 @@ def m () {
 
 m()
         """)
-        assertEquals ([1L, 3], res) 
+    assertEquals([1L, 3], res)
 
-    }
+  }
 
-    void testNoCoerceWithInference () {
-        def res = shell.evaluate("""
-@Compile
+  void testNoCoerceWithInference() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
   def u = (byte)3;
   [(long)1, (int)u]
@@ -77,6 +77,6 @@ def m () {
 
 m()
         """)
-        assertEquals ([1L, 3], res)
-    }
+    assertEquals([1L, 3], res)
+  }
 }

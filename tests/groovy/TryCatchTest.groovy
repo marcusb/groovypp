@@ -4,12 +4,12 @@ import static groovy.CompileTestSupport.shouldNotCompile
 
 class TryCatchTest extends GroovyShellTestCase {
 
-    def exceptionCalled
-    def finallyCalled
-	
-    void testTryCatch() {
-      shell.evaluate("""
-        @Compile
+  def exceptionCalled
+  def finallyCalled
+
+  void testTryCatch() {
+    shell.evaluate("""
+        @Typed
         def u() {
           boolean catchVisited = false;
           boolean finallyVisited = false;
@@ -29,13 +29,13 @@ class TryCatchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-     }
+  }
 
-    void testStandaloneTryBlockShouldNotCompile() {
-        shouldNotCompile """
-          @Compile
+  void testStandaloneTryBlockShouldNotCompile() {
+    shouldNotCompile """
+          @Typed
           def u() {
             try {
                 assert true
@@ -43,11 +43,11 @@ class TryCatchTest extends GroovyShellTestCase {
           }
           u()
         """
-    }
+  }
 
-     void testTryFinally() {
-         shell.evaluate("""
-           @Compile
+  void testTryFinally() {
+    shell.evaluate("""
+           @Typed
            def u() {
              boolean touched = false;
              try {
@@ -59,16 +59,16 @@ class TryCatchTest extends GroovyShellTestCase {
            }
            u();
          """
-         )
-     }
+    )
+  }
 
-     void testWorkingMethod() {
-       shell.evaluate("""
+  void testWorkingMethod() {
+    shell.evaluate("""
          void workingMethod() {
             assert true , "Should never fail"
          }
 
-         @Compile
+         @Typed
          def u() {
            boolean catchVisited = false
            boolean finallyVisited = false
@@ -88,61 +88,61 @@ class TryCatchTest extends GroovyShellTestCase {
          }
          u();
        """
-       )
-    }
-    
-    void testTryWithReturnWithPrimitiveTypes() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testTryWithReturnWithPrimitiveTypes() {
+    shell.evaluate("""
+        @Typed
         int intTry(){
           try {
             return 1
           } finally {}
         }
 
-        @Compile
+        @Typed
         long longTry(){
           try {
             return 2
           } finally {}
         }
 
-        @Compile
+        @Typed
         byte byteTry(){
           try {
             return 3
           } finally {}
         }
 
-        @Compile
+        @Typed
         short shortTry(){
           try {
             return 4
           } finally {}
         }
 
-        @Compile
+        @Typed
         char charTry(){
           try {
             return 'c'
           } finally {}
         }
 
-        @Compile
+        @Typed
         float floatTry(){
           try {
             return 1.0
           } finally {}
         }
 
-        @Compile
+        @Typed
         double doubleTry(){
           try {
             return 2.0
           } finally {}
         }
 
-        @Compile
+        @Typed
         def u() {
           assert intTry() == 1
           assert longTry() == 2
@@ -154,13 +154,13 @@ class TryCatchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 
-    void testTryCatchWithUntyped(){
-      shell.evaluate("""
-        @Compile
+  void testTryCatchWithUntyped() {
+    shell.evaluate("""
+        @Typed
         def u() {
           try {
             throw new Exception();
@@ -172,17 +172,17 @@ class TryCatchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
-    
-    void testTryCatchInConstructor() {
-      // the super() call construction left an
-      // element on the stack, causing an inconsistent
-      // stack height problem for the try-catch
-      // this ensures the stack is clean after the call
-      assertScript """
-        @Compile
+  }
+
+  void testTryCatchInConstructor() {
+    // the super() call construction left an
+    // element on the stack, causing an inconsistent
+    // stack height problem for the try-catch
+    // this ensures the stack is clean after the call
+    assertScript """
+        @Typed
         class A {
           A() {
             super()
@@ -191,5 +191,5 @@ class TryCatchTest extends GroovyShellTestCase {
         }
         assert null != new A()
       """
-    }
+  }
 }

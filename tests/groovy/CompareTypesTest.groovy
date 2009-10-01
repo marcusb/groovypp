@@ -4,9 +4,9 @@ package groovy
  * @version $Revision: 13550 $
  */
 class CompareTypesTest extends GroovyShellTestCase {
-    void testCompareByteToInt() {
-      shell.evaluate("""
-        @Compile
+  void testCompareByteToInt() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Byte a = 12
           Integer b = 10
@@ -18,12 +18,12 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-    
-    void testCompareByteToDouble() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testCompareByteToDouble() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Byte a = 12
           Double b = 10
@@ -35,13 +35,13 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
-     
-    void testCompareLongToDouble() {
-      shell.evaluate("""
-        @Compile
+  }
+
+  void testCompareLongToDouble() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Long a = 12
           Double b = 10
@@ -53,12 +53,12 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    } 
-     
-    void testCompareLongToByte() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testCompareLongToByte() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Long a = 12
           Byte b = 10
@@ -71,13 +71,13 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
-     
-    void testCompareIntegerToByte() {
-      shell.evaluate("""
-        @Compile
+  }
+
+  void testCompareIntegerToByte() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Integer a = 12
           Byte b = 10
@@ -90,13 +90,13 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
-    
-    void testCompareCharToLong() {
-      shell.evaluate("""
-        @Compile(debug=true)
+  }
+
+  void testCompareCharToLong() {
+    shell.evaluate("""
+        @Typed(debug=true)
         def u() {
           def a = Integer.MAX_VALUE
           def b = ((long) a)+1
@@ -106,12 +106,12 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-    
-    void testCompareCharToInteger() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testCompareCharToInteger() {
+    shell.evaluate("""
+        @Typed
         def u() {
           Character a = Integer.MAX_VALUE
           Integer b = a-1
@@ -123,8 +123,8 @@ class CompareTypesTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 } 
 
 

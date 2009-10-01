@@ -1,16 +1,16 @@
 package groovy
 
-import static groovy.CompileTestSupport.shouldNotCompile;
 import static groovy.CompileTestSupport.shouldCompile
+import static groovy.CompileTestSupport.shouldNotCompile
 
-class ForLoopTest extends GroovyShellTestCase { 
+class ForLoopTest extends GroovyShellTestCase {
 
-    def x
+  def x
 
-    void testFinalParameterInForLoopIsAllowed() {
-        // only 'final' should be allowed: other modifiers like 'synchronized' should be forbidden
-        shouldNotCompile """
-          @Compile
+  void testFinalParameterInForLoopIsAllowed() {
+    // only 'final' should be allowed: other modifiers like 'synchronized' should be forbidden
+    shouldNotCompile """
+          @Typed
           def u() {
             def collection = ["a", "b", "c", "d", "e"]
             for (synchronized String letter in collection) { }
@@ -18,17 +18,17 @@ class ForLoopTest extends GroovyShellTestCase {
           u();
         """
 
-        // only 'final' allowed, and no additional modifier
-        shouldNotCompile """
-          @Compile
+    // only 'final' allowed, and no additional modifier
+    shouldNotCompile """
+          @Typed
           def u() {
             def collection = ["a", "b", "c", "d", "e"]
             for (final synchronized String letter in collection) { }
           }
         """
 
-        shouldCompile """
-          @Compile
+    shouldCompile """
+          @Typed
           def u() {
             def collection = ["a", "b", "c", "d", "e"]
             for (final String letter in collection) { }
@@ -37,11 +37,11 @@ class ForLoopTest extends GroovyShellTestCase {
             for (final letter : collection) { }
           }
         """
-    }
+  }
 
-    void testRange() {
-      def res = shell.evaluate("""
-        @Compile
+  void testRange() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def x = 0
 
@@ -53,13 +53,13 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals (45, res);
-    }
+    )
+    assertEquals(45, res);
+  }
 
-    void testRangeWithType() {
-      def res = shell.evaluate("""
-        @Compile
+  void testRangeWithType() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def x = 0
 
@@ -72,13 +72,13 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals (45, res);
-    }
+    )
+    assertEquals(45, res);
+  }
 
-	void testRangeWithJdk15StyleAndType() {
-      def res = shell.evaluate("""
-        @Compile
+  void testRangeWithJdk15StyleAndType() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def x = 0
 
@@ -91,13 +91,13 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-      assertEquals (45, res);
-    }
+    )
+    assertEquals(45, res);
+  }
 
-    void testList() {
-      def res = shell.evaluate("""
-        @Compile
+  void testList() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def x = 0
 
@@ -109,14 +109,14 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-      assertEquals (10, res); 
-    }
+    assertEquals(10, res);
+  }
 
-    void testArray() {
-      def res = shell.evaluate("""
-        @Compile
+  void testArray() {
+    def res = shell.evaluate("""
+        @Typed
         def u() {
           def array = (0..4).toArray()
           def x = 0
@@ -129,16 +129,16 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-      assertEquals (10, res);
+    assertEquals(10, res);
 
-    }
+  }
 
-    void testString() {
+  void testString() {
 
-      def res = shell.evaluate("""
-        @Compile
+    def res = shell.evaluate("""
+        @Typed
         def u(List v) {
           def text = "abc"
 
@@ -149,13 +149,13 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u([]);
       """
-      )
-      assertEquals (["a", "b", "c"], res);
-    }
+    )
+    assertEquals(["a", "b", "c"], res);
+  }
 
-    void testVector() {
-      def res = shell.evaluate("""
-        @Compile
+  void testVector() {
+    def res = shell.evaluate("""
+        @Typed
         def u(List v) {
           def vector = new Vector()
           vector.addAll([1, 2, 3])
@@ -167,14 +167,14 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u([]);
       """
-      )
-      assertEquals ([1, 2, 3], res);
+    )
+    assertEquals([1, 2, 3], res);
 
-    }
+  }
 
-    void testClassicFor() {
-      shell.evaluate("""
-        @Compile
+  void testClassicFor() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def sum = 0
           for (int i = 0; i < 10; i++) {
@@ -191,12 +191,12 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testClassicForNested() {
-            shell.evaluate("""
-        @Compile(debug=true)
+  void testClassicForNested() {
+    shell.evaluate("""
+        @Typed(debug=true)
         def u() {
           def sum = 0
             for (int i = 0; i < 10; i++) {
@@ -208,14 +208,14 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 
-    @Compile
-    void testClassicForWithContinue() {
-      shell.evaluate("""
-        @Compile(debug=true)
+  @Typed
+  void testClassicForWithContinue() {
+    shell.evaluate("""
+        @Typed(debug=true)
         def u() {
           def sum1 = 0
           for (int i = 0; i < 10; i++) {
@@ -235,12 +235,12 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testClassicForWithEmptyInitializer() {
-      shell.evaluate("""
-        @Compile
+  void testClassicForWithEmptyInitializer() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def i = 0
           def sum1 = 0
@@ -252,12 +252,12 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testClassicForWithEmptyBody() {
-      shell.evaluate("""
-        @Compile(debug=true)
+  void testClassicForWithEmptyBody() {
+    shell.evaluate("""
+        @Typed(debug=true)
         def u() {
           int i
           for (i = 0; i < 5; i++);
@@ -265,12 +265,12 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )      
-    }
+    )
+  }
 
-    void testClassicForWithEverythingInitCondNextExpressionsEmpty() {
-      shell.evaluate("""
-        @Compile
+  void testClassicForWithEverythingInitCondNextExpressionsEmpty() {
+    shell.evaluate("""
+        @Typed
         def u() {
           int counter = 0
           for (;;) {
@@ -282,7 +282,7 @@ class ForLoopTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 }

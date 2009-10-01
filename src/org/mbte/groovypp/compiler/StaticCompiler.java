@@ -1,6 +1,6 @@
 package org.mbte.groovypp.compiler;
 
-import groovy.lang.CompilePolicy;
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -30,7 +30,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     // exception blocks list
     private List<Runnable> exceptionBlocks = new ArrayList<Runnable>();
 
-    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, CompilePolicy policy) {
+    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, TypePolicy policy) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, policy);
         this.methodBytecode = methodBytecode;
     }

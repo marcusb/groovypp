@@ -1,15 +1,15 @@
 package org.mbte.groovypp.compiler
 
 public class PrefixPostfixTest extends GroovyShellTestCase {
-    void testPostfixVar() {
-        ["int", "Integer", "byte", "Byte",
-                "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                "char", "Character"].each {
+  void testPostfixVar() {
+    ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character"].each {
 
-            println it
+      println it
 
-            def res = shell.evaluate("""
-          @Compile
+      def res = shell.evaluate("""
+          @Typed
           def u ($it val, List res) {
             while(val) {
               res.add(val--)
@@ -19,27 +19,27 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
             u (($it)5,[])
             """
-            )
+      )
 
-            println res
-            assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
-        }
+      println res
+      assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
     }
+  }
 
-    void testPostfixProp() {
-        ["", "static"].each { st ->
-            ["int", "Integer", "byte", "Byte",
-                    "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                    "char", "Character"].each {
+  void testPostfixProp() {
+    ["", "static"].each {st ->
+      ["int", "Integer", "byte", "Byte",
+              "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+              "char", "Character"].each {
 
-                println it
+        println it
 
-                def res = shell.evaluate("""
+        def res = shell.evaluate("""
               class U {
                 public $st $it prop
               }
 
-              @Compile
+              @Typed
               def u (U u, List res) {
                 while(u.prop) {
                   res.add(u.prop--)
@@ -49,29 +49,29 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
                 u (new U(prop:($it)5),[])
                 """
-                )
+        )
 
-                println res
-                assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
-            }
-        }
+        println res
+        assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
+      }
     }
+  }
 
-    void testPrefixProp() {
-        ["", "static"].each { st ->
-            ["int", "Integer", "byte", "Byte",
-                    "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                    "char", "Character"].each {
+  void testPrefixProp() {
+    ["", "static"].each {st ->
+      ["int", "Integer", "byte", "Byte",
+              "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+              "char", "Character"].each {
 
-                println it
+        println it
 
-                def res = shell.evaluate("""
+        def res = shell.evaluate("""
             import org.mbte.groovygrid.compile.*
               class U {
                 public $st $it prop
               }
 
-              @Compile
+              @Typed
               def u (U u, List res) {
                 while(u.prop) {
                   res.add(--u.prop)
@@ -81,23 +81,23 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
                 u (new U(prop:($it)5),[])
                 """
-                )
+        )
 
-                println res
-                assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
-            }
-        }
+        println res
+        assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
+      }
     }
+  }
 
-    void testPostfixArr() {
-        ["int", "Integer", "byte", "Byte",
-                "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                "char", "Character"].each {
+  void testPostfixArr() {
+    ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character"].each {
 
-            println it
+      println it
 
-            def res = shell.evaluate("""
-    @Compile
+      def res = shell.evaluate("""
+    @Typed
     def U ($it[] val, List res) {
       while(val[0]) {
         res.add(val[0]--)
@@ -107,22 +107,22 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
       U ([($it)5] as $it[],[])
       """
-            )
+      )
 
-            println res
-            assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
-        }
+      println res
+      assertEquals([5, 4, 3, 2, 1], res.collect {jt -> (int) jt })
     }
+  }
 
-    void testPrefixVar() {
-        ["int", "Integer", "byte", "Byte",
-                "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                "char", "Character"].each {
+  void testPrefixVar() {
+    ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character"].each {
 
-            println it
+      println it
 
-            def res = shell.evaluate("""
-          @Compile
+      def res = shell.evaluate("""
+          @Typed
           def u ($it val, List res) {
             while(val) {
               res.add(--val)
@@ -132,22 +132,22 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
             u (($it)5,[])
             """
-            )
+      )
 
-            println res
-            assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
-        }
+      println res
+      assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
     }
+  }
 
-    void testPrefixArr() {
-        ["int", "Integer", "byte", "Byte",
-                "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                "char", "Character"].each {
+  void testPrefixArr() {
+    ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character"].each {
 
-            println it
+      println it
 
-            def res = shell.evaluate("""
-      @Compile
+      def res = shell.evaluate("""
+      @Typed
       def U ($it[] val, List res) {
         while(val[0]) {
           res.add(--val[0])
@@ -157,24 +157,24 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
         U ([($it)5] as $it[],[])
         """
-            )
+      )
 
-            println res
-            assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
-        }
+      println res
+      assertEquals([4, 3, 2, 1, 0], res.collect {jt -> (int) jt })
     }
+  }
 
-    void testVar() {
-        def types = ["int", "Integer", "byte", "Byte",
-                "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-                "char", "Character", "BigInteger", "BigInteger"]
+  void testVar() {
+    def types = ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character", "BigInteger", "BigInteger"]
 
-        types.each { jt ->
-        types.each { it ->
-            println "$it, $jt"
+    types.each {jt ->
+      types.each {it ->
+        println "$it, $jt"
 
-            def res = shell.evaluate("""
-      @Compile
+        def res = shell.evaluate("""
+      @Typed
       def U (List res) {
         $it val = ($jt)5
         while(val) {
@@ -185,11 +185,11 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
 
         U ([])
         """
-            )
+        )
 
-            println res
-            assertEquals([4, 3, 2, 1, 0], res)
-        }
-        }
+        println res
+        assertEquals([4, 3, 2, 1, 0], res)
+      }
     }
+  }
 }

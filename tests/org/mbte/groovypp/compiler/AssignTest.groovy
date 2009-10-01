@@ -2,32 +2,32 @@ package org.mbte.groovypp.compiler
 
 public class AssignTest extends GroovyShellTestCase {
 
-    void testVarAssign () {
-        def res = shell.evaluate("""
-@Compile
+  void testVarAssign() {
+    def res = shell.evaluate("""
+@Typed
 def u () {
   int x = 0
   (x = 10) + x
 }
 u ()
 """)
-        assertEquals 20, res
-    }
+    assertEquals 20, res
+  }
 
-    void testArrayAssign () {
-        def res = shell.evaluate("""
-@Compile
+  void testArrayAssign() {
+    def res = shell.evaluate("""
+@Typed
 def u (int [] x) {
   (x [1] = 10) + x [1]
 }
 u (new int [10])
 """)
-        assertEquals 20, res
-    }
+    assertEquals 20, res
+  }
 
-    void testArrayAssignViaProperty () {
-        def res = shell.evaluate("""
-@Compile
+  void testArrayAssignViaProperty() {
+    def res = shell.evaluate("""
+@Typed
 class A {
   int [] a
 
@@ -42,12 +42,12 @@ class A {
 
 new A().u (new int[10])
 """)
-        assertEquals (0..9, res)
-    }
+    assertEquals(0..9, res)
+  }
 
-    void testAssignProperty () {
-        def res = shell.evaluate("""
-@Compile
+  void testAssignProperty() {
+    def res = shell.evaluate("""
+@Typed
 class A {
   protected int a
 
@@ -61,12 +61,12 @@ class A {
 
 new A().u ().a
 """)
-        assertEquals 10, res
-    }
+    assertEquals 10, res
+  }
 
-    void testAssignField () {
-        def res = shell.evaluate("""
-@Compile
+  void testAssignField() {
+    def res = shell.evaluate("""
+@Typed
 class A {
   protected int a
 
@@ -80,14 +80,14 @@ class A {
 
 new A().u ().a
 """)
-        assertEquals 10, res
-    }
+    assertEquals 10, res
+  }
 
-    void testAssignFinalVar () {
+  void testAssignFinalVar() {
 
-    }
+  }
 
-    void testAssignFinalField () {
+  void testAssignFinalField() {
 
-    }
+  }
 }

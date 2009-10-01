@@ -1,6 +1,6 @@
 package org.mbte.groovypp.compiler;
 
-import groovy.lang.CompilePolicy;
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -14,21 +14,20 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.LinkedList;
-import java.io.Serializable;
 
-class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes{
+class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes {
     private final SourceUnit source;
     private final LinkedList toProcess;
     private final MethodNode methodNode;
     private final ClassNode classNode;
-    private final CompilePolicy policy;
+    private final TypePolicy policy;
 
     private ClosureMethodNode currentClosureMethod;
 
     private int currentClosureIndex;
     private String currentClosureName;
 
-    public ClosureExtractor(SourceUnit source, LinkedList toProcess, MethodNode methodNode, ClassNode classNode, CompilePolicy policy) {
+    public ClosureExtractor(SourceUnit source, LinkedList toProcess, MethodNode methodNode, ClassNode classNode, TypePolicy policy) {
         this.source = source;
         this.toProcess = toProcess;
         this.methodNode = methodNode;
@@ -37,11 +36,11 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     }
 
     void extract(Statement code, String baseName) {
-        currentClosureName = classNode.getName() + "$" + baseName.replace('<','_').replace('>','_');
+        currentClosureName = classNode.getName() + "$" + baseName.replace('<', '_').replace('>', '_');
         currentClosureIndex = 1;
 
         if (!methodNode.getName().equals("$doCall") && !methodNode.isAbstract())
-           code.visit(this);
+            code.visit(this);
     }
 
     protected SourceUnit getSourceUnit() {
@@ -87,10 +86,9 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
         final Parameter[] newParams;
         if (ce.getParameters() != null) {
-            newParams = new Parameter[ce.getParameters().length+1];
+            newParams = new Parameter[ce.getParameters().length + 1];
             System.arraycopy(ce.getParameters(), 0, newParams, 1, ce.getParameters().length);
-        }
-        else {
+        } else {
             newParams = new Parameter[1];
         }
         newParams[0] = new Parameter(newType, "$self");
@@ -141,11 +139,11 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     private void createCallMethod(ClosureExpression ce, ClassNode newType, final Parameter[] newParams, final String name) {
         newType.addMethod(
                 name,
-                    Opcodes.ACC_PUBLIC,
-                    ClassHelper.OBJECT_TYPE,
-                    ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
+                Opcodes.ACC_PUBLIC,
+                ClassHelper.OBJECT_TYPE,
+                ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
                 ClassNode.EMPTY_ARRAY,
-                new BytecodeSequence(new BytecodeInstruction(){
+                new BytecodeSequence(new BytecodeInstruction() {
                     public void visit(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
                         for (int i = 1, k = 1; i != newParams.length; ++i) {
@@ -154,19 +152,15 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                                 if (type == ClassHelper.long_TYPE) {
                                     mv.visitVarInsn(LLOAD, k++);
                                     k++;
-                                }
-                                else if (type == ClassHelper.double_TYPE) {
+                                } else if (type == ClassHelper.double_TYPE) {
                                     mv.visitVarInsn(DLOAD, k++);
                                     k++;
-                                }
-                                else if (type == ClassHelper.float_TYPE) {
+                                } else if (type == ClassHelper.float_TYPE) {
                                     mv.visitVarInsn(FLOAD, k++);
-                                }
-                                else {
+                                } else {
                                     mv.visitVarInsn(ILOAD, k++);
                                 }
-                            }
-                            else {
+                            } else {
                                 mv.visitVarInsn(ALOAD, k++);
                             }
                         }

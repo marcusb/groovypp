@@ -1,39 +1,39 @@
 package groovy
 
 class CastTest extends GroovyShellTestCase {
-    
-    void testCast() {
-      shell.evaluate("""
-        @Compile
+
+  void testCast() {
+    shell.evaluate("""
+        @Typed
         def methodWithShort(Short) {
           return "short"
         }
 
-        @Compile
+        @Typed
         def u() {
           def s = (Short) 5
           methodWithShort(s)
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testIntCast() {
-      shell.evaluate("""
-        @Compile
+  void testIntCast() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def i = (Integer) 'x'
           assert i instanceof Integer
         }
         u();
       """
-      )
-    }
-    
-    void testCharCompare() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testCharCompare() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def i = (Integer) 'x'
           def c = 'x'
@@ -50,13 +50,13 @@ class CastTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
-    
-    void testCharCast() {
-      shell.evaluate("""
-        @Compile
+  }
+
+  void testCharCast() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def c = (Character) 'x'
           assert c instanceof Character
@@ -65,12 +65,12 @@ class CastTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testPrimitiveCasting() {
-      shell.evaluate("""
-        @Compile
+  void testPrimitiveCasting() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def d = 1.23
           def i1 = (int)d
@@ -86,12 +86,12 @@ class CastTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testAsSet() {
-      shell.evaluate("""
-        @Compile
+  void testAsSet() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def mySet = [2, 3, 4, 3] as SortedSet
           assert mySet instanceof SortedSet
@@ -125,12 +125,12 @@ class CastTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testCastToAbstractClass() {
-      shell.evaluate("""
-        @Compile
+  void testCastToAbstractClass() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def closure = { 42 }
           def myList = closure as AbstractList
@@ -139,6 +139,6 @@ class CastTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 }

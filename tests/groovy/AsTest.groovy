@@ -1,17 +1,18 @@
 package groovy
+
 /**
  * Test case for using the "as" keyword to convert between strings
  * and numbers in both directions.
  */
 class AsTest extends GroovyShellTestCase {
 
-    def subject
-    /**
-     * Test that "as String" works for various types.
-     */
-    void testAsString() {
-      shell.evaluate("""
-        @Compile
+  def subject
+  /**
+   * Test that "as String" works for various types.
+   */
+  void testAsString() {
+    shell.evaluate("""
+        @Typed
         def u() {
           assert (48256846 as String) == "48256846"
           assert (0.345358 as String) == "0.345358"
@@ -20,12 +21,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsBigInteger() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsBigInteger() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "34587203957357" as BigInteger
           assert subject.class == BigInteger
@@ -33,12 +34,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsLong() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsLong() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "32498687" as Long
           assert subject.class == Long
@@ -46,12 +47,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsInt() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsInt() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "32498687" as int
           assert subject.class == Integer
@@ -59,12 +60,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsShort() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsShort() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "13279" as Short
           assert subject.class == Short
@@ -72,12 +73,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsByte() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsByte() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "12" as Byte
           assert subject.class == Byte
@@ -85,12 +86,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsBigDecimal() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsBigDecimal() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "12.54356" as BigDecimal
           assert subject.class == BigDecimal
@@ -98,12 +99,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsDouble() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsDouble() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "1.345" as double
           assert subject.class == Double
@@ -111,12 +112,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testStringAsFloat() {
-      shell.evaluate("""
-        @Compile
+  void testStringAsFloat() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = "1.345" as float
           assert subject.class == Float
@@ -124,12 +125,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-    
-    void testFloatAsBigDecimal() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testFloatAsBigDecimal() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = 0.1f as BigDecimal
           assert subject.class == BigDecimal
@@ -137,12 +138,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-    
-    void testDoubleAsBigDecimal() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testDoubleAsBigDecimal() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = 0.1d as BigDecimal
           assert subject.class == BigDecimal
@@ -150,12 +151,12 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
-    
-    void testFloatAsDouble() {
-      shell.evaluate("""
-        @Compile
+    )
+  }
+
+  void testFloatAsDouble() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def subject = 0.1f as Double
           assert subject.class == Double
@@ -163,6 +164,6 @@ class AsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 }

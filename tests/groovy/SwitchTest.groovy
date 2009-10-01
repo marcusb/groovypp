@@ -3,7 +3,7 @@ package groovy
 class SwitchTest extends GroovyShellTestCase {
 
   void testSwitch() {
-    shell.evaluate("""@Compile(debug=true)
+    shell.evaluate("""@Typed(debug=true)
         def callSwitch(x, expected) {
             def result = ""
             switch (x) {
@@ -50,7 +50,7 @@ class SwitchTest extends GroovyShellTestCase {
             assert result == expected
         }
 
-        @Compile
+        @Typed
         def u() {
           callSwitch("foo", "foo")
           callSwitch("bar", "barfoo")
@@ -75,7 +75,7 @@ class SwitchTest extends GroovyShellTestCase {
   // test the continue in switch, which should jump to the the while start
   void testSwitchScope() {
     shell.evaluate("""
-        @Compile
+        @Typed
         void u() {
           int i = 0
           int j = 0
@@ -102,7 +102,7 @@ class SwitchTest extends GroovyShellTestCase {
 
   void testSwitchWithClosure() {
     shell.evaluate("""
-        @Compile
+        @Typed
         def u() {
           switch (0) {
               case {true}: break
@@ -129,7 +129,7 @@ class SwitchTest extends GroovyShellTestCase {
   // TODO
   /** older versions of groovy produced a ListExpression for a
    fall through. the result was that it worked in some cases
-   and in other cases not. For example not for patterns  */
+   and in other cases not. For example not for patterns     */
   void testFallthroughToOtherCaseWithNoCode() {
     /*def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
  def i = 0

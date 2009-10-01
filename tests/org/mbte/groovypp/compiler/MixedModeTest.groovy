@@ -2,11 +2,11 @@ package org.mbte.groovypp.compiler
 
 public class MixedModeTest extends GroovyShellTestCase {
 
-    void testMe () {
-       def res = shell.evaluate("""
+  void testMe() {
+    def res = shell.evaluate("""
     import groovy.xml.*
 
-    @Compile(value=CompilePolicy.MIXED)
+    @Typed(value=TypePolicy.MIXED)
     class A {
         void m () {
             def writer = new StringWriter()
@@ -28,6 +28,6 @@ public class MixedModeTest extends GroovyShellTestCase {
 
     new A ().m ()
 """)
-    }
+  }
 
 }

@@ -1,9 +1,9 @@
 package org.mbte.groovypp.compiler
 
-public class CompareTest extends GroovyShellTestCase{
-  void testMath () {
+public class CompareTest extends GroovyShellTestCase {
+  void testMath() {
     shell.evaluate("""
-      @Compile
+      @Typed
       def u () {
         assert (10l == 10)
         assert (10 > 5G)
@@ -18,9 +18,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-  void testIntegerConstants () {
+  void testIntegerConstants() {
     shell.evaluate("""
-      @Compile
+      @Typed
       def u () {
           assert (10  >  5)
           assert (5  <  10)
@@ -42,9 +42,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-    void testDoubleConstants () {
+  void testDoubleConstants() {
     shell.evaluate("""
-      @Compile(debug=true)
+      @Typed(debug=true)
       def u () {
           assert (10.0d  >  5.0d)
           assert (5.0d  <  10.0d)
@@ -72,9 +72,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-  void testMixedTypeConstants () {
+  void testMixedTypeConstants() {
     shell.evaluate("""
-      @Compile
+      @Typed
       def u () {
           assert (10L  >  5.0)
           assert (5.0  <  10L)
@@ -85,9 +85,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-  void testAutounboxing () {
+  void testAutounboxing() {
     shell.evaluate("""
-      @Compile
+      @Typed
       def u () {
           assert (new Double(10)  >  new Double(5))
           assert (new Double(5)  <  new Integer(10))
@@ -98,9 +98,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-  void testNegativeZeros () {
+  void testNegativeZeros() {
     shell.evaluate("""
-      @Compile(debug=true)
+      @Typed(debug=true)
       def u () {
         assert (0.0f != -(0.0f))
         assert 0.0f == -0.0
@@ -112,9 +112,9 @@ public class CompareTest extends GroovyShellTestCase{
     """)
   }
 
-  void testClassTypes () {
+  void testClassTypes() {
     shell.evaluate("""
-      @Compile
+      @Typed
       def u () {
         assert (Float.TYPE == float)
         assert (Double.TYPE == double)

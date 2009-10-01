@@ -1,10 +1,9 @@
 package org.mbte.groovypp.compiler
 
-
 public class GStringTest extends GroovyShellTestCase {
 
-    void testCounter () {
-        def res = shell.evaluate("""
+  void testCounter() {
+    def res = shell.evaluate("""
 class Counter {
   public int value
 
@@ -16,7 +15,7 @@ class Counter {
   String toString () { value.toString() }
 }
 
-@Compile
+@Typed
 def m () {
   def counter = new Counter ()
   def gs = "counter \$counter"
@@ -29,5 +28,5 @@ def m () {
 
 m ()
         """)
-    }
+  }
 }

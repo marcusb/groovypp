@@ -2,9 +2,9 @@ package org.mbte.groovypp.compiler
 
 public class TypeInferenceTest extends GroovyShellTestCase {
 
-    void testAssert () {
-        def res = shell.evaluate ("""
-@Compile
+  void testAssert() {
+    def res = shell.evaluate("""
+@Typed
 class A extends GroovyTestCase {
     def m () {
         def list = []
@@ -27,13 +27,13 @@ class A extends GroovyTestCase {
 
 new A().m ()
         """)
-        assertTrue res 
-    }
+    assertTrue res
+  }
 
 
-  void testCast () {
-      def res = shell.evaluate ("""
-  @Compile
+  void testCast() {
+    def res = shell.evaluate("""
+  @Typed
   def m (val) {
     (List)val
     val.size ()
@@ -41,12 +41,12 @@ new A().m ()
 
   m ([1,2,3])
       """)
-      assertEquals 3, res
+    assertEquals 3, res
   }
 
-  void testInference () {
-    def res = shell.evaluate ("""
-@Compile
+  void testInference() {
+    def res = shell.evaluate("""
+@Typed
 def m () {
    def x = [1, 2, 3]
    x.leftShift(4)
@@ -79,9 +79,9 @@ def m () {
 
 m ()
     """)
-    assertEquals ([1,2,3,4,5,6.0d, 1, 10, "10 9"], res)
+    assertEquals([1, 2, 3, 4, 5, 6.0d, 1, 10, "10 9"], res)
   }
 
-  void testSafe () {
+  void testSafe() {
   }
 }

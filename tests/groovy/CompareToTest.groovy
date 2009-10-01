@@ -2,9 +2,9 @@ package groovy
 
 class CompareToTest extends GroovyShellTestCase {
 
-    void testCompareTo() {
-      shell.evaluate("""
-        @Compile
+  void testCompareTo() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def a = 12
           def b = 20
@@ -25,12 +25,12 @@ class CompareToTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-    void testNullCompares() {
-      shell.evaluate("""
-        @Compile
+  void testNullCompares() {
+    shell.evaluate("""
+        @Typed
         def u() {
           def a = 123
           def b = null
@@ -46,6 +46,6 @@ class CompareToTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 }

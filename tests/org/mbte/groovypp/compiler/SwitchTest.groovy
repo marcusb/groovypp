@@ -1,9 +1,9 @@
 package org.mbte.groovypp.compiler
 
 public class SwitchTest extends GroovyShellTestCase {
-  void testMe () {
-    def res = shell.evaluate ("""
-    @Compile(debug=true)
+  void testMe() {
+    def res = shell.evaluate("""
+    @Typed(debug=true)
     def u (v, List res) {
        switch (v) {
           case String:
@@ -34,6 +34,6 @@ public class SwitchTest extends GroovyShellTestCase {
     u (new Object(), res)
     res
     """)
-    assertEquals ([0, 0, null, 'string', 22.0, '???'], res)
+    assertEquals([0, 0, null, 'string', 22.0, '???'], res)
   }
 }

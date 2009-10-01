@@ -1,9 +1,9 @@
 package org.mbte.groovypp.compiler
 
 public class SyncTest extends GroovyShellTestCase {
-  void testSync () {
+  void testSync() {
     shell.evaluate """
-    @Compile
+    @Typed
     def u () {
       def o = new Object ();
       def exception = false

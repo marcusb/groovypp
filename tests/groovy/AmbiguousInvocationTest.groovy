@@ -1,11 +1,10 @@
 package groovy
 
-
 class AmbiguousInvocationTest extends GroovyShellTestCase {
 
-    void testAmbiguousInvocationWithFloats() {
-      def res = shell.evaluate ("""
-      @Compile
+  void testAmbiguousInvocationWithFloats() {
+    def res = shell.evaluate("""
+      @Typed
       public class DummyMethodsGroovy {
           public String foo(String a, float b, float c) {
               return "f";
@@ -16,7 +15,7 @@ class AmbiguousInvocationTest extends GroovyShellTestCase {
           }
       }
 
-      @Compile
+      @Typed
       def u(List res) {
         DummyMethodsGroovy dummy1 = new DummyMethodsGroovy();
         res << dummy1.foo("bar", 1.0f, 2.0f)
@@ -30,6 +29,6 @@ class AmbiguousInvocationTest extends GroovyShellTestCase {
 
       u([])
     """)
-      assertEquals(["f", "f", "f", "i", "i", "i"], res)
-    }
+    assertEquals(["f", "f", "f", "i", "i", "i"], res)
+  }
 }

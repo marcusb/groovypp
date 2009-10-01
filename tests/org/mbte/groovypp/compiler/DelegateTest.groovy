@@ -1,10 +1,9 @@
 package org.mbte.groovypp.compiler
 
-import org.codehaus.groovy.runtime.InvokerInvocationException
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.InvokerHelper
 
-public class DelegateTest extends GroovyShellTestCase { 
-  void testDelegate () {
+public class DelegateTest extends GroovyShellTestCase {
+  void testDelegate() {
     shell.evaluate """
 public interface Pool {
     void resize(int poolSize);
@@ -15,7 +14,7 @@ public interface Pool {
 
     void shutdown();
 }
-       @Compile
+       @Typed
        abstract class Group {
           protected @Delegate Pool pool
        }
@@ -25,9 +24,9 @@ public interface Pool {
   }
 
 
-  void testField () {
-    def res = shell.evaluate ("""
-@Compile
+  void testField() {
+    def res = shell.evaluate("""
+@Typed
 class CommonActorImpl  {
     protected volatile boolean sendRepliesFlag = true
 
@@ -44,16 +43,16 @@ new CommonActorImpl ()
     res.sendRepliesFlag = false
     assertFalse res.sendRepliesFlag
     res.sendRepliesFlag = true
-    assertTrue  res.sendRepliesFlag
+    assertTrue res.sendRepliesFlag
   }
 
-  void testIfaceSetter () {
-    def res = shell.evaluate ("""
+  void testIfaceSetter() {
+    def res = shell.evaluate("""
 interface I {
   void setValue (def x)
 }
 
-@Compile
+@Typed
 class CI implements I {
   def v
 
@@ -68,7 +67,7 @@ class CI implements I {
 
 new CI ()
     """)
-    assertEquals (10, InvokerHelper.invokeMethod(res, "test", 10))
+    assertEquals(10, InvokerHelper.invokeMethod(res, "test", 10))
   }
 }
 

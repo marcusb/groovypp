@@ -2,9 +2,9 @@ package org.mbte.groovypp.compiler
 
 public class CompileTest extends GroovyShellTestCase {
 
-  void testProp () {
-      def res = shell.evaluate ("""
-@Compile
+  void testProp() {
+    def res = shell.evaluate("""
+@Typed
 class X {
   Integer prop
 
@@ -15,12 +15,12 @@ class X {
 
 new X (prop:10).m ()
       """)
-      println res
-      assertEquals ([10L, 10d], res)
+    println res
+    assertEquals([10L, 10d], res)
   }
 
-  void testIface () {
-      def res = shell.evaluate ("""
+  void testIface() {
+    def res = shell.evaluate("""
 interface I {
   int oneMethod (List list1, List list2)
 }
@@ -29,7 +29,7 @@ int method(List l1, List l2, I i) {
    i.oneMethod(l1, l2)
 }
 
-@Compile
+@Typed
 int test () {
    method([1, 2], [3, 4, 5]) {
       List l1, List l2 ->
@@ -39,13 +39,13 @@ int test () {
 
 test ()
       """)
-      println res
-      assertEquals (5, res)
+    println res
+    assertEquals(5, res)
   }
 
-    void testIDef () {
+  void testIDef() {
 //        def res = shell.evaluate ("""
-//@Compile
+//@Typed
 //class A extends GroovyTestCase {
 //
 //  @IDef
@@ -67,11 +67,11 @@ test ()
 //        """)
 //        println res
 //        assertEquals ([16, 40], res)
-    }
+  }
 
-    void testClass () {
-        def res = shell.evaluate ("""
-@Compile
+  void testClass() {
+    def res = shell.evaluate("""
+@Typed
 class A {
   static def doIt (int a = 0, int b = 5){
     a + b
@@ -89,18 +89,18 @@ class A {
 def a = new A()
 [a.test (), a.list().call(), a.list().call(1), a.list().call(1,2)]
         """)
-        println res
-        assertEquals ([8, 5, 4, 3], res)
-    }
+    println res
+    assertEquals([8, 5, 4, 3], res)
+  }
 
-    void testTypedClosure () {
-        def res = shell.evaluate ("""
+  void testTypedClosure() {
+    def res = shell.evaluate("""
 def v (TypedClosure<List> cl) {
   cl.setDelegate ([])
   cl.call()
 }
 
-@Compile
+@Typed
 def u () {
    v {
       add (v { 3 })
@@ -111,16 +111,16 @@ def u () {
 u()
         """)
 
-        assertEquals ([3], res )
-    }
+    assertEquals([3], res)
+  }
 
-    void testClosure () {
-        def res = shell.evaluate ("""
+  void testClosure() {
+    def res = shell.evaluate("""
 def v (Closure cl) {
   cl.call()
 }
 
-@Compile
+@Typed
 def u () {
    List s = [1, 2, 3, 4]
 
@@ -139,13 +139,13 @@ def u () {
 u()
         """)
 
-        assertEquals ([1, 2, 3, 4, 1, 2, 3, 4], res ) 
-    }
+    assertEquals([1, 2, 3, 4, 1, 2, 3, 4], res)
+  }
 
-    void testAssert() {
-        shouldFail(AssertionError) {
-            shell.evaluate """
-    @Compile
+  void testAssert() {
+    shouldFail(AssertionError) {
+      shell.evaluate """
+    @Typed
     def u () {
        assert 4
 
@@ -154,56 +154,56 @@ u()
 
     u ()
       """
-        }
     }
+  }
 
-    void testAssert2() {
+  void testAssert2() {
 
-        shouldFail(AssertionError) {
-            println(shell.evaluate("""
-    @Compile
+    shouldFail(AssertionError) {
+      println(shell.evaluate("""
+    @Typed
     def u () {
        assert (!(12 && 1L))  || ("XXX" && 0)
     }
 
     u ()
       """
-            ))
-        }
+      ))
     }
+  }
 
-    void testList() {
-        def res = shell.evaluate("""
-    @Compile
+  void testList() {
+    def res = shell.evaluate("""
+    @Typed
     def u () {
        [1, *[false,7], null, *[], *[3,4,5]]
     }
 
     u ()
       """
-        )
+    )
 
-        assertEquals([1, false, 7, null, 3, 4, 5], res)
-    }
+    assertEquals([1, false, 7, null, 3, 4, 5], res)
+  }
 
-    void testMap() {
-        def res = shell.evaluate("""
-      @Compile
+  void testMap() {
+    def res = shell.evaluate("""
+      @Typed
       def u () {
          [a:1, b:2, c:3, d:4, false:5]
       }
 
       u ()
         """
-        )
+    )
 
-        Map expected = [a: 1, b: 2, c: 3, d: 4, false: 5]
-        assertEquals(expected, res)
-    }
+    Map expected = [a: 1, b: 2, c: 3, d: 4, false: 5]
+    assertEquals(expected, res)
+  }
 
-    void testIf() {
-        def res = shell.evaluate("""
-      @Compile
+  void testIf() {
+    def res = shell.evaluate("""
+      @Typed
       def u (val) {
          if (val == true)
            "true"
@@ -217,9 +217,9 @@ u()
 
       [u (true), u(false), u("abc")]
         """
-        )
+    )
 
-        assertEquals(["true", "not true", "abc"], res)
-    }
+    assertEquals(["true", "not true", "abc"], res)
+  }
 
 }

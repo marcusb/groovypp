@@ -1,10 +1,10 @@
 package groovy
 
 class CompareEqualsTest extends GroovyShellTestCase {
-    void testEqualsOperatorIsMultimethodAware() {
-      shell.evaluate("""
+  void testEqualsOperatorIsMultimethodAware() {
+    shell.evaluate("""
 
-        @Compile
+        @Typed
         class Xyz {
             boolean equals(Xyz other) {
                 true
@@ -19,7 +19,7 @@ class CompareEqualsTest extends GroovyShellTestCase {
             }
         }
 
-        @Compile
+        @Typed
         def u() {
           assert new Xyz() == new Xyz()
           assert new Xyz().equals(new Xyz())
@@ -27,7 +27,7 @@ class CompareEqualsTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 }

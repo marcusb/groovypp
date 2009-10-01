@@ -1,17 +1,17 @@
 package groovy
 
-import static groovy.CompileTestSupport.shouldNotCompile;
-import static groovy.CompileTestSupport.shouldCompile;
+import static groovy.CompileTestSupport.shouldCompile
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
-  void testInterface () {
-    def res = shell.evaluate ("""
+  void testInterface() {
+    def res = shell.evaluate("""
       interface A {
           void methodOne(Object o)
           Object methodTwo()
       }
 
-      @Compile
+      @Typed
       class B implements A {
           void methodOne(Object o){}
           Object methodTwo(){
@@ -23,18 +23,18 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
       def b = new B();
       return b.methodTwo()
     """)
-    assertEquals (res.class, Object)
+    assertEquals(res.class, Object)
   }
 
 
   void testClassImplementingAnInterfaceButMissesMethod() {
-      shouldNotCompile """
+    shouldNotCompile """
           interface A {
               void methodOne(Object o)
               Object methodTwo()
           }
 
-          @Compile		
+          @Typed
           class B implements A {
               void methodOne(Object o){assert true}
           }
@@ -43,7 +43,7 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
           return b.methodTwo()
           """
 
-      shouldNotCompile """
+    shouldNotCompile """
           interface A {
               Object methodTwo()
           }
@@ -51,7 +51,7 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
               void methodOne(Object o)
           }
 
-          @Compile
+          @Typed
           class C implements A {
               void methodOne(Object o){assert true}
           }
@@ -62,10 +62,10 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
   }
 
   void testClassImplementingNestedInterfaceShouldContainMethodsFromSuperInterfaces() {
-      shouldNotCompile """
+    shouldNotCompile """
           interface A { def a() }
           interface B extends A { def b() }
-          @Compile
+          @Typed
           class BImpl implements B {
               def b(){ println 'foo' }
           }
@@ -73,9 +73,9 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
           """
   }
 
-  	void testAbstractClass() {
-    	def shell = new GroovyShell()
-        def text = """
+  void testAbstractClass() {
+    def shell = new GroovyShell()
+    def text = """
         	abstract class A {
 				abstract void methodOne(Object o)
 				Object methodTwo(){
@@ -84,7 +84,7 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 					return new Object()
 				}
 			}
-            @Compile
+            @Typed
 			class B extends A {
 				void methodOne(Object o){assert true}
 			}
@@ -92,13 +92,13 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 			def b = new B();
 			return b.methodTwo()
 			"""
-		def retVal = shell.evaluate(text)
-		assert retVal.class == Object
-	}
+    def retVal = shell.evaluate(text)
+    assert retVal.class == Object
+  }
 
-	void testClassExtendingAnAbstractClassButMissesMethod() {
-        shouldNotCompile """
-            @Compile
+  void testClassExtendingAnAbstractClassButMissesMethod() {
+    shouldNotCompile """
+            @Typed
         	abstract class A {
 				abstract void methodOne(Object o)
 				Object methodTwo(){
@@ -109,21 +109,21 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 				abstract void MethodThree()
 			}
 
-            @Compile
+            @Typed
 			abstract class B extends A {
 				void methodOne(Object o){assert true}
 			}
 
-            @Compile
+            @Typed
 			class C extends B{}
 
 			def b = new C();
 			return b.methodTwo()
 			"""
 
-       shouldNotCompile """
+    shouldNotCompile """
 
-            @Compile
+            @Typed
         	abstract class A {
 				abstract void methodOne(Object o)
 				Object methodTwo(){
@@ -134,7 +134,7 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 				abstract void MethodThree()
 			}
 
-            @Compile
+            @Typed
 			class B extends A {
 				void methodOne(Object o){assert true}
 			}
@@ -142,21 +142,21 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 			def b = new B();
 			return b.methodTwo()
 			"""
-	}
+  }
 
-	void testInterfaceAbstractClassCombination() {
-    	def shell = new GroovyShell()
-        def text = """
+  void testInterfaceAbstractClassCombination() {
+    def shell = new GroovyShell()
+    def text = """
 			interface A {
 				void methodOne()
 			}
 
-            @Compile
+            @Typed
 			abstract class B implements A{
 				abstract void methodTwo()
 			}
 
-            @Compile
+            @Typed
 			class C extends B {
 				void methodOne(){assert true}
 				void methodTwo(){
@@ -166,73 +166,73 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
 			def c = new C()
 			c.methodTwo()
 			"""
-		shell.evaluate(text)
+    shell.evaluate(text)
 
-		shouldNotCompile """
+    shouldNotCompile """
 			interface A {
 				void methodOne()
 			}
 
-            @Compile
+            @Typed
 			abstract class B implements A{
 				abstract void methodTwo()
 			}
 
-            @Compile
+            @Typed
 			class C extends B {}
 			def c = new c()
 			c.methodTwo()
 			"""
-	}
+  }
 
 
-	void testAccessToInterfaceField() {
-    	def shell = new GroovyShell()
-        def text = """
+  void testAccessToInterfaceField() {
+    def shell = new GroovyShell()
+    def text = """
 			interface A {
 				def foo=1
 			}
 
-            @Compile
+            @Typed
             class B implements A {
               def foo(){foo}
             }
             assert new B().foo()==1
 	   """
-	   shell.evaluate(text)
-	}
+    shell.evaluate(text)
+  }
 
-	void testImplementsDuplicateInterface() {
-        shouldCompile """
+  void testImplementsDuplicateInterface() {
+    shouldCompile """
         interface I {}
-        @Compile
+        @Typed
         class C implements I {}
         """
-        shouldNotCompile """
+    shouldNotCompile """
         interface I {}
-        @Compile
+        @Typed
         class C implements I, I {}
         """
-    }
+  }
 
-	void testDefaultMethodParamsNotAllowedInInterface() {
-        shouldNotCompile """
+  void testDefaultMethodParamsNotAllowedInInterface() {
+    shouldNotCompile """
         interface Foo {
            def doit( String param = "Groovy", int o )
         }
         """
-    }
+  }
 
-    void testClassImplementsItselfCreatingACycle() {
-        shouldNotCompile """
+  void testClassImplementsItselfCreatingACycle() {
+    shouldNotCompile """
             package p1
-            @Compile
+            @Typed
             class XXX implements XXX {}
         """
 
-        shouldNotCompile """
-            @Compile
+    shouldNotCompile """
+            @Typed
             class YYY implements YYY {}
         """
-    }
+  }
 }
