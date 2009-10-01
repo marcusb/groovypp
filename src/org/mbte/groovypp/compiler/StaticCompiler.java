@@ -12,7 +12,6 @@ import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.codehaus.groovy.GroovyBugError;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
 import org.mbte.groovypp.compiler.bytecode.LocalVarInferenceTypes;
@@ -21,9 +20,9 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private StaticMethodBytecode methodBytecode;
@@ -48,15 +47,18 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         return methodBytecode.su;
     }
 
+    private int lastLine = -1;
+
     @Override
     protected void visitStatement(Statement statement) {
         super.visitStatement(statement);
 
         int line = statement.getLineNumber();
-        if (line >= 0 && mv != null) {
+        if (line >= 0 && mv != null && line != lastLine) {
             Label l = new Label();
             mv.visitLabel(l);
             mv.visitLineNumber(line, l);
+            lastLine = line;
         }
     }
 
@@ -71,9 +73,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitTypeInsn(NEW, "java/lang/AssertionError");
         mv.visitInsn(DUP);
         if (msgExpr != null)
-          msgExpr.visit(mv);
+            msgExpr.visit(mv);
         else
-          mv.visitLdcInsn("<no message>");
+            mv.visitLdcInsn("<no message>");
         mv.visitMethodInsn(INVOKESPECIAL, "java/lang/AssertionError", "<init>", "(Ljava/lang/Object;)V");
         mv.visitInsn(ATHROW);
         mv.visitLabel(noError);
@@ -87,14 +89,13 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         if (type == ClassHelper.Boolean_TYPE) {
             be.unbox(ClassHelper.boolean_TYPE);
-        }
-        else {
+        } else {
             if (ClassHelper.isPrimitiveType(type)) {
                 // unwrapper - primitive
                 if (type == ClassHelper.byte_TYPE
-                 || type == ClassHelper.short_TYPE
-                 || type == ClassHelper.char_TYPE
-                 || type == ClassHelper.int_TYPE) {
+                        || type == ClassHelper.short_TYPE
+                        || type == ClassHelper.char_TYPE
+                        || type == ClassHelper.int_TYPE) {
                 } else if (type == ClassHelper.long_TYPE) {
                     mv.visitInsn(L2I);
                 } else if (type == ClassHelper.float_TYPE) {
@@ -102,8 +103,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 } else if (type == ClassHelper.double_TYPE) {
                     mv.visitInsn(D2I);
                 }
-            }
-            else {
+            } else {
                 mv.visitMethodInsn(INVOKESTATIC, DTT, "castToBoolean", "(Ljava/lang/Object;)Z");
             }
         }
@@ -140,8 +140,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
             if (type == ClassHelper.long_TYPE || type == ClassHelper.double_TYPE) {
                 mv.visitInsn(POP2);
-            }
-            else {
+            } else {
                 mv.visitInsn(POP);
             }
         }
@@ -190,7 +189,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         compileStack.pop();
     }
 
-	private void visitForLoopWithClosures(ForStatement forLoop) {
+    private void visitForLoopWithClosures(ForStatement forLoop) {
 
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
 
@@ -207,11 +206,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             initExpression.pop(initExpression.getType());
         }
 
-        Label cond = new Label ();
+        Label cond = new Label();
         mv.visitLabel(cond);
 
         if (!(loopExpr.get(1) instanceof EmptyExpression)) {
-            final BytecodeExpr binaryExpression =  transformLogical(loopExpr.get(1), breakLabel, false);
+            final BytecodeExpr binaryExpression = transformLogical(loopExpr.get(1), breakLabel, false);
             binaryExpression.visit(mv);
         }
 
@@ -227,8 +226,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
                 if (type == ClassHelper.long_TYPE || type == ClassHelper.double_TYPE) {
                     mv.visitInsn(POP2);
-                }
-                else {
+                } else {
                     mv.visitInsn(POP);
                 }
             }
@@ -294,12 +292,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         final ClassNode returnType = methodNode.getReturnType();
         if (returnType.equals(ClassHelper.VOID_TYPE)) {
             compileStack.applyFinallyBlocks();
-        }
-        else {
+        } else {
             if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
                 mv.visitInsn(ACONST_NULL);
-            }
-            else {
+            } else {
                 bytecodeExpr.box(exprType);
                 bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType));
             }
@@ -339,7 +335,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         BytecodeExpr cond = (BytecodeExpr) transform(statement.getExpression());
         cond.visit(mv);
         if (ClassHelper.isPrimitiveType(cond.getType()))
-           cond.box(cond.getType());
+            cond.box(cond.getType());
 
         // switch does not have a continue label. use its parent's for continue
         Label breakLabel = compileStack.pushSwitch();
@@ -348,17 +344,64 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         List caseStatements = statement.getCaseStatements();
         int caseCount = caseStatements.size();
-        Label[] labels = new Label[caseCount + 1];
-        for (int i = 0; i < caseCount; i++) {
-            labels[i] = new Label();
+        Label[] codeLabels = new Label[caseCount];
+        Label[] condLabels = new Label[caseCount + 1];
+        int i;
+        for (i = 0; i < caseCount; i++) {
+            codeLabels[i] = new Label();
+            condLabels[i] = new Label();
         }
 
-        int i = 0;
+        Label defaultLabel = new Label();
+
+        i = 0;
         for (Iterator iter = caseStatements.iterator(); iter.hasNext(); i++) {
             CaseStatement caseStatement = (CaseStatement) iter.next();
-            compileCaseStatement(cond, caseStatement, switchVariableIndex, labels[i], labels[i + 1]);
+
+            mv.visitLabel(condLabels[i]);
+
+            visitStatement(caseStatement);
+
+            mv.visitVarInsn(ALOAD, switchVariableIndex);
+            final BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
+            option.visit(mv);
+            if (ClassHelper.isPrimitiveType(option.getType()))
+                option.box(option.getType());
+
+            Label next = i == caseCount - 1 ? defaultLabel : condLabels[i + 1];
+
+            Label notNull = new Label();
+            mv.visitInsn(DUP);
+            mv.visitJumpInsn(IFNONNULL, notNull);
+            mv.visitJumpInsn(IF_ACMPEQ, codeLabels[i]);
+            mv.visitJumpInsn(GOTO, next);
+
+            mv.visitLabel(notNull);
+
+            final BytecodeExpr caseValue = new BytecodeExpr(option, ClassHelper.getWrapper(option.getType())) {
+                protected void compile() {
+                }
+            };
+
+            final BytecodeExpr switchValue = new BytecodeExpr(cond, ClassHelper.getWrapper(cond.getType())) {
+                protected void compile() {
+                    mv.visitInsn(SWAP);
+                }
+            };
+            transformLogical(new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue)), codeLabels[i], true).visit(mv);
         }
 
+        mv.visitJumpInsn(GOTO, defaultLabel);
+
+        i = 0;
+        for (Iterator iter = caseStatements.iterator(); iter.hasNext(); i++) {
+            CaseStatement caseStatement = (CaseStatement) iter.next();
+            visitStatement(caseStatement);
+            mv.visitLabel(codeLabels[i]);
+            caseStatement.getCode().visit(this);
+        }
+
+        mv.visitLabel(defaultLabel);
         statement.getDefaultStatement().visit(this);
 
         mv.visitLabel(breakLabel);
@@ -368,53 +411,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitCaseStatement(CaseStatement statement) {
-    }
-
-    private void compileCaseStatement(
-            BytecodeExpr cond, CaseStatement statement,
-            int switchVariableIndex,
-            Label thisLabel,
-            Label nextLabel) {
-        visitStatement(statement);
-        
-        mv.visitVarInsn(ALOAD, switchVariableIndex);
-        final BytecodeExpr option = (BytecodeExpr) transform(statement.getExpression());
-        option.visit(mv);
-        if (ClassHelper.isPrimitiveType(option.getType()))
-           option.box(option.getType());
-
-        Label l0 = new Label();
-
-        Label notNull = new Label ();
-        mv.visitInsn(DUP);
-        mv.visitJumpInsn(IFNONNULL, notNull);
-        mv.visitJumpInsn(IF_ACMPEQ, thisLabel);
-        mv.visitJumpInsn(GOTO, l0);
-
-        mv.visitLabel(notNull);
-
-        final BytecodeExpr caseValue = new BytecodeExpr(option, ClassHelper.getWrapper(option.getType())) {
-            protected void compile() {
-            }
-        };
-
-        final BytecodeExpr switchValue = new BytecodeExpr(cond, ClassHelper.getWrapper(cond.getType())) {
-            protected void compile() {
-                mv.visitInsn(SWAP);
-            }
-        };
-        transformLogical(new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue)), l0, false).visit(mv);
-        mv.visitLabel(thisLabel);
-
-        statement.getCode().visit(this);
-
-        // now if we don't finish with a break we need to jump past
-        // the next comparison
-        if (nextLabel != null) {
-            mv.visitJumpInsn(GOTO, nextLabel);
-        }
-
-        mv.visitLabel(l0);
     }
 
     @Override
@@ -431,7 +427,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         super.visitSynchronizedStatement(sync);
 
-        ((BytecodeExpr)sync.getExpression()).visit(mv);
+        ((BytecodeExpr) sync.getExpression()).visit(mv);
         final int index = compileStack.defineTemporaryVariable("synchronized", ClassHelper.OBJECT_TYPE, true);
 
         final Label synchronizedStart = new Label();
@@ -454,7 +450,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         finallyPart.run();
         mv.visitJumpInsn(GOTO, synchronizedEnd);
-        ((StackAwareMethodAdapter)mv).startExceptionBlock(); // exception variable
+        ((StackAwareMethodAdapter) mv).startExceptionBlock(); // exception variable
         mv.visitLabel(catchAll);
         finallyPart.run();
         mv.visitInsn(ATHROW);
@@ -473,7 +469,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         visitStatement(ts);
 
         super.visitThrowStatement(ts);
-        ((BytecodeExpr)ts.getExpression()).visit(mv);
+        ((BytecodeExpr) ts.getExpression()).visit(mv);
         mv.visitInsn(ATHROW);
     }
 
@@ -528,7 +524,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             final Label catchStart = new Label();
             mv.visitLabel(catchStart);
 
-            ((StackAwareMethodAdapter)mv).startExceptionBlock();
+            ((StackAwareMethodAdapter) mv).startExceptionBlock();
 
             // create exception variable and store the exception
             compileStack.pushState();
@@ -564,7 +560,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         // start a block catching any Exception
         final Label catchAny = new Label();
         mv.visitLabel(catchAny);
-        ((StackAwareMethodAdapter)mv).startExceptionBlock();
+        ((StackAwareMethodAdapter) mv).startExceptionBlock();
         //store exception
         mv.visitVarInsn(ASTORE, anyExceptionIndex);
         finallyStatement.visit(this);
@@ -597,10 +593,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public void visitBytecodeSequence(BytecodeSequence sequence) {
         visitStatement(sequence);
 
-        ((BytecodeInstruction)sequence.getInstructions().get(0)).visit(mv);
+        ((BytecodeInstruction) sequence.getInstructions().get(0)).visit(mv);
     }
 
     public LocalVarInferenceTypes getLocalVarInferenceTypes() {
-        return ((BytecodeImproverMethodAdapter)mv).getLocalVarInferenceTypes();
+        return ((BytecodeImproverMethodAdapter) mv).getLocalVarInferenceTypes();
     }
 }

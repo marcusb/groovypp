@@ -2,10 +2,8 @@ package groovy
 
 class SwitchTest extends GroovyShellTestCase {
 
-    void testSwitch() {
-      shell.evaluate("""
-
-        @Compile
+  void testSwitch() {
+    shell.evaluate("""@Compile(debug=true)
         def callSwitch(x, expected) {
             def result = ""
             switch (x) {
@@ -71,13 +69,12 @@ class SwitchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
-    }
+    )
+  }
 
-
-    // test the continue in switch, which should jump to the the while start
-    void testSwitchScope() {
-      shell.evaluate("""
+  // test the continue in switch, which should jump to the the while start
+  void testSwitchScope() {
+    shell.evaluate("""
         @Compile
         void u() {
           int i = 0
@@ -99,12 +96,12 @@ class SwitchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 
-    void testSwitchWithClosure() {
-      shell.evaluate("""
+  void testSwitchWithClosure() {
+    shell.evaluate("""
         @Compile
         def u() {
           switch (0) {
@@ -125,113 +122,112 @@ class SwitchTest extends GroovyShellTestCase {
         }
         u();
       """
-      )
+    )
 
-    }
+  }
 
+  // TODO
+  /** older versions of groovy produced a ListExpression for a
+   fall through. the result was that it worked in some cases
+   and in other cases not. For example not for patterns  */
+  void testFallthroughToOtherCaseWithNoCode() {
+    /*def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
+ def i = 0
+ a.each {
+     switch (it) {
+         case ~/.*java$/:
+         case ~/.*groovy$/:
+             i++
+             break
+         default:
+             i += 10
+     }
+ }
+ assertEquals 12, i */
+  }
 
-    // TODO
-    /** older versions of groovy produced a ListExpression for a
-        fall through. the result was that it worked in some cases
-        and in other cases not. For example not for patterns */
-    void testFallthroughToOtherCaseWithNoCode() {
-        /*def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
-        def i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                case ~/.*groovy$/:
-                    i++
-                    break
-                default:
-                    i += 10
-            }
+  // TODO
+  void testFallthroughToOtherCaseWithCode() {
+    /*
+ def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
+ def i = 0
+ a.each {
+     switch (it) {
+         case ~/.*java$/:
+             i += 5
+         case ~/.*groovy$/:
+             i++
+             break
+         default:
+             i += 10
+     }
+ }
+ assertEquals 17, i */
+  }
+
+  // TODO
+  void testFallthroughToDefaultWithNoCode() {
+    /*
+    def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
+    def i = 0
+    a.each {
+        switch (it) {
+            case ~/.*java$/:
+                i++
+                break
+            case ~/.*groovy$/:
+            default:
+                i += 10
         }
-        assertEquals 12, i */
     }
+    assertEquals 21, i
+    */
+  }
 
-    // TODO
-    void testFallthroughToOtherCaseWithCode() {
-        /*
-        def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
-        def i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                    i += 5
-                case ~/.*groovy$/:
-                    i++
-                    break
-                default:
-                    i += 10
-            }
+  // TODO
+  void testFallthroughToDefaultWithCode() {
+    /*
+    def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
+    def i = 0
+    a.each {
+        switch (it) {
+            case ~/.*java$/:
+                i++
+                break
+            case ~/.*groovy$/:
+                i += 5
+            default:
+                i += 10
         }
-        assertEquals 17, i */
     }
+    assertEquals 26, i
+    */
+  }
 
-    // TODO
-    void testFallthroughToDefaultWithNoCode() {
-        /*
-        def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
-        def i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                    i++
-                    break
-                case ~/.*groovy$/:
-                default:
-                    i += 10
-            }
-        }
-        assertEquals 21, i
-        */
-    }
-
-    // TODO
-    void testFallthroughToDefaultWithCode() {
-        /*
-        def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
-        def i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                    i++
-                    break
-                case ~/.*groovy$/:
-                    i += 5
-                default:
-                    i += 10
-            }
-        }
-        assertEquals 26, i
-        */
-    }
-
-    // TODO
-    void testSwitchNoStatementsAtEnd() {
-      /*
-        def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
-        def i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                    i++
-                    break
-                case ~/.*groovy$/: break
-            }
-        }
-        assertEquals 1, i
-        i = 0
-        a.each {
-            switch (it) {
-                case ~/.*java$/:
-                    i++
-                    break
-                default: break
-            }
-        }
-        assertEquals 1, i
-       */
-    }
+  // TODO
+  void testSwitchNoStatementsAtEnd() {
+    /*
+     def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
+     def i = 0
+     a.each {
+         switch (it) {
+             case ~/.*java$/:
+                 i++
+                 break
+             case ~/.*groovy$/: break
+         }
+     }
+     assertEquals 1, i
+     i = 0
+     a.each {
+         switch (it) {
+             case ~/.*java$/:
+                 i++
+                 break
+             default: break
+         }
+     }
+     assertEquals 1, i
+    */
+  }
 }

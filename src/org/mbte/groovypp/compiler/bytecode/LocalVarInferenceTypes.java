@@ -11,14 +11,14 @@ import java.util.Map;
 
 public class LocalVarInferenceTypes extends BytecodeLabelInfo {
 
-    private IdentityHashMap<Variable, ClassNode> defVars;
+    IdentityHashMap<Variable, ClassNode> defVars;
     private boolean visited;
 
-    public void add (VariableExpression ve, ClassNode type) {
-       if (defVars == null)
-          defVars = new IdentityHashMap<Variable, ClassNode>();
+    public void add(VariableExpression ve, ClassNode type) {
+        if (defVars == null)
+            defVars = new IdentityHashMap<Variable, ClassNode>();
 
-       defVars.put(ve.getAccessedVariable(), type);
+        defVars.put(ve.getAccessedVariable(), type);
     }
 
     public ClassNode get(VariableExpression ve) {
@@ -33,8 +33,7 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
         final ClassNode oldType = defVars.get(ve.getAccessedVariable());
         if (oldType == null) {
             defVars.put(ve.getAccessedVariable(), type);
-        }
-        else {
+        } else {
             if (oldType != TypeUtil.NULL_TYPE) {
                 if (TypeUtil.isDirectlyAssignableFrom(oldType, type))
                     defVars.put(ve.getAccessedVariable(), type);
@@ -47,7 +46,7 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
         if (visited) {
             // jump back - we need to check for conflict
             if (cur.defVars != null)
-                for (Map.Entry<Variable,ClassNode> e : cur.defVars.entrySet()) {
+                for (Map.Entry<Variable, ClassNode> e : cur.defVars.entrySet()) {
                     final ClassNode oldType = defVars.get(e.getKey());
                     if (oldType != null) {
                         if (!TypeUtil.isDirectlyAssignableFrom(oldType, e.getValue()))
@@ -56,22 +55,20 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
                 }
             else
                 throw new RuntimeException("Shouldn't happen");
-        }
-        else {
+        } else {
             if (defVars == null) {
-               // we are 1st time here - just init
-               if (cur.defVars != null)
-                  defVars = (IdentityHashMap<Variable, ClassNode>) cur.defVars.clone();
-               else
-                  defVars = new IdentityHashMap<Variable, ClassNode> ();
-            }
-            else {
-               // we were here already, so we need to merge
+                // we are 1st time here - just init
                 if (cur.defVars != null)
-                    for (Map.Entry<Variable,ClassNode> e : cur.defVars.entrySet()) {
+                    defVars = (IdentityHashMap<Variable, ClassNode>) cur.defVars.clone();
+                else
+                    defVars = new IdentityHashMap<Variable, ClassNode>();
+            } else {
+                // we were here already, so we need to merge
+                if (cur.defVars != null)
+                    for (Map.Entry<Variable, ClassNode> e : cur.defVars.entrySet()) {
                         final ClassNode oldType = defVars.get(e.getKey());
                         if (oldType != null)
-                            defVars.put(e.getKey(), ClassHelper.getWrapper(TypeUtil.commonType(e.getValue(),oldType)));
+                            defVars.put(e.getKey(), ClassHelper.getWrapper(TypeUtil.commonType(e.getValue(), oldType)));
                     }
             }
         }

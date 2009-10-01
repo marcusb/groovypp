@@ -19,17 +19,18 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
     private BytecodeStack stack = new BytecodeStack();
     private IdentityHashMap<Label, LocalVarInferenceTypes> labelMap = new IdentityHashMap<Label, LocalVarInferenceTypes>();
 
-    private LocalVarInferenceTypes curInference = new LocalVarInferenceTypes ();
+    private LocalVarInferenceTypes curInference = new LocalVarInferenceTypes();
+    private static final LocalVarInferenceTypes AFTER_GOTO = new LocalVarInferenceTypes();
 
     protected void jumpToLabel(int opcode, Label label) {
         final LocalVarInferenceTypes li = getLabelInfo(label);
         li.initFromStack(stack);
 
-        li.jumpFrom (curInference);
+        li.jumpFrom(curInference);
 
         if (opcode == GOTO) {
             stack.clear();
-            curInference = new LocalVarInferenceTypes();
+            curInference = AFTER_GOTO;
         }
     }
 
@@ -37,7 +38,9 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
         final LocalVarInferenceTypes li = getLabelInfo(label);
         li.initFromStack(stack);
 
-        li.comeFrom (curInference);
+        if (curInference != AFTER_GOTO)
+            li.comeFrom(curInference);
+//        System.out.println("// " + li.defVars);
         curInference = li;
     }
 
@@ -45,7 +48,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
         LocalVarInferenceTypes li = labelMap.get(label);
         if (li == null) {
             li = new LocalVarInferenceTypes();
-            labelMap.put(label,li);
+            labelMap.put(label, li);
         }
         return li;
     }
@@ -85,7 +88,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                 break;
 
             case ACONST_NULL:
-                  stack.push(BytecodeStack.KIND_OBJ);
+                stack.push(BytecodeStack.KIND_OBJ);
                 break;
 
             case ICONST_M1:
@@ -95,7 +98,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
             case ICONST_3:
             case ICONST_4:
             case ICONST_5:
-                  stack.push(BytecodeStack.KIND_INT);
+                stack.push(BytecodeStack.KIND_INT);
                 break;
 
             case LCONST_0:
@@ -115,39 +118,39 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                 break;
 
             case POP:
-                stack.pop ();
+                stack.pop();
                 break;
 
             case POP2:
-                stack.pop2 ();
+                stack.pop2();
                 break;
 
             case DUP:
-                stack.dup ();
+                stack.dup();
                 break;
 
             case DUP_X1:
-                stack.dup_x1 ();
+                stack.dup_x1();
                 break;
 
             case DUP_X2:
-                stack.dup_x2 ();
+                stack.dup_x2();
                 break;
 
             case DUP2:
-                stack.dup2 ();
+                stack.dup2();
                 break;
 
             case DUP2_X1:
-                stack.dup2_x1 ();
+                stack.dup2_x1();
                 break;
 
             case DUP2_X2:
-                stack.dup2_x2 ();
+                stack.dup2_x2();
                 break;
 
             case SWAP:
-                stack.swap ();
+                stack.swap();
                 break;
 
             case I2L:
@@ -412,16 +415,16 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
 
     @Override
     public void visitIntInsn(int i, int i1) {
-        switch(i) {
-           case BIPUSH:
-           case SIPUSH:
-               stack.push(BytecodeStack.KIND_INT);
-               break;
+        switch (i) {
+            case BIPUSH:
+            case SIPUSH:
+                stack.push(BytecodeStack.KIND_INT);
+                break;
 
-           case NEWARRAY:
-               stack.pop(BytecodeStack.KIND_INT);
-               stack.push(BytecodeStack.KIND_OBJ);
-               break;
+            case NEWARRAY:
+                stack.pop(BytecodeStack.KIND_INT);
+                stack.push(BytecodeStack.KIND_OBJ);
+                break;
 
             default:
                 throw new RuntimeException("Unrecognized operation");
@@ -486,7 +489,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                 stack.pop(BytecodeStack.KIND_OBJ);
                 stack.push(BytecodeStack.KIND_OBJ);
                 break;
-            
+
             case INSTANCEOF:
                 stack.pop(BytecodeStack.KIND_OBJ);
                 stack.push(BytecodeStack.KIND_INT);
@@ -564,20 +567,20 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
             default:
                 throw new RuntimeException("Unrecognized operation");
         }
-        pushResult (s2);
+        pushResult(s2);
 
         super.visitMethodInsn(i, s, s1, s2);
     }
 
     private void pushResult(String s2) {
-        s2 = s2.substring(s2.indexOf(')')+1);
+        s2 = s2.substring(s2.indexOf(')') + 1);
         if (s2.charAt(0) != 'V')
-          stack.push(fieldKind(s2));
+            stack.push(fieldKind(s2));
     }
 
     private void popArgs(String s2) {
         s2 = s2.substring(1, s2.lastIndexOf(')'));
-        byte [] args = new byte [256];
+        byte[] args = new byte[256];
         int count = 0;
         while (s2.length() > 0) {
             switch (s2.charAt(0)) {
@@ -609,16 +612,16 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
                     args[count++] = BytecodeStack.KIND_OBJ;
                     int k = 1;
                     while (s2.charAt(k) == '[')
-                      k++;
+                        k++;
                     if (s2.charAt(k) == 'L')
-                        s2 = s2.substring(s2.indexOf(';')+1);
+                        s2 = s2.substring(s2.indexOf(';') + 1);
                     else
-                        s2 = s2.substring(k+1);
+                        s2 = s2.substring(k + 1);
                     break;
 
                 default:
                     args[count++] = BytecodeStack.KIND_OBJ;
-                    s2 = s2.substring(s2.indexOf(';')+1);
+                    s2 = s2.substring(s2.indexOf(';') + 1);
             }
         }
 
@@ -677,17 +680,17 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
     @Override
     public void visitLdcInsn(Object o) {
         if (o instanceof Integer || o instanceof Boolean)
-           stack.push(BytecodeStack.KIND_INT);
+            stack.push(BytecodeStack.KIND_INT);
         else if (o instanceof Float)
-           stack.push(BytecodeStack.KIND_FLOAT);
+            stack.push(BytecodeStack.KIND_FLOAT);
         else if (o instanceof Double)
-           stack.push(BytecodeStack.KIND_DOUBLE);
+            stack.push(BytecodeStack.KIND_DOUBLE);
         else if (o instanceof Long)
-           stack.push(BytecodeStack.KIND_LONG);
+            stack.push(BytecodeStack.KIND_LONG);
         else if (o instanceof String)
-           stack.push(BytecodeStack.KIND_OBJ);
+            stack.push(BytecodeStack.KIND_OBJ);
         else
-           throw new RuntimeException("Unrecognized operation");
+            throw new RuntimeException("Unrecognized operation");
 
         super.visitLdcInsn(o);
     }
@@ -715,7 +718,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
         super.visitMultiANewArrayInsn(s, i);
     }
 
-    public void startExceptionBlock () {
+    public void startExceptionBlock() {
         stack.push(BytecodeStack.KIND_OBJ);
     }
 }
