@@ -9,8 +9,6 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import
-import java.lang.*
 
 public class ActorTest extends GroovyTestCase {
   void testActor() {
@@ -65,7 +63,7 @@ abstract class AsyncJob {
   public abstract void run()
 }
 
-@Use (ConcurrentLockCategory)
+@Use(ConcurrentLockCategory)
 class Actor {
   Reaction reaction
 
@@ -84,7 +82,7 @@ class Actor {
   /**
    * Send synchroniously and wait for execution result
    */
-  @Typed (debug = true)
+  @Typed(debug = true)
   def send(AsyncMessage msg) {
     lock.writeLock().withLock {
       WorkerThread.setCurrentActor(msg.receiver)
@@ -355,7 +353,7 @@ class WorkerThread extends Thread {
   }
 }
 
-@Category (Lock)
+@Category(Lock)
 public class ConcurrentLockCategory {
 
   /**

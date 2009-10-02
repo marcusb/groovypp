@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -16,6 +17,20 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
+    private static final Token INTDIV = Token.newSymbol(Types.INTDIV, -1, -1);
+    private static final Token DIVIDE = Token.newSymbol(Types.DIVIDE, -1, -1);
+    private static final Token RIGHT_SHIFT_UNSIGNED = Token.newSymbol(Types.RIGHT_SHIFT_UNSIGNED, -1, -1);
+    private static final Token RIGHT_SHIFT = Token.newSymbol(Types.RIGHT_SHIFT, -1, -1);
+    private static final Token LEFT_SHIFT = Token.newSymbol(Types.LEFT_SHIFT, -1, -1);
+    private static final Token POWER = Token.newSymbol(Types.POWER, -1, -1);
+    private static final Token MOD = Token.newSymbol(Types.MOD, -1, -1);
+    private static final Token MULTIPLY = Token.newSymbol(Types.MULTIPLY, -1, -1);
+    private static final Token BITWISE_XOR = Token.newSymbol(Types.BITWISE_XOR, -1, -1);
+    private static final Token BITWISE_OR = Token.newSymbol(Types.BITWISE_OR, -1, -1);
+    private static final Token BITWISE_AND = Token.newSymbol(Types.BITWISE_AND, -1, -1);
+    private static final Token MINUS = Token.newSymbol(Types.MINUS, -1, -1);
+    private static final Token PLUS = Token.newSymbol(Types.PLUS, -1, -1);
+
     public Expression transform(BinaryExpression exp, CompilerTransformer compiler) {
         switch (exp.getOperation().getType()) {
             case Types.COMPARE_EQUAL:
@@ -78,61 +93,46 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.COMPARE_TO:
                 return evaluateCompareTo(exp, compiler);
 
-/*
-            case Types.BITWISE_AND_EQUAL:
-                evaluateBinaryExpressionWithAssignment("and", expression);
-                break;
-
-            case Types.BITWISE_OR_EQUAL:
-                evaluateBinaryExpressionWithAssignment("or", expression);
-                break;
-
-            case Types.BITWISE_XOR_EQUAL:
-                evaluateBinaryExpressionWithAssignment("xor", expression);
-                break;
-
             case Types.PLUS_EQUAL:
-                evaluateBinaryExpressionWithAssignment("plus", expression);
-                break;
+                return evaluateMathOperationAssign(exp, PLUS, compiler);
 
             case Types.MINUS_EQUAL:
-                evaluateBinaryExpressionWithAssignment("minus", expression);
-                break;
+                return evaluateMathOperationAssign(exp, MINUS, compiler);
+
+            case Types.BITWISE_AND_EQUAL:
+                return evaluateMathOperationAssign(exp, BITWISE_AND, compiler);
+
+            case Types.BITWISE_OR_EQUAL:
+                return evaluateMathOperationAssign(exp, BITWISE_OR, compiler);
+
+            case Types.BITWISE_XOR_EQUAL:
+                return evaluateMathOperationAssign(exp, BITWISE_XOR, compiler);
 
             case Types.MULTIPLY_EQUAL:
-                evaluateBinaryExpressionWithAssignment("multiply", expression);
-                break;
-
-            case Types.DIVIDE_EQUAL:
-                //SPG don't use divide since BigInteger implements directly
-                //and we want to dispatch through DefaultGroovyMethods to get a BigDecimal result
-                evaluateBinaryExpressionWithAssignment("div", expression);
-                break;
-
-            case Types.INTDIV_EQUAL:
-                evaluateBinaryExpressionWithAssignment("intdiv", expression);
-                break;
+                return evaluateMathOperationAssign(exp, MULTIPLY, compiler);
 
             case Types.MOD_EQUAL:
-                evaluateBinaryExpressionWithAssignment("mod", expression);
-                break;
+                return evaluateMathOperationAssign(exp, MOD, compiler);
 
             case Types.POWER_EQUAL:
-                evaluateBinaryExpressionWithAssignment("power", expression);
-                break;
+                return evaluateMathOperationAssign(exp, POWER, compiler);
 
             case Types.LEFT_SHIFT_EQUAL:
-                evaluateBinaryExpressionWithAssignment("leftShift", expression);
-                break;
+                return evaluateMathOperationAssign(exp, LEFT_SHIFT, compiler);
 
             case Types.RIGHT_SHIFT_EQUAL:
-                evaluateBinaryExpressionWithAssignment("rightShift", expression);
-                break;
+                return evaluateMathOperationAssign(exp, RIGHT_SHIFT, compiler);
 
             case Types.RIGHT_SHIFT_UNSIGNED_EQUAL:
-                evaluateBinaryExpressionWithAssignment("rightShiftUnsigned", expression);
-                break;
+                return evaluateMathOperationAssign(exp, RIGHT_SHIFT_UNSIGNED, compiler);
 
+            case Types.DIVIDE_EQUAL:
+                return evaluateMathOperationAssign(exp, DIVIDE, compiler);
+
+            case Types.INTDIV_EQUAL:
+                return evaluateMathOperationAssign(exp, INTDIV, compiler);
+
+/*
             case Types.FIND_REGEX:
                 evaluateBinaryExpression(findRegexMethod, expression);
                 break;
@@ -287,6 +287,17 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         }
 
         return ((ResolvedLeftExpr) left).createAssign(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+    }
+
+    private Expression evaluateMathOperationAssign(BinaryExpression be, Token method, CompilerTransformer compiler) {
+        Expression left = compiler.transform(be.getLeftExpression());
+
+        if (!(left instanceof ResolvedLeftExpr)) {
+            compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
+            return null;
+        }
+
+        return ((ResolvedLeftExpr) left).createBinopAssign(be, method, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
     }
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {

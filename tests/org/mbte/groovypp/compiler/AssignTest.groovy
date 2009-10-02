@@ -14,6 +14,23 @@ u ()
     assertEquals 20, res
   }
 
+  void testVarAssignPlus() {
+    def res = shell.evaluate("""
+@Typed
+def u () {
+  def x = 20
+  x -= 10
+
+  def y = x
+  y += "30"
+
+  [x, y]
+}
+u ()
+""")
+    assertEquals([10, "1030"], res)
+  }
+
   void testArrayAssign() {
     def res = shell.evaluate("""
 @Typed
@@ -23,6 +40,19 @@ def u (int [] x) {
 u (new int [10])
 """)
     assertEquals 20, res
+  }
+
+  void testArrayAssignOp() {
+    def res = shell.evaluate("""
+@Typed(debug=true)
+def u (int [] x) {
+   x [0] = 1
+   x [1] = 6
+   x [1] += (x [x[0]] |= 1)
+}
+u (new int [10])
+""")
+    assertEquals 13, res
   }
 
   void testArrayAssignViaProperty() {
@@ -81,6 +111,25 @@ class A {
 new A().u ().a
 """)
     assertEquals 10, res
+  }
+
+  void testAssignFieldOp() {
+    def res = shell.evaluate("""
+@Typed
+class A {
+  protected int a
+
+  A u () {
+    (0..10).each { int it ->
+        a += it
+    }
+    this
+  }
+}
+
+new A().u ().a
+""")
+    assertEquals 55, res
   }
 
   void testAssignFinalVar() {

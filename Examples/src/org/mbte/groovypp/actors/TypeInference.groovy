@@ -1,4 +1,4 @@
-package org.mbte.groovypp.typeinference
+package org.mbte.groovypp.actors
 
 import groovy.xml.MarkupBuilder
 
@@ -23,7 +23,7 @@ public class TypeInference extends GroovyTestCase {
     list instanceof Number
   }
 
-  @Typed (value = TypePolicy.MIXED, debug = true)
+  @Typed(TypePolicy.MIXED)
   void testMarkupBuilder() {
     def writer = new StringWriter()
     def mb = new MarkupBuilder(writer);

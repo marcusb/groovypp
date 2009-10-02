@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
 class UnresolvedLeftExpr extends ResolvedLeftExpr {
@@ -22,8 +23,7 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
             // getter
             mv.visitLdcInsn(propName);
             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "getProperty", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
-        }
-        else {
+        } else {
             // setter
             mv.visitLdcInsn(propName);
             value.visit(mv);
@@ -32,7 +32,7 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
-        return new BytecodeExpr(parent, ClassHelper.VOID_TYPE){
+        return new BytecodeExpr(parent, ClassHelper.VOID_TYPE) {
             protected void compile() {
                 object.visit(mv);
                 mv.visitLdcInsn(propName);
@@ -42,7 +42,7 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
         };
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {
+    public BytecodeExpr createBinopAssign(ASTNode parent, Token right, BytecodeExpr type, CompilerTransformer compiler) {
         return null;
     }
 

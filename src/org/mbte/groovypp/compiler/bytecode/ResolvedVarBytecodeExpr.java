@@ -1,10 +1,12 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.classgen.Variable;
+import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
@@ -26,8 +28,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         if (ve.getAccessedVariable().isDynamicTyped()) {
             vtype = ClassHelper.getWrapper(right.getType());
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
-        }
-        else {
+        } else {
             vtype = right.getType();
         }
 
@@ -43,11 +44,10 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         };
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {
-        return new BytecodeExpr(parent, getType()) {
-            protected void compile() {
-            }
-        };
+    public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {
+        final BinaryExpression op = new BinaryExpression(this, method, right);
+        op.setSourcePosition(parent);
+        return createAssign(parent, (BytecodeExpr) compiler.transform(op), compiler);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {

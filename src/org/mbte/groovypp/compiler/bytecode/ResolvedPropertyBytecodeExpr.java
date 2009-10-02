@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler.bytecode;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
+import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
 public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
@@ -13,7 +14,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final boolean needsObjectIfStatic;
 
     public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs, boolean needsObjectIfStatic) {
-        super (parent, propertyNode.getType());
+        super(parent, propertyNode.getType());
         this.propertyNode = propertyNode;
         this.object = object;
         this.bargs = bargs;
@@ -21,8 +22,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
 
         if (bargs != null) {
             methodName = "set" + Verifier.capitalize(propertyNode.getName());
-        }
-        else {
+        } else {
             methodName = "get" + Verifier.capitalize(propertyNode.getName());
         }
     }
@@ -37,7 +37,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
             op = INVOKEINTERFACE;
 
         if (propertyNode.isStatic())
-          op = INVOKESTATIC;
+            op = INVOKESTATIC;
 
         if (object != null && !(propertyNode.isStatic() && !needsObjectIfStatic)) {
             object.visit(mv);
@@ -65,8 +65,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 dup(paramType);
             methodDescriptor = BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, new Parameter[]{new Parameter(paramType, "")});
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
-        }
-        else {
+        } else {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         }
@@ -76,7 +75,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, right, needsObjectIfStatic);
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, BytecodeExpr right, int type, CompilerTransformer compiler) {
+    public BytecodeExpr createBinopAssign(ASTNode parent, Token right, BytecodeExpr type, CompilerTransformer compiler) {
         return null;
     }
 
