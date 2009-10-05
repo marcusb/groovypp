@@ -2,7 +2,6 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.ClassNodeCache;
 import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
@@ -15,7 +14,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final ArgumentListExpression bargs;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
-        super (parent, methodNode.getReturnType());
+        super(parent, methodNode.getReturnType());
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
@@ -53,19 +52,17 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             if (object != null) {
                 object.visit(mv);
                 box(object.getType());
-                if (methodNode.getDeclaringClass() != ClassHelper.OBJECT_TYPE);
-                   mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
+                if (methodNode.getDeclaringClass() != ClassHelper.OBJECT_TYPE)
+                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
             }
 
-            classInternalName = ((ClassNodeCache.DGM)methodNode).callClassInternalName;
-            methodDescriptor = ((ClassNodeCache.DGM)methodNode).descr;
-        }
-        else {
+            classInternalName = ((ClassNodeCache.DGM) methodNode).callClassInternalName;
+            methodDescriptor = ((ClassNodeCache.DGM) methodNode).descr;
+        } else {
             if (methodNode.isStatic())
-              op = INVOKESTATIC;
-            else
-            if (methodNode.getDeclaringClass().isInterface())
-              op = INVOKEINTERFACE;
+                op = INVOKESTATIC;
+            else if (methodNode.getDeclaringClass().isInterface())
+                op = INVOKEINTERFACE;
 
             if (object != null) {
                 object.visit(mv);

@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.syntax.Token;
@@ -75,8 +76,38 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, right, needsObjectIfStatic);
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, Token right, BytecodeExpr type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
+        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile() {
+            }
+        };
+
+        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile() {
+                object.visit(mv);
+                dup(object.getType());
+            }
+        };
+
+        BytecodeExpr get = new ResolvedPropertyBytecodeExpr(
+                parent,
+                propertyNode,
+                dupObject,
+                null,
+                needsObjectIfStatic);
+
+        final BinaryExpression op = new BinaryExpression(get, method, right);
+        op.setSourcePosition(parent);
+        final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
+
+        return new ResolvedPropertyBytecodeExpr(
+                parent,
+                propertyNode,
+                fakeObject,
+                transformedOp,
+                needsObjectIfStatic);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {

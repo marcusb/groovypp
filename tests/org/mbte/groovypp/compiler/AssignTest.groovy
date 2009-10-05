@@ -79,7 +79,7 @@ new A().u (new int[10])
     def res = shell.evaluate("""
 @Typed
 class A {
-  protected int a
+  int a
 
   A u () {
     (0..10).each { int it ->
@@ -92,6 +92,29 @@ class A {
 new A().u ().a
 """)
     assertEquals 10, res
+  }
+
+  void testAssignPropertyOp() {
+    def res = shell.evaluate("""
+@Typed
+class A {
+  int a
+
+  A u () {
+    (0..10).each { int it ->
+        a += it
+    }
+    this
+  }
+
+  void setA (int v) {
+    this.@a = v
+  }
+}
+
+new A().u ().a
+""")
+    assertEquals 55, res
   }
 
   void testAssignField() {

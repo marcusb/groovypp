@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler.bytecode;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 
@@ -31,12 +32,32 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), name, right.getType(), compiler);
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, right.getType(), compiler);
         return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop, needsObjectIfStatic);
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, Token right, BytecodeExpr type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
+        String name = methodNode.getName().substring(3);
+        name = name.substring(0, 1).toLowerCase() + name.substring(1);
+
+        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile() {
+            }
+        };
+
+        BytecodeExpr get = new ResolvedMethodBytecodeExpr(
+                parent,
+                methodNode,
+                methodNode.isStatic() && !needsObjectIfStatic ? null : fakeObject,
+                new ArgumentListExpression());
+
+        final BinaryExpression op = new BinaryExpression(get, method, right);
+        op.setSourcePosition(parent);
+        final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
+
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler);
+        return PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop, needsObjectIfStatic);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {

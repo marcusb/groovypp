@@ -1,20 +1,20 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 
 import java.util.IdentityHashMap;
 
 public abstract class ExprTransformer<T extends Expression> implements Opcodes {
 
-    private static IdentityHashMap<Class,ExprTransformer> transformers = new IdentityHashMap<Class,ExprTransformer> ();
+    private static IdentityHashMap<Class, ExprTransformer> transformers = new IdentityHashMap<Class, ExprTransformer>();
 
     static {
         transformers.put(CastExpression.class, new CastExpressionTransformer());
@@ -40,6 +40,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(UnaryPlusExpression.class, new UnaryPlusExpressionTransformer());
         transformers.put(ArrayExpression.class, new ArrayExpressionTransformer());
         transformers.put(BitwiseNegationExpression.class, new BitwiseNegationExpressionTransformer());
+        transformers.put(AttributeExpression.class, new AttributeExpressionTransformer());
 
         final BooleanExpressionTransformer bool = new BooleanExpressionTransformer();
         transformers.put(BooleanExpression.class, bool);
@@ -50,7 +51,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(ElvisOperatorExpression.class, ternary);
     }
 
-    public static Expression transformExpression (Expression exp, CompilerTransformer compiler) {
+    public static Expression transformExpression(Expression exp, CompilerTransformer compiler) {
         ExprTransformer t = transformers.get(exp.getClass());
         if (t == null)
             return compiler.transformImpl(exp);
@@ -63,9 +64,9 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         return t.transformLogical(exp, compiler, label, onTrue);
     }
 
-    public abstract Expression transform (T exp, CompilerTransformer compiler);
+    public abstract Expression transform(T exp, CompilerTransformer compiler);
 
-    public BytecodeExpr transformLogical (T exp, CompilerTransformer compiler, final Label label, final boolean onTrue) {
+    public BytecodeExpr transformLogical(T exp, CompilerTransformer compiler, final Label label, final boolean onTrue) {
         final BytecodeExpr be = (BytecodeExpr) transform(exp, compiler);
         final ClassNode type = be.getType();
 
@@ -78,10 +79,10 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
 
                 if (ClassHelper.isPrimitiveType(type)) {
                     if (type == ClassHelper.byte_TYPE
-                     || type == ClassHelper.short_TYPE
-                     || type == ClassHelper.char_TYPE
-                     || type == ClassHelper.boolean_TYPE
-                     || type == ClassHelper.int_TYPE) {
+                            || type == ClassHelper.short_TYPE
+                            || type == ClassHelper.char_TYPE
+                            || type == ClassHelper.boolean_TYPE
+                            || type == ClassHelper.int_TYPE) {
                     } else if (type == ClassHelper.long_TYPE) {
                         mv.visitInsn(L2I);
                     } else if (type == ClassHelper.float_TYPE) {
@@ -89,8 +90,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
                     } else if (type == ClassHelper.double_TYPE) {
                         mv.visitInsn(D2I);
                     }
-                }
-                else {
+                } else {
                     mv.visitMethodInsn(INVOKESTATIC, DTT, "castToBoolean", "(Ljava/lang/Object;)Z");
                 }
                 mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
