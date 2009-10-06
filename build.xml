@@ -45,7 +45,7 @@
 	</target>
 
 	<target name="test.compile" depends="clean, compile" >
-		<groovyc classpathref="libs" srcdir="${test.src.dir}"
+		<groovyc classpathref="test.compile.cp" srcdir="${test.src.dir}"
 			destdir="${test.classes.dir}">
 		</groovyc >
 	</target>
