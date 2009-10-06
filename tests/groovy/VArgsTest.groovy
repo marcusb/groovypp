@@ -151,15 +151,14 @@ class VArgsTest extends GroovyShellTestCase {
 
   
   void testStringMethod() {
-    shell.evaluate(
-      """
+     def script = """
         @Typed
         def stringMethod(String[] strings) {strings.length}
 
         @Typed
         def u() {
           def content = 1
-          def gstring ="\\$content"
+          def gstring ="\$content"
           assert stringMethod() == 0
           assert stringMethod(gstring) == 1
           assert stringMethod(gstring,gstring,gstring) == 3
@@ -172,7 +171,8 @@ class VArgsTest extends GroovyShellTestCase {
 
         u()
       """
-    );
+    shell.evaluate(script);
+
   }
   
   //tests related to GROOVY-1807
