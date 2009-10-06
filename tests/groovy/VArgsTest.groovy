@@ -124,8 +124,6 @@ class VArgsTest extends GroovyShellTestCase {
 
   }
   
-
-  
   void testGStringVargsMethod() {
     shell.evaluate(
       """
@@ -135,7 +133,7 @@ class VArgsTest extends GroovyShellTestCase {
         @Typed
         def u() {
             def content = 1
-            def gstring ="\\$content"
+            def gstring ="\$content"
             assert gstringMethod() == 0
             assert gstringMethod(gstring) == 1
             assert gstringMethod(gstring,gstring,gstring) == 3
@@ -147,9 +145,7 @@ class VArgsTest extends GroovyShellTestCase {
     );
 
   }
-  
 
-  
   void testStringMethod() {
      def script = """
         @Typed
@@ -194,10 +190,7 @@ class VArgsTest extends GroovyShellTestCase {
     );
 
   }
-  
 
-
-  
   void testOverloadedMethod2() {
     shell.evaluate(
       """
