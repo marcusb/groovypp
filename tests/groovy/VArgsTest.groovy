@@ -171,6 +171,7 @@ class VArgsTest extends GroovyShellTestCase {
 
         u()
       """
+    println script;
     shell.evaluate(script);
 
   }
