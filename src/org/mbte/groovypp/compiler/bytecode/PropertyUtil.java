@@ -11,7 +11,7 @@ import org.mbte.groovypp.compiler.TypeUtil;
 public class PropertyUtil {
     public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
         if (prop instanceof MethodNode)
-            return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic);
+            return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic, compiler);
 
         if (prop instanceof PropertyNode)
             return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null, needsObjectIfStatic);
@@ -33,7 +33,7 @@ public class PropertyUtil {
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop, boolean needsObjectIfStatic) {
         if (prop instanceof MethodNode)
-            return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value));
+            return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
 
         if (prop instanceof PropertyNode)
             return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value, needsObjectIfStatic);

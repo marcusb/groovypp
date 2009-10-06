@@ -44,7 +44,7 @@ public class CompareTest extends GroovyShellTestCase {
 
   void testDoubleConstants() {
     shell.evaluate("""
-      @Typed(debug=true)
+      @Typed
       def u () {
           assert (10.0d  >  5.0d)
           assert (5.0d  <  10.0d)
@@ -100,7 +100,7 @@ public class CompareTest extends GroovyShellTestCase {
 
   void testNegativeZeros() {
     shell.evaluate("""
-      @Typed(debug=true)
+      @Typed
       def u () {
         assert (0.0f != -(0.0f))
         assert 0.0f == -0.0

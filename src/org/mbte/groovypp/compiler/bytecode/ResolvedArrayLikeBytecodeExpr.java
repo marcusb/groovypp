@@ -12,11 +12,11 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr getter;
     private final MethodNode setter;
 
-    public ResolvedArrayLikeBytecodeExpr(ASTNode parent, BytecodeExpr array, BytecodeExpr index, MethodNode getter, MethodNode setter) {
+    public ResolvedArrayLikeBytecodeExpr(ASTNode parent, BytecodeExpr array, BytecodeExpr index, MethodNode getter, MethodNode setter, CompilerTransformer compiler) {
         super(parent, getter.getReturnType());
         this.array = array;
         this.index = index;
-        this.getter = new ResolvedMethodBytecodeExpr(parent, getter, array, new ArgumentListExpression(index));
+        this.getter = new ResolvedMethodBytecodeExpr(parent, getter, array, new ArgumentListExpression(index), compiler);
         this.setter = setter;
     }
 
@@ -30,7 +30,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             return null;
         }
 
-        return new ResolvedMethodBytecodeExpr(parent, setter, array, new ArgumentListExpression(index, right));
+        return new ResolvedMethodBytecodeExpr(parent, setter, array, new ArgumentListExpression(index, right), compiler);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token right, BytecodeExpr type, CompilerTransformer compiler) {

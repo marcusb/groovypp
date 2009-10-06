@@ -1,17 +1,16 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.expr.ArrayExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.CastExpression;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression> {
 
@@ -40,9 +39,9 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
                 }
 
                 int storeIns = AASTORE;
-                String arrayTypeName = BytecodeHelper.getTypeDescription(exp.getType());
+                String arrayTypeName = BytecodeHelper.getTypeDescription(exp.getType().getComponentType());
                 if (sizeExpression != null) {
-                    mv.visitMultiANewArrayInsn(arrayTypeName, dimensions);
+                    mv.visitMultiANewArrayInsn(BytecodeHelper.getTypeDescription(exp.getType()), dimensions);
                 } else if (ClassHelper.isPrimitiveType(elementType)) {
                     int primType = 0;
                     if (elementType == ClassHelper.boolean_TYPE) {
@@ -72,7 +71,7 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
                     }
                     mv.visitIntInsn(NEWARRAY, primType);
                 } else {
-                    mv.visitTypeInsn(ANEWARRAY, arrayTypeName);
+                    mv.visitTypeInsn(ANEWARRAY, BytecodeHelper.getClassInternalName(exp.getType().getComponentType()));
                 }
 
                 for (int i = 0; i < size; i++) {

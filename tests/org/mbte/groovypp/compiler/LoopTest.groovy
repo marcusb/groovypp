@@ -59,7 +59,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithCollection() {
     def res = shell.evaluate("""
 
-      @Typed(debug=true)
+      @Typed
       def u (List res) {
         for ( i in 0..4 ) {
             res.add(i);
@@ -78,7 +78,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithClosuresNormal() {
     def res = shell.evaluate("""
 
-      @Typed(debug=true)
+      @Typed
       def u (List res) {
         for (int i = 0; i < 5; i++) {
           res.add(i);
@@ -96,7 +96,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithClosuresNoInitBlock() {
     def res = shell.evaluate("""
 
-        @Typed(debug=true)
+        @Typed
         def u (List res) {
           int i = 0;
           for (; i < 5; i++) {
@@ -115,7 +115,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithClosuresNoBinaryBlock() {
     def res = shell.evaluate("""
 
-        @Typed(debug=true)
+        @Typed
         def u (List res) {
           for (int i = 0; ; i++) {
             if (i > 4)
@@ -136,7 +136,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithClosuresNoIncrementBlock() {
     def res = shell.evaluate("""
 
-        @Typed(debug=true)
+        @Typed
         def u (List res) {
           for (int i = 0; i < 5;) {
             res.add(i);
@@ -155,7 +155,7 @@ public class LoopTest extends GroovyShellTestCase {
   void testForWithClosuresEmpty() {
     def res = shell.evaluate("""
 
-          @Typed(debug=true)
+          @Typed
           def u (List res) {
             int i = 0;
             for (;;) {

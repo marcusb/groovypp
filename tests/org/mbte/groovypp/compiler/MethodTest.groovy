@@ -154,7 +154,7 @@ class X {
 
   void testSafe() {
     def res = shell.evaluate("""
-          @Typed(debug=true)
+          @Typed
           def u () {
              String x = null, y = "null"
              if (!x?.equals("abc"))

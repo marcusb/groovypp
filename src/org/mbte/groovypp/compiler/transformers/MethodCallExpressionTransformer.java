@@ -62,7 +62,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 return dynamicOrError(exp, compiler, methodName, type, argTypes, "Can't find static method ");
             }
 
-            return new ResolvedMethodBytecodeExpr(exp, foundMethod, null, (ArgumentListExpression) args);
+            return new ResolvedMethodBytecodeExpr(exp, foundMethod, null, (ArgumentListExpression) args, compiler);
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
                 int level = 0;
@@ -81,7 +81,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                             }
                         };
-                        return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args);
+                        return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
                     }
 
                     // checkDelegate
@@ -105,7 +105,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                         mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                                     }
                                 };
-                                return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args);
+                                return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
                             }
                         }
                     }
@@ -124,7 +124,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
                         }
                     };
-                    return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args);
+                    return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
                 }
 
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Can't find method ");
@@ -138,7 +138,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Can't find method ");
                 }
 
-                return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args);
+                return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
             }
         }
     }

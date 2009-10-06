@@ -3,7 +3,7 @@ package groovy
 class SwitchTest extends GroovyShellTestCase {
 
   void testSwitch() {
-    shell.evaluate("""@Typed(debug=true)
+    shell.evaluate("""@Typed
         def callSwitch(x, expected) {
             def result = ""
             switch (x) {
@@ -129,7 +129,7 @@ class SwitchTest extends GroovyShellTestCase {
   // TODO
   /** older versions of groovy produced a ListExpression for a
    fall through. the result was that it worked in some cases
-   and in other cases not. For example not for patterns     */
+   and in other cases not. For example not for patterns       */
   void testFallthroughToOtherCaseWithNoCode() {
     /*def a = ['FileName.java', 'AnotherFileName.groovy', 'foo']
  def i = 0

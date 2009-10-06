@@ -1,7 +1,5 @@
 package groovy
 
-import java.lang.*
-
 class ArrayCoerceTest extends GroovyShellTestCase {
 
   Object[] field
@@ -12,7 +10,7 @@ class ArrayCoerceTest extends GroovyShellTestCase {
 
   void testStaticallyTypedPrimitiveTypeArrays() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u(List res) {
           int[] a = [1, 2, 3] as int []
           assert a instanceof int[]

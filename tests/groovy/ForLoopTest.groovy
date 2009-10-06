@@ -1,5 +1,6 @@
 package groovy
 
+import groovy.CompileTestSupport
 import static groovy.CompileTestSupport.shouldCompile
 import static groovy.CompileTestSupport.shouldNotCompile
 
@@ -196,7 +197,7 @@ class ForLoopTest extends GroovyShellTestCase {
 
   void testClassicForNested() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u() {
           def sum = 0
             for (int i = 0; i < 10; i++) {
@@ -215,7 +216,7 @@ class ForLoopTest extends GroovyShellTestCase {
   @Typed
   void testClassicForWithContinue() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u() {
           def sum1 = 0
           for (int i = 0; i < 10; i++) {
@@ -257,7 +258,7 @@ class ForLoopTest extends GroovyShellTestCase {
 
   void testClassicForWithEmptyBody() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u() {
           int i
           for (i = 0; i < 5; i++);

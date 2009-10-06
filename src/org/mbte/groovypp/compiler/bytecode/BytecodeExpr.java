@@ -8,8 +8,8 @@ import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
-import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -18,15 +18,15 @@ import org.objectweb.asm.Opcodes;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes{
+public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes {
     protected MethodVisitor mv;
 
     public final void visit(MethodVisitor mv) {
         this.mv = mv;
-        compile ();
+        compile();
     }
 
-    public BytecodeExpr (ASTNode parent, ClassNode type) {
+    public BytecodeExpr(ASTNode parent, ClassNode type) {
         setSourcePosition(parent);
         setType(type);
     }
@@ -36,7 +36,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
 
     public BytecodeExpr createIndexed(ASTNode parent, BytecodeExpr index, CompilerTransformer compiler) {
         if (getType().isArray() && TypeUtil.isAssignableFrom(ClassHelper.int_TYPE, index.getType()))
-           return new ResolvedArrayBytecodeExpr(parent, this, index);
+            return new ResolvedArrayBytecodeExpr(parent, this, index);
         else {
             MethodNode getter = compiler.findMethod(getType(), "getAt", new ClassNode[]{index.getType()});
             MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType()});
@@ -46,7 +46,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 return null;
             }
 
-            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, setter);
+            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, setter, compiler);
         }
     }
 
@@ -808,34 +808,26 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
 
         if (TypeUtil.isIntegralType(expr)) {
             castIntegral(expr, type);
-        }
-        else if (expr == ClassHelper.Long_TYPE) {
+        } else if (expr == ClassHelper.Long_TYPE) {
             castLong(expr, type);
-        }
-        else if (expr == ClassHelper.Double_TYPE) {
+        } else if (expr == ClassHelper.Double_TYPE) {
             castDouble(expr, type);
-        }
-        else if (expr == ClassHelper.Float_TYPE) {
+        } else if (expr == ClassHelper.Float_TYPE) {
             castFloat(expr, type);
-        }
-        else if (expr == ClassHelper.BigDecimal_TYPE) {
+        } else if (expr == ClassHelper.BigDecimal_TYPE) {
             castBigDecimal(expr, type);
-        }
-        else if (expr == ClassHelper.BigInteger_TYPE) {
+        } else if (expr == ClassHelper.BigInteger_TYPE) {
             castBigInteger(expr, type);
-        }
-        else {
+        } else {
             if (TypeUtil.isNumericalType(type)) {
                 unbox(ClassHelper.getUnwrapper(type));
                 box(ClassHelper.getUnwrapper(type));
-            }
-            else {
-                if (expr  != TypeUtil.NULL_TYPE) {
+            } else {
+                if (expr != TypeUtil.NULL_TYPE) {
                     if (type.equals(ClassHelper.STRING_TYPE)) {
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-                    }
-                    else {
-                       mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                    } else {
+                        mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
                     }
                 }
             }
@@ -844,51 +836,42 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
 
     private void castIntegral(ClassNode expr, ClassNode type) {
         if (type == ClassHelper.Integer_TYPE) {
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+        } else if (type == ClassHelper.Boolean_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2L);
             box(ClassHelper.long_TYPE);
-        }
-        else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2F);
             box(ClassHelper.float_TYPE);
-        }
-        else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(I2D);
             box(ClassHelper.double_TYPE);
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigDecimal");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
             if (expr.equals(ClassHelper.Character_TYPE)) {
                 mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
@@ -899,8 +882,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
-        }
-        else {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -910,59 +892,49 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2I);
             box(ClassHelper.int_TYPE);
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+        } else if (type == ClassHelper.Boolean_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2I);
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2I);
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2I);
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2I);
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
-        }
-        else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2F);
             box(ClassHelper.float_TYPE);
-        }
-        else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(L2D);
             box(ClassHelper.double_TYPE);
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigDecimal");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigInteger");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
-        }
-        else {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -972,52 +944,43 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2I);
             box(ClassHelper.int_TYPE);
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+        } else if (type == ClassHelper.Boolean_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2I);
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2I);
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2I);
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2I);
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2L);
             box(ClassHelper.long_TYPE);
-        }
-        else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(D2F);
             box(ClassHelper.float_TYPE);
-        }
-        else if (type == ClassHelper.Double_TYPE) {
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigDecimal");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
             mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
             box(ClassHelper.long_TYPE);
@@ -1026,8 +989,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
-        }
-        else {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -1037,52 +999,43 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2I);
             box(ClassHelper.int_TYPE);
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+        } else if (type == ClassHelper.Boolean_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2I);
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2I);
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2I);
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2I);
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2L);
             box(ClassHelper.long_TYPE);
-        }
-        else if (type == ClassHelper.Float_TYPE) {
-        }
-        else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
             unbox(ClassHelper.getUnwrapper(expr));
             mv.visitInsn(F2D);
             box(ClassHelper.double_TYPE);
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigDecimal");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
             mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
             box(ClassHelper.long_TYPE);
@@ -1091,8 +1044,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
-        }
-        else {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -1100,47 +1052,37 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     private void castBigDecimal(ClassNode expr, ClassNode type) {
         if (type == ClassHelper.Integer_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
-            box (ClassHelper.int_TYPE);
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+            box(ClassHelper.int_TYPE);
+        } else if (type == ClassHelper.Boolean_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
             box(ClassHelper.long_TYPE);
-        }
-        else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "floatValue", "()F");
             box(ClassHelper.float_TYPE);
-        }
-        else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "doubleValue", "()D");
             box(ClassHelper.double_TYPE);
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigDecimal", "toBigInteger", "()Ljava/math/BigInteger;");
-        }
-        else {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -1148,51 +1090,41 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     private void castBigInteger(ClassNode expr, ClassNode type) {
         if (type == ClassHelper.Integer_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
-            box (ClassHelper.int_TYPE);
-        }
-        else if (type == ClassHelper.Boolean_TYPE) {
+            box(ClassHelper.int_TYPE);
+        } else if (type == ClassHelper.Boolean_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(ICONST_1);
             mv.visitInsn(IAND);
             box(ClassHelper.boolean_TYPE);
-        }
-        else if (type == ClassHelper.Byte_TYPE) {
+        } else if (type == ClassHelper.Byte_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2B);
             box(ClassHelper.byte_TYPE);
-        }
-        else if (type == ClassHelper.Short_TYPE) {
+        } else if (type == ClassHelper.Short_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2S);
             box(ClassHelper.short_TYPE);
-        }
-        else if (type == ClassHelper.Character_TYPE) {
+        } else if (type == ClassHelper.Character_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             mv.visitInsn(I2C);
             box(ClassHelper.char_TYPE);
-        }
-        else if (type == ClassHelper.Long_TYPE) {
+        } else if (type == ClassHelper.Long_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
             box(ClassHelper.long_TYPE);
-        }
-        else if (type == ClassHelper.Float_TYPE) {
+        } else if (type == ClassHelper.Float_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "floatValue", "()F");
             box(ClassHelper.float_TYPE);
-        }
-        else if (type == ClassHelper.Double_TYPE) {
+        } else if (type == ClassHelper.Double_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "doubleValue", "()D");
             box(ClassHelper.double_TYPE);
-        }
-        else if (type == ClassHelper.BigDecimal_TYPE) {
+        } else if (type == ClassHelper.BigDecimal_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigDecimal");
             mv.visitInsn(DUP_X1);
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
-        }
-        else if (type == ClassHelper.BigInteger_TYPE) {
-        }
-        else {
+        } else if (type == ClassHelper.BigInteger_TYPE) {
+        } else {
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
@@ -1204,20 +1136,16 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "next", "(Ljava/lang/Number;)Ljava/lang/Number;");
             else
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "previous", "(Ljava/lang/Number;)Ljava/lang/Number;");
-        }
-        else if (primType == ClassHelper.double_TYPE) {
+        } else if (primType == ClassHelper.double_TYPE) {
             mv.visitInsn(DCONST_1);
             mv.visitInsn(add ? DADD : DSUB);
-        }
-        else if (primType == ClassHelper.long_TYPE) {
+        } else if (primType == ClassHelper.long_TYPE) {
             mv.visitInsn(LCONST_1);
             mv.visitInsn(add ? LADD : LSUB);
-        }
-        else if (primType == ClassHelper.float_TYPE) {
+        } else if (primType == ClassHelper.float_TYPE) {
             mv.visitInsn(FCONST_1);
             mv.visitInsn(add ? FADD : FSUB);
-        }
-        else {
+        } else {
             mv.visitInsn(ICONST_1);
             mv.visitInsn(add ? IADD : ISUB);
         }
@@ -1227,15 +1155,12 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         if (ClassHelper.isPrimitiveType(type)) {
             if (type == ClassHelper.double_TYPE) {
                 mv.visitInsn(D2I);
-            }
-            else if (type == ClassHelper.long_TYPE) {
+            } else if (type == ClassHelper.long_TYPE) {
                 mv.visitInsn(L2I);
-            }
-            else if (type == ClassHelper.float_TYPE) {
+            } else if (type == ClassHelper.float_TYPE) {
                 mv.visitInsn(F2I);
             }
-        }
-        else {
+        } else {
             unbox(ClassHelper.int_TYPE);
         }
     }
@@ -1243,26 +1168,19 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     protected void loadArray(ClassNode type) {
         if (type == ClassHelper.byte_TYPE) {
             mv.visitInsn(BALOAD);
-        }
-        else if (type == ClassHelper.char_TYPE) {
+        } else if (type == ClassHelper.char_TYPE) {
             mv.visitInsn(CALOAD);
-        }
-        else if (type == ClassHelper.short_TYPE) {
+        } else if (type == ClassHelper.short_TYPE) {
             mv.visitInsn(SALOAD);
-        }
-        else if (type == ClassHelper.int_TYPE) {
+        } else if (type == ClassHelper.int_TYPE) {
             mv.visitInsn(IALOAD);
-        }
-        else if (type == ClassHelper.long_TYPE) {
+        } else if (type == ClassHelper.long_TYPE) {
             mv.visitInsn(LALOAD);
-        }
-        else if (type == ClassHelper.float_TYPE) {
+        } else if (type == ClassHelper.float_TYPE) {
             mv.visitInsn(FALOAD);
-        }
-        else if (type == ClassHelper.double_TYPE) {
+        } else if (type == ClassHelper.double_TYPE) {
             mv.visitInsn(DALOAD);
-        }
-        else {
+        } else {
             mv.visitInsn(AALOAD);
         }
     }
@@ -1270,26 +1188,19 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     protected void storeArray(ClassNode type) {
         if (type == ClassHelper.byte_TYPE) {
             mv.visitInsn(BASTORE);
-        }
-        else if (type == ClassHelper.char_TYPE) {
+        } else if (type == ClassHelper.char_TYPE) {
             mv.visitInsn(CASTORE);
-        }
-        else if (type == ClassHelper.short_TYPE) {
+        } else if (type == ClassHelper.short_TYPE) {
             mv.visitInsn(SASTORE);
-        }
-        else if (type == ClassHelper.int_TYPE) {
+        } else if (type == ClassHelper.int_TYPE) {
             mv.visitInsn(IASTORE);
-        }
-        else if (type == ClassHelper.long_TYPE) {
+        } else if (type == ClassHelper.long_TYPE) {
             mv.visitInsn(LASTORE);
-        }
-        else if (type == ClassHelper.float_TYPE) {
+        } else if (type == ClassHelper.float_TYPE) {
             mv.visitInsn(FASTORE);
-        }
-        else if (type == ClassHelper.double_TYPE) {
+        } else if (type == ClassHelper.double_TYPE) {
             mv.visitInsn(DASTORE);
-        }
-        else {
+        } else {
             mv.visitInsn(AASTORE);
         }
     }

@@ -14,8 +14,8 @@ import java.util.List;
 public class MethodSelection {
 
     private static final int
-        OBJECT_SHIFT = 23,    INTERFACE_SHIFT = 0,
-        PRIMITIVE_SHIFT = 21, VARGS_SHIFT=44;
+            OBJECT_SHIFT = 23, INTERFACE_SHIFT = 0,
+            PRIMITIVE_SHIFT = 21, VARGS_SHIFT = 44;
 
     private static final ClassNode[] PRIMITIVES = {
             byte_TYPE, Byte_TYPE, short_TYPE, Short_TYPE,
@@ -86,14 +86,14 @@ public class MethodSelection {
 
     public static Object chooseMethod(String methodName, Object methodOrList, ClassNode[] arguments) {
         if (methodOrList instanceof MethodNode) {
-            if (isValidMethod(((MethodNode)methodOrList).getParameters(), arguments)) {
+            if (isValidMethod(((MethodNode) methodOrList).getParameters(), arguments)) {
                 return methodOrList;
             }
             return null;
         }
 
         FastArray methods = (FastArray) methodOrList;
-        if (methods==null) return null;
+        if (methods == null) return null;
         int methodCount = methods.size();
         if (methodCount <= 0) {
             return null;
@@ -118,18 +118,17 @@ public class MethodSelection {
                 Object method = data[i];
 
                 // making this false helps find matches
-                if (isValidMethod(((MethodNode)method).getParameters(), arguments)) {
+                if (isValidMethod(((MethodNode) method).getParameters(), arguments)) {
                     if (matchingMethods == null)
-                      matchingMethods = method;
-                    else
-                        if (matchingMethods instanceof ArrayList)
-                          ((ArrayList)matchingMethods).add(method);
-                        else {
-                            ArrayList arr = new ArrayList(4);
-                            arr.add(matchingMethods);
-                            arr.add(method);
-                            matchingMethods = arr;
-                        }
+                        matchingMethods = method;
+                    else if (matchingMethods instanceof ArrayList)
+                        ((ArrayList) matchingMethods).add(method);
+                    else {
+                        ArrayList arr = new ArrayList(4);
+                        arr.add(matchingMethods);
+                        arr.add(method);
+                        matchingMethods = arr;
+                    }
                 }
             }
             if (matchingMethods == null) {
@@ -198,7 +197,7 @@ public class MethodSelection {
         if (parameter.equals(argument)) return 0;
 
         if (parameter.isInterface()) {
-            return getMaximumInterfaceDistance(argument, parameter)<<INTERFACE_SHIFT;
+            return getMaximumInterfaceDistance(argument, parameter) << INTERFACE_SHIFT;
         }
 
         long objectDistance = 0;
@@ -241,7 +240,7 @@ public class MethodSelection {
         if (parameters.length == 0) return 0;
 
         long ret = 0;
-        int noVargsLength = parameters.length-1;
+        int noVargsLength = parameters.length - 1;
 
         // if the number of parameters does not match we have
         // a vargs usage
@@ -333,20 +332,20 @@ public class MethodSelection {
             ret += calculateParameterDistance(arguments[i], parameters[i].getType());
         }
 
-        if (arguments.length==parameters.length) {
+        if (arguments.length == parameters.length) {
             // case C&D, we use baseType to calculate and set it
             // to the value we need according to case C and D
             ClassNode baseType = parameters[noVargsLength].getType(); // case C
-            if (!TypeUtil.isAssignableFrom(parameters[noVargsLength].getType(),arguments[noVargsLength])) {
-                baseType= baseType.getComponentType(); // case D
-                ret+=2l<<VARGS_SHIFT; // penalty for vargs
+            if (!TypeUtil.isAssignableFrom(parameters[noVargsLength].getType(), arguments[noVargsLength])) {
+                baseType = baseType.getComponentType(); // case D
+                ret += 2l << VARGS_SHIFT; // penalty for vargs
             }
             ret += calculateParameterDistance(arguments[noVargsLength], baseType);
-        } else if (arguments.length>parameters.length) {                                  
+        } else if (arguments.length > parameters.length) {
             // case B
             // we give our a vargs penalty for each exceeding argument and iterate
             // by using parameters[noVargsLength].getComponentType()
-            ret += (2l+arguments.length-parameters.length)<<VARGS_SHIFT; // penalty for vargs
+            ret += (2l + arguments.length - parameters.length) << VARGS_SHIFT; // penalty for vargs
             ClassNode vargsType = (parameters[noVargsLength].getType().getComponentType());
             for (int i = noVargsLength; i < arguments.length; i++) {
                 ret += calculateParameterDistance(arguments[i], vargsType);
@@ -355,11 +354,12 @@ public class MethodSelection {
             // case A
             // we give a penalty for vargs, since we have no direct
             // match for the last argument
-            ret += 1l<<VARGS_SHIFT;
+            ret += 1l << VARGS_SHIFT;
         }
 
         return ret;
     }
+
     /**
      * @param methods the methods to choose from
      * @return the method with 1 parameter which takes the most general type of
@@ -406,7 +406,7 @@ public class MethodSelection {
             if (isPrimitiveType(theType)) continue;
 
             if (paramLength == 2) {
-                if (!isVargsMethod(pt,ARRAY_WITH_NULL)) continue;
+                if (!isVargsMethod(pt, ARRAY_WITH_NULL)) continue;
                 if (closestClass == null) {
                     closestVargsClass = pt[1].getType();
                     closestClass = theType;
@@ -455,8 +455,8 @@ public class MethodSelection {
     }
 
     private static boolean isVargsMethod(Parameter pt[], ClassNode[] arguments) {
-        if(pt.length == 0 || !pt [pt.length-1].getType().isArray())
-          return false;
+        if (pt.length == 0 || !pt[pt.length - 1].getType().isArray())
+            return false;
 
         final int lenMinus1 = pt.length - 1;
         // -1 because the varg part is optional
@@ -471,25 +471,23 @@ public class MethodSelection {
     }
 
     public static boolean isVargsMethodNoParams(Parameter pt[]) {
-        return (pt.length == 1 && !pt [pt.length-1].getType().isArray());
+        return (pt.length == 1 && pt[pt.length - 1].getType().isArray());
     }
 
     public static boolean isValidMethod(Parameter[] pt, ClassNode[] arguments) {
         if (arguments == null) return true;
 
         final int size = arguments.length;
-        final int paramMinus1 = pt.length-1;
+        final int paramMinus1 = pt.length - 1;
 
-        boolean isVargsMethod = pt.length != 0 && pt [pt.length-1].getType().isArray();
+        boolean isVargsMethod = pt.length != 0 && pt[pt.length - 1].getType().isArray();
 
         if (isVargsMethod && size >= paramMinus1)
             return isValidVarargsMethod(arguments, size, pt, paramMinus1);
-        else
-            if (pt.length == size)
-                return isValidExactMethod(arguments, pt);
-            else
-                if (pt.length == 1 && size == 0)
-                    return true;
+        else if (pt.length == size)
+            return isValidExactMethod(arguments, pt);
+        else if (pt.length == 1 && size == 0)
+            return true;
         return false;
     }
 
@@ -512,17 +510,16 @@ public class MethodSelection {
     private static boolean isValidVarargsMethod(ClassNode[] arguments, int size, Parameter[] pt, int paramMinus1) {
         // first check normal number of parameters
         for (int i = 0; i < paramMinus1; i++) {
-            if (TypeUtil.isDirectlyAssignableFrom(pt[i].getType(), arguments[i])) continue;
+            if (TypeUtil.isAssignableFrom(pt[i].getType(), arguments[i])) continue;
             return false;
         }
 
         // check direct match
         ClassNode varg = pt[paramMinus1].getType();
         ClassNode clazz = varg.getComponentType();
-        if ( size==pt.length &&
-             (TypeUtil.isDirectlyAssignableFrom(varg, arguments[paramMinus1]) ||
-              testComponentAssignable(clazz, arguments[paramMinus1])))
-        {
+        if (size == pt.length &&
+                (TypeUtil.isDirectlyAssignableFrom(varg, arguments[paramMinus1]) ||
+                        testComponentAssignable(clazz, arguments[paramMinus1]))) {
             return true;
         }
 

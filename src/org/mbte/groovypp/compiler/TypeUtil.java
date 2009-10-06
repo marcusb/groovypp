@@ -1,9 +1,9 @@
 package org.mbte.groovypp.compiler;
 
+import groovy.lang.IntRange;
+import groovy.lang.OwnerAware;
 import groovy.lang.Range;
 import groovy.lang.TypedClosure;
-import groovy.lang.OwnerAware;
-import groovy.lang.IntRange;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
@@ -24,7 +24,9 @@ public class TypeUtil {
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
     public static final ClassNode INT_RANGE_TYPE = make(IntRange.class);
 
-    private static class Null {}
+    private static class Null {
+    }
+
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
 
     public static boolean isAssignableFrom(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
@@ -98,7 +100,7 @@ public class TypeUtil {
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode type, ClassNode type1) {
-        return type1.isDerivedFrom(type) || type.isInterface() && implementsInterface(type, type1);
+        return type1 == null || type1.isDerivedFrom(type) || type.isInterface() && implementsInterface(type, type1);
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
@@ -111,37 +113,37 @@ public class TypeUtil {
 
     public static boolean isNumericalType(ClassNode paramType) {
         return paramType == char_TYPE
-         || paramType == byte_TYPE
-         || paramType == short_TYPE
-         || paramType == int_TYPE
-         || paramType == float_TYPE
-         || paramType == long_TYPE
-         || paramType == double_TYPE
-         || paramType == boolean_TYPE
-         || paramType.equals(Byte_TYPE)
-         || paramType.equals(Character_TYPE)
-         || paramType.equals(Short_TYPE)
-         || paramType.equals(Integer_TYPE)
-         || paramType.equals(Float_TYPE)
-         || paramType.equals(Long_TYPE)
-         || paramType.equals(Boolean_TYPE)
-         || paramType.equals(Double_TYPE)
-         || paramType.equals(BigDecimal_TYPE)
-         || paramType.equals(BigInteger_TYPE);
+                || paramType == byte_TYPE
+                || paramType == short_TYPE
+                || paramType == int_TYPE
+                || paramType == float_TYPE
+                || paramType == long_TYPE
+                || paramType == double_TYPE
+                || paramType == boolean_TYPE
+                || paramType.equals(Byte_TYPE)
+                || paramType.equals(Character_TYPE)
+                || paramType.equals(Short_TYPE)
+                || paramType.equals(Integer_TYPE)
+                || paramType.equals(Float_TYPE)
+                || paramType.equals(Long_TYPE)
+                || paramType.equals(Boolean_TYPE)
+                || paramType.equals(Double_TYPE)
+                || paramType.equals(BigDecimal_TYPE)
+                || paramType.equals(BigInteger_TYPE);
     }
 
     public static ClassNode commonType(ClassNode type1, ClassNode type2) {
         if (type1 == null || type2 == null)
-          throw new RuntimeException("Internal Error");
+            throw new RuntimeException("Internal Error");
 
         if (type1 == NULL_TYPE)
-           return type2;
+            return type2;
 
         if (type2 == NULL_TYPE)
-           return type1;
+            return type1;
 
         if (type1.equals(ClassHelper.OBJECT_TYPE) || type2.equals(ClassHelper.OBJECT_TYPE))
-          return ClassHelper.OBJECT_TYPE;
+            return ClassHelper.OBJECT_TYPE;
 
         type1 = ClassHelper.getWrapper(type1);
         type2 = ClassHelper.getWrapper(type2);
@@ -162,27 +164,27 @@ public class TypeUtil {
         final Set<ClassNode> allTypes2 = getAllTypes(type2);
 
         for (ClassNode cn : allTypes1)
-          if (allTypes2.contains(cn))
-            return cn;
+            if (allTypes2.contains(cn))
+                return cn;
 
         return ClassHelper.OBJECT_TYPE;
     }
 
     public static boolean isBigDecimal(ClassNode type) {
-		return type == BigDecimal_TYPE;
-	}
+        return type == BigDecimal_TYPE;
+    }
 
     public static boolean isBigInteger(ClassNode type) {
-		return type == BigInteger_TYPE;
-	}
+        return type == BigInteger_TYPE;
+    }
 
     public static boolean isFloatingPoint(ClassNode type) {
-		return type == double_TYPE || type == float_TYPE;
-	}
+        return type == double_TYPE || type == float_TYPE;
+    }
 
     public static boolean isLong(ClassNode type) {
-		return type == long_TYPE;
-	}
+        return type == long_TYPE;
+    }
 
     public static ClassNode getMathType(ClassNode l, ClassNode r) {
         l = getUnwrapper(l);
@@ -197,23 +199,22 @@ public class TypeUtil {
         if (isBigInteger(r) || isBigInteger(r)) {
             return BigInteger_TYPE;
         }
-        if (isLong(l) || isLong(r)){
+        if (isLong(l) || isLong(r)) {
             return long_TYPE;
         }
         return int_TYPE;
     }
 
-    static Set<ClassNode> getAllTypes (ClassNode cn) {
-        Set<ClassNode> set = new LinkedHashSet<ClassNode> ();
+    static Set<ClassNode> getAllTypes(ClassNode cn) {
+        Set<ClassNode> set = new LinkedHashSet<ClassNode>();
 
-        LinkedList<ClassNode> ifaces = new LinkedList<ClassNode> ();
+        LinkedList<ClassNode> ifaces = new LinkedList<ClassNode>();
         if (!cn.isInterface()) {
-            for ( ClassNode c = cn; !c.equals(ClassHelper.OBJECT_TYPE); c = c.getSuperClass()) {
-                set.add (c);
+            for (ClassNode c = cn; !c.equals(ClassHelper.OBJECT_TYPE); c = c.getSuperClass()) {
+                set.add(c);
                 ifaces.addAll(Arrays.asList(cn.getInterfaces()));
             }
-        }
-        else {
+        } else {
             ifaces.add(cn);
         }
 

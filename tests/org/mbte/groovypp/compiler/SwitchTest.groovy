@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler
 public class SwitchTest extends GroovyShellTestCase {
   void testMe() {
     def res = shell.evaluate("""
-    @Typed(debug=true)
+    @Typed
     def u (v, List res) {
        switch (v) {
           case String:

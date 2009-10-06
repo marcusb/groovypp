@@ -1,21 +1,22 @@
 package org.mbte.groovypp.runtime;
 
+import groovy.lang.GString;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
 public class DefaultGroovyPPMethods {
-    public static Number plus (Number self, Number other) {
+    public static Number plus(Number self, Number other) {
         return NumberMath.add(self, other);
     }
 
-    public static Number minus (Number self, Number other) {
+    public static Number minus(Number self, Number other) {
         return NumberMath.subtract(self, other);
     }
 
-    public static Number multiply (Number self, Number other) {
+    public static Number multiply(Number self, Number other) {
         return NumberMath.multiply(self, other);
     }
 
-    public static Number divide (Number self, Number other) {
+    public static Number divide(Number self, Number other) {
         return NumberMath.divide(self, other);
     }
 
@@ -49,5 +50,17 @@ public class DefaultGroovyPPMethods {
 
     public static Double box(double value) {
         return value;
+    }
+
+    public static String[] gstringArrayToStringArray(GString[] data) {
+        if (data == null)
+            return null;
+
+        String[] strings = new String[data.length];
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = data[i].toString();
+        }
+
+        return strings;
     }
 }
