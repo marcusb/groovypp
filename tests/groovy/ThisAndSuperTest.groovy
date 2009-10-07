@@ -1,8 +1,8 @@
 package groovy
 
 class ThisAndSuperTest extends GroovyShellTestCase {
-	void testOverwrittenSuperMethod(){
-        shell.evaluate  """
+  void testOverwrittenSuperMethod() {
+    shell.evaluate """
           @Typed
           class TestForSuperHelper1 {
             def foo(){1}
@@ -30,11 +30,12 @@ class ThisAndSuperTest extends GroovyShellTestCase {
           def u() {
             def helper = new TestForSuperHelper2()
             assert helper.foo() == 2
+            println helper.callFooInSuper()
 		    assert helper.callFooInSuper() == 1
           }
           u()
         """
-	}
+  }
 }
 /*
 	void testClosureUsingSuperAndThis(){

@@ -3,11 +3,12 @@ package org.mbte.groovypp.compiler
 public class NullCompareTest extends GroovyShellTestCase {
 
   void testNullCompare() {
-      shell.evaluate  """
+    shell.evaluate """
 
-      @Typed
+      @Typed(debug=true)
       def u() {
         def a = new Object()
+        println a != null
         assert a != null
       }
 

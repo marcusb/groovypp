@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.ClassNodeCache;
 import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
 
 import java.util.ArrayList;
 
@@ -165,6 +166,10 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 op = INVOKEINTERFACE;
 
             if (object != null) {
+                if (object instanceof VariableExpressionTransformer.Super) {
+                    op = INVOKESPECIAL;
+                }
+
                 object.visit(mv);
                 box(object.getType());
             }
