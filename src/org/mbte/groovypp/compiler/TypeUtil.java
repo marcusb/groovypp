@@ -31,6 +31,7 @@ public class TypeUtil {
 
     public static boolean isAssignableFrom(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
         if (classToTransformFrom == null) return true;
+        if (classToTransformFrom == TypeUtil.NULL_TYPE) return true;
         if (classToTransformTo.equals(classToTransformFrom)) return true;
         if (classToTransformTo.equals(OBJECT_TYPE)) return true;
 

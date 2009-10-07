@@ -16,26 +16,26 @@ import java.util.*;
 
 public class ClassNodeCache {
     public static class ClassNodeInfo {
-        Map<String,Object> methods;
-        Map<String,Object> fields;
+        Map<String, Object> methods;
+        Map<String, Object> fields;
         public FastArray constructors;
     }
 
-    public static class CompileUnitInfo extends HashMap<ClassNode, ClassNodeInfo>{
+    public static class CompileUnitInfo extends HashMap<ClassNode, ClassNodeInfo> {
     }
 
-    static final WeakHashMap<Class, SoftReference<ClassNodeInfo>> loadedClassesCache = new WeakHashMap<Class, SoftReference<ClassNodeInfo>> ();
+    static final WeakHashMap<Class, SoftReference<ClassNodeInfo>> loadedClassesCache = new WeakHashMap<Class, SoftReference<ClassNodeInfo>>();
 
     static final WeakHashMap<CompileUnit, SoftReference<CompileUnitInfo>> compiledClassesCache = new WeakHashMap<CompileUnit, SoftReference<CompileUnitInfo>>();
 
-    static final Map<ClassNode,List<MethodNode>> dgmMethods = new HashMap<ClassNode,List<MethodNode>> ();
+    static final Map<ClassNode, List<MethodNode>> dgmMethods = new HashMap<ClassNode, List<MethodNode>>();
 
     static {
         initDgm(DefaultGroovyMethods.class);
         initDgm(DefaultGroovyPPMethods.class);
     }
 
-    static ClassNodeInfo getClassNodeInfo (ClassNode classNode) {
+    static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {
         final ModuleNode moduleNode = classNode.getModule();
         if (moduleNode != null) {
             final CompileUnit compileUnit = classNode.getCompileUnit();
@@ -52,8 +52,7 @@ public class ClassNodeCache {
                 cui.put(classNode, info);
             }
             return info;
-        }
-        else {
+        } else {
             Class typeClass = classNode.getTypeClass();
             final SoftReference<ClassNodeInfo> ref = loadedClassesCache.get(typeClass);
             ClassNodeInfo cni;
@@ -70,7 +69,7 @@ public class ClassNodeCache {
 
         FastArray list = info.constructors;
         if (list == null) {
-            list = new FastArray ();
+            list = new FastArray();
             info.constructors = list;
 
             List constructors = type.redirect().getDeclaredConstructors();
@@ -85,12 +84,12 @@ public class ClassNodeCache {
         return list;
     }
 
-    static synchronized Object getMethods (ClassNode type, String methodName) {
+    static synchronized Object getMethods(ClassNode type, String methodName) {
         final ClassNodeInfo info = getClassNodeInfo(type);
 
         Map<String, Object> nameMap = info.methods;
         if (nameMap == null) {
-            nameMap = new HashMap<String, Object> ();
+            nameMap = new HashMap<String, Object>();
             info.methods = nameMap;
 
             final Set<ClassNode> ifaces = getAllInterfaces(type);
@@ -126,14 +125,14 @@ public class ClassNodeCache {
             for (ClassNode c = classNode; c != null; c = c.getSuperClass()) {
                 superClasses.addFirst(c);
             }
-//            if (classNode.isArray() && !classNode.equals(ClassHelper.O) && !theClass.getComponentType().isPrimitive()) {
-//                superClasses.addFirst(ReflectionCache.OBJECT_ARRAY_CLASS);
-//            }
+            if (classNode.isArray() && !classNode.getComponentType().equals(ClassHelper.OBJECT_TYPE) && !ClassHelper.isPrimitiveType(classNode.getComponentType())) {
+                superClasses.addFirst(ClassHelper.OBJECT_TYPE.makeArray());
+            }
         }
         return superClasses;
     }
 
-    static Object getFields (ClassNode type, String fieldName) {
+    static Object getFields(ClassNode type, String fieldName) {
         final ClassNodeInfo info = getClassNodeInfo(type);
 
         Map<String, Object> nameMap = info.fields;
@@ -170,10 +169,10 @@ public class ClassNodeCache {
 
     static void getAllInterfaces(ClassNode type, Set<ClassNode> res) {
         if (type == null)
-          return;
+            return;
 
         if (type.isInterface())
-          res.add(type);
+            res.add(type);
 
         ClassNode[] interfaces = type.getInterfaces();
         for (ClassNode anInterface : interfaces) {
@@ -250,7 +249,7 @@ public class ClassNodeCache {
                         if (isNonRealMethod(method)) {
                             list.set(found, method);
                         }
-                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC,matchC)) {
+                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC, matchC)) {
                         list.set(found, method);
                     }
                 }
@@ -303,13 +302,13 @@ public class ClassNodeCache {
                     ClassNode declaringClass = ClassHelper.make(method.getParameterTypes()[0].getTheClass());
 
                     final Class<?>[] ex = method.getCachedMethod().getExceptionTypes();
-                    ClassNode exs [] = ex.length > 0 ? new ClassNode [ex.length] : ClassNode.EMPTY_ARRAY;
+                    ClassNode exs[] = ex.length > 0 ? new ClassNode[ex.length] : ClassNode.EMPTY_ARRAY;
                     for (int j = 0; j != ex.length; ++j)
-                      exs [j] = ClassHelper.make(ex[j]);
+                        exs[j] = ClassHelper.make(ex[j]);
 
-                    Parameter params [] = classes.length > 1 ? new Parameter[classes.length-1] : Parameter.EMPTY_ARRAY;
+                    Parameter params[] = classes.length > 1 ? new Parameter[classes.length - 1] : Parameter.EMPTY_ARRAY;
                     for (int j = 0; j != params.length; ++j)
-                      params[j] = new Parameter(ClassHelper.make(classes[j+1].getTheClass()), "$"+j);
+                        params[j] = new Parameter(ClassHelper.make(classes[j + 1].getTheClass()), "$" + j);
 
                     DGM mn = createDGM(klazz, method, declaringClass, exs, params);
 
@@ -334,13 +333,13 @@ public class ClassNodeCache {
                 null);
         mn.setDeclaringClass(declaringClass);
         mn.callClassInternalName = BytecodeHelper.getClassInternalName(klazz);
-        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(),method.getCachedMethod().getParameterTypes());
+        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getCachedMethod().getParameterTypes());
         return mn;
     }
 
-    public static class DGM extends MethodNode{
-        public String    descr;
-        public String    callClassInternalName;
+    public static class DGM extends MethodNode {
+        public String descr;
+        public String callClassInternalName;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);

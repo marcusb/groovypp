@@ -2,9 +2,9 @@ package groovy
 
 class SubscriptTest extends GroovyShellTestCase {
 
-    void testListRange() {
+  void testListRange() {
 
-      shell.evaluate  """
+    shell.evaluate """
 
             @Typed
             def u() {
@@ -38,10 +38,10 @@ class SubscriptTest extends GroovyShellTestCase {
 
             u()
           """
-    }
-    
-    void testObjectRangeRange() {
-       shell.evaluate  """
+  }
+
+  void testObjectRangeRange() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -66,26 +66,25 @@ class SubscriptTest extends GroovyShellTestCase {
 
         u()
       """
-    }
+  }
 
-    void testStringArrayRange() {
-      shell.evaluate  """
+  void testStringArrayRange() {
+    shell.evaluate """
 
-       @Typed
+       @Typed(debug=true)
        def u() {
           String[] list = ['a', 'b', 'c', 'd', 'e']
 
           String[] sub = list[2..4]
           assert sub == ['c', 'd', 'e']
-
        }
 
        u()
      """
-    } 
-    
-    void testIntRangeRange() {
-     shell.evaluate  """
+  }
+
+  void testIntRangeRange() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -111,10 +110,10 @@ class SubscriptTest extends GroovyShellTestCase {
         u()
       """
 
-    }
-    
-    void testStringSubscript() {
-      shell.evaluate  """
+  }
+
+  void testStringSubscript() {
+    shell.evaluate """
 
          @Typed
          def u() {
@@ -140,10 +139,10 @@ class SubscriptTest extends GroovyShellTestCase {
 
          u()
        """
-    }
-    
-    void testListSubscriptWithList() {
-      shell.evaluate  """
+  }
+
+  void testListSubscriptWithList() {
+    shell.evaluate """
         @Typed
         def u() {
             def list = ['a', 'b', 'c', 'd', 'e']
@@ -163,11 +162,11 @@ class SubscriptTest extends GroovyShellTestCase {
 
          u()
        """
-    }
-    
-    
-    void testListSubscriptWithListAndRange() {
-      shell.evaluate  """
+  }
+
+
+  void testListSubscriptWithListAndRange() {
+    shell.evaluate """
         @Typed
         def u() {
             def list = 100..200
@@ -185,10 +184,10 @@ class SubscriptTest extends GroovyShellTestCase {
          u()
        """
 
-    }
+  }
 
-    void testStringWithSubscriptList() {
-      shell.evaluate  """
+  void testStringWithSubscriptList() {
+    shell.evaluate """
         @Typed
         def u() {
           def text = "nice cheese gromit!"
@@ -200,10 +199,10 @@ class SubscriptTest extends GroovyShellTestCase {
        """
 
 
-    }
-    
-    void testSubMap() {
-      shell.evaluate  """
+  }
+
+  void testSubMap() {
+    shell.evaluate """
         @Typed
         def u() {
           def map = ['a':123, 'b':456, 'c':789]
@@ -221,10 +220,10 @@ class SubscriptTest extends GroovyShellTestCase {
 
          u()
        """
-    }
-    
-    void testListWithinAListSyntax() {
-      shell.evaluate  """
+  }
+
+  void testListWithinAListSyntax() {
+    shell.evaluate """
         @Typed
         def u() {
           def list = [1, 2, 3, 4..10, 5, 6]
@@ -237,5 +236,5 @@ class SubscriptTest extends GroovyShellTestCase {
 
          u()
        """
-    }
+  }
 }
