@@ -1,10 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -19,19 +16,21 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             ve.setType(ve.getOriginType());
         final BytecodeExpr right0 = (BytecodeExpr) compiler.transform(exp.getRightExpression());
         final BytecodeExpr right;
-        if (right0.getType() != TypeUtil.NULL_TYPE || !ClassHelper.isPrimitiveType(ve.getType()))
-            right = right0;
-        else {
+        if (right0.getType() != TypeUtil.NULL_TYPE || !ClassHelper.isPrimitiveType(ve.getType())) {
+            if (!TypeUtil.isAssignableFrom(ve.getType(), right0.getType())) {
+                CastExpression castExpression = new CastExpression(ve.getType(), right0);
+                castExpression.setCoerce(true);
+                castExpression.setSourcePosition(right0);
+                right = (BytecodeExpr) compiler.transform(castExpression);
+            } else
+                right = right0;
+        } else {
             final ConstantExpression cnst = new ConstantExpression(0);
             cnst.setColumnNumber(exp.getColumnNumber());
             cnst.setLineNumber(exp.getLineNumber());
             right = (BytecodeExpr) compiler.transform(cnst);
         }
         if (!ve.isDynamicTyped()) {
-            if (!TypeUtil.isAssignableFrom(ve.getType(), right.getType())) {
-                compiler.addError("Can not assign " + right.getType() + " to " + ve.getType(), exp);
-                return null;
-            }
             return new NonDynamic(exp, ve, right, compiler);
         } else {
             // let's try local type inference
