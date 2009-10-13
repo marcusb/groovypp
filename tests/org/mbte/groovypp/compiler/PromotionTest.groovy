@@ -29,7 +29,7 @@ public class PromotionTest extends GroovyShellTestCase {
 
   void testPromo3() {
     shell.evaluate """
-    @Typed(debug=true)
+    @Typed
     def u () {
       def C = '1'.toCharacter()
       def B = new Byte("1")

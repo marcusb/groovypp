@@ -821,6 +821,8 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             castBigInteger(expr, type);
         } else if (expr == STRING_TYPE) {
             castString(expr, type);
+        } else if (expr.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
+            castCollection(expr, type);
         } else {
             if (TypeUtil.isNumericalType(type)) {
                 unbox(getUnwrapper(type));
@@ -835,6 +837,27 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 }
             }
         }
+    }
+
+    private void castCollection(ClassNode expr, ClassNode type) {
+        if (type.isArray()) {
+            if (!ClassHelper.isPrimitiveType(type.getComponentType())) {
+                mv.visitInsn(DUP);
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "size", "()I");
+                mv.visitTypeInsn(ANEWARRAY, BytecodeHelper.getClassInternalName(type.getComponentType()));
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                return;
+            } else {
+                mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "asArray", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                return;
+            }
+        }
+
+        throw new IllegalStateException("Impossible cast");
     }
 
     private void castString(ClassNode expr, ClassNode type) {

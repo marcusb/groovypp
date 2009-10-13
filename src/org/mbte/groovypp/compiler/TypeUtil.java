@@ -50,6 +50,8 @@ public class TypeUtil {
             if (classToTransformFrom.equals(STRING_TYPE) || isDirectlyAssignableFrom(GSTRING_TYPE, classToTransformFrom)) {
                 return true;
             }
+        } else if (classToTransformTo.isArray() && classToTransformFrom.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
+            return true;
         }
 
         return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);

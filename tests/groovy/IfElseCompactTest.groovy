@@ -5,7 +5,7 @@ class IfElseCompactTest extends GroovyShellTestCase {
   void testIf_NoElse() {
     shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             def x = false
             if ( true ) {x = true}

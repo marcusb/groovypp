@@ -9,7 +9,7 @@ class ArrayAutoboxingTest extends GroovyShellTestCase {
              return o.class.name
           }
 
-          @Typed(debug=true)
+          @Typed
           def u(List res) {
             res << getClassName(new int[2*2])
             res << getClassName(new long[2*2])

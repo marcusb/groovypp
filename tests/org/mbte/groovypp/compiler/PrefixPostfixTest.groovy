@@ -9,7 +9,7 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
       println it
 
       def res = shell.evaluate("""
-          @Typed(debug=true)
+          @Typed
           def u ($it val, List res) {
             while(val) {
               res.add(val--)

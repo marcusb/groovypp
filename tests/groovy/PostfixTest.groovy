@@ -31,7 +31,7 @@ class PostfixTest extends GroovyShellTestCase {
   void testDoublePostfix() {
     shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             def x = 1.2
             def y = x++
@@ -102,7 +102,7 @@ class PostfixTest extends GroovyShellTestCase {
 
   void testFunctionPostfix() {
     shell.evaluate """
-          def valueReturned() { 0 }
+          int valueReturned() { 0 }
 
           @Typed
           def u() {

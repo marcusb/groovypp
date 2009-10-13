@@ -202,7 +202,7 @@ class NumberMathTest extends GroovyShellTestCase {
   void testIntegerPlusCastException() {
     shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             try {
               Integer i = 12

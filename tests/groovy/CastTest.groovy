@@ -56,7 +56,7 @@ class CastTest extends GroovyShellTestCase {
 
   void testCharCast() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u() {
           def c = (Character) 'x'
           assert c instanceof Character

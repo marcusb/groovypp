@@ -39,7 +39,7 @@ class VArgsTest extends GroovyShellTestCase {
         @Typed
         def doubleMethod(double[] id) {20+id.length}
 
-        @Typed(debug=true)
+        @Typed
         def u() {
           // with BigDecimal
           assert doubleMethod([1,2,2,2] as BigDecimal[])==24
@@ -176,7 +176,7 @@ class VArgsTest extends GroovyShellTestCase {
         @Typed
         def overloadedMethod1(Object[] args){2}
 
-        @Typed(debug=true)
+        @Typed
         def u() {
           assert overloadedMethod1() == 2
         }
@@ -213,7 +213,7 @@ class VArgsTest extends GroovyShellTestCase {
         @Typed
         def normalVargsMethod(Object[] a){a.length}
 
-        @Typed(debug=true)
+        @Typed
         def u() {
           assert normalVargsMethod([1,2,3] as int[]) == 3
         }

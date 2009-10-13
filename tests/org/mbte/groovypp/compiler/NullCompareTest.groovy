@@ -5,7 +5,7 @@ public class NullCompareTest extends GroovyShellTestCase {
   void testNullCompare() {
     shell.evaluate """
 
-      @Typed(debug=true)
+      @Typed
       def u() {
         def a = new Object()
         println a != null

@@ -44,7 +44,7 @@ u (new int [10])
 
   void testArrayAssignOp() {
     def res = shell.evaluate("""
-@Typed(debug=true)
+@Typed
 def u (int [] x) {
    x [0] = 1
    x [1] = 6

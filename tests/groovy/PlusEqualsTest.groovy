@@ -24,7 +24,7 @@ class PlusEqualsTest extends GroovyShellTestCase {
   void testCharacterPlusEquals() {
     shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             Character x = 1
             Character y = 2
