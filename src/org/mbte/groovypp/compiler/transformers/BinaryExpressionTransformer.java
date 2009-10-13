@@ -55,7 +55,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 return evaluateMathOperation(exp, "multiply", compiler);
 
             case Types.DIVIDE:
-                return evaluateMathOperation(exp, "divide", compiler);
+                return evaluateMathOperation(exp, "div", compiler);
 
             case Types.MINUS:
                 return evaluateMathOperation(exp, "minus", compiler);
@@ -232,12 +232,21 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             if (be.getOperation().getType() == Types.POWER)
                 return callMethod(be, method, compiler, l, r);
 
-            final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
+            ClassNode mathType0 = TypeUtil.getMathType(l.getType(), r.getType());
+
+            if (be.getOperation().getType() == Types.DIVIDE
+                    && (
+                    mathType0.equals(ClassHelper.int_TYPE) ||
+                            mathType0.equals(ClassHelper.long_TYPE) ||
+                            mathType0.equals(ClassHelper.BigInteger_TYPE)))
+                mathType0 = ClassHelper.BigDecimal_TYPE;
+
+            final ClassNode mathType = mathType0;
 
             if (mathType == ClassHelper.BigDecimal_TYPE || mathType == ClassHelper.BigInteger_TYPE)
                 return callMethod(be, method, compiler, l, r);
 
-            if (mathType != ClassHelper.Integer_TYPE && mathType != ClassHelper.Long_TYPE) {
+            if (mathType != ClassHelper.int_TYPE && mathType != ClassHelper.long_TYPE) {
                 switch (be.getOperation().getType()) {
                     case Types.BITWISE_XOR:
                     case Types.BITWISE_AND:

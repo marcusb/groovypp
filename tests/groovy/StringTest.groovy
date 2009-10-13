@@ -22,8 +22,8 @@ package groovy
  */
 class StringTest extends GroovyShellTestCase {
 
-    void testString() {
-        shell.evaluate  """
+  void testString() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -42,10 +42,10 @@ class StringTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
-    void testStringPlusNull() {
-        shell.evaluate  """
+  void testStringPlusNull() {
+    shell.evaluate """
           @Typed
           def u() {
             def y = null
@@ -56,10 +56,10 @@ class StringTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
-    void testNextPrevious() {
-        shell.evaluate  """
+  }
+
+  void testNextPrevious() {
+    shell.evaluate """
           @Typed
           def u() {
             def x = 'a'
@@ -80,10 +80,10 @@ class StringTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
-    void testApppendToString() {
-      shell.evaluate  """
+  }
+
+  void testApppendToString() {
+    shell.evaluate """
         @Typed
         def u() {
           def name = "Gromit"
@@ -94,10 +94,10 @@ class StringTest extends GroovyShellTestCase {
 
         u()
       """
-    }
-    
-    void testApppendToStringBuffer() {
-       shell.evaluate  """
+  }
+
+  void testApppendToStringBuffer() {
+    shell.evaluate """
         @Typed
         def u() {
           def buffer = new StringBuffer()
@@ -109,11 +109,11 @@ class StringTest extends GroovyShellTestCase {
         }
         u()
       """
-    }
+  }
 
 
-    void testSimpleStringLiterals() {
-      def script = """
+  void testSimpleStringLiterals() {
+    def script = """
         @Typed
         def u() {
           assert "\\n".length() == 1
@@ -145,11 +145,11 @@ y'.indexOf('xy') >= 0
         }
         u()
       """
-      shell.evaluate script;
-    }
+    shell.evaluate script;
+  }
 
-    void testMinusRemovesFirstOccurenceOfString() {
-      shell.evaluate  """
+  void testMinusRemovesFirstOccurenceOfString() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -158,11 +158,11 @@ y'.indexOf('xy') >= 0
 
           u()
         """
-        
-    }
 
-    void testMinusEscapesRegexChars() {
-      shell.evaluate  """
+  }
+
+  void testMinusEscapesRegexChars() {
+    shell.evaluate """
           @Typed
           def u() {
             assert "abcdeab.d.f" - '.d.' == 'abcdeabf'
@@ -170,10 +170,10 @@ y'.indexOf('xy') >= 0
 
           u()
         """
-    }
+  }
 
-    void testMultilineStringLiterals() {
-      def script = """
+  void testMultilineStringLiterals() {
+    def script = """
         @Typed
         def u() {
           assert \"\"\"\"x\"\"\" == '"x'
@@ -196,11 +196,11 @@ y''' == 'x\\ny'
 
         u()
       """
-      shell.evaluate script;
-    }
+    shell.evaluate script;
+  }
 
-    void testRegexpStringLiterals() {
-      def script = """
+  void testRegexpStringLiterals() {
+    def script = """
         @Typed
         def u() {
           assert "foo" == /foo/
@@ -210,11 +210,11 @@ y''' == 'x\\ny'
         }
         u()
       """;
-      shell.evaluate script;
-    }
+    shell.evaluate script;
+  }
 
-    void testBoolCoerce() {
-        shell.evaluate  """
+  void testBoolCoerce() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -240,10 +240,10 @@ y''' == 'x\\ny'
           u()
         """
 
-    }
+  }
 
-    void testSplit() {
-      shell.evaluate  """
+  void testSplit() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -255,10 +255,10 @@ y''' == 'x\\ny'
         u()
       """
 
-    }
+  }
 
-    void testSplitEmptyText() {
-      shell.evaluate  """
+  void testSplitEmptyText() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -270,10 +270,10 @@ y''' == 'x\\ny'
         u()
       """
 
-    }
+  }
 
-    void testReadLines() {
-      shell.evaluate  """
+  void testReadLines() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -285,10 +285,10 @@ y''' == 'x\\ny'
 
         u()
       """
-    }
-    
-    void testReplace() {
-      shell.evaluate  """
+  }
+
+  void testReplace() {
+    shell.evaluate """
 
         @Typed
         def u() {
@@ -322,10 +322,10 @@ y''' == 'x\\ny'
         u()
       """
 
-    }
+  }
 
-    void testNormalize() {
-         shell.evaluate  """
+  void testNormalize() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -345,10 +345,10 @@ y''' == 'x\\ny'
 
           u()
         """
-    }
+  }
 
-    void testDenormalize() {
-        shell.evaluate  """
+  void testDenormalize() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -369,10 +369,10 @@ y''' == 'x\\ny'
 
           u()
         """
-    }
+  }
 
-    void testNormalizationFileRoundTrip() {
-      shell.evaluate  """
+  void testNormalizationFileRoundTrip() {
+    shell.evaluate """
         @Typed
         void innerNormalizationFileRoundTrip(String s) {
             def f = File.createTempFile("groovy.StringTest", ".txt")
@@ -396,7 +396,7 @@ y''' == 'x\\ny'
             def arr = [s, s.replace('\\n', '\\r'), s.replace('\\n', '\\r\\n'), s.replace('\\n', '\\n\\n')];
             arr.each {
                 innerNormalizationFileRoundTrip((String)it)
-                innerNormalizationFileRoundTrip(it.reverse())
+                innerNormalizationFileRoundTrip(((String)it).reverse())
             }
         }
 
@@ -415,10 +415,10 @@ y''' == 'x\\ny'
 
         u()
       """
-   }
-    
-    void testSplitEqualsTokenize() {
-        shell.evaluate  """
+  }
+
+  void testSplitEqualsTokenize() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -435,5 +435,5 @@ y''' == 'x\\ny'
           }
           u()
         """
-    }
+  }
 }

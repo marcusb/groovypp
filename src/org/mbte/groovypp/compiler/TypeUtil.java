@@ -39,60 +39,15 @@ public class TypeUtil {
         classToTransformFrom = getWrapper(classToTransformFrom);
         if (classToTransformTo == classToTransformFrom) return true;
 
-        // note: there is no coercion for boolean and char. Range matters, precision doesn't
-        if (classToTransformTo == Integer_TYPE) {
-            if (classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE
-                    || classToTransformFrom == BigInteger_TYPE)
+        if (TypeUtil.isNumericalType(classToTransformTo)) {
+            if (TypeUtil.isNumericalType(classToTransformFrom)
+                    || classToTransformFrom.equals(Character_TYPE))
                 return true;
-        } else if (classToTransformTo == Double_TYPE) {
-            if (classToTransformFrom == Double_TYPE
-                    || classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Long_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE
-                    || classToTransformFrom == Float_TYPE
-                    || classToTransformFrom == BigDecimal_TYPE
-                    || classToTransformFrom == BigInteger_TYPE)
-                return true;
-        } else if (classToTransformTo == BigDecimal_TYPE) {
-            if (classToTransformFrom == Double_TYPE
-                    || classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Long_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE
-                    || classToTransformFrom == Float_TYPE
-                    || classToTransformFrom == BigDecimal_TYPE
-                    || classToTransformFrom == BigInteger_TYPE)
-                return true;
-        } else if (classToTransformTo == BigInteger_TYPE) {
-            if (classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Long_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE
-                    || classToTransformFrom == BigInteger_TYPE)
-                return true;
-        } else if (classToTransformTo == Long_TYPE) {
-            if (classToTransformFrom == Long_TYPE
-                    || classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE)
-                return true;
-        } else if (classToTransformTo == Float_TYPE) {
-            if (classToTransformFrom == Float_TYPE
-                    || classToTransformFrom == Integer_TYPE
-                    || classToTransformFrom == Long_TYPE
-                    || classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE)
-                return true;
-        } else if (classToTransformTo == Short_TYPE) {
-            if (classToTransformFrom == Short_TYPE
-                    || classToTransformFrom == Byte_TYPE)
+        } else if (classToTransformTo.equals(Character_TYPE)) {
+            if (TypeUtil.isNumericalType(classToTransformFrom) || classToTransformFrom.equals(STRING_TYPE))
                 return true;
         } else if (classToTransformTo.equals(STRING_TYPE)) {
-            if (classToTransformFrom.equals(STRING_TYPE) ||
-                    isDirectlyAssignableFrom(GSTRING_TYPE, classToTransformFrom)) {
+            if (classToTransformFrom.equals(STRING_TYPE) || isDirectlyAssignableFrom(GSTRING_TYPE, classToTransformFrom)) {
                 return true;
             }
         }
@@ -100,8 +55,8 @@ public class TypeUtil {
         return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);
     }
 
-    public static boolean isDirectlyAssignableFrom(ClassNode type, ClassNode type1) {
-        return type1 == null || type1.isDerivedFrom(type) || type.isInterface() && implementsInterface(type, type1);
+    public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
+        return from == null || from == TypeUtil.NULL_TYPE || from.isDerivedFrom(to) || to.isInterface() && implementsInterface(to, from);
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
@@ -120,14 +75,12 @@ public class TypeUtil {
                 || paramType == float_TYPE
                 || paramType == long_TYPE
                 || paramType == double_TYPE
-                || paramType == boolean_TYPE
                 || paramType.equals(Byte_TYPE)
                 || paramType.equals(Character_TYPE)
                 || paramType.equals(Short_TYPE)
                 || paramType.equals(Integer_TYPE)
                 || paramType.equals(Float_TYPE)
                 || paramType.equals(Long_TYPE)
-                || paramType.equals(Boolean_TYPE)
                 || paramType.equals(Double_TYPE)
                 || paramType.equals(BigDecimal_TYPE)
                 || paramType.equals(BigInteger_TYPE);
@@ -136,6 +89,9 @@ public class TypeUtil {
     public static ClassNode commonType(ClassNode type1, ClassNode type2) {
         if (type1 == null || type2 == null)
             throw new RuntimeException("Internal Error");
+
+        if (type1.equals(type2))
+            return type1;
 
         if (type1 == NULL_TYPE)
             return type2;
@@ -172,11 +128,11 @@ public class TypeUtil {
     }
 
     public static boolean isBigDecimal(ClassNode type) {
-        return type == BigDecimal_TYPE;
+        return type.equals(BigDecimal_TYPE);
     }
 
     public static boolean isBigInteger(ClassNode type) {
-        return type == BigInteger_TYPE;
+        return type.equals(BigInteger_TYPE);
     }
 
     public static boolean isFloatingPoint(ClassNode type) {
@@ -197,7 +153,7 @@ public class TypeUtil {
         if (isBigDecimal(l) || isBigDecimal(r)) {
             return BigDecimal_TYPE;
         }
-        if (isBigInteger(r) || isBigInteger(r)) {
+        if (isBigInteger(l) || isBigInteger(r)) {
             return BigInteger_TYPE;
         }
         if (isLong(l) || isLong(r)) {

@@ -25,11 +25,11 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
-        if (ve.getAccessedVariable().isDynamicTyped()) {
+        if (ve.isDynamicTyped()) {
             vtype = ClassHelper.getWrapper(right.getType());
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {
-            vtype = right.getType();
+            vtype = ve.getType();
         }
 
         return new BytecodeExpr(parent, vtype) {

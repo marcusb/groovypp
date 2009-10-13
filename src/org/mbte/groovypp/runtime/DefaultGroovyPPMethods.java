@@ -16,7 +16,7 @@ public class DefaultGroovyPPMethods {
         return NumberMath.multiply(self, other);
     }
 
-    public static Number divide(Number self, Number other) {
+    public static Number div(Number self, Number other) {
         return NumberMath.divide(self, other);
     }
 

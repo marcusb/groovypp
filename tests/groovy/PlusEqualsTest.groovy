@@ -2,8 +2,8 @@ package groovy
 
 class PlusEqualsTest extends GroovyShellTestCase {
 
-    void testIntegerPlusEquals() {
-        shell.evaluate  """
+  void testIntegerPlusEquals() {
+    shell.evaluate """
           @Typed
           def u() {
             def x = 1
@@ -19,12 +19,12 @@ class PlusEqualsTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
-    void testCharacterPlusEquals() {
-        shell.evaluate  """
+  void testCharacterPlusEquals() {
+    shell.evaluate """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             Character x = 1
             Character y = 2
@@ -39,10 +39,10 @@ class PlusEqualsTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
-    void testNumberPlusEquals() {
-        shell.evaluate  """
+  }
+
+  void testNumberPlusEquals() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -59,10 +59,10 @@ class PlusEqualsTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
-    void testStringPlusEquals() {
-        shell.evaluate  """
+  }
+
+  void testStringPlusEquals() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -80,10 +80,10 @@ class PlusEqualsTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
-    void testSortedSetPlusEquals() {
-        shell.evaluate  """
+  void testSortedSetPlusEquals() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -97,5 +97,5 @@ class PlusEqualsTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 }

@@ -1,7 +1,10 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -17,21 +20,14 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         final BytecodeExpr right0 = (BytecodeExpr) compiler.transform(exp.getRightExpression());
         final BytecodeExpr right;
         if (right0.getType() != TypeUtil.NULL_TYPE || !ClassHelper.isPrimitiveType(ve.getType())) {
-            if (!TypeUtil.isAssignableFrom(ve.getType(), right0.getType())) {
-                CastExpression castExpression = new CastExpression(ve.getType(), right0);
-                castExpression.setCoerce(true);
-                castExpression.setSourcePosition(right0);
-                right = (BytecodeExpr) compiler.transform(castExpression);
-            } else
-                right = right0;
+            right = compiler.cast(right0, ve.getType());
         } else {
             final ConstantExpression cnst = new ConstantExpression(0);
-            cnst.setColumnNumber(exp.getColumnNumber());
-            cnst.setLineNumber(exp.getLineNumber());
+            cnst.setSourcePosition(exp);
             right = (BytecodeExpr) compiler.transform(cnst);
         }
         if (!ve.isDynamicTyped()) {
-            return new NonDynamic(exp, ve, right, compiler);
+            return new Static(exp, ve, right, compiler);
         } else {
             // let's try local type inference
             compiler.getLocalVarInferenceTypes().add(ve, ClassHelper.getWrapper(right.getType()));
@@ -39,12 +35,12 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         }
     }
 
-    private static class NonDynamic extends BytecodeExpr {
+    private static class Static extends BytecodeExpr {
         private final VariableExpression ve;
         private final BytecodeExpr right;
         private final CompilerTransformer compiler;
 
-        public NonDynamic(DeclarationExpression exp, VariableExpression ve, BytecodeExpr right, CompilerTransformer compiler) {
+        public Static(DeclarationExpression exp, VariableExpression ve, BytecodeExpr right, CompilerTransformer compiler) {
             super(exp, ve.getType());
             this.ve = ve;
             this.right = right;
@@ -54,7 +50,6 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         protected void compile() {
             right.visit(mv);
             box(right.getType());
-            cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(ve.getType()));
             unbox(ve.getType());
             dup(ve.getType());
             compiler.compileStack.defineVariable(ve, true);

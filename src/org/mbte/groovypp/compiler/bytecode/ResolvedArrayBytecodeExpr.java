@@ -10,33 +10,25 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr array;
     private final BytecodeExpr index;
 
-    public ResolvedArrayBytecodeExpr(ASTNode parent, BytecodeExpr array, BytecodeExpr index) {
+    public ResolvedArrayBytecodeExpr(ASTNode parent, BytecodeExpr array, BytecodeExpr index, CompilerTransformer compiler) {
         super(parent, array.getType().getComponentType());
         this.array = array;
-        this.index = index;
+        this.index = compiler.cast(index, ClassHelper.int_TYPE);
     }
 
     protected void compile() {
         array.visit(mv);
         index.visit(mv);
-        box(index.getType());
-        cast(ClassHelper.getWrapper(index.getType()), ClassHelper.Integer_TYPE);
-        unbox(ClassHelper.int_TYPE);
         loadArray(getType());
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right0, CompilerTransformer compiler) {
+        final BytecodeExpr right = compiler.cast(right0, getType());
         return new BytecodeExpr(parent, getType()) {
             protected void compile() {
                 array.visit(mv);
                 index.visit(mv);
-                box(index.getType());
-                cast(ClassHelper.getWrapper(index.getType()), ClassHelper.Integer_TYPE);
-                unbox(ClassHelper.int_TYPE);
                 right.visit(mv);
-                box(right.getType());
-                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()));
-                unbox(getType());
                 dup_x2(getType());
                 storeArray(getType());
             }
@@ -49,24 +41,20 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             protected void compile() {
             }
         };
+
         final BinaryExpression op = new BinaryExpression(opLeft, method, right);
         op.setSourcePosition(parent);
-        final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
+        final BytecodeExpr transformedOp = compiler.cast((BytecodeExpr) compiler.transform(op), getType());
+
         return new BytecodeExpr(parent, getType()) {
             @Override
             protected void compile() {
                 array.visit(mv);
                 index.visit(mv);
-                box(index.getType());
-                cast(ClassHelper.getWrapper(index.getType()), ClassHelper.Integer_TYPE);
-                unbox(ClassHelper.int_TYPE);
                 mv.visitInsn(DUP2);
                 loadArray(getType());
 
                 transformedOp.visit(mv);
-                box(transformedOp.getType());
-                cast(ClassHelper.getWrapper(transformedOp.getType()), ClassHelper.getWrapper(getType()));
-                unbox(getType());
 
                 dup_x2(getType());
                 storeArray(getType());

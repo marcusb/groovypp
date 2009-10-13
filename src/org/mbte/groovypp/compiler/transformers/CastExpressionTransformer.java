@@ -33,18 +33,16 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
             final BytecodeExpr arg1 = (BytecodeExpr) arg;
             return new AsType(exp, type, expr, arg1);
-        }
-        else {
+        } else {
             if (TypeUtil.isNumericalType(exp.getType()) && TypeUtil.isNumericalType(expr.getType())) {
                 // b)
-                return new Cast(exp, expr);
-            }
-            else {
+                return new Cast(exp.getType(), expr);
+            } else {
                 ClassNode rtype = ClassHelper.getWrapper(expr.getType());
                 if (TypeUtil.isDirectlyAssignableFrom(exp.getType(), rtype)) {
-                // c)
+                    // c)
                     if (rtype.equals(exp.getType()))
-                       return expr;
+                        return expr;
                     else {
                         return new BytecodeExpr(expr, rtype) {
                             protected void compile() {
@@ -53,17 +51,16 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                             }
                         };
                     }
-                }
-                else {
+                } else {
                     // d
                     if (exp.getExpression() instanceof VariableExpression) {
                         VariableExpression ve = (VariableExpression) exp.getExpression();
-                        if (ve.getAccessedVariable().isDynamicTyped()) {
-                            compiler.getLocalVarInferenceTypes().addWeak(ve, exp.getType());
+                        if (ve.isDynamicTyped()) {
+                            compiler.getLocalVarInferenceTypes().addWeak(ve, expr.getType());
                         }
                     }
 
-                    return new Cast(exp, expr);
+                    return new Cast(exp.getType(), expr);
                 }
             }
         }
@@ -81,28 +78,26 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         protected void compile() {
             expr.visit(mv);
-            box (expr.getType());
+            box(expr.getType());
             arg1.visit(mv);
             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "asType", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
         }
     }
 
-    private static class Cast extends BytecodeExpr {
-        private final CastExpression exp;
+    public static class Cast extends BytecodeExpr {
         private final BytecodeExpr expr;
 
-        public Cast(CastExpression exp, BytecodeExpr expr) {
-            super(exp, exp.getType());
-            this.exp = exp;
+        public Cast(ClassNode type, BytecodeExpr expr) {
+            super(expr, type);
             this.expr = expr;
         }
 
         protected void compile() {
             expr.visit(mv);
             box(expr.getType());
-            expr.cast(ClassHelper.getWrapper(expr.getType()), ClassHelper.getWrapper(exp.getType()));
-            unbox(exp.getType());
+            expr.cast(ClassHelper.getWrapper(expr.getType()), ClassHelper.getWrapper(getType()));
+            unbox(getType());
         }
     }
 }

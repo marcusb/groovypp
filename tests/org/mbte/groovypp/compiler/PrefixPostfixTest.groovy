@@ -2,14 +2,14 @@ package org.mbte.groovypp.compiler
 
 public class PrefixPostfixTest extends GroovyShellTestCase {
   void testPostfixVar() {
-    ["int", "Integer", "byte", "Byte",
+    ["char", "int", "Integer", "byte", "Byte",
             "short", "Short", "long", "Long", "float", "Float", "double", "Double",
-            "char", "Character"].each {
+            "Character"].each {
 
       println it
 
       def res = shell.evaluate("""
-          @Typed
+          @Typed(debug=true)
           def u ($it val, List res) {
             while(val) {
               res.add(val--)

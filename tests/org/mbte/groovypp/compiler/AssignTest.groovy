@@ -44,7 +44,7 @@ u (new int [10])
 
   void testArrayAssignOp() {
     def res = shell.evaluate("""
-@Typed
+@Typed(debug=true)
 def u (int [] x) {
    x [0] = 1
    x [1] = 6
@@ -162,4 +162,24 @@ new A().u ().a
   void testAssignFinalField() {
 
   }
+
+  void testVar() {
+    def types = ["int", "Integer", "byte", "Byte",
+            "short", "Short", "long", "Long", "float", "Float", "double", "Double",
+            "char", "Character", "BigInteger", "BigInteger"]
+
+    types.each {jt ->
+      types.each {it ->
+        println "$it val = ($jt)5"
+        shell.evaluate("""
+      @Typed
+      def U () {
+        $it val = ($jt)5
+      }
+        """
+        )
+      }
+    }
+  }
+
 }

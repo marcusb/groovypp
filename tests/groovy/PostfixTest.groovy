@@ -2,8 +2,8 @@ package groovy
 
 class PostfixTest extends GroovyShellTestCase {
 
-    void testIntegerPostfix() {
-        shell.evaluate  """
+  void testIntegerPostfix() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -20,18 +20,18 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
+  /*
+   This is actually test with BigDecimal,
+   but I leave method name to stay consistent
+   with groovy tests
+  */
 
-    /*
-      This is actually test with BigDecimal,
-      but I leave method name to stay consistent
-      with groovy tests
-     */
-    void testDoublePostfix() {
-        shell.evaluate  """
+  void testDoublePostfix() {
+    shell.evaluate """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             def x = 1.2
             def y = x++
@@ -43,10 +43,10 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
-     void testStringPostfix() {
-        shell.evaluate  """
+  void testStringPostfix() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -61,15 +61,15 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
+  }
 
 
-   /**
-    * Not sure if this actually should work in @Typed method. 
-    */
-    void testArrayPostfix() {
-        shell.evaluate  """
+
+  /**
+   * Not sure if this actually should work in @Typed method.
+   */
+  void testArrayPostfix() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -84,10 +84,10 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
-    
-    void testConstantPostFix() {
-        shell.evaluate  """
+  }
+
+  void testConstantPostfix() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -96,12 +96,12 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
 
 
-    void testFunctionPostfix() {
-        shell.evaluate  """
+  void testFunctionPostfix() {
+    shell.evaluate """
           def valueReturned() { 0 }
 
           @Typed
@@ -112,10 +112,10 @@ class PostfixTest extends GroovyShellTestCase {
 
           u()
         """
-    }
+  }
 
-    void testPrefixAndPostfix() {
-        shell.evaluate  """
+  void testPrefixAndPostfix() {
+    shell.evaluate """
 
           @Typed
           def v() {
@@ -130,5 +130,5 @@ class PostfixTest extends GroovyShellTestCase {
 
           v()
         """
-    }
+  }
 }

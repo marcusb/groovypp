@@ -61,7 +61,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         };
         final BinaryExpression op = new BinaryExpression(opLeft, method, right);
         op.setSourcePosition(parent);
-        final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
+        final BytecodeExpr transformedOp = compiler.cast((BytecodeExpr) compiler.transform(op), getType());
         return new BytecodeExpr(parent, getType()) {
             @Override
             protected void compile() {
@@ -78,9 +78,6 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
                 mv.visitFieldInsn(fieldNode.isStatic() ? GETSTATIC : GETFIELD, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
 
                 transformedOp.visit(mv);
-                box(transformedOp.getType());
-                cast(ClassHelper.getWrapper(transformedOp.getType()), ClassHelper.getWrapper(fieldNode.getType()));
-                unbox(getType());
 
                 if (object != null)
                     dup_x1(getType());

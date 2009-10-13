@@ -20,7 +20,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final ArgumentListExpression bargs;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
-        super(parent, methodNode.getReturnType());
+        super(parent, methodNode.getReturnType().equals(ClassHelper.VOID_TYPE) ? TypeUtil.NULL_TYPE : methodNode.getReturnType());
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
@@ -195,5 +195,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             be.unbox(paramType);
         }
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
+        if (methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
+            mv.visitInsn(ACONST_NULL);
     }
 }

@@ -36,7 +36,7 @@ new A().m ()
   @Typed
   def m (val) {
     (List)val
-    val.size ()
+    ((List)val).size ()
   }
 
   m ([1,2,3])

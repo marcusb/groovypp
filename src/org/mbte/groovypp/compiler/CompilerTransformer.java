@@ -13,6 +13,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
+import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -347,5 +348,16 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             default:
                 addError("Operation " + op.getDescription() + " doesn't supported", be);
         }
+    }
+
+    public BytecodeExpr cast(final BytecodeExpr expr, ClassNode type) {
+        if (TypeUtil.isDirectlyAssignableFrom(type, expr.getType()))
+            return expr;
+
+        if (TypeUtil.isAssignableFrom(type, expr.getType()))
+            return new CastExpressionTransformer.Cast(type, expr);
+
+        addError("Can not convert " + expr.getType().getName() + " to " + type.getName(), expr);
+        return null;
     }
 }

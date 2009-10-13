@@ -10,19 +10,19 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
-public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpression>{
+public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpression> {
     public Expression transform(PrefixExpression exp, CompilerTransformer compiler) {
         final Expression operand = exp.getExpression();
         if (operand instanceof VariableExpression) {
             return transformVariablePrefixExpression(exp, operand, compiler);
         }
 
-        if (operand instanceof BinaryExpression && ((BinaryExpression)operand).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
+        if (operand instanceof BinaryExpression && ((BinaryExpression) operand).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
             return transformArrayPrefixExpression(exp, compiler);
         }
 
         if (operand instanceof PropertyExpression) {
-            return transformPrefixPropertyExpression(exp, (PropertyExpression)operand, compiler);
+            return transformPrefixPropertyExpression(exp, (PropertyExpression) operand, compiler);
         }
 
         compiler.addError("Prefix/Postfix operations allowed only with variable or property or array expressions", exp);
@@ -34,11 +34,10 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
         Object property = pe.getProperty();
         String propName = null;
         if (!(property instanceof ConstantExpression) || !(((ConstantExpression) property).getValue() instanceof String)) {
-          compiler.addError("Non-static property name", pe);
-          return null;
-        }
-        else {
-          propName = (String) ((ConstantExpression) property).getValue();
+            compiler.addError("Non-static property name", pe);
+            return null;
+        } else {
+            propName = (String) ((ConstantExpression) property).getValue();
         }
 
         final BytecodeExpr object;
@@ -46,13 +45,12 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
         if (pe.getObjectExpression() instanceof ClassExpression) {
             object = null;
             type = pe.getObjectExpression().getType();
-        }
-        else {
+        } else {
             object = (BytecodeExpr) compiler.transform(pe.getObjectExpression());
             type = object.getType();
         }
 
-        final FieldNode propertyNode = compiler.findField (type, propName);
+        final FieldNode propertyNode = compiler.findField(type, propName);
         if (propertyNode == null) {
             compiler.addError("Can't find property '" + propName + "' for type " + type.getName(), pe);
             return null;
@@ -84,8 +82,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                             mv.visitInsn(POP2);
                         else
                             mv.visitInsn(POP);
-                    }
-                    else {
+                    } else {
                         mv.visitInsn(DUP);
                     }
                 }
@@ -96,18 +93,17 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                 // value, ?obj
                 if (op == GETSTATIC) {
                     // value
-                }
-                else {
+                } else {
                     // value obj
                 }
 
                 // value ?obj
                 if (type != primType)
-                   unbox(primType);
+                    unbox(primType);
                 incOrDecPrimitive(primType, exp.getOperation().getType());
                 if (type != primType) {
-                   box(primType);
-                   mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                    box(primType);
+                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
                 }
                 // newvalue ?obj
 
@@ -115,8 +111,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                 if (propertyNode.isStatic()) {
                     op = PUTSTATIC;
                     dup(type);
-                }
-                else {
+                } else {
                     if (ClassHelper.long_TYPE == type || ClassHelper.double_TYPE == type)
                         mv.visitInsn(DUP2_X1);
                     else
@@ -137,7 +132,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
             return null;
         }
 
-        final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression ());
+        final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
         if (!TypeUtil.isNumericalType(indexExp.getType())) {
             compiler.addError("Array subscript index should be integer", exp);
             return null;
@@ -150,17 +145,17 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
 
                 arrExp.visit(mv);
                 indexExp.visit(mv);
-                toInt (indexExp.getType());
+                toInt(indexExp.getType());
                 mv.visitInsn(DUP2);
                 loadArray(type);
 
                 if (type != primType)
-                   unbox(primType);
+                    unbox(primType);
                 // val, idx, arr, val
                 incOrDecPrimitive(primType, exp.getOperation().getType());
 
                 if (type != primType)
-                   box(primType);
+                    box(primType);
 
                 // val, idx, arr
                 if (type == ClassHelper.double_TYPE || type == ClassHelper.long_TYPE)
@@ -181,23 +176,25 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
         }
 
         final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), true);
-        if (!TypeUtil.isNumericalType(var.getType())) {
+
+        final ClassNode vtype = ve.isDynamicTyped() ? compiler.getLocalVarInferenceTypes().get(ve) : var.getType();
+
+        if (!TypeUtil.isNumericalType(vtype)) {
             compiler.addError("Prefix/Postfix operations applicable only to numerical types", exp);
             return null;
         }
 
-        return new BytecodeExpr(exp, exp.getType()) {
+        return new BytecodeExpr(exp, vtype) {
             protected void compile() {
-                final ClassNode type = var.getType();
-                final ClassNode primType = ClassHelper.getUnwrapper(type);
-                load(type, var.getIndex());
-                if (type != primType)
-                   unbox(primType);
+                final ClassNode primType = ClassHelper.getUnwrapper(vtype);
+                load(vtype, var.getIndex());
+                if (vtype != primType)
+                    unbox(primType);
                 incOrDecPrimitive(primType, exp.getOperation().getType());
-                if (type != primType)
-                   box(primType);
-                dup(type);
-                store (var);
+                if (vtype != primType)
+                    box(primType);
+                dup(vtype);
+                store(var);
             }
         };
     }

@@ -57,7 +57,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 classNode = (ClassNode) parent;
                 TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
                 for (MethodNode mn : classNode.getMethods()) {
-                    if (!mn.isAbstract()) {
+                    if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                         TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
                         if (methodPolicy != TypePolicy.DYNAMIC) {
                             toProcess.addLast(mn);
@@ -73,7 +73,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                     for (ClassNode node : source.getAST().getClasses()) {
                         TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
                         for (MethodNode mn : node.getMethods()) {
-                            if (!mn.isAbstract()) {
+                            if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                                 TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
                                 if (methodPolicy != TypePolicy.DYNAMIC) {
                                     toProcess.addLast(mn);

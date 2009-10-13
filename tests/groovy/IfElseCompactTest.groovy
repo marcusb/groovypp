@@ -2,10 +2,10 @@ package groovy
 
 class IfElseCompactTest extends GroovyShellTestCase {
 
-    void testIf_NoElse() {
-      shell.evaluate  """
+  void testIf_NoElse() {
+    shell.evaluate """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             def x = false
             if ( true ) {x = true}
@@ -14,10 +14,10 @@ class IfElseCompactTest extends GroovyShellTestCase {
 
           u()
       """
-    }
+  }
 
-    void testIf_WithElse_MatchIf() {
-      shell.evaluate  """
+  void testIf_WithElse_MatchIf() {
+    shell.evaluate """
 
           @Typed
           def u() {
@@ -32,5 +32,5 @@ class IfElseCompactTest extends GroovyShellTestCase {
 
           u()
       """
-    }
+  }
 }

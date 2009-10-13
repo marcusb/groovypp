@@ -1,7 +1,7 @@
 package org.mbte.groovypp.compiler
 
 
-public class PromotionTest extends GroovyShellTestCase{
+public class PromotionTest extends GroovyShellTestCase {
   void testPromo1() {
     shell.evaluate """
     @Typed
@@ -29,7 +29,7 @@ public class PromotionTest extends GroovyShellTestCase{
 
   void testPromo3() {
     shell.evaluate """
-    @Typed
+    @Typed(debug=true)
     def u () {
       def C = '1'.toCharacter()
       def B = new Byte("1")
