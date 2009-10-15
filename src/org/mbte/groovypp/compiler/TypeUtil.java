@@ -7,9 +7,11 @@ import groovy.lang.TypedClosure;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 public class TypeUtil {
@@ -185,5 +187,64 @@ public class TypeUtil {
 
         set.add(ClassHelper.OBJECT_TYPE);
         return set;
+    }
+
+    public static ClassNode getSubstitutedType(ClassNode toSubstitute,                                              
+                                 ClassNode declaringClass,
+                                 ClassNode accessClass,
+                                 GenericsType[] typeArgs) {
+        toSubstitute = mapTypeFromSuper(toSubstitute, declaringClass, accessClass);
+        TypeVariable[] typeVariables = accessClass.getTypeClass().getTypeParameters();
+        String name = toSubstitute.getName();
+        if (!name.equals(toSubstitute.getTypeClass().getName()) && name.indexOf('.') < 0) {
+            // This is an erased type parameter
+            ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
+            return binding != null ? binding : toSubstitute;
+        }
+        if (typeVariables.length != typeArgs.length) return toSubstitute;
+        return getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs);
+    }
+
+    private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, TypeVariable[] typeVariables, GenericsType[] typeArgs) {
+        GenericsType[] toSubstituteTypeArgs = toSubstitute.getGenericsTypes();
+        GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
+        for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
+            GenericsType typeArg = toSubstituteTypeArgs[i];
+            if (typeArg.isPlaceholder()) {
+                substitutedArgs[i] = getBinding(typeArg.getType().getName(), typeVariables, typeArgs);
+            } else {
+                ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
+                ClassNode lowerBound = getSubstitutedTypeInner(typeArg.getLowerBound(), typeVariables, typeArgs);
+                ClassNode[] oldUpper = typeArg.getUpperBounds();
+                ClassNode[] upperBounds = new ClassNode[oldUpper.length];
+                for (int j = 0; j < upperBounds.length; j++) {
+                    upperBounds[j] = getSubstitutedTypeInner(oldUpper[i], typeVariables, typeArgs);
+
+                }
+                substitutedArgs[i] = new GenericsType(type, upperBounds, lowerBound);
+                substitutedArgs[i].setWildcard(typeArg.isWildcard());
+                substitutedArgs[i].setResolved(typeArg.isResolved());
+            }
+        }
+        ClassNode result = new ClassNode(toSubstitute.getTypeClass());
+        result.setGenericsTypes(substitutedArgs);
+        return result;
+    }
+
+    private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
+        return type;  // todo
+    }
+
+    private static ClassNode getBindingNormalized(String name, TypeVariable[] typeParameters, GenericsType[] typeArgs) {
+        GenericsType genericType = getBinding(name, typeParameters, typeArgs);
+        if (genericType.isWildcard()) return genericType.getUpperBounds()[0];
+        return genericType.getType();
+    }
+
+    private static GenericsType getBinding(String name, TypeVariable[] typeParameters, GenericsType[] typeArgs) {
+        for (int i = 0; i < typeParameters.length; i++) {
+            if (typeParameters[i].getName().equals(name)) return typeArgs[i];
+        }
+        return null;
     }
 }
