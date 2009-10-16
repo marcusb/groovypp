@@ -199,9 +199,9 @@ public class TypeUtil {
         toSubstitute = mapped;
         final GenericsType[] typeArgs = accessType.getGenericsTypes();
         if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
-        TypeVariable[] typeVariables = accessClass.getTypeClass().getTypeParameters();
+        String[] typeVariables = getTypeParameterNames(accessClass);
         String name = toSubstitute.getName();
-        if (!name.equals(toSubstitute.getTypeClass().getName()) && name.indexOf('.') < 0) {
+        if (toSubstitute.isGenericsPlaceHolder()) {
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
             return binding != null ? binding : toSubstitute;
@@ -210,7 +210,17 @@ public class TypeUtil {
         return getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs);
     }
 
-    private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, TypeVariable[] typeVariables, GenericsType[] typeArgs) {
+    private static String[] getTypeParameterNames(ClassNode clazz) {
+        GenericsType[] generics = clazz.redirect().getGenericsTypes();
+        if (generics == null || generics.length == 0) return new String[0];
+        String[] result = new String[generics.length];
+        for (int i = 0; i < result.length; i++) {
+           result[i] = generics[i].getName();
+        }
+        return result;
+    }
+
+    private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, String[] typeVariables, GenericsType[] typeArgs) {
         GenericsType[] toSubstituteTypeArgs = toSubstitute.getGenericsTypes();
         GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
         for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
@@ -242,29 +252,30 @@ public class TypeUtil {
         if (derivedSuperClass != null) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass);
             if (rec != null) {
-                return getSubstitutedTypeInner(rec, derivedSuperClass.getTypeClass().getTypeParameters(),
+                return getSubstitutedTypeInner(rec, getTypeParameterNames(derivedSuperClass),
                         derivedSuperClass.getGenericsTypes());
             }
         }
         for (ClassNode derivedInterface : bDerived.getInterfaces()) {
            ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
             if (rec != null) {
-                return getSubstitutedTypeInner(rec, derivedInterface.getTypeClass().getTypeParameters(),
+                return getSubstitutedTypeInner(rec, getTypeParameterNames(derivedInterface),
                         derivedInterface.getGenericsTypes());
             }
         }
         return null;
     }
 
-    private static ClassNode getBindingNormalized(String name, TypeVariable[] typeParameters, GenericsType[] typeArgs) {
+    private static ClassNode getBindingNormalized(String name, String[] typeParameters, GenericsType[] typeArgs) {
         GenericsType genericType = getBinding(name, typeParameters, typeArgs);
+        if (genericType == null) return null;
         if (genericType.isWildcard()) return genericType.getUpperBounds()[0];
         return genericType.getType();
     }
 
-    private static GenericsType getBinding(String name, TypeVariable[] typeParameters, GenericsType[] typeArgs) {
+    private static GenericsType getBinding(String name, String[] typeParameters, GenericsType[] typeArgs) {
         for (int i = 0; i < typeParameters.length; i++) {
-            if (typeParameters[i].getName().equals(name)) return typeArgs[i];
+            if (typeParameters[i].equals(name)) return typeArgs[i];
         }
         return null;
     }
