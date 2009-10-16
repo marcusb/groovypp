@@ -189,13 +189,16 @@ public class TypeUtil {
         return set;
     }
 
-    public static ClassNode getSubstitutedType(ClassNode toSubstitute,                                              
-                                 ClassNode declaringClass,
-                                 ClassNode accessClass,
-                                 GenericsType[] typeArgs) {
+    public static ClassNode getSubstitutedType(ClassNode toSubstitute,
+                                               final ClassNode declaringClass,
+                                               final ClassNode accessType) {
+        ClassNode accessClass = accessType.redirect();
+
         ClassNode mapped = mapTypeFromSuper(toSubstitute, declaringClass.redirect(), accessClass);
         if (mapped == null) return toSubstitute;
         toSubstitute = mapped;
+        final GenericsType[] typeArgs = accessType.getGenericsTypes();
+        if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         TypeVariable[] typeVariables = accessClass.getTypeClass().getTypeParameters();
         String name = toSubstitute.getName();
         if (!name.equals(toSubstitute.getTypeClass().getName()) && name.indexOf('.') < 0) {

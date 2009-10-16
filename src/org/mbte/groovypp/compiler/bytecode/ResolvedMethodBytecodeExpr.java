@@ -18,6 +18,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final BytecodeExpr object;
     private final String methodName;
     private final ArgumentListExpression bargs;
+    private final ClassNode genericType;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
         super(parent, methodNode.getReturnType().equals(ClassHelper.VOID_TYPE) ? TypeUtil.NULL_TYPE : methodNode.getReturnType());
@@ -25,6 +26,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         this.object = object;
         this.methodName = methodNode.getName();
         this.bargs = bargs;
+        genericType = TypeUtil.getSubstitutedType(methodNode.getReturnType(),
+                methodNode.getDeclaringClass(), object.getType());
 
         tryImproveClosureType(methodNode, bargs);
 
