@@ -189,6 +189,7 @@ public class TypeUtil {
         return set;
     }
 
+    // Below is the implementation of poor-man's generics.
     public static ClassNode getSubstitutedType(ClassNode toSubstitute,
                                                final ClassNode declaringClass,
                                                final ClassNode accessType) {
@@ -200,8 +201,8 @@ public class TypeUtil {
         final GenericsType[] typeArgs = accessType.getGenericsTypes();
         if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         String[] typeVariables = getTypeParameterNames(accessClass);
-        String name = toSubstitute.getName();
         if (toSubstitute.isGenericsPlaceHolder()) {
+            String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
             return binding != null ? binding : toSubstitute;
@@ -222,6 +223,7 @@ public class TypeUtil {
 
     private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, String[] typeVariables, GenericsType[] typeArgs) {
         GenericsType[] toSubstituteTypeArgs = toSubstitute.getGenericsTypes();
+        if (toSubstituteTypeArgs == null || toSubstituteTypeArgs.length == 0) return toSubstitute;
         GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
         for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
             GenericsType typeArg = toSubstituteTypeArgs[i];
@@ -241,7 +243,7 @@ public class TypeUtil {
                 substitutedArgs[i].setResolved(typeArg.isResolved());
             }
         }
-        ClassNode result = new ClassNode(toSubstitute.getTypeClass());
+        ClassNode result = ClassHelper.make(toSubstitute.getName());
         result.setGenericsTypes(substitutedArgs);
         return result;
     }

@@ -7,9 +7,8 @@ class GenericsTest extends GroovyShellTestCase {
     shouldNotCompile """
       @Typed
       public class Generic<T> {
-          T bar() {return null}
-          public void foo() {
-              bar()
+          public void foo(List<String> l) {
+              l.get(0)
           }
       }
       new Generic().foo(null)

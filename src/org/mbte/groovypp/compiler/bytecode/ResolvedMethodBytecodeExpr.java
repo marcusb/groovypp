@@ -26,8 +26,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         this.object = object;
         this.methodName = methodNode.getName();
         this.bargs = bargs;
-        genericType = TypeUtil.getSubstitutedType(methodNode.getReturnType(),
-                methodNode.getDeclaringClass(), object.getType());
+        genericType = object != null ? TypeUtil.getSubstitutedType(methodNode.getReturnType(),
+                methodNode.getDeclaringClass(), object.getType()) : null;
 
         tryImproveClosureType(methodNode, bargs);
 
