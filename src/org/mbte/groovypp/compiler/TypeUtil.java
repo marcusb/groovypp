@@ -193,7 +193,9 @@ public class TypeUtil {
                                  ClassNode declaringClass,
                                  ClassNode accessClass,
                                  GenericsType[] typeArgs) {
-        toSubstitute = mapTypeFromSuper(toSubstitute, declaringClass, accessClass);
+        ClassNode mapped = mapTypeFromSuper(toSubstitute, declaringClass.redirect(), accessClass);
+        if (mapped == null) return toSubstitute;
+        toSubstitute = mapped;
         TypeVariable[] typeVariables = accessClass.getTypeClass().getTypeParameters();
         String name = toSubstitute.getName();
         if (!name.equals(toSubstitute.getTypeClass().getName()) && name.indexOf('.') < 0) {
@@ -232,7 +234,23 @@ public class TypeUtil {
     }
 
     private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
-        return type;  // todo
+        if (bDerived.redirect().equals(aSuper)) return type;
+        ClassNode derivedSuperClass = bDerived.getSuperClass();
+        if (derivedSuperClass != null) {
+            ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass);
+            if (rec != null) {
+                return getSubstitutedTypeInner(rec, derivedSuperClass.getTypeClass().getTypeParameters(),
+                        derivedSuperClass.getGenericsTypes());
+            }
+        }
+        for (ClassNode derivedInterface : bDerived.getInterfaces()) {
+           ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
+            if (rec != null) {
+                return getSubstitutedTypeInner(rec, derivedInterface.getTypeClass().getTypeParameters(),
+                        derivedInterface.getGenericsTypes());
+            }
+        }
+        return null;
     }
 
     private static ClassNode getBindingNormalized(String name, TypeVariable[] typeParameters, GenericsType[] typeArgs) {
