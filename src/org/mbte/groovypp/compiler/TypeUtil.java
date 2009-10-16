@@ -231,12 +231,16 @@ public class TypeUtil {
                 substitutedArgs[i] = getBinding(typeArg.getType().getName(), typeVariables, typeArgs);
             } else {
                 ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
-                ClassNode lowerBound = getSubstitutedTypeInner(typeArg.getLowerBound(), typeVariables, typeArgs);
+                ClassNode oldLower = typeArg.getLowerBound();
+                ClassNode lowerBound = oldLower != null ? getSubstitutedTypeInner(oldLower, typeVariables, typeArgs) : oldLower;
                 ClassNode[] oldUpper = typeArg.getUpperBounds();
-                ClassNode[] upperBounds = new ClassNode[oldUpper.length];
-                for (int j = 0; j < upperBounds.length; j++) {
-                    upperBounds[j] = getSubstitutedTypeInner(oldUpper[i], typeVariables, typeArgs);
+                ClassNode[] upperBounds = null;
+                if (oldUpper != null) {
+                    upperBounds = new ClassNode[oldUpper.length];
+                    for (int j = 0; j < upperBounds.length; j++) {
+                        upperBounds[j] = getSubstitutedTypeInner(oldUpper[i], typeVariables, typeArgs);
 
+                    }
                 }
                 substitutedArgs[i] = new GenericsType(type, upperBounds, lowerBound);
                 substitutedArgs[i].setWildcard(typeArg.isWildcard());
