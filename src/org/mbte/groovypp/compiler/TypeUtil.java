@@ -250,6 +250,7 @@ public class TypeUtil {
         }
         ClassNode result = ClassHelper.makeWithoutCaching(toSubstitute.getName());
         result.setGenericsTypes(substitutedArgs);
+        result.setRedirect(toSubstitute.redirect());
         return result;
     }
 
