@@ -1,17 +1,20 @@
 package groovy
 
-import static groovy.CompileTestSupport.shouldNotCompile
+import static groovy.CompileTestSupport.shouldCompile
 class GenericsTest extends GroovyShellTestCase {
 
   void testSimpleParameterization() {
-    shouldNotCompile """
+    def res = shell.evaluate("""
       @Typed
       public class Generic<T> {
-          public void foo(List<String> l) {
-              l.get(0)
+          public String foo(List<String> l) {
+              l.get(0).toLowerCase()
           }
       }
-      new Generic().foo(null)
-    """
+      def l = new ArrayList()
+      l.add("Schwiitzi Nati")
+      new Generic().foo(l)
+    """)
+    assertEquals "schwiitzi nati", res
   }
 }

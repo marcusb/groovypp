@@ -18,16 +18,13 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final BytecodeExpr object;
     private final String methodName;
     private final ArgumentListExpression bargs;
-    private final ClassNode genericType;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
-        super(parent, methodNode.getReturnType().equals(ClassHelper.VOID_TYPE) ? TypeUtil.NULL_TYPE : methodNode.getReturnType());
+        super(parent, getReturnType(methodNode, object));
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
         this.bargs = bargs;
-        genericType = object != null ? TypeUtil.getSubstitutedType(methodNode.getReturnType(),
-                methodNode.getDeclaringClass(), object.getType()) : null;
 
         tryImproveClosureType(methodNode, bargs);
 
@@ -127,6 +124,13 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
+    private static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object) {
+        ClassNode returnType = methodNode.getReturnType();
+        if (returnType.equals(ClassHelper.VOID_TYPE)) return TypeUtil.NULL_TYPE;
+        return object != null ? TypeUtil.getSubstitutedType(methodNode.getReturnType(),
+                methodNode.getDeclaringClass(), object.getType()) : returnType;
+    }
+
     private void tryImproveClosureType(MethodNode methodNode, ArgumentListExpression bargs) {
         final Parameter[] parameters = methodNode.getParameters();
         if (parameters.length > 0) {
@@ -200,5 +204,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         if (methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
             mv.visitInsn(ACONST_NULL);
+
+        cast(ClassHelper.getWrapper(methodNode.getReturnType()), ClassHelper.getWrapper(getType()));
     }
 }
