@@ -248,7 +248,7 @@ public class TypeUtil {
                 substitutedArgs[i].setResolved(typeArg.isResolved());
             }
         }
-        ClassNode result = ClassHelper.make(toSubstitute.getName());
+        ClassNode result = ClassHelper.makeWithoutCaching(toSubstitute.getName());
         result.setGenericsTypes(substitutedArgs);
         return result;
     }
