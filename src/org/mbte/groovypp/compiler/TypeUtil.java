@@ -227,7 +227,7 @@ public class TypeUtil {
         GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
         for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
             GenericsType typeArg = toSubstituteTypeArgs[i];
-            if (typeArg.isPlaceholder()) {
+            if (typeArg.getType().isGenericsPlaceHolder()) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
                 if (binding != null) substitutedArgs[i] = binding;
             } else {
