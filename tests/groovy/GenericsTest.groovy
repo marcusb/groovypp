@@ -1,6 +1,6 @@
 package groovy
 
-import static groovy.CompileTestSupport.shouldCompile
+import static groovy.CompileTestSupport.shouldNotCompile
 class GenericsTest extends GroovyShellTestCase {
 
   void testSimpleParameterization() {
@@ -17,4 +17,17 @@ class GenericsTest extends GroovyShellTestCase {
     """)
     assertEquals "schwiitzi nati", res
   }
+
+  void testIllegalCall() {
+    shouldNotCompile """
+      @Typed
+      public class Generic<T> {
+          public String foo(List<Integer> l) {
+              l.get(0).toLowerCase()
+          }
+      }
+      new Generic().foo(null)
+    """
+  }
+
 }
