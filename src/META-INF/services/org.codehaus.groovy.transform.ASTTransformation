@@ -1,2 +1,5 @@
 # global annotation to handle @IDef annotation
 org.mbte.groovypp.compiler.IDefASTTransform
+# global annotation to handle @Trait annotation
+org.mbte.groovypp.compiler.TraitASTTransform
+org.mbte.groovypp.compiler.TraitASTTransformFinal

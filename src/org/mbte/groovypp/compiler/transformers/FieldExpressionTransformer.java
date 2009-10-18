@@ -17,7 +17,7 @@ public class FieldExpressionTransformer extends ExprTransformer<FieldExpression>
                         mv.visitVarInsn(ALOAD, 0);
                     }
                 },
-                null
-        );
+                null,
+                compiler);
     }
 }

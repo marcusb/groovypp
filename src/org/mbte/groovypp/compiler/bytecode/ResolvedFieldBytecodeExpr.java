@@ -13,11 +13,44 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr object;
     private final BytecodeExpr value;
 
-    public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value) {
+    public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value, CompilerTransformer compiler) {
         super(parent, fieldNode.getType());
         this.fieldNode = fieldNode;
         this.object = object;
         this.value = value;
+
+        if (fieldNode.isFinal() && value != null) {
+            compiler.addError("Can't modify final field " + formatFieldName(), parent);
+        }
+
+        checkFieldAccess(parent, fieldNode, compiler);
+    }
+
+    private void checkFieldAccess(ASTNode parent, FieldNode fieldNode, CompilerTransformer compiler) {
+        if ((fieldNode.getModifiers() & ACC_PUBLIC) == 0) {
+            if ((fieldNode.getModifiers() & ACC_PRIVATE) != 0) {
+                if (!compiler.classNode.equals(fieldNode.getDeclaringClass())) {
+                    compiler.addError("Can't access private field " + formatFieldName(), parent);
+                }
+            }
+
+            if ((fieldNode.getModifiers() & ACC_PROTECTED) != 0) {
+                if (!compiler.classNode.isDerivedFrom(fieldNode.getDeclaringClass())
+                        && !compiler.samePackage(fieldNode)) {
+                    compiler.addError("Can't access protected field " + formatFieldName(), parent);
+                }
+            }
+
+            if ((fieldNode.getModifiers() & (ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE)) == 0) {
+                if (!compiler.samePackage(fieldNode)) {
+                    compiler.addError("Can't access package scoped field " + formatFieldName(), parent);
+                }
+            }
+        }
+    }
+
+    private String formatFieldName() {
+        return fieldNode.getDeclaringClass().getName() + "." + fieldNode.getName();
     }
 
     public void compile() {
@@ -50,7 +83,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
-        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right);
+        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right, compiler);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {

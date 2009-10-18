@@ -1,17 +1,14 @@
 package org.mbte.groovypp.compiler;
 
-import groovy.lang.IntRange;
-import groovy.lang.OwnerAware;
-import groovy.lang.Range;
-import groovy.lang.TypedClosure;
+import groovy.lang.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.mbte.groovypp.runtime.HasDefaultImplementation;
 
-import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 public class TypeUtil {
@@ -25,8 +22,11 @@ public class TypeUtil {
     public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
     public static final ClassNode INT_RANGE_TYPE = make(IntRange.class);
+    public static final ClassNode TYPED = make(Typed.class);
+    public static final ClassNode TRAIT = make(Trait.class);
+    public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);
 
-    private static class Null {
+    public static class Null {
     }
 
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
@@ -216,7 +216,7 @@ public class TypeUtil {
         if (generics == null || generics.length == 0) return new String[0];
         String[] result = new String[generics.length];
         for (int i = 0; i < result.length; i++) {
-           result[i] = generics[i].getName();
+            result[i] = generics[i].getName();
         }
         return result;
     }
@@ -265,7 +265,7 @@ public class TypeUtil {
             }
         }
         for (ClassNode derivedInterface : bDerived.getInterfaces()) {
-           ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
+            ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
             if (rec != null) {
                 return getSubstitutedTypeInner(rec, getTypeParameterNames(derivedInterface),
                         derivedInterface.getGenericsTypes());
@@ -286,5 +286,9 @@ public class TypeUtil {
             if (typeParameters[i].equals(name)) return typeArgs[i];
         }
         return null;
+    }
+
+    public static GenericsType[] getTypeVariables(ClassNode classNode) {
+        return classNode.redirect().getGenericsTypes();
     }
 }

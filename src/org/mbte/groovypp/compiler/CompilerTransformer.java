@@ -360,4 +360,10 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         addError("Can not convert " + expr.getType().getName() + " to " + type.getName(), expr);
         return null;
     }
+
+    public boolean samePackage(FieldNode fieldNode) {
+        PackageNode accessPackage = classNode.getPackage();
+        PackageNode fieldPackage = fieldNode.getDeclaringClass().getPackage();
+        return (accessPackage == null && fieldPackage == null) || (accessPackage != null && accessPackage.getName().equals(fieldPackage.getName()));
+    }
 }

@@ -17,7 +17,7 @@ public class PropertyUtil {
             return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null, needsObjectIfStatic);
 
         if (prop instanceof FieldNode)
-            return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null);
+            return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null, compiler);
 
         if (object.getType().isArray() && "length".equals(propName)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
@@ -39,7 +39,7 @@ public class PropertyUtil {
             return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value, needsObjectIfStatic);
 
         if (prop instanceof FieldNode)
-            return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value);
+            return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value, compiler);
 
         return dynamicOrFail(parent, compiler, propName, object, value);
     }

@@ -1,15 +1,8 @@
 package groovy;
 
-
-/**
- * @author andy
- * @since Jan 11, 2006 1:05:23 PM
- */
-public class SimpleGStringTemplateEngineTest extends GroovyShellTestCase
-{
-  public void testRegressionCommentBug() throws Exception
-  {
-        shell.evaluate  """
+public class SimpleGStringTemplateEngineTest extends GroovyShellTestCase {
+    public void testRegressionCommentBug() throws Exception {
+        shell.evaluate """
 
         @Typed
         def u() {
@@ -25,5 +18,5 @@ public class SimpleGStringTemplateEngineTest extends GroovyShellTestCase
 
         u()
       """
-  }
+    }
 }

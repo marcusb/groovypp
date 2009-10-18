@@ -1,9 +1,10 @@
 package org.mbte.groovypp.runtime;
 
 import groovy.lang.GString;
+import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
-public class DefaultGroovyPPMethods {
+public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
     public static Number plus(Number self, Number other) {
         return NumberMath.add(self, other);
     }

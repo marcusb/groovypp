@@ -12,6 +12,6 @@ public class AttributeExpressionTransformer extends ExprTransformer<AttributeExp
     public Expression transform(AttributeExpression exp, CompilerTransformer compiler) {
         BytecodeExpr obj = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
         final FieldNode field = compiler.findField(obj.getType(), exp.getPropertyAsString());
-        return new ResolvedFieldBytecodeExpr(exp, field, obj, null);
+        return new ResolvedFieldBytecodeExpr(exp, field, obj, null, compiler);
     }
 }
