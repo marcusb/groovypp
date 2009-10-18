@@ -7,14 +7,14 @@ class GenericsTest extends GroovyShellTestCase {
   void testSimpleParameterization() {
     def res = shell.evaluate("""
       @Typed
-      public class Generic<T> {
+      public class Test {
           public String foo(List<String> l) {
               l.get(0).toLowerCase()
           }
       }
       def l = new ArrayList()
       l.add("Schwiitzi Nati")
-      new Generic().foo(l)
+      new Test().foo(l)
     """)
     assertEquals "schwiitzi nati", res
   }
@@ -22,19 +22,19 @@ class GenericsTest extends GroovyShellTestCase {
   void testIllegalCall() {
     shouldNotCompile """
       @Typed
-      public class Generic<T> {
+      public class Test {
           public String foo(List<Integer> l) {
               l.get(0).toLowerCase()
           }
       }
-      new Generic().foo(null)
+      new Test().foo(null)
     """
   }
 
   void testSecondOrder() {
     shouldCompile """
       @Typed
-      public class Generic<T> {
+      public class Test {
           public void foo(List<List<String>> ll) {
               ll.get(0).get(0).toLowerCase()
           }
@@ -43,23 +43,54 @@ class GenericsTest extends GroovyShellTestCase {
       def l = new ArrayList()
       ll.add(l)
       l.add("")
-      new Generic().foo(ll)
+      new Test().foo(ll)
     """
   }
 
   void testMethodFromBase() {
     def res = shell.evaluate("""
       @Typed
-      public class Generic<T> {
+      public class Test {
           public String foo(List<String> l) {
               l.iterator().next().toLowerCase()
           }
       }
       def l = new ArrayList()
       l.add("Schwiitzi Nati")
-      new Generic().foo(l)
+      new Test().foo(l)
     """)
     assertEquals "schwiitzi nati", res
   }
 
+  void testGenericProperty() {
+    def res = shell.evaluate("""
+      @Typed
+      public class Generic<T> {
+          T t
+          Generic(T t) {this.t = t}
+          public String foo(Generic<String> g) {
+              g.t.toLowerCase()
+          }
+      }
+      def g = new Generic("Schwiitzi Nati")
+      g.foo(g)
+    """)
+    assertEquals "schwiitzi nati", res
+  }
+
+  void testGenericField() {
+    def res = shell.evaluate("""
+      @Typed
+      public class Generic<T> {
+          private T t
+          Generic(T t) {this.t = t}
+          public String foo(Generic<String> g) {
+              g.t.toLowerCase()
+          }
+      }
+      def g = new Generic("Schwiitzi Nati")
+      g.foo(g)
+    """)
+    assertEquals "schwiitzi nati", res
+  }
 }

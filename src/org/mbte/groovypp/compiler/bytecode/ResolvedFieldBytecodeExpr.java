@@ -1,12 +1,11 @@
 package org.mbte.groovypp.compiler.bytecode;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 
 public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     private final FieldNode fieldNode;
@@ -14,7 +13,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr value;
 
     public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value, CompilerTransformer compiler) {
-        super(parent, fieldNode.getType());
+        super(parent, getType(object, fieldNode));
         this.fieldNode = fieldNode;
         this.object = object;
         this.value = value;
@@ -53,6 +52,12 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         return fieldNode.getDeclaringClass().getName() + "." + fieldNode.getName();
     }
 
+    private static ClassNode getType(BytecodeExpr object, FieldNode fieldNode) {
+        ClassNode type = fieldNode.getType();
+        return object != null ? TypeUtil.getSubstitutedType(type,
+                fieldNode.getDeclaringClass(), object.getType()) : type;
+    }
+
     public void compile() {
         int op;
         if (object != null) {
@@ -76,10 +81,10 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
                 dup(value.getType());
 
             box(value.getType());
-            cast(ClassHelper.getWrapper(value.getType()), ClassHelper.getWrapper(fieldNode.getType()));
             unbox(fieldNode.getType());
         }
         mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
+        cast(ClassHelper.getWrapper(fieldNode.getType()), ClassHelper.getWrapper(getType()));
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {

@@ -6,6 +6,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 
 public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final PropertyNode propertyNode;
@@ -15,7 +16,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final boolean needsObjectIfStatic;
 
     public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs, boolean needsObjectIfStatic) {
-        super(parent, propertyNode.getType());
+        super(parent, getType(object, propertyNode));
         this.propertyNode = propertyNode;
         this.object = object;
         this.bargs = bargs;
@@ -26,6 +27,12 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         } else {
             methodName = "get" + Verifier.capitalize(propertyNode.getName());
         }
+    }
+
+    private static ClassNode getType(BytecodeExpr object, PropertyNode propertyNode) {
+        ClassNode type = propertyNode.getType();
+        return object != null ? TypeUtil.getSubstitutedType(type,
+                propertyNode.getDeclaringClass(), object.getType()) : type;
     }
 
     public void compile() {
@@ -69,6 +76,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         } else {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
+            cast(ClassHelper.getWrapper(propertyNode.getType()), ClassHelper.getWrapper(getType()));
         }
     }
 
