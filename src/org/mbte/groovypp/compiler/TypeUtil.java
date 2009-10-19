@@ -268,7 +268,7 @@ public class TypeUtil {
                             derivedSuperClass.getGenericsTypes());
             }
         }
-        for (ClassNode derivedInterface : bDerived.getInterfaces()) {
+        for (ClassNode derivedInterface : bDerived.getUnresolvedInterfaces(false)) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
             if (rec != null) {
                 return getSubstitutedTypeToplevel(rec, derivedInterface.redirect(),
