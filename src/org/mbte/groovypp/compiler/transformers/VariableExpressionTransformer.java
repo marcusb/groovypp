@@ -1,7 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -16,10 +15,10 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 return new This(exp, compiler);
             else {
                 if (compiler.methodNode.getName().equals("$doCall")) {
-                    return compiler.transform(new VariableExpression("$self"));
+                    return new Self(exp, compiler);
                 } else {
 //                 compiler.addError("Can't use 'this' in static method", exp);
-                    return compiler.transform(new ClassExpression(compiler.classNode));
+                    return ClassExpressionTransformer.newExpr(exp, compiler.classNode);
                 }
             }
         }
@@ -29,10 +28,10 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 return new Super(exp, compiler);
             else {
                 if (compiler.methodNode.getName().equals("$doCall")) {
-                    return compiler.transform(new VariableExpression("$self"));
+                    return new Self(exp, compiler);
                 } else {
 //                 compiler.addError("Can't use 'this' in static method", exp);
-                    return compiler.transform(new ClassExpression(compiler.classNode));
+                    return ClassExpressionTransformer.newExpr(exp, compiler.classNode);
                 }
             }
         }
@@ -42,7 +41,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
         if (var == null) {
             if (exp.isClosureSharedVariable()) {
                 // we are in closure
-                final VariableExpression ve = new VariableExpression("$self");
+                final VariableExpression ve = VariableExpression.THIS_EXPRESSION;
                 final PropertyExpression pe = new PropertyExpression(ve, exp.getName());
                 pe.setType(exp.getType());
                 pe.setSourcePosition(exp);
@@ -70,9 +69,9 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
         return null;
     }
 
-    private static class This extends BytecodeExpr {
-        public This(VariableExpression exp, CompilerTransformer compiler) {
-            super(exp, compiler.classNode);
+    private static class ThisBase extends BytecodeExpr {
+        public ThisBase(VariableExpression exp, ClassNode type) {
+            super(exp, type);
         }
 
         public void compile() {
@@ -80,13 +79,21 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
         }
     }
 
-    public static class Super extends BytecodeExpr {
+    private static class This extends ThisBase {
+        public This(VariableExpression exp, CompilerTransformer compiler) {
+            super(exp, compiler.classNode);
+        }
+    }
+
+    public static class Super extends ThisBase {
         public Super(VariableExpression exp, CompilerTransformer compiler) {
             super(exp, compiler.classNode.getSuperClass());
         }
+    }
 
-        public void compile() {
-            mv.visitVarInsn(ALOAD, 0);
+    public static class Self extends ThisBase {
+        public Self(VariableExpression exp, CompilerTransformer compiler) {
+            super(exp, compiler.methodNode.getParameters()[0].getType());
         }
     }
 }

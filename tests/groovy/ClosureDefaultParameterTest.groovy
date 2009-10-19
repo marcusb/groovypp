@@ -1,13 +1,13 @@
 package groovy
 
-/** 
+/**
  * @author <a href="mailto:jstrachan@protique.com">James Strachan</a>
  * @version $Revision: 9213 $
  */
 class ClosureDefaultParameterTest extends GroovyShellTestCase {
 
     void testClosureWithDefaultParams() {
-      shell.evaluate("""
+        shell.evaluate("""
           @Typed
           def u() {
             def block = {a = 123, b = 456 -> println "value of a = \$a and b = \$b" }
@@ -22,12 +22,12 @@ class ClosureDefaultParameterTest extends GroovyShellTestCase {
           }
           u();
         """
-      )
+        )
     }
-    
+
     void testClosureWithDefaultParamFromOuterScope() {
-      shell.evaluate("""
-          @Typed
+        shell.evaluate("""
+          @Typed(debug=true)
           def u() {
             def y = 555
             def boo = {x = y -> x}
@@ -36,7 +36,7 @@ class ClosureDefaultParameterTest extends GroovyShellTestCase {
           }
           u();
         """
-      )
+        )
     }
 
 }

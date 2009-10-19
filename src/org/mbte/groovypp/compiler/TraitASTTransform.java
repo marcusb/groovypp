@@ -62,7 +62,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
             InnerClassNode innerClassNode = new InnerClassNode(classNode, fullName, ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, ClassHelper.OBJECT_TYPE, new ClassNode[]{classNode}, null);
             AnnotationNode typedAnn = new AnnotationNode(TypeUtil.TYPED);
-            typedAnn.addMember("debug", ConstantExpression.TRUE);
+//            typedAnn.addMember("debug", ConstantExpression.TRUE);
             innerClassNode.addAnnotation(typedAnn);
 
             ClassNode superClass = classNode.getSuperClass();

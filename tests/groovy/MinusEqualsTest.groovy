@@ -3,9 +3,9 @@ package groovy
 class MinusEqualsTest extends GroovyShellTestCase {
 
     void testIntegerMinusEquals() {
-        shell.evaluate  """
+        shell.evaluate """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             def x = 4
             def y = 2
@@ -23,7 +23,7 @@ class MinusEqualsTest extends GroovyShellTestCase {
     }
 
     void testCharacterMinusEquals() {
-        shell.evaluate  """
+        shell.evaluate """
 
           @Typed
           def u() {
@@ -41,9 +41,9 @@ class MinusEqualsTest extends GroovyShellTestCase {
           u()
         """
     }
-    
+
     void testNumberMinusEquals() {
-        shell.evaluate  """
+        shell.evaluate """
 
           @Typed
           def u() {
@@ -62,17 +62,17 @@ class MinusEqualsTest extends GroovyShellTestCase {
           u()
         """
     }
-    
+
     void testStringMinusEquals() {
         def foo = "nice cheese"
         foo -= "cheese"
-        
+
         assert foo == "nice "
     }
 
 
     void testSortedSetMinusEquals() {
-        shell.evaluate  """
+        shell.evaluate """
 
           @Typed
           def u() {
