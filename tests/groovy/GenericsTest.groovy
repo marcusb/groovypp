@@ -62,6 +62,24 @@ class GenericsTest extends GroovyShellTestCase {
     assertEquals "schwiitzi nati", res
   }
 
+  void testMethodFromBase1() {
+    shouldCompile """
+      @Typed
+      class Base<T1> {
+         T1 t1
+         Base(T1 t1) {this.t1 = t1}
+         T1 foo() {return t1}
+      }
+      @Typed
+      class Derived<T2> extends Base<T2> {Derived(T2 t2) {super(t2)}}
+      @Typed
+      class User {
+        def foo() {new Derived<String>("").foo().toLowerCase()}
+      }
+      new User().foo()
+    """
+  }
+
   void testGenericProperty() {
     def res = shell.evaluate("""
       @Typed

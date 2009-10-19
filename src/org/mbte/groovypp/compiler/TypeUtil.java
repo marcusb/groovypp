@@ -199,9 +199,13 @@ public class TypeUtil {
         if (mapped == null) return toSubstitute;
         toSubstitute = mapped;
         final GenericsType[] typeArgs = accessType.getGenericsTypes();
+        return getSubstitutedTypeToplevel(toSubstitute, accessClass, typeArgs);
+    }
+
+    private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
         if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         String[] typeVariables = getTypeParameterNames(accessClass);
-        if (toSubstitute.isGenericsPlaceHolder()) {
+        if (!toSubstitute.getName().equals(toSubstitute.getUnresolvedName())/*toSubstitute.isGenericsPlaceHolder() does not always work*/) {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
@@ -256,18 +260,18 @@ public class TypeUtil {
 
     private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
         if (bDerived.redirect().equals(aSuper)) return type;
-        ClassNode derivedSuperClass = bDerived.getSuperClass();
+        ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(false);
         if (derivedSuperClass != null) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass);
             if (rec != null) {
-                return getSubstitutedTypeInner(rec, getTypeParameterNames(derivedSuperClass),
-                        derivedSuperClass.getGenericsTypes());
+                return getSubstitutedTypeToplevel(rec, derivedSuperClass.redirect(),
+                            derivedSuperClass.getGenericsTypes());
             }
         }
         for (ClassNode derivedInterface : bDerived.getInterfaces()) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
             if (rec != null) {
-                return getSubstitutedTypeInner(rec, getTypeParameterNames(derivedInterface),
+                return getSubstitutedTypeToplevel(rec, derivedInterface.redirect(),
                         derivedInterface.getGenericsTypes());
             }
         }
@@ -286,9 +290,5 @@ public class TypeUtil {
             if (typeParameters[i].equals(name)) return typeArgs[i];
         }
         return null;
-    }
-
-    public static GenericsType[] getTypeVariables(ClassNode classNode) {
-        return classNode.redirect().getGenericsTypes();
     }
 }
