@@ -2,6 +2,8 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.ASTHelper;
@@ -57,8 +59,11 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
             String name = classNode.getNameWithoutPackage() + "$TraitImpl";
             String fullName = ASTHelper.dot(classNode.getPackageName(), name);
-            InnerClassNode innerClassNode = new InnerClassNode(classNode, fullName, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, ClassHelper.OBJECT_TYPE, ClassNode.EMPTY_ARRAY, null);
-            innerClassNode.addAnnotation(new AnnotationNode(TypeUtil.TYPED));
+
+            InnerClassNode innerClassNode = new InnerClassNode(classNode, fullName, ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, ClassHelper.OBJECT_TYPE, new ClassNode[]{classNode}, null);
+            AnnotationNode typedAnn = new AnnotationNode(TypeUtil.TYPED);
+            typedAnn.addMember("debug", ConstantExpression.TRUE);
+            innerClassNode.addAnnotation(typedAnn);
 
             ClassNode superClass = classNode.getSuperClass();
             if (!ClassHelper.OBJECT_TYPE.equals(superClass)) {
@@ -71,6 +76,29 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
             }
 
             classNode.getModule().addClass(innerClassNode);
+
+            for (FieldNode fieldNode : classNode.getFields()) {
+                if (fieldNode.isStatic())
+                    continue;
+
+                MethodNode getter = classNode.addMethod("get" + Verifier.capitalize(fieldNode.getName()), ACC_PUBLIC | ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
+                AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
+                value.addMember("value", new ClassExpression(innerClassNode));
+                value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
+                getter.addAnnotation(value);
+
+                Parameter valueParam = new Parameter(fieldNode.getType(), "$value");
+                MethodNode setter = classNode.addMethod("set" + Verifier.capitalize(fieldNode.getName()), ACC_PUBLIC | ACC_ABSTRACT, ClassHelper.VOID_TYPE, new Parameter[]{valueParam}, ClassNode.EMPTY_ARRAY, null);
+                value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
+                value.addMember("value", new ClassExpression(innerClassNode));
+                value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
+                setter.addAnnotation(value);
+
+                innerClassNode.addField(fieldNode);
+            }
+
+            classNode.getFields().clear();
+            classNode.getProperties().clear();
 
             for (MethodNode methodNode : classNode.getMethods()) {
                 if (methodNode.getCode() == null)
@@ -90,11 +118,8 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 methodNode.setModifiers(mod);
 
                 Parameter[] parameters = methodNode.getParameters();
-                Parameter[] newParameters = new Parameter[parameters.length + 1];
-                newParameters[0] = new Parameter(classNode, "$self");
-                System.arraycopy(parameters, 0, newParameters, 1, parameters.length);
 
-                innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC | ACC_STATIC, methodNode.getReturnType(), newParameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
+                innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC, methodNode.getReturnType(), parameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
 
                 AnnotationNode annotationNode = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
                 annotationNode.addMember("value", new ClassExpression(innerClassNode));

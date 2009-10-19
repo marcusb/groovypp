@@ -111,7 +111,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 localDebug = localMember != null && localMember instanceof ConstantExpression && ((ConstantExpression) localMember).getValue().equals(Boolean.TRUE);
             }
 
-            if ((mn.getModifiers() & Opcodes.ACC_BRIDGE) != 0)
+            if ((mn.getModifiers() & Opcodes.ACC_BRIDGE) != 0 || mn.isAbstract())
                 continue;
 
             final Statement code = mn.getCode();

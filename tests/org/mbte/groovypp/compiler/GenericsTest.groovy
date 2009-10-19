@@ -5,7 +5,7 @@ public class GenericsTest extends GroovyShellTestCase {
         shell.evaluate """
           @Typed
           class X<T extends GroovyObject> extends ArrayList<T> {
-              T get(int i) {
+              def getAbc(int i) {
                 get(i).getProperty ("abc")
               }
           }
