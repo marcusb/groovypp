@@ -260,7 +260,7 @@ public class TypeUtil {
 
     private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
         if (bDerived.redirect().equals(aSuper)) return type;
-        ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(false);
+        ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(true);
         if (derivedSuperClass != null) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass);
             if (rec != null) {
@@ -268,7 +268,7 @@ public class TypeUtil {
                             derivedSuperClass.getGenericsTypes());
             }
         }
-        ClassNode[] interfaces = bDerived.getUnresolvedInterfaces(false);
+        ClassNode[] interfaces = bDerived.getUnresolvedInterfaces(true);
         if (interfaces != null) {
             for (ClassNode derivedInterface : interfaces) {
                 ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
