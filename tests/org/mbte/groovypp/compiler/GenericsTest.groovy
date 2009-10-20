@@ -31,4 +31,67 @@ public class GenericsTest extends GroovyShellTestCase {
           }
         """
     }
+  
+    void testGenericGetAndSet() {
+      shell.evaluate """
+        @Typed
+        class Box<T> {
+
+            T t;
+
+            public void set(T t) {
+                this.t = t
+            }
+
+            public T get() {t}
+        }
+
+        @Typed
+        def u () {
+          def box = new Box<Integer>();
+          box.set(1)
+
+          def res = box.get();
+          assert res == 1;
+          assert res.class == Integer
+        }
+
+        u()
+      """
+    }
+
+    void testGenericMethod() {
+      shell.evaluate """
+        @Typed
+        class Box<T> {
+          public <U> String inspect(U u){
+              u.getClass().getName()
+          }
+        }
+
+        @Typed
+        def u () {
+          def className = new Box<Integer>().inspect("abcd");
+          assert className == "java.lang.String"
+        }
+
+        u()
+      """
+    }
+
+    void testGenericStaticMethod() {
+      shell.evaluate """
+        @Typed
+        static < T > T foo(T t) {t}
+
+        @Typed
+        def u () {
+          def a = foo("abc");
+          assert a == "abc"
+          assert a.class == String;
+        }
+
+        u()
+      """
+    }
 }
