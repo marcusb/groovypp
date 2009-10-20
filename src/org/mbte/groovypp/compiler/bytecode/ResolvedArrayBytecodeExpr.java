@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr array;
@@ -16,21 +17,21 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
         this.index = compiler.cast(index, ClassHelper.int_TYPE);
     }
 
-    protected void compile() {
+    protected void compile(MethodVisitor mv) {
         array.visit(mv);
         index.visit(mv);
-        loadArray(getType());
+        loadArray(getType(), mv);
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right0, CompilerTransformer compiler) {
         final BytecodeExpr right = compiler.cast(right0, getType());
         return new BytecodeExpr(parent, getType()) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 array.visit(mv);
                 index.visit(mv);
                 right.visit(mv);
-                dup_x2(getType());
-                storeArray(getType());
+                dup_x2(getType(), mv);
+                storeArray(getType(), mv);
             }
         };
     }
@@ -38,7 +39,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {
         final BytecodeExpr opLeft = new BytecodeExpr(this, getType()) {
             @Override
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
             }
         };
 
@@ -48,16 +49,16 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
 
         return new BytecodeExpr(parent, getType()) {
             @Override
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 array.visit(mv);
                 index.visit(mv);
                 mv.visitInsn(DUP2);
-                loadArray(getType());
+                loadArray(getType(), mv);
 
                 transformedOp.visit(mv);
 
-                dup_x2(getType());
-                storeArray(getType());
+                dup_x2(getType(), mv);
+                storeArray(getType(), mv);
             }
         };
     }

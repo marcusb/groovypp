@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.objectweb.asm.MethodVisitor;
 
 public class PropertyUtil {
     public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
@@ -21,7 +22,7 @@ public class PropertyUtil {
 
         if (object.getType().isArray() && "length".equals(propName)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     object.visit(mv);
                     mv.visitInsn(ARRAYLENGTH);
                 }

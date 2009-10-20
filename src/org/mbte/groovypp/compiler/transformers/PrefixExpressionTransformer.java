@@ -9,6 +9,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpression> {
     public Expression transform(PrefixExpression exp, CompilerTransformer compiler) {
@@ -67,7 +68,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
         }
 
         return new BytecodeExpr(exp, propertyNode.getType()) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 final ClassNode type = propertyNode.getType();
                 final ClassNode primType = ClassHelper.getUnwrapper(type);
                 int op = GETFIELD;
@@ -99,10 +100,10 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
 
                 // value ?obj
                 if (type != primType)
-                    unbox(primType);
-                incOrDecPrimitive(primType, exp.getOperation().getType());
+                    unbox(primType, mv);
+                incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
                 if (type != primType) {
-                    box(primType);
+                    box(primType, mv);
                     mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
                 }
                 // newvalue ?obj
@@ -110,7 +111,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                 op = PUTFIELD;
                 if (propertyNode.isStatic()) {
                     op = PUTSTATIC;
-                    dup(type);
+                    dup(type, mv);
                 } else {
                     if (ClassHelper.long_TYPE == type || ClassHelper.double_TYPE == type)
                         mv.visitInsn(DUP2_X1);
@@ -140,22 +141,22 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
 
         final ClassNode type = arrExp.getType().getComponentType();
         return new BytecodeExpr(exp, type) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 final ClassNode primType = ClassHelper.getUnwrapper(type);
 
                 arrExp.visit(mv);
                 indexExp.visit(mv);
-                toInt(indexExp.getType());
+                toInt(indexExp.getType(), mv);
                 mv.visitInsn(DUP2);
-                loadArray(type);
+                loadArray(type, mv);
 
                 if (type != primType)
-                    unbox(primType);
+                    unbox(primType, mv);
                 // val, idx, arr, val
-                incOrDecPrimitive(primType, exp.getOperation().getType());
+                incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
 
                 if (type != primType)
-                    box(primType);
+                    box(primType, mv);
 
                 // val, idx, arr
                 if (type == ClassHelper.double_TYPE || type == ClassHelper.long_TYPE)
@@ -163,7 +164,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                 else
                     mv.visitInsn(DUP_X2);
 
-                storeArray(type);
+                storeArray(type, mv);
             }
         };
     }
@@ -185,16 +186,16 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
         }
 
         return new BytecodeExpr(exp, vtype) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 final ClassNode primType = ClassHelper.getUnwrapper(vtype);
-                load(vtype, var.getIndex());
+                load(vtype, var.getIndex(), mv);
                 if (vtype != primType)
-                    unbox(primType);
-                incOrDecPrimitive(primType, exp.getOperation().getType());
+                    unbox(primType, mv);
+                incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
                 if (vtype != primType)
-                    box(primType);
-                dup(vtype);
-                store(var);
+                    box(primType, mv);
+                dup(vtype, mv);
+                store(var, mv);
             }
         };
     }

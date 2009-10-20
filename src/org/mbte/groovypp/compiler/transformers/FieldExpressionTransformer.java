@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class FieldExpressionTransformer extends ExprTransformer<FieldExpression> {
 
@@ -13,7 +14,7 @@ public class FieldExpressionTransformer extends ExprTransformer<FieldExpression>
                 exp,
                 exp.getField(),
                 new BytecodeExpr(exp, compiler.classNode) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
                     }
                 },

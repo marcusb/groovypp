@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -73,7 +74,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         if (constructor != null) {
             final MethodNode constructor1 = constructor;
             return new BytecodeExpr(exp, exp.getType()) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     final String classInternalName = BytecodeHelper.getClassInternalName(getType());
                     mv.visitTypeInsn(NEW, classInternalName);
                     mv.visitInsn(DUP);
@@ -84,9 +85,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         be.visit(mv);
                         final ClassNode paramType = constructor1.getParameters()[i].getType();
                         final ClassNode type = be.getType();
-                        box(type);
-                        be.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType));
-                        be.unbox(paramType);
+                        box(type, mv);
+                        be.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType), mv);
+                        be.unbox(paramType, mv);
                     }
 
                     mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constructor1.getParameters()));
@@ -104,7 +105,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                 MapEntryExpression mee = (MapEntryExpression) it.next();
 
                 BytecodeExpr obj = new BytecodeExpr(mee, exp.getType()) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                         mv.visitInsn(DUP);
                     }
                 };
@@ -125,7 +126,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
             if (constructor != null) {
                 return new BytecodeExpr(exp, exp.getType()) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                         final String classInternalName = BytecodeHelper.getClassInternalName(getType());
                         mv.visitTypeInsn(NEW, classInternalName);
                         mv.visitInsn(DUP);
@@ -133,7 +134,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
                         for (BytecodeExpr prop : propSetters) {
                             prop.visit(mv);
-                            pop(prop.getType());
+                            pop(prop.getType(), mv);
                         }
                     }
                 };

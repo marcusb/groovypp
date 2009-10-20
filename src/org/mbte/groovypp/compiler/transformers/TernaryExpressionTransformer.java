@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.StaticCompiler;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 
 public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpression>{
     public Expression transform(TernaryExpression exp, CompilerTransformer compiler) {
@@ -39,7 +40,7 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             this.fte = fte;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             final BytecodeExpr be = (BytecodeExpr) fte.getBooleanExpression().getExpression();
             be.visit(mv);
 
@@ -48,18 +49,18 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
 
             final BytecodeExpr trueExp = (BytecodeExpr) fte.getTrueExpression();
             trueExp.visit(mv);
-            box (trueExp.getType());
-            cast(ClassHelper.getWrapper(trueExp.getType()), ClassHelper.getWrapper(getType()));
-            unbox(getType());
+            box (trueExp.getType(), mv);
+            cast(ClassHelper.getWrapper(trueExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            unbox(getType(), mv);
             Label endLabel = new Label();
             mv.visitJumpInsn(GOTO, endLabel);
 
             mv.visitLabel(elseLabel);
             final BytecodeExpr falseExp = (BytecodeExpr) fte.getFalseExpression();
             falseExp.visit(mv);
-            box (falseExp.getType());
-            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()));
-            unbox(getType());
+            box (falseExp.getType(), mv);
+            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            unbox(getType(), mv);
 
             mv.visitLabel(endLabel);
         }
@@ -73,27 +74,27 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             this.eee = eee;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             final BytecodeExpr be = (BytecodeExpr) eee.getBooleanExpression().getExpression();
             be.visit(mv);
-            dup(be.getType());
+            dup(be.getType(), mv);
 
             Label elseLabel = new Label();
             StaticCompiler.branch(be, IFEQ, elseLabel, mv);
 
-            box (be.getType());
-            cast(ClassHelper.getWrapper(be.getType()), ClassHelper.getWrapper(getType()));
-            unbox(getType());
+            box (be.getType(), mv);
+            cast(ClassHelper.getWrapper(be.getType()), ClassHelper.getWrapper(getType()), mv);
+            unbox(getType(), mv);
             Label endLabel = new Label();
             mv.visitJumpInsn(GOTO, endLabel);
 
             mv.visitLabel(elseLabel);
             final BytecodeExpr falseExp = (BytecodeExpr) eee.getFalseExpression();
-            pop(be.getType());
+            pop(be.getType(), mv);
             falseExp.visit(mv);
-            box (falseExp.getType());
-            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()));
-            unbox(getType());
+            box (falseExp.getType(), mv);
+            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            unbox(getType(), mv);
 
             mv.visitLabel(endLabel);
         }

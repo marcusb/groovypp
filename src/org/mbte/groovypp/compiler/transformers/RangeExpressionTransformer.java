@@ -8,6 +8,7 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class RangeExpressionTransformer extends ExprTransformer<RangeExpression> {
 
@@ -16,11 +17,11 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
         final BytecodeExpr to = (BytecodeExpr) compiler.transform(exp.getTo());
         final boolean intRange = (from.getType() == ClassHelper.int_TYPE && to.getType() == ClassHelper.int_TYPE);
         return new BytecodeExpr(exp, intRange ? TypeUtil.INT_RANGE_TYPE : ClassHelper.RANGE_TYPE) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 from.visit(mv);
-                box(from.getType());
+                box(from.getType(), mv);
                 to.visit(mv);
-                box(to.getType());
+                box(to.getType(), mv);
                 mv.visitLdcInsn(exp.isInclusive());
                 mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
                 if (intRange)

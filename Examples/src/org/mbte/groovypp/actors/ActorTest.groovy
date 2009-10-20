@@ -1,6 +1,15 @@
 @Typed
 package org.mbte.groovypp.actors
 
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.Callable
+
 public class ActorTest extends GroovyTestCase {
   void testActor() {
     def printer = Actor.actor {

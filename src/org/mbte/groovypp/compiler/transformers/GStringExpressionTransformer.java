@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.GStringExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class GStringExpressionTransformer extends ExprTransformer<GStringExpress
         for (int i = 0; i != list.size(); i++)
            list.set(i, compiler.transform((Expression) list.get(i)));
         return new BytecodeExpr (exp, ClassHelper.GSTRING_TYPE) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 mv.visitTypeInsn(NEW, "org/codehaus/groovy/runtime/GStringImpl");
                 mv.visitInsn(DUP);
 
@@ -28,7 +29,7 @@ public class GStringExpressionTransformer extends ExprTransformer<GStringExpress
                     mv.visitLdcInsn(i);
                     final BytecodeExpr el = (BytecodeExpr) exp.getValue(i);
                     el.visit(mv);
-                    box(el.getType());
+                    box(el.getType(), mv);
                     mv.visitInsn(AASTORE);
                 }
 

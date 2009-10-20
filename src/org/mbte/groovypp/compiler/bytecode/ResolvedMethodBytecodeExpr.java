@@ -10,6 +10,7 @@ import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
 
@@ -48,7 +49,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                             if (parameters[parameters.length - 1].getType().getComponentType().equals(ClassHelper.STRING_TYPE)) {
                                 if (!arg.getType().equals(ClassHelper.STRING_TYPE)) {
                                     list.add(new BytecodeExpr(arg, ClassHelper.STRING_TYPE) {
-                                        protected void compile() {
+                                        protected void compile(MethodVisitor mv) {
                                             arg.visit(mv);
                                             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
                                         }
@@ -75,7 +76,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             if (ptype.equals(ClassHelper.STRING_TYPE)) {
                 if (!arg.getType().equals(ClassHelper.STRING_TYPE)) {
                     bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile() {
+                        protected void compile(MethodVisitor mv) {
                             arg.visit(mv);
                             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
                         }
@@ -85,7 +86,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 final ClassNode componentType = ptype.getComponentType();
                 if (ClassHelper.isPrimitiveType(componentType)) {
                     bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile() {
+                        protected void compile(MethodVisitor mv) {
                             arg.visit(mv);
                             if (componentType == ClassHelper.byte_TYPE)
                                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToByteArray", "(Ljava/lang/Object;)[B");
@@ -107,14 +108,14 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                     });
                 } else if (componentType.equals(ClassHelper.OBJECT_TYPE) && ClassHelper.isPrimitiveType(arg.getType().getComponentType())) {
                     bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile() {
+                        protected void compile(MethodVisitor mv) {
                             arg.visit(mv);
                             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "primitiveArrayBox", "(Ljava/lang/Object;)[Ljava/lang/Object;");
                         }
                     });
                 } else if (componentType.equals(ClassHelper.STRING_TYPE) && arg.getType().getComponentType().equals(ClassHelper.GSTRING_TYPE)) {
                     bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile() {
+                        protected void compile(MethodVisitor mv) {
                             arg.visit(mv);
                             mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "gstringArrayToStringArray", "([Lgroovy/lang/GString;)[Ljava/lang/String;");
                         }
@@ -150,7 +151,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    public void compile() {
+    public void compile(MethodVisitor mv) {
         int op = INVOKEVIRTUAL;
         final String classInternalName;
         final String methodDescriptor;
@@ -159,7 +160,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
 
             if (object != null) {
                 object.visit(mv);
-                box(object.getType());
+                box(object.getType(), mv);
                 if (methodNode.getDeclaringClass() != ClassHelper.OBJECT_TYPE)
                     mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
             }
@@ -178,7 +179,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 }
 
                 object.visit(mv);
-                box(object.getType());
+                box(object.getType(), mv);
             }
 
             if (op == INVOKESTATIC && object != null) {
@@ -197,14 +198,14 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             be.visit(mv);
             final ClassNode paramType = parameters[i].getType();
             final ClassNode type = be.getType();
-            box(type);
-            be.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType));
-            be.unbox(paramType);
+            box(type, mv);
+            be.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType), mv);
+            be.unbox(paramType, mv);
         }
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         if (methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
             mv.visitInsn(ACONST_NULL);
 
-        cast(ClassHelper.getWrapper(methodNode.getReturnType()), ClassHelper.getWrapper(getType()));
+        cast(ClassHelper.getWrapper(methodNode.getReturnType()), ClassHelper.getWrapper(getType()), mv);
     }
 }

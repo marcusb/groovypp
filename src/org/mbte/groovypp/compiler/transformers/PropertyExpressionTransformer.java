@@ -12,6 +12,7 @@ import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression> {
     public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
@@ -52,7 +53,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         Parameter[] pp = compiler.methodNode.getParameters();
                         if (pp.length > 0 && "$self".equals(pp[0].getName())) {
                             object = new BytecodeExpr(exp, pp[0].getType()) {
-                                protected void compile() {
+                                protected void compile(MethodVisitor mv) {
                                     mv.visitVarInsn(ALOAD, 0);
                                 }
                             };
@@ -101,7 +102,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             if (prop != null) {
                 final int level1 = level;
                 object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
                         for (int i = 0; i != level1; ++i) {
                             mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -124,7 +125,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                     if (prop != null) {
                         final int level3 = level;
                         object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
-                            protected void compile() {
+                            protected void compile(MethodVisitor mv) {
                                 mv.visitVarInsn(ALOAD, 0);
                                 for (int i = 0; i != level3; ++i) {
                                     mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -145,7 +146,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         if (prop != null) {
             final int level2 = level;
             object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     mv.visitVarInsn(ALOAD, 0);
                     for (int i = 0; i != level2; ++i) {
                         mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -166,20 +167,20 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         ClassNode type = ClassHelper.getWrapper(object.getType());
 
         final BytecodeExpr call = (BytecodeExpr) compiler.transform(new PropertyExpression(new BytecodeExpr(object, type) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 // nothing to do
                 // expect parent on stack
             }
         }, exp.getProperty()));
 
         return new BytecodeExpr(exp, ClassHelper.getWrapper(call.getType())) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 Label nullLabel = new Label();
                 mv.visitInsn(DUP);
                 mv.visitJumpInsn(IFNULL, nullLabel);
                 call.visit(mv);
-                box(call.getType());
+                box(call.getType(), mv);
                 mv.visitLabel(nullLabel);
             }
         };

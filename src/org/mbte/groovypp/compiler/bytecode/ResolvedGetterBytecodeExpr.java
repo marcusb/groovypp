@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final MethodNode methodNode;
@@ -25,7 +26,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 new ArgumentListExpression(), compiler);
     }
 
-    protected void compile() {
+    protected void compile(MethodVisitor mv) {
         getter.visit(mv);
     }
 
@@ -42,7 +43,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
         final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
             @Override
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
             }
         };
 

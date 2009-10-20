@@ -25,7 +25,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
         this.ce = ce;
     }
 
-    protected void compile() {
+    protected void compile(MethodVisitor mv) {
         getType().getModule().addClass(getType());
 
         Parameter [] constrParams = createClosureParams(ce, getType());
@@ -48,8 +48,8 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             final String name = constrParams[i].getName();
             final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(name, false);
             if (var != null) {
-                loadVar(var);
-                unbox(var.getType());
+                loadVar(var, mv);
+                unbox(var.getType(), mv);
                 if (!constrParams[i].getType().equals(var.getType())) {
                     mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(constrParams[i].getType()));
                 }

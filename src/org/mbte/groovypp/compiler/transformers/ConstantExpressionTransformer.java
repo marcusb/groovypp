@@ -7,6 +7,7 @@ import org.codehaus.groovy.classgen.ClassGeneratorException;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -71,7 +72,7 @@ public class ConstantExpressionTransformer extends ExprTransformer<ConstantExpre
             this.exp = exp;
         }
 
-        public void compile() {
+        public void compile(MethodVisitor mv) {
             final Object val = exp.getValue();
             if (val == null) {
                 mv.visitInsn(ACONST_NULL);

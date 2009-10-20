@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.IdentityHashMap;
 
@@ -73,7 +74,7 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
             return be;
         }
         return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 be.visit(mv);
 
                 if (ClassHelper.isPrimitiveType(type)) {

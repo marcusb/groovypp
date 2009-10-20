@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class UnaryMinusExpressionTransformer extends ExprTransformer<UnaryMinusExpression> {
     public Expression transform(UnaryMinusExpression exp, CompilerTransformer compiler) {
@@ -15,10 +16,10 @@ public class UnaryMinusExpressionTransformer extends ExprTransformer<UnaryMinusE
         final ClassNode type = ClassHelper.getUnwrapper(inner.getType());
         if(type == ClassHelper.float_TYPE) {
             return new BytecodeExpr(exp, ClassHelper.double_TYPE) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     inner.visit(mv);
                     if (!ClassHelper.isPrimitiveType(inner.getType()))
-                        unbox(inner.getType());
+                        unbox(inner.getType(), mv);
 
                     mv.visitInsn(F2D);
                     mv.visitInsn(DNEG);
@@ -37,10 +38,10 @@ public class UnaryMinusExpressionTransformer extends ExprTransformer<UnaryMinusE
                 || type.equals(ClassHelper.Long_TYPE)
                 || type.equals(ClassHelper.Double_TYPE)) {
                 return new BytecodeExpr(exp, type) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                         inner.visit(mv);
                         if (!ClassHelper.isPrimitiveType(inner.getType()))
-                            unbox(inner.getType());
+                            unbox(inner.getType(), mv);
 
                         if (type == ClassHelper.int_TYPE || type == ClassHelper.short_TYPE || type == ClassHelper.byte_TYPE)
                             mv.visitInsn(INEG);

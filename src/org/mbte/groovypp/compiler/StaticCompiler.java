@@ -88,7 +88,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         final ClassNode type = be.getType();
 
         if (type == ClassHelper.Boolean_TYPE) {
-            be.unbox(ClassHelper.boolean_TYPE);
+            be.unbox(ClassHelper.boolean_TYPE, mv);
         } else {
             if (ClassHelper.isPrimitiveType(type)) {
                 // unwrapper - primitive
@@ -203,7 +203,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (!(loopExpr.get(0) instanceof EmptyExpression)) {
             final BytecodeExpr initExpression = (BytecodeExpr) transform(loopExpr.get(0));
             initExpression.visit(mv);
-            initExpression.pop(initExpression.getType());
+            initExpression.pop(initExpression.getType(), mv);
         }
 
         Label cond = new Label();
@@ -296,8 +296,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
                 mv.visitInsn(ACONST_NULL);
             } else {
-                bytecodeExpr.box(exprType);
-                bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType));
+                bytecodeExpr.box(exprType, mv);
+                bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType), mv);
             }
 
             if (compileStack.hasFinallyBlocks()) {
@@ -305,9 +305,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 compileStack.applyFinallyBlocks();
                 mv.visitVarInsn(ALOAD, returnValueIdx);
             }
-            bytecodeExpr.unbox(returnType);
+            bytecodeExpr.unbox(returnType, mv);
         }
-        bytecodeExpr.doReturn(returnType);
+        bytecodeExpr.doReturn(returnType, mv);
     }
 
     @Override
@@ -335,7 +335,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         BytecodeExpr cond = (BytecodeExpr) transform(statement.getExpression());
         cond.visit(mv);
         if (ClassHelper.isPrimitiveType(cond.getType()))
-            cond.box(cond.getType());
+            cond.box(cond.getType(), mv);
 
         // switch does not have a continue label. use its parent's for continue
         Label breakLabel = compileStack.pushSwitch();
@@ -366,7 +366,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             final BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
             option.visit(mv);
             if (ClassHelper.isPrimitiveType(option.getType()))
-                option.box(option.getType());
+                option.box(option.getType(), mv);
 
             Label next = i == caseCount - 1 ? defaultLabel : condLabels[i + 1];
 
@@ -379,12 +379,12 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             mv.visitLabel(notNull);
 
             final BytecodeExpr caseValue = new BytecodeExpr(option, ClassHelper.getWrapper(option.getType())) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                 }
             };
 
             final BytecodeExpr switchValue = new BytecodeExpr(cond, ClassHelper.getWrapper(cond.getType())) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     mv.visitInsn(SWAP);
                 }
             };

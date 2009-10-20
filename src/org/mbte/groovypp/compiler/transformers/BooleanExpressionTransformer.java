@@ -8,6 +8,7 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.StaticCompiler;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 
 public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpression>{
     public Expression transform(BooleanExpression exp, CompilerTransformer compiler) {
@@ -51,7 +52,7 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
             this.internal = internal;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             mv.visitInsn(ICONST_0);
             internal.visit(mv);
             Label ok = new Label();
@@ -59,7 +60,7 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
             mv.visitInsn(POP);
             mv.visitInsn(ICONST_1);
             mv.visitLabel(ok);
-            box(ClassHelper.boolean_TYPE);
+            box(ClassHelper.boolean_TYPE, mv);
         }
     }
 }

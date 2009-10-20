@@ -7,6 +7,7 @@ import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final PropertyNode propertyNode;
@@ -35,7 +36,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 propertyNode.getDeclaringClass(), object.getType()) : type;
     }
 
-    public void compile() {
+    public void compile(MethodVisitor mv) {
         final String classInternalName;
         final String methodDescriptor;
 
@@ -49,7 +50,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
 
         if (object != null && !(propertyNode.isStatic() && !needsObjectIfStatic)) {
             object.visit(mv);
-            box(object.getType());
+            box(object.getType(), mv);
         }
 
         if (op == INVOKESTATIC && object != null && needsObjectIfStatic) {
@@ -64,19 +65,19 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
             bargs.visit(mv);
             final ClassNode paramType = propertyNode.getType();
             final ClassNode type = bargs.getType();
-            box(type);
-            bargs.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType));
-            bargs.unbox(paramType);
+            box(type, mv);
+            bargs.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType), mv);
+            bargs.unbox(paramType, mv);
             if (object != null)
-                dup_x1(paramType);
+                dup_x1(paramType, mv);
             else
-                dup(paramType);
+                dup(paramType, mv);
             methodDescriptor = BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, new Parameter[]{new Parameter(paramType, "")});
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         } else {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
-            cast(ClassHelper.getWrapper(propertyNode.getType()), ClassHelper.getWrapper(getType()));
+            cast(ClassHelper.getWrapper(propertyNode.getType()), ClassHelper.getWrapper(getType()), mv);
         }
     }
 
@@ -87,15 +88,15 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
         final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
             @Override
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
             }
         };
 
         final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
             @Override
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 object.visit(mv);
-                dup(object.getType());
+                dup(object.getType(), mv);
             }
         };
 

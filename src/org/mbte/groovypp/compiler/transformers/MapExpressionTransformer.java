@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.MapExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
             this.exp = exp;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             final List list = exp.getMapEntryExpressions();
             mv.visitTypeInsn(NEW, "java/util/LinkedHashMap");
             mv.visitInsn(DUP);
@@ -40,10 +41,10 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 final MapEntryExpression me = (MapEntryExpression) list.get(i);
                 final BytecodeExpr ke = (BytecodeExpr) me.getKeyExpression();
                 ke.visit(mv);
-                box(ke.getType());
+                box(ke.getType(), mv);
                 final BytecodeExpr ve = (BytecodeExpr) me.getValueExpression();
                 ve.visit(mv);
-                box(ve.getType());
+                box(ve.getType(), mv);
                 mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/LinkedHashMap","put","(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
                 mv.visitInsn(POP);
             }

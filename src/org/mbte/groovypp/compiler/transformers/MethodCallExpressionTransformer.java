@@ -72,7 +72,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     if (foundMethod != null) {
                         final int level1 = level;
                         object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
-                            protected void compile() {
+                            protected void compile(MethodVisitor mv) {
                                 mv.visitVarInsn(ALOAD, 0);
                                 for (int i = 0; i != level1; ++i) {
                                     mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -94,7 +94,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             if (foundMethod != null) {
                                 final int level3 = level;
                                 object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
-                                    protected void compile() {
+                                    protected void compile(MethodVisitor mv) {
                                         mv.visitVarInsn(ALOAD, 0);
                                         for (int i = 0; i != level3; ++i) {
                                             mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -115,7 +115,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 if (foundMethod != null) {
                     final int level2 = level;
                     object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
-                        protected void compile() {
+                        protected void compile(MethodVisitor mv) {
                             mv.visitVarInsn(ALOAD, 0);
                             for (int i = 0; i != level2; ++i) {
                                 mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
@@ -148,20 +148,20 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         ClassNode type = ClassHelper.getWrapper(object.getType());
 
         final BytecodeExpr call = (BytecodeExpr) compiler.transform(new MethodCallExpression(new BytecodeExpr(object, type) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 // nothing to do
                 // expect parent on stack
             }
         }, exp.getMethod(), exp.getArguments()));
 
         return new BytecodeExpr(exp, ClassHelper.getWrapper(call.getType())) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 Label nullLabel = new Label();
                 mv.visitInsn(DUP);
                 mv.visitJumpInsn(IFNULL, nullLabel);
                 call.visit(mv);
-                box(call.getType());
+                box(call.getType(), mv);
                 mv.visitLabel(nullLabel);
             }
         };
@@ -273,10 +273,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         final BytecodeExpr methodExpr = (BytecodeExpr) compiler.transform(exp.getMethod());
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
         return new BytecodeExpr(exp, ClassHelper.OBJECT_TYPE) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 mv.visitInsn(ACONST_NULL);
                 object.visit(mv);
-                box(object.getType());
+                box(object.getType(), mv);
 
                 methodExpr.visit(mv);
 

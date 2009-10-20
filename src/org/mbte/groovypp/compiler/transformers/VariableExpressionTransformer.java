@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
     public Expression transform(final VariableExpression exp, final CompilerTransformer compiler) {
@@ -74,7 +75,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
             super(exp, type);
         }
 
-        public void compile() {
+        public void compile(MethodVisitor mv) {
             mv.visitVarInsn(ALOAD, 0);
         }
     }

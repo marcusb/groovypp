@@ -3,13 +3,13 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.CastExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Cast processing rules:
@@ -41,9 +41,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                         return expr;
                     else {
                         return new BytecodeExpr(expr, rtype) {
-                            protected void compile() {
+                            protected void compile(MethodVisitor mv) {
                                 expr.visit(mv);
-                                box(expr.getType());
+                                box(expr.getType(), mv);
                             }
                         };
                     }
@@ -72,9 +72,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             this.arg1 = arg1;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             expr.visit(mv);
-            box(expr.getType());
+            box(expr.getType(), mv);
             arg1.visit(mv);
             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "asType", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
@@ -89,11 +89,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             this.expr = expr;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             expr.visit(mv);
-            box(expr.getType());
-            expr.cast(ClassHelper.getWrapper(expr.getType()), ClassHelper.getWrapper(getType()));
-            unbox(getType());
+            box(expr.getType(), mv);
+            expr.cast(ClassHelper.getWrapper(expr.getType()), ClassHelper.getWrapper(getType()), mv);
+            unbox(getType(), mv);
         }
     }
 }

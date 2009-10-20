@@ -6,6 +6,7 @@ import org.mbte.groovypp.compiler.BytecodeSpreadExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
             this.exp = exp;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             final List list = exp.getExpressions();
             mv.visitTypeInsn(NEW, "java/util/ArrayList");
             mv.visitInsn(DUP);
@@ -39,7 +40,7 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
                 if (be instanceof BytecodeSpreadExpr)
                     mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/ArrayList","addAll","(Ljava/util/Collection;)Z");
                 else {
-                    box(be.getType());
+                    box(be.getType(), mv);
                     mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/ArrayList","add","(Ljava/lang/Object;)Z");
                 }
                 mv.visitInsn(POP);

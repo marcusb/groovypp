@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     private final VariableExpression ve;
@@ -19,8 +20,8 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         var = compiler.compileStack.getVariable(ve.getName(), true);
     }
 
-    protected void compile() {
-        load(var);
+    protected void compile(MethodVisitor mv) {
+        load(var, mv);
     }
 
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
@@ -33,13 +34,13 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         }
 
         return new BytecodeExpr(parent, vtype) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 right.visit(mv);
-                box(right.getType());
-                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()));
-                unbox(getType());
-                storeVar(var);
-                load(var);
+                box(right.getType(), mv);
+                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()), mv);
+                unbox(getType(), mv);
+                storeVar(var, mv);
+                load(var, mv);
             }
         };
     }

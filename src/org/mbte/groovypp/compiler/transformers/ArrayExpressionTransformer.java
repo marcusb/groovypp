@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +20,7 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
         final List sizeExpression = exp.getSizeExpression();
 
         return new BytecodeExpr(exp, exp.getType()) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 int size = 0;
                 int dimensions = 0;
                 if (sizeExpression != null) {
@@ -30,12 +31,12 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
 
                         final BytecodeExpr expression = (BytecodeExpr) compiler.transform(element);
                         expression.visit(mv);
-                        box(expression.getType());
-                        unbox(ClassHelper.int_TYPE);
+                        box(expression.getType(), mv);
+                        unbox(ClassHelper.int_TYPE, mv);
                     }
                 } else {
                     size = exp.getExpressions().size();
-                    pushConstant(size);
+                    pushConstant(size, mv);
                 }
 
                 int storeIns = AASTORE;
@@ -76,11 +77,11 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
 
                 for (int i = 0; i < size; i++) {
                     mv.visitInsn(DUP);
-                    pushConstant(i);
+                    pushConstant(i, mv);
                     BytecodeExpr elementExpression = (BytecodeExpr) compiler.transform(exp.getExpression(i));
                     elementExpression.visit(mv);
-                    box(elementExpression.getType());
-                    unbox(elementType);
+                    box(elementExpression.getType(), mv);
+                    unbox(elementType, mv);
                     mv.visitInsn(storeIns);
                 }
             }

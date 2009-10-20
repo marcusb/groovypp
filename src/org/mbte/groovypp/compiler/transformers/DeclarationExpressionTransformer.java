@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class DeclarationExpressionTransformer extends ExprTransformer<DeclarationExpression> {
     public Expression transform(DeclarationExpression exp, final CompilerTransformer compiler) {
@@ -47,11 +48,11 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             this.compiler = compiler;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             right.visit(mv);
-            box(right.getType());
-            unbox(ve.getType());
-            dup(ve.getType());
+            box(right.getType(), mv);
+            unbox(ve.getType(), mv);
+            dup(ve.getType(), mv);
             compiler.compileStack.defineVariable(ve, true);
         }
     }
@@ -68,10 +69,10 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             this.ve = ve;
         }
 
-        protected void compile() {
+        protected void compile(MethodVisitor mv) {
             right.visit(mv);
-            box(right.getType());
-            dup(ClassHelper.getWrapper(right.getType()));
+            box(right.getType(), mv);
+            dup(ClassHelper.getWrapper(right.getType()), mv);
             compiler.compileStack.defineVariable(ve, true);
         }
     }

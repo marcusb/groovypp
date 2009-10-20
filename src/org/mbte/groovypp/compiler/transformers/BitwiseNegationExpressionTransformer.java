@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class BitwiseNegationExpressionTransformer extends ExprTransformer<BitwiseNegationExpression> {
     public Expression transform(BitwiseNegationExpression exp, CompilerTransformer compiler) {
@@ -14,9 +15,9 @@ public class BitwiseNegationExpressionTransformer extends ExprTransformer<Bitwis
         final BytecodeExpr obj;
         if (ClassHelper.isPrimitiveType(obj0.getType()))
             obj = new BytecodeExpr(exp, ClassHelper.getWrapper(obj0.getType())){
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     obj0.visit(mv);
-                    box(obj0.getType());
+                    box(obj0.getType(), mv);
                 }
             };
         else

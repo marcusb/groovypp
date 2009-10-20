@@ -10,6 +10,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
 
 public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpression> {
     public Expression transform(final PostfixExpression exp, CompilerTransformer compiler) {
@@ -30,7 +31,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         ClassNode vtype = oper.getType();
         if (TypeUtil.isNumericalType(vtype)) {
             return new BytecodeExpr(exp, vtype) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     oper.visit(mv);
                 }
             };
@@ -52,7 +53,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
         final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
                 new BytecodeExpr(exp, vtype) {
-                    protected void compile() {
+                    protected void compile(MethodVisitor mv) {
                     }
                 },
                 "next",
@@ -60,11 +61,11 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         ));
 
         return new BytecodeExpr(exp, vtype) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 oper.visit(mv);
                 mv.visitInsn(DUP);
                 nextCall.visit(mv);
-                pop(nextCall.getType());
+                pop(nextCall.getType(), mv);
             }
         };
     }
@@ -103,7 +104,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
         if (TypeUtil.isNumericalType(propertyNode.getType())) {
             return new BytecodeExpr(exp, propertyNode.getType()) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     final ClassNode type = propertyNode.getType();
                     final ClassNode primType = ClassHelper.getUnwrapper(type);
                     int op = GETFIELD;
@@ -129,7 +130,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
                     // value, ?obj
                     if (op == GETSTATIC) {
                         // value
-                        dup(type);
+                        dup(type, mv);
                         // value value
                     } else {
                         // value obj
@@ -142,10 +143,10 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
                     // value ?obj value
                     if (type != primType)
-                        unbox(primType);
-                    incOrDecPrimitive(primType, exp.getOperation().getType());
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
                     if (type != primType) {
-                        box(primType);
+                        box(primType, mv);
                         mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
                     }
                     // newvalue ?obj value
@@ -160,7 +161,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
             };
         } else {
             return new BytecodeExpr(exp, propertyNode.getType()) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     if (object != null)
                         object.visit(mv);
                 }
@@ -185,14 +186,14 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
         final ClassNode type = arrExp.getType().getComponentType();
         return new BytecodeExpr(exp, type) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 final ClassNode primType = ClassHelper.getUnwrapper(type);
 
                 arrExp.visit(mv);
                 indexExp.visit(mv);
-                toInt(indexExp.getType());
+                toInt(indexExp.getType(), mv);
                 mv.visitInsn(DUP2);
-                loadArray(type);
+                loadArray(type, mv);
 
                 // val, idx, arr
                 if (type == ClassHelper.double_TYPE || type == ClassHelper.long_TYPE)
@@ -201,15 +202,15 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
                     mv.visitInsn(DUP_X2);
 
                 if (type != primType)
-                    unbox(primType);
+                    unbox(primType, mv);
                 // val, idx, arr, val
-                incOrDecPrimitive(primType, exp.getOperation().getType());
+                incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
 
                 if (type != primType)
-                    box(primType);
+                    box(primType, mv);
 
                 // newVal, idx, arr, val
-                storeArray(type);
+                storeArray(type, mv);
             }
         };
     }
@@ -250,16 +251,16 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
         if (TypeUtil.isNumericalType(vtype)) {
             return new BytecodeExpr(exp, vtype) {
-                protected void compile() {
+                protected void compile(MethodVisitor mv) {
                     final ClassNode primType = ClassHelper.getUnwrapper(getType());
-                    load(getType(), var.getIndex());
-                    dup(getType());
+                    load(getType(), var.getIndex(), mv);
+                    dup(getType(), mv);
                     if (getType() != primType)
-                        unbox(primType);
-                    incOrDecPrimitive(primType, exp.getOperation().getType());
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
                     if (getType() != primType)
-                        box(primType);
-                    store(var);
+                        box(primType, mv);
+                    store(var, mv);
                 }
             };
         }
@@ -280,9 +281,9 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
 
         final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
                 new BytecodeExpr(exp, vtype) {
-                    protected void compile() {
-                        load(var.getType(), var.getIndex());
-                        dup(getType());
+                    protected void compile(MethodVisitor mv) {
+                        load(var.getType(), var.getIndex(), mv);
+                        dup(getType(), mv);
                     }
                 },
                 "next",
@@ -290,9 +291,9 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         ));
 
         return new BytecodeExpr(exp, vtype) {
-            protected void compile() {
+            protected void compile(MethodVisitor mv) {
                 nextCall.visit(mv);
-                store(var);
+                store(var, mv);
             }
         };
     }

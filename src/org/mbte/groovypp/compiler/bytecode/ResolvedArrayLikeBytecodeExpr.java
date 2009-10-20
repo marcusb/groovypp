@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr array;
@@ -20,7 +21,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         this.setter = setter;
     }
 
-    protected void compile() {
+    protected void compile(MethodVisitor mv) {
         getter.visit(mv);
     }
 
