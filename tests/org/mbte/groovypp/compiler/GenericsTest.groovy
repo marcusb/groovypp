@@ -49,7 +49,7 @@ public class GenericsTest extends GroovyShellTestCase {
         @Typed
         def u () {
           def box = new Box<Integer>();
-          assert box.intValue() == 0
+          assert box.get().intValue() == 0
 
           def res = box.get();
           assert res == 1;
@@ -72,8 +72,8 @@ public class GenericsTest extends GroovyShellTestCase {
         @Typed
         def u () {
           def v = new Box<Integer>().inspect("abcd");
-          assert v.length () == 3
-          assert className == "abcd"
+          assert v.length () == 4
+          assert v == "abcd"
         }
 
         u()
