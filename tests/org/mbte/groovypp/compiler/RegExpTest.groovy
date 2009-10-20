@@ -84,6 +84,16 @@ public class RegExpTest extends GroovyShellTestCase {
     """
   }
 
+  void testGrepMatcher() {
+    shell.evaluate """
+      @Typed
+      def u () {
+        assert ["foo", "moo"] == ["foo", "bar", "moo"].grep(~/.*oo\$/)
+      }
+      u()
+    """
+  }
+
   void testEqualsTilde() {
     shell.evaluate """
       @Typed
@@ -103,6 +113,5 @@ public class RegExpTest extends GroovyShellTestCase {
       u()
     """
   }
-
 
 }
