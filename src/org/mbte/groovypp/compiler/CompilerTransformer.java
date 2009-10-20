@@ -15,6 +15,7 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
+import org.mbte.groovypp.compiler.transformers.ClassExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

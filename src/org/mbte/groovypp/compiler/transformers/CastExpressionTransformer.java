@@ -27,12 +27,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         if (exp.isCoerce()) {
             // a)
             final ClassNode type = ClassHelper.getWrapper(exp.getType());
-            Expression arg = new ClassExpression(type);
-            arg = compiler.transform(arg);
-            arg.setType(ClassHelper.CLASS_Type);
-
-            final BytecodeExpr arg1 = (BytecodeExpr) arg;
-            return new AsType(exp, type, expr, arg1);
+            Expression arg = ClassExpressionTransformer.newExpr(exp, type);
+            return new AsType(exp, type, expr, (BytecodeExpr) arg);
         } else {
             if (TypeUtil.isNumericalType(exp.getType()) && TypeUtil.isNumericalType(expr.getType())) {
                 // b)

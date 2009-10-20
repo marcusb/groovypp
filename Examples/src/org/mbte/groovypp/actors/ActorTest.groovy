@@ -1,15 +1,6 @@
 @Typed
 package org.mbte.groovypp.actors
 
-import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReadWriteLock
-import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
-
 public class ActorTest extends GroovyTestCase {
   void testActor() {
     def printer = Actor.actor {
@@ -82,7 +73,7 @@ class Actor {
   /**
    * Send synchroniously and wait for execution result
    */
-  @Typed(debug = true)
+  @Typed
   def send(AsyncMessage msg) {
     lock.writeLock().withLock {
       WorkerThread.setCurrentActor(msg.receiver)

@@ -5,7 +5,7 @@ class MinusEqualsTest extends GroovyShellTestCase {
     void testIntegerMinusEquals() {
         shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             def x = 4
             def y = 2

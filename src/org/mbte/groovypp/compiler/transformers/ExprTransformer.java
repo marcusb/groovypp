@@ -25,7 +25,6 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(SpreadExpression.class, new SpreadExpressionTransformer());
         transformers.put(VariableExpression.class, new VariableExpressionTransformer());
         transformers.put(DeclarationExpression.class, new DeclarationExpressionTransformer());
-        transformers.put(ClassExpression.class, new ClassExpressionTransformer());
         transformers.put(ClosureExpression.class, new ClosureExpressionTransformer());
         transformers.put(MethodCallExpression.class, new MethodCallExpressionTransformer());
         transformers.put(PostfixExpression.class, new PostfixExpressionTransformer());

@@ -27,7 +27,7 @@ class ClosureDefaultParameterTest extends GroovyShellTestCase {
 
     void testClosureWithDefaultParamFromOuterScope() {
         shell.evaluate("""
-          @Typed(debug=true)
+          @Typed
           def u() {
             def y = 555
             def boo = {x = y -> x}
