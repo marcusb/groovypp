@@ -388,7 +388,7 @@ public class CompilerStack implements Opcodes {
         int index = currentVariableIndex;
         if (methodParameterUsedInClosure) {
             index = localVariableOffset++;
-            type = ClassHelper.getWrapper(type);
+            type = TypeUtil.wrapSafely(type);
         }
         Variable answer = new Variable(index, type, name, prevCurrent);
         usedVariables.add(answer);

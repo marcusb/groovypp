@@ -66,7 +66,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
             final ClassNode paramType = propertyNode.getType();
             final ClassNode type = bargs.getType();
             box(type, mv);
-            bargs.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType), mv);
+            bargs.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
             bargs.unbox(paramType, mv);
             if (object != null)
                 dup_x1(paramType, mv);
@@ -77,7 +77,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         } else {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
-            cast(ClassHelper.getWrapper(propertyNode.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(propertyNode.getType()), TypeUtil.wrapSafely(getType()), mv);
         }
     }
 

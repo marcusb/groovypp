@@ -263,13 +263,13 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 protected void compile(MethodVisitor mv) {
                     l.visit(mv);
                     box(l.getType(), mv);
-                    cast(ClassHelper.getWrapper(l.getType()), ClassHelper.getWrapper(mathType), mv);
+                    cast(TypeUtil.wrapSafely(l.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 
                     r.visit(mv);
                     box(r.getType(), mv);
-                    cast(ClassHelper.getWrapper(r.getType()), ClassHelper.getWrapper(mathType), mv);
+                    cast(TypeUtil.wrapSafely(r.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 
@@ -406,13 +406,13 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 public void compile(MethodVisitor mv) {
                     l.visit(mv);
                     box(l.getType(), mv);
-                    cast(ClassHelper.getWrapper(l.getType()), ClassHelper.getWrapper(mathType), mv);
+                    cast(TypeUtil.wrapSafely(l.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 
                     r.visit(mv);
                     box(r.getType(), mv);
-                    cast(ClassHelper.getWrapper(r.getType()), ClassHelper.getWrapper(mathType), mv);
+                    cast(TypeUtil.wrapSafely(r.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 

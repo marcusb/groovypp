@@ -207,7 +207,7 @@ public class MethodSelection {
 
             // add one to dist to be sure interfaces are preferred
             objectDistance += PRIMITIVES.length + 1;
-            ClassNode clazz = getWrapper(argument);
+            ClassNode clazz = TypeUtil.wrapSafely(argument);
             while (clazz != null) {
                 if (clazz.equals(parameter)) break;
                 if (clazz.equals(GSTRING_TYPE) && parameter.equals(STRING_TYPE)) {

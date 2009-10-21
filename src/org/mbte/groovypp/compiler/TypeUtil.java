@@ -37,8 +37,8 @@ public class TypeUtil {
         if (classToTransformTo.equals(classToTransformFrom)) return true;
         if (classToTransformTo.equals(OBJECT_TYPE)) return true;
 
-        classToTransformTo = getWrapper(classToTransformTo);
-        classToTransformFrom = getWrapper(classToTransformFrom);
+        classToTransformTo = TypeUtil.wrapSafely(classToTransformTo);
+        classToTransformFrom = TypeUtil.wrapSafely(classToTransformFrom);
         if (classToTransformTo == classToTransformFrom) return true;
 
         if (TypeUtil.isNumericalType(classToTransformTo)) {
@@ -68,7 +68,7 @@ public class TypeUtil {
     }
 
     public static boolean isIntegralType(ClassNode expr) {
-        return expr == Integer_TYPE || expr == Byte_TYPE || expr == Short_TYPE || expr == Character_TYPE || expr == Boolean_TYPE;
+        return expr.equals(Integer_TYPE) || expr.equals(Byte_TYPE) || expr.equals(Short_TYPE) || expr.equals(Character_TYPE) || expr.equals(Boolean_TYPE);
     }
 
     public static boolean isNumericalType(ClassNode paramType) {
@@ -106,8 +106,8 @@ public class TypeUtil {
         if (type1.equals(ClassHelper.OBJECT_TYPE) || type2.equals(ClassHelper.OBJECT_TYPE))
             return ClassHelper.OBJECT_TYPE;
 
-        type1 = ClassHelper.getWrapper(type1);
-        type2 = ClassHelper.getWrapper(type2);
+        type1 = TypeUtil.wrapSafely(type1);
+        type2 = TypeUtil.wrapSafely(type2);
 
         if (isNumericalType(type1) && isNumericalType(type2)) {
             if (type1.equals(ClassHelper.Double_TYPE) || type2.equals(ClassHelper.Double_TYPE))
@@ -295,7 +295,8 @@ public class TypeUtil {
         return null;
     }
 
-    public static ClassNode wrapSafe (ClassNode type) {
-        return ClassHelper.isPrimitiveType(type) ? ClassHelper.getWrapper(type) : type;
+    public static ClassNode wrapSafely(ClassNode type) {
+        if (ClassHelper.isPrimitiveType(type)) return ClassHelper.getWrapper(type);
+        else return type;
     }
 }

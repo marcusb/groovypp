@@ -50,7 +50,7 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             final BytecodeExpr trueExp = (BytecodeExpr) fte.getTrueExpression();
             trueExp.visit(mv);
             box (trueExp.getType(), mv);
-            cast(ClassHelper.getWrapper(trueExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(trueExp.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);
             Label endLabel = new Label();
             mv.visitJumpInsn(GOTO, endLabel);
@@ -59,7 +59,7 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             final BytecodeExpr falseExp = (BytecodeExpr) fte.getFalseExpression();
             falseExp.visit(mv);
             box (falseExp.getType(), mv);
-            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(falseExp.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);
 
             mv.visitLabel(endLabel);
@@ -83,7 +83,7 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             StaticCompiler.branch(be, IFEQ, elseLabel, mv);
 
             box (be.getType(), mv);
-            cast(ClassHelper.getWrapper(be.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(be.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);
             Label endLabel = new Label();
             mv.visitJumpInsn(GOTO, endLabel);
@@ -93,7 +93,7 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
             pop(be.getType(), mv);
             falseExp.visit(mv);
             box (falseExp.getType(), mv);
-            cast(ClassHelper.getWrapper(falseExp.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(falseExp.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);
 
             mv.visitLabel(endLabel);

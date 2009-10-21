@@ -178,7 +178,7 @@ public class ClosureUtil {
                                     }
                                     BytecodeExpr.box(type, mv);
                                     ClassNode doCallParamType = doCall.getParameters()[i].getType();
-                                    mv.visitTypeInsn(Opcodes.CHECKCAST, BytecodeHelper.getClassInternalName(ClassHelper.getWrapper(doCallParamType)));
+                                    mv.visitTypeInsn(Opcodes.CHECKCAST, BytecodeHelper.getClassInternalName(TypeUtil.wrapSafely(doCallParamType)));
                                     BytecodeExpr.unbox(doCallParamType, mv);
                                 }
                                 mv.visitMethodInsn(
@@ -190,7 +190,7 @@ public class ClosureUtil {
 
                                 if (missed.getReturnType() != ClassHelper.VOID_TYPE) {
                                     BytecodeExpr.box(doCall.getReturnType(), mv);
-                                    mv.visitTypeInsn(Opcodes.CHECKCAST, BytecodeHelper.getClassInternalName(ClassHelper.getWrapper(doCall.getReturnType())));
+                                    mv.visitTypeInsn(Opcodes.CHECKCAST, BytecodeHelper.getClassInternalName(TypeUtil.wrapSafely(doCall.getReturnType())));
                                     BytecodeExpr.unbox(missed.getReturnType(), mv);
                                 }
                                 BytecodeExpr.doReturn(mv, missed.getReturnType());

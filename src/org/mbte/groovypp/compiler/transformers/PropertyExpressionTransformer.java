@@ -39,7 +39,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
             object = null;
-            type = ClassHelper.getWrapper(exp.getObjectExpression().getType());
+            type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
 
             Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
 
@@ -64,7 +64,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         }
                     } else {
                         object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                        type = ClassHelper.getWrapper(object.getType());
+                        type = TypeUtil.wrapSafely(object.getType());
                     }
 
                     Object prop = null;
@@ -78,7 +78,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 }
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                type = ClassHelper.getWrapper(object.getType());
+                type = TypeUtil.wrapSafely(object.getType());
 
                 Object prop = null;
                 if (exp.isImplicitThis()) {
@@ -164,7 +164,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
     private Expression transformSafe(final PropertyExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-        ClassNode type = ClassHelper.getWrapper(object.getType());
+        ClassNode type = TypeUtil.wrapSafely(object.getType());
 
         final BytecodeExpr call = (BytecodeExpr) compiler.transform(new PropertyExpression(new BytecodeExpr(object, type) {
             protected void compile(MethodVisitor mv) {
@@ -173,7 +173,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             }
         }, exp.getProperty()));
 
-        return new BytecodeExpr(exp, ClassHelper.getWrapper(call.getType())) {
+        return new BytecodeExpr(exp,TypeUtil.wrapSafely(call.getType())) {
             protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 Label nullLabel = new Label();

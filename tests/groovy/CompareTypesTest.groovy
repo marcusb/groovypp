@@ -6,7 +6,7 @@ package groovy
 class CompareTypesTest extends GroovyShellTestCase {
   void testCompareByteToInt() {
     shell.evaluate("""
-        @Typed
+        @Typed(debug=true)
         def u() {
           Byte a = 12
           Integer b = 10

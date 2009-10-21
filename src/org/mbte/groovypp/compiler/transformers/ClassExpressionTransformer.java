@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
@@ -30,7 +31,7 @@ public class ClassExpressionTransformer extends ExprTransformer<ClassExpression>
 
         protected void compile(MethodVisitor mv) {
             if (ClassHelper.isPrimitiveType(type)) {
-                mv.visitFieldInsn(GETSTATIC, BytecodeHelper.getClassInternalName(ClassHelper.getWrapper(type)), "TYPE", "Ljava/lang/Class;");
+                mv.visitFieldInsn(GETSTATIC, BytecodeHelper.getClassInternalName(TypeUtil.wrapSafely(type)), "TYPE", "Ljava/lang/Class;");
             } else {
                 mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");

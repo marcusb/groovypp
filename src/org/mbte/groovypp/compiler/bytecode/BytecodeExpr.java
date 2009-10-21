@@ -69,7 +69,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         if (type == boolean_TYPE) {
             boxBoolean(mv);
         } else if (isPrimitiveType(type) && type != VOID_TYPE) {
-            ClassNode wrapper = getWrapper(type);
+            ClassNode wrapper = TypeUtil.wrapSafely(type);
             String internName = getClassInternalName(wrapper);
             mv.visitTypeInsn(Opcodes.NEW, internName);
             mv.visitInsn(Opcodes.DUP);
@@ -88,7 +88,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         if (type.isPrimaryClassNode()) return;
         Class type1 = type.getTypeClass();
         if (ReflectionCache.getCachedClass(type1).isPrimitive && type1 != void.class) {
-            String returnString = "(" + getTypeDescription(type) + ")" + getTypeDescription(getWrapper(type));
+            String returnString = "(" + getTypeDescription(type) + ")" + getTypeDescription(TypeUtil.wrapSafely(type));
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassInternalName(DefaultGroovyPPMethods.class.getName()), "box", returnString);
         }
     }
@@ -496,7 +496,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     }
 
     public static ClassNode boxOnPrimitive(ClassNode type) {
-        if (!type.isArray()) return getWrapper(type);
+        if (!type.isArray()) return TypeUtil.wrapSafely(type);
         return boxOnPrimitive(type.getComponentType()).makeArray();
     }
 
@@ -805,6 +805,9 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         if (isPrimitiveType(expr) || isPrimitiveType(type)) {
             throw new RuntimeException("Can't convert " + expr.getName() + " to " + type.getName());
         }
+
+        expr = expr.redirect();
+        type = type.redirect();
 
         if (TypeUtil.isDirectlyAssignableFrom(type, expr)) {
             return;

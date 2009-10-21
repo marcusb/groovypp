@@ -96,7 +96,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         final ClassNode paramType = constructor1.getParameters()[i].getType();
                         final ClassNode type = be.getType();
                         box(type, mv);
-                        be.cast(ClassHelper.getWrapper(type), ClassHelper.getWrapper(paramType), mv);
+                        be.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
                         be.unbox(paramType, mv);
                     }
 

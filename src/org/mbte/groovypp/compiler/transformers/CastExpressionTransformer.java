@@ -26,7 +26,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         if (exp.isCoerce()) {
             // a)
-            final ClassNode type = ClassHelper.getWrapper(exp.getType());
+            final ClassNode type = TypeUtil.wrapSafely(exp.getType());
             Expression arg = ClassExpressionTransformer.newExpr(exp, type);
             return new AsType(exp, type, expr, (BytecodeExpr) arg);
         } else {
@@ -34,7 +34,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 // b)
                 return new Cast(exp.getType(), expr);
             } else {
-                ClassNode rtype = ClassHelper.getWrapper(expr.getType());
+                ClassNode rtype = TypeUtil.wrapSafely(expr.getType());
                 if (TypeUtil.isDirectlyAssignableFrom(exp.getType(), rtype)) {
                     // c)
                     if (rtype.equals(exp.getType()))
@@ -92,7 +92,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         protected void compile(MethodVisitor mv) {
             expr.visit(mv);
             box(expr.getType(), mv);
-            expr.cast(ClassHelper.getWrapper(expr.getType()), ClassHelper.getWrapper(getType()), mv);
+            cast(TypeUtil.wrapSafely(expr.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);
         }
     }

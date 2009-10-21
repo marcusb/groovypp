@@ -297,7 +297,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 mv.visitInsn(ACONST_NULL);
             } else {
                 bytecodeExpr.box(exprType, mv);
-                bytecodeExpr.cast(ClassHelper.getWrapper(exprType), ClassHelper.getWrapper(returnType), mv);
+                bytecodeExpr.cast(TypeUtil.wrapSafely(exprType), TypeUtil.wrapSafely(returnType), mv);
             }
 
             if (compileStack.hasFinallyBlocks()) {
@@ -378,12 +378,12 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
             mv.visitLabel(notNull);
 
-            final BytecodeExpr caseValue = new BytecodeExpr(option, ClassHelper.getWrapper(option.getType())) {
+            final BytecodeExpr caseValue = new BytecodeExpr(option, TypeUtil.wrapSafely(option.getType())) {
                 protected void compile(MethodVisitor mv) {
                 }
             };
 
-            final BytecodeExpr switchValue = new BytecodeExpr(cond, ClassHelper.getWrapper(cond.getType())) {
+            final BytecodeExpr switchValue = new BytecodeExpr(cond, TypeUtil.wrapSafely(cond.getType())) {
                 protected void compile(MethodVisitor mv) {
                     mv.visitInsn(SWAP);
                 }

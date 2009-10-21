@@ -85,7 +85,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             unbox(fieldNode.getType(), mv);
         }
         mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
-        cast(ClassHelper.getWrapper(fieldNode.getType()), ClassHelper.getWrapper(getType()), mv);
+        cast(TypeUtil.wrapSafely(fieldNode.getType()), TypeUtil.wrapSafely(getType()), mv);
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {

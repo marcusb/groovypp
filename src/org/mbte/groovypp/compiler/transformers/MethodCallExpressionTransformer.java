@@ -45,7 +45,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         final ClassNode[] argTypes = compiler.exprToTypeArray(args);
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
-            type = ClassHelper.getWrapper(exp.getObjectExpression().getType());
+            type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
             foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
             if (foundMethod == null || !foundMethod.isStatic()) {
                 return dynamicOrError(exp, compiler, methodName, type, argTypes, "Can't find static method ");
@@ -119,7 +119,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Can't find method ");
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                type = ClassHelper.getWrapper(object.getType());
+                type = TypeUtil.wrapSafely(object.getType());
 
                 foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
 
@@ -134,7 +134,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private Expression transformSafe(MethodCallExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-        ClassNode type = ClassHelper.getWrapper(object.getType());
+        ClassNode type = TypeUtil.wrapSafely(object.getType());
 
         final BytecodeExpr call = (BytecodeExpr) compiler.transform(new MethodCallExpression(new BytecodeExpr(object, type) {
             protected void compile(MethodVisitor mv) {
@@ -143,7 +143,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
         }, exp.getMethod(), exp.getArguments()));
 
-        return new BytecodeExpr(exp, ClassHelper.getWrapper(call.getType())) {
+        return new BytecodeExpr(exp, TypeUtil.wrapSafely(call.getType())) {
             protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 Label nullLabel = new Label();

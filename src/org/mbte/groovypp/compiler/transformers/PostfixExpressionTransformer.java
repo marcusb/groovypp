@@ -38,7 +38,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         }
 
         if (ClassHelper.isPrimitiveType(vtype))
-            vtype = ClassHelper.getWrapper(vtype);
+            vtype = TypeUtil.wrapSafely(vtype);
 
         final MethodNode methodNode = compiler.findMethod(vtype, "next", ClassNode.EMPTY_ARRAY);
         if (methodNode == null) {
@@ -266,7 +266,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         }
 
         if (ClassHelper.isPrimitiveType(vtype))
-            vtype = ClassHelper.getWrapper(vtype);
+            vtype = TypeUtil.wrapSafely(vtype);
 
         final MethodNode methodNode = compiler.findMethod(vtype, "next", ClassNode.EMPTY_ARRAY);
         if (methodNode == null) {

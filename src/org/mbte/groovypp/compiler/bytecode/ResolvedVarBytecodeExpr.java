@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
@@ -27,7 +28,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
         if (ve.isDynamicTyped()) {
-            vtype = ClassHelper.getWrapper(right.getType());
+            vtype = TypeUtil.wrapSafely(right.getType());
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {
             vtype = ve.getType();
@@ -37,7 +38,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             protected void compile(MethodVisitor mv) {
                 right.visit(mv);
                 box(right.getType(), mv);
-                cast(ClassHelper.getWrapper(right.getType()), ClassHelper.getWrapper(getType()), mv);
+                cast(TypeUtil.wrapSafely(right.getType()), TypeUtil.wrapSafely(getType()), mv);
                 unbox(getType(), mv);
                 storeVar(var, mv);
                 load(var, mv);
