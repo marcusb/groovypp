@@ -4,21 +4,12 @@ import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.mbte.groovypp.compiler.ClosureMethodNode;
-import org.mbte.groovypp.compiler.CompilerTransformer;
-import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression> {
@@ -36,7 +27,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         Object method = exp.getMethod();
-        String methodName = null;
+        String methodName;
         if (!(method instanceof ConstantExpression) || !(((ConstantExpression) method).getValue() instanceof String)) {
             if (compiler.policy == TypePolicy.STATIC) {
                 compiler.addError("Non-static method name", exp);
@@ -50,12 +41,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
         BytecodeExpr object;
         ClassNode type;
-        MethodNode foundMethod = null;
+        MethodNode foundMethod;
         final ClassNode[] argTypes = compiler.exprToTypeArray(args);
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
-            object = null;
-
             type = ClassHelper.getWrapper(exp.getObjectExpression().getType());
             foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
             if (foundMethod == null || !foundMethod.isStatic()) {
@@ -192,83 +181,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         return sb.toString();
     }
 
-    public static void makeOneMethodClass(final ClassNode oarg, ClassNode tp, List am) {
-        if (tp.isInterface()) {
-            final ClassNode[] oifaces = oarg.getInterfaces();
-            ClassNode[] ifaces = new ClassNode[oifaces.length + 1];
-            System.arraycopy(oifaces, 0, ifaces, 1, oifaces.length);
-            ifaces[0] = tp;
-            oarg.setInterfaces(ifaces);
-        } else {
-            final ClassNode[] oifaces = oarg.getInterfaces();
-            ClassNode[] ifaces = new ClassNode[oifaces.length];
-            for (int i = 0, k = 0; i != oifaces.length; i++) {
-                if (oifaces[i] != TypeUtil.TCLOSURE)
-                    ifaces[k++] = oifaces[i];
-            }
-            ifaces[oifaces.length - 1] = TypeUtil.OWNER_AWARE_SETTER;
-            oarg.setInterfaces(ifaces);
-            oarg.setSuperClass(tp);
-            oarg.addProperty("owner", ACC_PUBLIC, ClassHelper.OBJECT_TYPE, null, null, null);
-        }
-
-        if (am.size() == 1) {
-            final MethodNode missed = (MethodNode) am.get(0);
-            oarg.addMethod(
-                    missed.getName(),
-                    ACC_PUBLIC,
-                    missed.getReturnType(),
-                    missed.getParameters(),
-                    ClassNode.EMPTY_ARRAY,
-                    new BytecodeSequence(
-                            new BytecodeInstruction() {
-                                public void visit(MethodVisitor mv) {
-                                    mv.visitVarInsn(ALOAD, 0);
-                                    Parameter pp[] = missed.getParameters();
-                                    for (int i = 0, k = 1; i != pp.length; ++i) {
-                                        final ClassNode type = pp[i].getType();
-                                        if (ClassHelper.isPrimitiveType(type)) {
-                                            if (type == ClassHelper.long_TYPE) {
-                                                mv.visitVarInsn(LLOAD, k++);
-                                                k++;
-                                            } else if (type == ClassHelper.double_TYPE) {
-                                                mv.visitVarInsn(DLOAD, k++);
-                                                k++;
-                                            } else if (type == ClassHelper.float_TYPE) {
-                                                mv.visitVarInsn(FLOAD, k++);
-                                            } else {
-                                                mv.visitVarInsn(ILOAD, k++);
-                                            }
-                                        } else {
-                                            mv.visitVarInsn(ALOAD, k++);
-                                        }
-                                    }
-                                    mv.visitMethodInsn(
-                                            INVOKEVIRTUAL,
-                                            BytecodeHelper.getClassInternalName(oarg),
-                                            "doCall",
-                                            BytecodeHelper.getMethodDescriptor(ClassHelper.OBJECT_TYPE, pp)
-                                    );
-
-                                    if (missed.getReturnType() != ClassHelper.VOID_TYPE) {
-                                        if (ClassHelper.isPrimitiveType(missed.getReturnType())) {
-                                            String returnString = "(Ljava/lang/Object;)" + BytecodeHelper.getTypeDescription(missed.getReturnType());
-                                            mv.visitMethodInsn(
-                                                    Opcodes.INVOKESTATIC,
-                                                    BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName()),
-                                                    missed.getReturnType().getName() + "Unbox",
-                                                    returnString);
-                                        } else {
-                                            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(missed.getReturnType()));
-                                        }
-                                    }
-                                    BytecodeExpr.doReturn(mv, missed.getReturnType());
-                                }
-                            }
-                    ));
-        }
-    }
-
     private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr methodExpr = (BytecodeExpr) compiler.transform(exp.getMethod());
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
@@ -308,27 +220,13 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 Parameter p[] = foundMethod.getParameters();
                 if (p.length == argTypes.length) {
                     ClassNode argType = p[p.length - 1].getType();
-                    if (argType.isInterface() || (argType.getModifiers() & ACC_ABSTRACT) != 0) {
-                        List am = argType.getAbstractMethods();
 
-                        if (am == null) {
-                            am = Collections.EMPTY_LIST;
-                        }
-
-                        ArrayList<MethodNode> props = null;
-                        for (Iterator it = am.iterator(); it.hasNext();) {
-                            MethodNode mn = (MethodNode) it.next();
-                            if (likeGetter(mn) || likeSetter(mn)) {
-                                it.remove();
-                                if (props == null)
-                                    props = new ArrayList<MethodNode>();
-                                props.add(mn);
-                            }
-                        }
-
-                        if (am.size() <= 1) {
-                            makeOneMethodClass(oarg, argType, am);
-                        }
+                    List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                    MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                    if (one == null || doCall == null) {
+                        foundMethod = null;
+                    } else {
+                        ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
                     }
                 }
             }
@@ -336,19 +234,5 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         return foundMethod;
-    }
-
-    static boolean likeGetter(MethodNode method) {
-        return method.getName().length() > 3
-                && method.getName().startsWith("get")
-                && ClassHelper.VOID_TYPE != method.getReturnType()
-                && method.getParameters().length == 0;
-    }
-
-    static boolean likeSetter(MethodNode method) {
-        return method.getName().length() > 3
-                && method.getName().startsWith("set")
-                && ClassHelper.VOID_TYPE == method.getReturnType()
-                && method.getParameters().length == 1;
     }
 }

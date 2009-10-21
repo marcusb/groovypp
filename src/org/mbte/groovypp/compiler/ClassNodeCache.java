@@ -6,19 +6,24 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.reflection.ReflectionCache;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
 
+import groovy.util.FilterClosure;
+
 public class ClassNodeCache {
+
     public static class ClassNodeInfo {
         Map<String, Object> methods;
         Map<String, Object> fields;
         public FastArray constructors;
+
+        List<MethodNode> isOneMethodAbstract;
     }
 
     public static class CompileUnitInfo extends HashMap<ClassNode, ClassNodeInfo> {
@@ -33,6 +38,7 @@ public class ClassNodeCache {
     static {
         initDgm(DefaultGroovyMethods.class);
         initDgm(DefaultGroovyPPMethods.class);
+        initDgm(FilterClosure.class);
     }
 
     static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {

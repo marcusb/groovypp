@@ -7,6 +7,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.ClosureUtil;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
@@ -31,13 +32,22 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     Parameter p [] = constructor.getParameters();
                     if (p.length == argTypes.length) {
                         ClassNode argType = p[p.length - 1].getType();
+                        List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+
+                        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                        if (one == null || doCall == null) {
+                            constructor = null;
+                        } else {
+                            ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+                        }
+
                         if (argType.isInterface() || (argType.getModifiers() & ACC_ABSTRACT) != 0) {
                             final List am = argType.getAbstractMethods();
 
                             ArrayList<MethodNode> props = null;
                             for (Iterator it = am.iterator(); it.hasNext(); ) {
                                 MethodNode mn = (MethodNode) it.next();
-                                if (MethodCallExpressionTransformer.likeGetter(mn) || MethodCallExpressionTransformer.likeSetter(mn)) {
+                                if (ClosureUtil.likeGetter(mn) || ClosureUtil.likeSetter(mn)) {
                                     it.remove();
                                     if (props == null)
                                         props = new ArrayList<MethodNode>();
@@ -46,17 +56,17 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             }
 
                             if (am.size() <= 1) {
-                                MethodCallExpressionTransformer.makeOneMethodClass(oarg, argType, am);
+                                ClosureUtil.makeOneMethodClass(oarg, argType, am, doCall);
 
                                 if (props != null) {
                                    for (MethodNode mn : props) {
-                                       if (MethodCallExpressionTransformer.likeGetter(mn)) {
+                                       if (ClosureUtil.likeGetter(mn)) {
                                            String pname = mn.getName().substring(3);
                                            pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                                            oarg.addProperty(pname, ACC_PUBLIC, mn.getReturnType(), null, null, null);
                                        }
 
-                                       if (MethodCallExpressionTransformer.likeSetter(mn)) {
+                                       if (ClosureUtil.likeSetter(mn)) {
                                            String pname = mn.getName().substring(3);
                                            pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                                            oarg.addProperty(pname, ACC_PUBLIC, mn.getParameters()[0].getType(), null, null, null);

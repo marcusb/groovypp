@@ -294,4 +294,8 @@ public class TypeUtil {
         }
         return null;
     }
+
+    public static ClassNode wrapSafe (ClassNode type) {
+        return ClassHelper.isPrimitiveType(type) ? ClassHelper.getWrapper(type) : type;
+    }
 }

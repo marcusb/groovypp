@@ -84,7 +84,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void box(ClassNode type, MethodVisitor mv) {
+    public static void box(ClassNode type, MethodVisitor mv) {
         if (type.isPrimaryClassNode()) return;
         Class type1 = type.getTypeClass();
         if (ReflectionCache.getCachedClass(type1).isPrimitive && type1 != void.class) {
@@ -96,7 +96,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     /**
      * Generates the bytecode to unbox the current value on the stack
      */
-    public void unbox(Class type, MethodVisitor mv) {
+    public static void unbox(Class type, MethodVisitor mv) {
         if (type.isPrimitive() && type != Void.TYPE) {
             String returnString = "(Ljava/lang/Object;)" + getTypeDescription(type);
             mv.visitMethodInsn(
@@ -107,7 +107,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void unbox(ClassNode type, MethodVisitor mv) {
+    public static void unbox(ClassNode type, MethodVisitor mv) {
         if (type.isPrimaryClassNode()) return;
         unbox(type.getTypeClass(), mv);
     }
@@ -801,7 +801,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         ret.append(end);
     }
 
-    public void cast(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    public static void cast(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (isPrimitiveType(expr) || isPrimitiveType(type)) {
             throw new RuntimeException("Can't convert " + expr.getName() + " to " + type.getName());
         }
@@ -842,7 +842,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castCollection(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castCollection(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type.isArray()) {
             if (!ClassHelper.isPrimitiveType(type.getComponentType())) {
                 mv.visitInsn(DUP);
@@ -863,7 +863,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         throw new IllegalStateException("Impossible cast");
     }
 
-    private void castString(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castString(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (TypeUtil.isNumericalType(type)) {
             mv.visitInsn(ICONST_0);
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
@@ -885,7 +885,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             throw new IllegalStateException("Impossible cast");
     }
 
-    private void castIntegral(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castIntegral(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             unbox(getUnwrapper(expr), mv);
             box(int_TYPE, mv);
@@ -940,7 +940,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castLong(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castLong(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             unbox(getUnwrapper(expr), mv);
             mv.visitInsn(L2I);
@@ -992,7 +992,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castDouble(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castDouble(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             unbox(getUnwrapper(expr), mv);
             mv.visitInsn(D2I);
@@ -1047,7 +1047,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castFloat(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castFloat(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             unbox(getUnwrapper(expr), mv);
             mv.visitInsn(F2I);
@@ -1102,7 +1102,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castBigDecimal(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castBigDecimal(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             box(int_TYPE, mv);
@@ -1140,7 +1140,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private void castBigInteger(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castBigInteger(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type == Integer_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I");
             box(int_TYPE, mv);

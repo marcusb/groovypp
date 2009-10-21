@@ -1,8 +1,10 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
@@ -108,54 +110,52 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
     }
 
     void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams) {
+        final ClassNode superClass = newType.getSuperClass();
+
+        ArgumentListExpression superCallArgs = new ArgumentListExpression();
+        if (superClass == ClassHelper.CLOSURE_TYPE) {
+            superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+        }
+        ConstructorCallExpression superCall = new ConstructorCallExpression(ClassNode.SUPER, superCallArgs);
+
+        BytecodeSequence fieldInit = new BytecodeSequence(new BytecodeInstruction() {
+            public void visit(MethodVisitor mv) {
+                int k = 1, i = 0;
+                if (superClass == ClassHelper.CLOSURE_TYPE) {
+                    i++;
+                    k++;
+                }
+                for (; i != constrParams.length; i++) {
+                    mv.visitVarInsn(ALOAD, 0);
+
+                    final ClassNode type = constrParams[i].getType();
+                    if (ClassHelper.isPrimitiveType(type)) {
+                        if (type == ClassHelper.long_TYPE) {
+                            mv.visitVarInsn(LLOAD, k++);
+                            k++;
+                        } else if (type == ClassHelper.double_TYPE) {
+                            mv.visitVarInsn(DLOAD, k++);
+                            k++;
+                        } else if (type == ClassHelper.float_TYPE) {
+                            mv.visitVarInsn(FLOAD, k++);
+                        } else {
+                            mv.visitVarInsn(ILOAD, k++);
+                        }
+                    } else {
+                        mv.visitVarInsn(ALOAD, k++);
+                    }
+                    mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
+                }
+                mv.visitInsn(RETURN);
+            }
+        });
+
+
         ConstructorNode cn = new ConstructorNode(
                     ACC_PUBLIC,
                     constrParams,
                     ClassNode.EMPTY_ARRAY,
-                    new BytecodeSequence(new BytecodeInstruction(){
-                        public void visit(MethodVisitor mv) {
-                            mv.visitVarInsn(ALOAD, 0);
-
-                            int k = 1, i = 0;
-                            ClassNode superClass = newType.getSuperClass();
-                            if (superClass == ClassHelper.CLOSURE_TYPE) {
-                                mv.visitVarInsn(ALOAD, 1);
-                                mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(superClass), "<init>", "(Ljava/lang/Object;)V");
-                                k++;
-                                i++;
-                            }
-                            else {
-                                mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(superClass), "<init>", "()V");
-                            }
-
-                            for ( ; i != constrParams.length; i++) {
-                                mv.visitVarInsn(ALOAD, 0);
-
-                                final ClassNode type = constrParams[i].getType();
-                                if (ClassHelper.isPrimitiveType(type)) {
-                                    if (type == ClassHelper.long_TYPE) {
-                                        mv.visitVarInsn(LLOAD, k++);
-                                        k++;
-                                    }
-                                    else if (type == ClassHelper.double_TYPE) {
-                                        mv.visitVarInsn(DLOAD, k++);
-                                        k++;
-                                    }
-                                    else if (type == ClassHelper.float_TYPE) {
-                                        mv.visitVarInsn(FLOAD, k++);
-                                    }
-                                    else {
-                                        mv.visitVarInsn(ILOAD, k++);
-                                    }
-                                }
-                                else {
-                                    mv.visitVarInsn(ALOAD, k++);
-                                }
-                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
-                            }
-                            mv.visitInsn(RETURN);
-                        }
-                }));
+                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit}, new VariableScope()));
         newType.addConstructor(cn);
     }
 }

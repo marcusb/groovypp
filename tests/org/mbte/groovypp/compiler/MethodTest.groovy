@@ -69,7 +69,7 @@ m ()
   }
 
   void testDgm() {
-    def res = shell.evaluate("""
+    shell.evaluate("""
 @Typed
 def m () {
   [1, 2, 3, 4, 5, 6].each { 
@@ -94,7 +94,7 @@ int method(List l1, List l2, I i) {
 @Typed
 int test () {
    method([1, 2], [3, 4, 5]) {
-      List l1, List l2 ->
+      l1, l2 ->
        l1.size () + l2.size ()
    }
 }
