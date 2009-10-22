@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
@@ -12,7 +13,7 @@ import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import java.util.*;
 
 public class TypeUtil {
-    private static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
+    public static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
     public static final String DTT_INTERNAL = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
     public static final ClassNode LINKED_HASH_MAP_TYPE = make(LinkedHashMap.class);
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
@@ -56,7 +57,16 @@ public class TypeUtil {
             return true;
         }
 
-        return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);
+        if(isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom))
+            return true;
+
+//        if (classToTransformFrom.implementsInterface(TypeUtil.TCLOSURE)) {
+//            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(classToTransformTo);
+//            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, classToTransformFrom);
+//            return one != null && doCall != null;
+//        }
+//
+        return false;
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
@@ -72,22 +82,23 @@ public class TypeUtil {
     }
 
     public static boolean isNumericalType(ClassNode paramType) {
-        return paramType == char_TYPE
-                || paramType == byte_TYPE
+        return paramType == byte_TYPE
                 || paramType == short_TYPE
                 || paramType == int_TYPE
                 || paramType == float_TYPE
                 || paramType == long_TYPE
                 || paramType == double_TYPE
+                || paramType == char_TYPE
                 || paramType.equals(Byte_TYPE)
-                || paramType.equals(Character_TYPE)
                 || paramType.equals(Short_TYPE)
                 || paramType.equals(Integer_TYPE)
                 || paramType.equals(Float_TYPE)
                 || paramType.equals(Long_TYPE)
                 || paramType.equals(Double_TYPE)
                 || paramType.equals(BigDecimal_TYPE)
-                || paramType.equals(BigInteger_TYPE);
+                || paramType.equals(BigInteger_TYPE)
+                || paramType.equals(Character_TYPE)
+                || paramType.equals(Number_TYPE);
     }
 
     public static ClassNode commonType(ClassNode type1, ClassNode type2) {

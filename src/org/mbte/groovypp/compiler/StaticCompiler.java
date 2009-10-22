@@ -388,7 +388,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                     mv.visitInsn(SWAP);
                 }
             };
-            transformLogical(new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue)), codeLabels[i], true).visit(mv);
+            MethodCallExpression exp = new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue));
+            exp.setSourcePosition(caseValue);
+            transformLogical(exp, codeLabels[i], true).visit(mv);
         }
 
         mv.visitJumpInsn(GOTO, defaultLabel);

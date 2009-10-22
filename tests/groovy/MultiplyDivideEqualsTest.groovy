@@ -25,7 +25,7 @@ class MultiplyDivideEqualsTest extends GroovyShellTestCase {
     void testCharacterMultiplyEquals() {
       shell.evaluate  """
 
-        @Typed
+        @Typed(debug=true)
         def u() {
           Character x = 2
           Character y = 3
@@ -102,7 +102,7 @@ class MultiplyDivideEqualsTest extends GroovyShellTestCase {
     void testCharacterDivideEquals() {
         shell.evaluate  """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             Character x = 18
             Character y = 6

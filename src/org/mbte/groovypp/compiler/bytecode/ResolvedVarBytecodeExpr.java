@@ -25,7 +25,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         load(var, mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
         if (ve.isDynamicTyped()) {
             vtype = TypeUtil.wrapSafely(right.getType());
@@ -33,13 +33,13 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         } else {
             vtype = ve.getType();
         }
+        right = compiler.cast(right, vtype);
+
+        final BytecodeExpr finalRight = right;
 
         return new BytecodeExpr(parent, vtype) {
             protected void compile(MethodVisitor mv) {
-                right.visit(mv);
-                box(right.getType(), mv);
-                cast(TypeUtil.wrapSafely(right.getType()), TypeUtil.wrapSafely(getType()), mv);
-                unbox(getType(), mv);
+                finalRight.visit(mv);
                 storeVar(var, mv);
                 load(var, mv);
             }

@@ -2,14 +2,20 @@ package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.ClosureUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+
+import java.util.List;
 
 /**
  * Cast processing rules:
@@ -22,7 +28,40 @@ import org.objectweb.asm.MethodVisitor;
 public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     public BytecodeExpr transform(final CastExpression exp, CompilerTransformer compiler) {
 
+        if (exp.getExpression() instanceof ListExpression) {
+            if (exp.getType().isArray()) {
+                ClassNode componentType = exp.getType().getComponentType();
+                ListExpression le = (ListExpression) exp.getExpression();
+
+                List<Expression> list = le.getExpressions();
+                int count = list.size();
+                for (int i = 0; i != count; ++i) {
+                    Expression el = list.get(i);
+                    CastExpression castExpression = new CastExpression(componentType, el);
+                    castExpression.setSourcePosition(el);
+                    list.set(i, castExpression);
+                }
+            }
+        }
+
         final BytecodeExpr expr = (BytecodeExpr) compiler.transform(exp.getExpression());
+
+        if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
+            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(exp.getType());
+            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, expr.getType());
+            if (one != null && doCall != null) {
+                ClosureUtil.makeOneMethodClass(expr.getType(), exp.getType(), one, doCall);
+
+                if (exp.getExpression() instanceof VariableExpression) {
+                    VariableExpression ve = (VariableExpression) exp.getExpression();
+                    if (ve.isDynamicTyped()) {
+                        compiler.getLocalVarInferenceTypes().addWeak(ve, expr.getType());
+                    }
+                }
+
+                return expr;
+            }
+        }
 
         if (exp.isCoerce()) {
             // a)

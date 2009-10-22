@@ -15,7 +15,6 @@ import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.EmptyVisitor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -381,7 +380,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     /**
      * load the constant on the operand stack. primitives auto-boxed.
      */
-    void loadConstant(Object value, EmptyVisitor mv) {
+    void loadConstant(Object value, MethodVisitor mv) {
         if (value == null) {
             mv.visitInsn(Opcodes.ACONST_NULL);
         } else if (value instanceof String) {
@@ -827,6 +826,8 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             castBigInteger(expr, type, mv);
         } else if (expr == STRING_TYPE) {
             castString(expr, type, mv);
+        } else if (expr.equals(TypeUtil.Number_TYPE)) {
+            castNumber(expr, type, mv);
         } else if (expr.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
             castCollection(expr, type, mv);
         } else {
@@ -842,6 +843,53 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                     }
                 }
             }
+        }
+    }
+
+    private static void castNumber(ClassNode expr, ClassNode type, MethodVisitor mv) {
+        if (type == Integer_TYPE) {
+            unbox(int_TYPE, mv);
+            box(int_TYPE, mv);
+        } else if (type == Boolean_TYPE) {
+            unbox(int_TYPE, mv);
+            box(boolean_TYPE, mv);
+        } else if (type == Byte_TYPE) {
+            unbox(int_TYPE, mv);
+            box(byte_TYPE, mv);
+        } else if (type == Short_TYPE) {
+            unbox(int_TYPE, mv);
+            box(short_TYPE, mv);
+        } else if (type == Character_TYPE) {
+            unbox(int_TYPE, mv);
+            box(char_TYPE, mv);
+        } else if (type == Long_TYPE) {
+            unbox(long_TYPE, mv);
+            box(long_TYPE, mv);
+        } else if (type == Float_TYPE) {
+            unbox(float_TYPE, mv);
+            box(float_TYPE, mv);
+        } else if (type == Double_TYPE) {
+            unbox(double_TYPE, mv);
+            box(double_TYPE, mv);
+        } else if (type == BigDecimal_TYPE) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
+            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
+            mv.visitInsn(DUP_X1);
+            mv.visitInsn(SWAP);
+            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+        } else if (type == BigInteger_TYPE) {
+            if (expr.equals(Character_TYPE)) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
+                box(int_TYPE, mv);
+            }
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
+            mv.visitTypeInsn(NEW, "java/math/BigInteger");
+            mv.visitInsn(DUP_X1);
+            mv.visitInsn(SWAP);
+            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
+        } else {
+            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
         }
     }
 

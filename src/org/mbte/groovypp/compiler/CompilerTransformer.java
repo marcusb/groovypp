@@ -355,8 +355,16 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         if (TypeUtil.isDirectlyAssignableFrom(type, expr.getType()))
             return expr;
 
-        if (TypeUtil.isAssignableFrom(type, expr.getType()))
+        if (TypeUtil.isAssignableFrom(type, expr.getType())) {
             return new CastExpressionTransformer.Cast(type, expr);
+        }
+
+        if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
+            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
+            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, expr.getType());
+            ClosureUtil.makeOneMethodClass(expr.getType(), type, one, doCall);
+            return new CastExpressionTransformer.Cast(type, expr);
+        }
 
         addError("Can not convert " + expr.getType().getName() + " to " + type.getName(), expr);
         return null;

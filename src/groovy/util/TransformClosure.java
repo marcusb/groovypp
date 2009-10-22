@@ -2,8 +2,9 @@ package groovy.util;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 
-import java.util.Iterator;
-import java.util.Collection;
+import java.util.*;
+
+import groovy.lang.Closure;
 
 public abstract class TransformClosure<T,R> extends DefaultGroovyMethodsSupport {
     public abstract R transform(T element);
@@ -42,5 +43,19 @@ public abstract class TransformClosure<T,R> extends DefaultGroovyMethodsSupport 
                 self.remove();
             }
         };
+    }
+
+    public static <T,K> Map<K, List<T>> groupBy(Collection<T> self, TransformClosure<T,K> transform) {
+        Map<K, List<T>> answer = new LinkedHashMap<K, List<T>>();
+        for (T element : self) {
+            K value = transform.transform(element);
+            List<T> list = answer.get(value);
+            if (list == null) {
+                list = new LinkedList<T> ();
+                answer.put(value, list);
+            }
+            list.add(element);
+        }
+        return answer;
     }
 }

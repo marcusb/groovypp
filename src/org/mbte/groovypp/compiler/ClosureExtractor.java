@@ -2,9 +2,7 @@ package org.mbte.groovypp.compiler;
 
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
@@ -60,6 +58,13 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
             currentClosureName = oldCCN;
 
             return res;
+        }
+
+        if (exp instanceof CastExpression) {
+            CastExpression cast = (CastExpression) super.transform(exp);
+            if (cast.getExpression() instanceof MapExpression && !cast.getType().implementsInterface(ClassHelper.MAP_TYPE)) {
+            }
+            return cast;
         }
 
         return super.transform(exp);

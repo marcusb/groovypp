@@ -49,11 +49,6 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 return compiler.transform(pe);
             } else if (exp.getAccessedVariable() != null) {
                 // it is property
-//                final PropertyExpression pe;
-//                if (compiler.methodNode.isStatic())
-//                    pe = new PropertyExpression(new VariableExpression("$self"), exp.getName());
-//                else
-//                    pe = new PropertyExpression(VariableExpression.THIS_EXPRESSION, exp.getName());
                 final PropertyExpression pe = new PropertyExpression(VariableExpression.THIS_EXPRESSION, exp.getName());
                 pe.setImplicitThis(true);
                 pe.setSourcePosition(exp);

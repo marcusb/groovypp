@@ -46,7 +46,7 @@ public class GenericsTest extends GroovyShellTestCase {
             public T get() {t}
         }
 
-        @Typed(debug=true)
+        @Typed
         def u () {
           def box = new Box<Integer>();
           box.set(1)

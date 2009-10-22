@@ -18,16 +18,15 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         final VariableExpression ve = (VariableExpression) exp.getLeftExpression();
         if (ve.getOriginType() != ve.getType())
             ve.setType(ve.getOriginType());
-        final BytecodeExpr right0 = (BytecodeExpr) compiler.transform(exp.getRightExpression());
-        final BytecodeExpr right;
-        if (right0.getType() != TypeUtil.NULL_TYPE || !ClassHelper.isPrimitiveType(ve.getType())) {
-            right = compiler.cast(right0, ve.getType());
-        } else {
+
+        BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+        if (right.getType() == TypeUtil.NULL_TYPE && ClassHelper.isPrimitiveType(ve.getType())) {
             final ConstantExpression cnst = new ConstantExpression(0);
             cnst.setSourcePosition(exp);
             right = (BytecodeExpr) compiler.transform(cnst);
         }
         if (!ve.isDynamicTyped()) {
+            right = compiler.cast(right, ve.getType());
             return new Static(exp, ve, right, compiler);
         } else {
             // let's try local type inference

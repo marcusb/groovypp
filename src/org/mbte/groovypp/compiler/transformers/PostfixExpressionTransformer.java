@@ -249,7 +249,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         if (vtype == null)
             vtype = var.getType();
 
-        if (TypeUtil.isNumericalType(vtype)) {
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
             return new BytecodeExpr(exp, vtype) {
                 protected void compile(MethodVisitor mv) {
                     final ClassNode primType = ClassHelper.getUnwrapper(getType());
