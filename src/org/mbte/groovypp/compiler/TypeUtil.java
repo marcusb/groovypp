@@ -258,7 +258,7 @@ public class TypeUtil {
         return result;
     }
 
-    private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
+    public static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
         if (bDerived.redirect().equals(aSuper)) return type;
         ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(true);
         if (derivedSuperClass != null) {
@@ -293,6 +293,29 @@ public class TypeUtil {
             if (typeParameters[i].equals(name)) return typeArgs[i];
         }
         return null;
+    }
+
+    public static boolean isExtends(GenericsType type) {
+        return type.isWildcard() && type.getUpperBounds() != null;
+    }
+
+    public static boolean isSuper(GenericsType type) {
+        return type.isWildcard() && type.getLowerBound() != null;
+    }
+
+    public static boolean equal(ClassNode type1, ClassNode type2) {
+        if (!type1.redirect().equals(type2.redirect())) return false;
+        GenericsType[] args1 = type1.getGenericsTypes();
+        GenericsType[] args2 = type2.getGenericsTypes();
+        for (int i = 0; i < args2.length; i++) {
+            if (args1[i].isWildcard()) {
+                if (!args2[i].isWildcard()) return false;
+                if (isExtends(args1[i]) && !isExtends(args2[i])) return false;
+                if (isSuper(args1[i]) && !isSuper(args2[i])) return false;
+            } else if (args2[i].isWildcard()) return false;
+            if (!equal(args1[i].getType(), args2[i].getType())) return false;
+        }
+        return true;
     }
 
     public static ClassNode wrapSafely(ClassNode type) {
