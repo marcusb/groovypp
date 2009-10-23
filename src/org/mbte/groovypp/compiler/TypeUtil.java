@@ -26,6 +26,7 @@ public class TypeUtil {
     public static final ClassNode TYPED = make(Typed.class);
     public static final ClassNode TRAIT = make(Trait.class);
     public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);
+    public static final ClassNode OBJECT_ARRAY = OBJECT_TYPE.makeArray();
 
     public static class Null {
     }
@@ -70,7 +71,11 @@ public class TypeUtil {
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
-        return from == null || from == TypeUtil.NULL_TYPE || from.isDerivedFrom(to) || to.isInterface() && implementsInterface(to, from);
+        return from == null
+                || from == TypeUtil.NULL_TYPE
+                || from.isDerivedFrom(to)
+                || to.isInterface() && implementsInterface(to, from)
+                || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray();
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
