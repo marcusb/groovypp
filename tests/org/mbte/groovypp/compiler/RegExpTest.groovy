@@ -114,4 +114,19 @@ public class RegExpTest extends GroovyShellTestCase {
     """
   }
 
+  void testBitwiseNegateGStringSyntax() {
+    shell.evaluate """
+      @Typed
+      def u () {
+          def AREA_CODE = /\\d{3}/
+          def EXCHANGE = /\\d{3}/
+          def STATION_NUMBER = /\\d{4}/
+          def phone = /(\$AREA_CODE)-(\$EXCHANGE)-(\$STATION_NUMBER)/
+
+          def compiledPhonePattern = ~phone
+      }
+      u()
+    """
+  }
+
 }

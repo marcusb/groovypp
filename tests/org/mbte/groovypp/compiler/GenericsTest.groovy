@@ -1,5 +1,8 @@
 package org.mbte.groovypp.compiler
 
+import groovy.CompileTestSupport
+
+
 public class GenericsTest extends GroovyShellTestCase {
     void testMe() {
         shell.evaluate """
@@ -97,4 +100,135 @@ public class GenericsTest extends GroovyShellTestCase {
         u()
       """
     }
+
+   void testWildcardParameter() {
+     shell.evaluate """
+        @Typed
+        class Pair<X, Y> {}
+
+        @Typed
+        def foo (Pair<?,?> param) {
+          return "foo called";
+        }
+
+        @Typed
+        def u () {
+          assert "foo called" == foo(new Pair<Integer, String>());
+        }
+
+        u()
+      """
+    }
+
+    void testCast() {
+      shell.evaluate """
+
+        @Typed
+        def foo (Object param) {
+          List a = (List)param;
+          assert ["a", "b"] == a;
+
+          List<Object> b = (List<Object>)param;
+          assert ["a", "b"] == b;
+
+          List<String> c = (List<String>)param;
+          assert ["a", "b"] == c;  
+         }
+
+         @Typed
+         def u () {
+           def par = new ArrayList<String>()
+           par << "a";
+           par << "b";
+           foo(par);
+         }
+
+         u()
+       """
+     }
+
+      void testGenericsArray() {
+        shell.evaluate """
+          @Typed
+          def u() {
+            List<String>[] listArr = new List<String>[3]
+            Object[] objArr = listArr
+            objArr[0] = new ArrayList<Date>()
+          }
+          u()
+         """
+       }
+
+        void testRawType() {
+          shell.evaluate """
+            @Typed
+            def u() {
+              assert (new ArrayList<String>()).class == ArrayList
+            }
+            u()
+           """
+         }
+
+  void testParameterBounds() {
+    shell.evaluate """
+      @Typed
+      class Box<A extends Comparable<A> & Cloneable> {
+        A a;
+        Box(A a) {
+          this.a = a;
+        }
+
+        int foo(A param) {
+           assert a == a.clone()
+
+           a.compareTo(param)
+        }
+      }
+                
+      @Typed
+      def u() {
+        def box = new Box<Date>(new Date());
+        assert 1 == box.foo(new Date(10000));
+      }
+      u()
+     """
+   }
+
+    void testBoundsOfAGenericType() {
+    shell.evaluate """
+      @Typed
+      class Box<A> {
+        A u;
+        A v;
+        public <U extends A, V extends A> void foo(U u, V v) {
+          this.u = u;
+          this.v = v;
+        }
+
+      }
+
+      @Typed
+      def u() {
+        def box = new Box<Number>()
+        box.foo(10, 15L);
+        assert Integer == box.u.class;
+        assert Long == box.v.class;
+      }
+      u()
+     """
+   }
+
+  void testSuperGenerics() {
+    CompileTestSupport.shouldCompile """
+      @Typed
+      class Box<A extends Box<A>> {
+
+      }
+
+      @Typed
+      def u() {
+        def box = new Box<Box<Number>>()
+      }
+   """
+ }
 }
