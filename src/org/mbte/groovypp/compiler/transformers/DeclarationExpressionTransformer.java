@@ -1,10 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -15,9 +12,16 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         if (!(exp.getLeftExpression() instanceof VariableExpression)) {
             compiler.addError("Variable name expected", exp);
         }
+
         final VariableExpression ve = (VariableExpression) exp.getLeftExpression();
         if (ve.getOriginType() != ve.getType())
             ve.setType(ve.getOriginType());
+
+        if (!ve.isDynamicTyped()) {
+            CastExpression cast = new CastExpression(ve.getType(), exp.getRightExpression());
+            cast.setSourcePosition(exp.getRightExpression());
+            exp.setRightExpression(cast);
+        }
 
         BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
         if (right.getType() == TypeUtil.NULL_TYPE && ClassHelper.isPrimitiveType(ve.getType())) {
@@ -25,6 +29,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             cnst.setSourcePosition(exp);
             right = (BytecodeExpr) compiler.transform(cnst);
         }
+
         if (!ve.isDynamicTyped()) {
             right = compiler.cast(right, ve.getType());
             return new Static(exp, ve, right, compiler);

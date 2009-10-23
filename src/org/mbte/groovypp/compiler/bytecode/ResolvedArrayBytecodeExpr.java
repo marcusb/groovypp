@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.MethodVisitor;
 
@@ -20,7 +21,11 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
     protected void compile(MethodVisitor mv) {
         array.visit(mv);
         index.visit(mv);
-        loadArray(getType(), mv);
+        if (ClassHelper.isPrimitiveType(getType()))
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "("+BytecodeHelper.getTypeDescription(array.getType()) + "I)" + BytecodeHelper.getTypeDescription(getType()));
+        else {
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "([Ljava/lang/Object;I)Ljava/lang/Object;");
+        }
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right0, CompilerTransformer compiler) {
@@ -31,7 +36,10 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
                 index.visit(mv);
                 right.visit(mv);
                 dup_x2(getType(), mv);
-                storeArray(getType(), mv);
+                if (ClassHelper.isPrimitiveType(getType()))
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "putAt", "("+BytecodeHelper.getTypeDescription(array.getType()) + "I" + BytecodeHelper.getTypeDescription(getType())+ ")V");
+                else
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "putAt", "([Ljava/lang/Object;ILjava/lang/Object;)V");
             }
         };
     }
@@ -53,12 +61,21 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
                 array.visit(mv);
                 index.visit(mv);
                 mv.visitInsn(DUP2);
-                loadArray(getType(), mv);
+
+                if (ClassHelper.isPrimitiveType(getType()))
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "("+BytecodeHelper.getTypeDescription(array.getType()) + "I)" + BytecodeHelper.getTypeDescription(getType()));
+                else {
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "([Ljava/lang/Object;I)Ljava/lang/Object;");
+                }
 
                 transformedOp.visit(mv);
 
                 dup_x2(getType(), mv);
-                storeArray(getType(), mv);
+
+                if (ClassHelper.isPrimitiveType(getType()))
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "putAt", "("+BytecodeHelper.getTypeDescription(array.getType()) + "I" + BytecodeHelper.getTypeDescription(getType())+ ")V");
+                else
+                    mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "putAt", "([Ljava/lang/Object;ILjava/lang/Object;)V");
             }
         };
     }

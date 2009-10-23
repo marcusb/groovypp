@@ -9,6 +9,7 @@ import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
+import org.mbte.groovypp.runtime.ArraysMethods;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.ref.SoftReference;
@@ -38,13 +39,14 @@ public class ClassNodeCache {
     static {
         initDgm(DefaultGroovyMethods.class);
         initDgm(DefaultGroovyPPMethods.class);
+        initDgm(ArraysMethods.class);
         initDgm(FilterClosure.class);
     }
 
     static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {
-        final ModuleNode moduleNode = classNode.getModule();
+        final ModuleNode moduleNode = classNode.isArray() ? classNode.getComponentType().getModule() : classNode.getModule();
         if (moduleNode != null) {
-            final CompileUnit compileUnit = classNode.getCompileUnit();
+            final CompileUnit compileUnit = classNode.isArray() ? classNode.getComponentType().getCompileUnit() : classNode.getCompileUnit();
             final SoftReference<CompileUnitInfo> ref = compiledClassesCache.get(compileUnit);
             CompileUnitInfo cui;
             if (ref == null || (cui = ref.get()) == null) {
@@ -299,53 +301,51 @@ public class ClassNodeCache {
     }
 
     private static void initDgm(final Class klazz) {
-        final CachedMethod[] methods = ReflectionCache.getCachedClass(klazz).getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            CachedMethod method = methods[i];
-            if (method.isPublic() && method.isStatic()) {
-                final CachedClass[] classes = method.getParameterTypes();
-                if (classes.length > 0) {
-                    ClassNode declaringClass = ClassHelper.make(method.getParameterTypes()[0].getTheClass());
+        ClassNode classNode = ClassHelper.make(klazz);
+        List<MethodNode> methodList = classNode.getMethods();
 
-                    final Class<?>[] ex = method.getCachedMethod().getExceptionTypes();
-                    ClassNode exs[] = ex.length > 0 ? new ClassNode[ex.length] : ClassNode.EMPTY_ARRAY;
-                    for (int j = 0; j != ex.length; ++j)
-                        exs[j] = ClassHelper.make(ex[j]);
+        for (MethodNode methodNode : methodList) {
+            Parameter[] parameters = methodNode.getParameters();
+            if (methodNode.isPublic() && methodNode.isStatic() && parameters.length > 0) {
+                ClassNode declaringClass = methodNode.getParameters()[0].getType();
 
-                    Parameter params[] = classes.length > 1 ? new Parameter[classes.length - 1] : Parameter.EMPTY_ARRAY;
-                    for (int j = 0; j != params.length; ++j)
-                        params[j] = new Parameter(ClassHelper.make(classes[j + 1].getTheClass()), "$" + j);
+                Parameter params[] = parameters.length > 1 ? new Parameter[parameters.length - 1] : Parameter.EMPTY_ARRAY;
+                for (int j = 0; j != params.length; ++j)
+                    params[j] = parameters[j+1];
 
-                    DGM mn = createDGM(klazz, method, declaringClass, exs, params);
+                DGM mn = createDGM(klazz, methodNode, declaringClass, methodNode.getExceptions(), params);
+                mn.setGenericsTypes(methodNode.getGenericsTypes());
+                mn.original = methodNode;
 
-                    List<MethodNode> list = dgmMethods.get(declaringClass);
-                    if (list == null) {
-                        list = new ArrayList<MethodNode>(4);
-                        dgmMethods.put(declaringClass, list);
-                    }
-                    list.add(mn);
+                List<MethodNode> list = dgmMethods.get(declaringClass);
+                if (list == null) {
+                    list = new ArrayList<MethodNode>(4);
+                    dgmMethods.put(declaringClass, list);
                 }
+                list.add(mn);
             }
         }
     }
 
-    private static DGM createDGM(Class klazz, CachedMethod method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params) {
+    private static DGM createDGM(Class klazz, MethodNode method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params) {
         DGM mn = new DGM(
                 method.getName(),
                 Opcodes.ACC_PUBLIC,
-                ClassHelper.make(method.getReturnType()),
+                method.getReturnType(),
                 params,
                 exs,
                 null);
         mn.setDeclaringClass(declaringClass);
         mn.callClassInternalName = BytecodeHelper.getClassInternalName(klazz);
-        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getCachedMethod().getParameterTypes());
+        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getParameters());
         return mn;
     }
 
     public static class DGM extends MethodNode {
         public String descr;
         public String callClassInternalName;
+
+        public MethodNode original;
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);

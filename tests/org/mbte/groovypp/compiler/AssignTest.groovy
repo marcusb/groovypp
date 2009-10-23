@@ -55,6 +55,17 @@ u (new int [10])
     assertEquals 13, res
   }
 
+    void testCollectionAssignOp() {
+      def res = shell.evaluate("""
+  @Typed(debug=true)
+  def u (List<Integer> x) {
+     x [0] += 6
+  }
+  u ([1] as List<Integer>)
+  """)
+      assertEquals (7, res)
+    }
+
   void testArrayAssignViaProperty() {
     def res = shell.evaluate("""
 @Typed

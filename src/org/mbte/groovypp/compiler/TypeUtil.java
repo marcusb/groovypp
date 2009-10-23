@@ -27,6 +27,12 @@ public class TypeUtil {
     public static final ClassNode TRAIT = make(Trait.class);
     public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);
     public static final ClassNode OBJECT_ARRAY = OBJECT_TYPE.makeArray();
+    public static final ClassNode SET_TYPE = make(Set.class);
+    public static final ClassNode SORTED_SET_TYPE = make(SortedSet.class);
+    public static final ClassNode QUEUE_TYPE = make(Queue.class);
+    public static final ClassNode TREE_SET_TYPE = make(TreeSet.class);
+    public static final ClassNode LINKED_LIST_TYPE = make(LinkedList.class);
+    public static final ClassNode LINKED_HASH_SET_TYPE = make(LinkedHashSet.class);
 
     public static class Null {
     }

@@ -77,6 +77,8 @@ class SubscriptTest extends GroovyShellTestCase {
 
           String[] sub = list[2..4]
           assert sub == ['c', 'd', 'e']
+
+          assert list[-2] == 'd'
        }
 
        u()

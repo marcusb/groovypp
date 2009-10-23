@@ -122,7 +122,16 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    private static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
+    public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
+        if (methodNode instanceof ClassNodeCache.DGM) {
+            ClassNodeCache.DGM dgm = (ClassNodeCache.DGM) methodNode;
+            methodNode = dgm.original;
+            ArgumentListExpression newBargs = new ArgumentListExpression();
+            newBargs.getExpressions().add(object);
+            newBargs.getExpressions().addAll(bargs.getExpressions());
+            bargs = newBargs;
+            object = null;
+        }
         ClassNode returnType = methodNode.getReturnType();
         if (returnType.equals(ClassHelper.VOID_TYPE)) return TypeUtil.NULL_TYPE;
         GenericsType[] typeVars = methodNode.getGenericsTypes();

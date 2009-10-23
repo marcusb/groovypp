@@ -2,6 +2,8 @@ package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.BytecodeSpreadExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -17,31 +19,32 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
             list.set(i, compiler.transform((Expression) list.get(i)));
         }
 
-        return new MyBytecodeExpr(exp);
+        return new ResolvedListExpression(exp, TypeUtil.ARRAY_LIST_TYPE);
     }
 
-    private static class MyBytecodeExpr extends BytecodeExpr {
+    public static class ResolvedListExpression extends BytecodeExpr {
         private final ListExpression exp;
 
-        public MyBytecodeExpr(ListExpression exp) {
-            super(exp, TypeUtil.ARRAY_LIST_TYPE);
+        public ResolvedListExpression(ListExpression exp, ClassNode type) {
+            super(exp, type);
             this.exp = exp;
         }
 
         protected void compile(MethodVisitor mv) {
             final List list = exp.getExpressions();
-            mv.visitTypeInsn(NEW, "java/util/ArrayList");
+            String classInternalName = BytecodeHelper.getClassInternalName(getType());
+            mv.visitTypeInsn(NEW, classInternalName);
             mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL,"java/util/ArrayList","<init>","()V");
+            mv.visitMethodInsn(INVOKESPECIAL,classInternalName,"<init>","()V");
             for (int i = 0; i != list.size(); ++i) {
                 final BytecodeExpr be = (BytecodeExpr) list.get(i);
                 mv.visitInsn(DUP);
                 be.visit(mv);
                 if (be instanceof BytecodeSpreadExpr)
-                    mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/ArrayList","addAll","(Ljava/util/Collection;)Z");
+                    mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Collection","addAll","(Ljava/util/Collection;)Z");
                 else {
                     box(be.getType(), mv);
-                    mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/ArrayList","add","(Ljava/lang/Object;)Z");
+                    mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Collection","add","(Ljava/lang/Object;)Z");
                 }
                 mv.visitInsn(POP);
             }

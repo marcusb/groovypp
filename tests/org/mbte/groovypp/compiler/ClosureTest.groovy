@@ -28,7 +28,7 @@ public class ClosureTest extends GroovyShellTestCase {
       assertEquals ([11, 12, 13], res)
   }
     
-    void testAssignable2 () {
+    void testListAsArray () {
         def res = shell.evaluate("""
         interface I<T> {
           T calc ()
@@ -44,6 +44,28 @@ public class ClosureTest extends GroovyShellTestCase {
         u ()
     """)
         assertEquals ([10, 9], res)
+    }
+
+    void testMap () {
+        def res = shell.evaluate("""
+        interface I<T> {
+          T calc ()
+        }
+
+        class ListOfI extends LinkedList<I> {}
+
+        @Typed(debug=true)
+        def u () {
+          def     x = [{14}] as List<I>
+          def     y = (List<I>)[{15}]
+          ListOfI z = [{16}]
+
+          [x[0].calc (), y[0].calc(), z[0].calc () ]
+        }
+
+        u ()
+    """)
+        assertEquals ([14, 15, 16], res)
     }
 
   void testClosure() {
