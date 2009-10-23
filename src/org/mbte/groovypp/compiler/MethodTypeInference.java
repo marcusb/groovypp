@@ -13,7 +13,7 @@ public class MethodTypeInference {
         EQ, SUBTYPE, SUPERTYPE
     }
 
-    private class Constraints {
+    private static class Constraints {
         ClassNode eqType;
         ClassNode superType;
         ClassNode subType;
@@ -48,9 +48,9 @@ public class MethodTypeInference {
         }
     }
 
-    ClassNode[] inferTypeArguments(GenericsType[] typeVars,
-                                   ClassNode[] formals,
-                                   ClassNode[] instantiateds) {
+    public static ClassNode[] inferTypeArguments(GenericsType[] typeVars,
+                                                 ClassNode[] formals,
+                                                 ClassNode[] instantiateds) {
         ClassNode[] result = new ClassNode[typeVars.length];
         NextVar:
         for (int i = 0; i < typeVars.length; i++) {
@@ -72,7 +72,7 @@ public class MethodTypeInference {
         return result;
     }
 
-    private void match(ClassNode formal, ClassNode instantiated, String name, Constraints constraints, Constraint ifToplevel) {
+    private static void match(ClassNode formal, ClassNode instantiated, String name, Constraints constraints, Constraint ifToplevel) {
         if (name.equals(formal.getUnresolvedName())) constraints.addConstraint(instantiated, ifToplevel);
         if (!formal.redirect().equals(instantiated.redirect()) ||
                 formal.getGenericsTypes().length != instantiated.getGenericsTypes().length) return;

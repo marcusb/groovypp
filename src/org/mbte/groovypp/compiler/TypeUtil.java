@@ -213,9 +213,25 @@ public class TypeUtil {
         return getSubstitutedTypeToplevel(toSubstitute, accessClass, typeArgs);
     }
 
+    public static ClassNode getSubstitutedType(ClassNode toSubstitute,
+                                               final MethodNode method,
+                                               final ClassNode[] methodTypeArgs) {
+        if (methodTypeArgs == null || methodTypeArgs.length == 0) return toSubstitute;
+        GenericsType[] genericsTypes = new GenericsType[methodTypeArgs.length];
+        for (int i = 0; i < genericsTypes.length; i++) {
+            genericsTypes[i] = new GenericsType(methodTypeArgs[i]);
+        }
+        return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method));
+    }
+
+
     private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
         if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         String[] typeVariables = getTypeParameterNames(accessClass);
+        return getSubstitutedTypeToplevelInner(toSubstitute, typeArgs, typeVariables);
+    }
+
+    private static ClassNode getSubstitutedTypeToplevelInner(ClassNode toSubstitute, GenericsType[] typeArgs, String[] typeVariables) {
         if (!toSubstitute.getName().equals(toSubstitute.getUnresolvedName())/*toSubstitute.isGenericsPlaceHolder() does not always work*/) {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
@@ -228,6 +244,16 @@ public class TypeUtil {
 
     private static String[] getTypeParameterNames(ClassNode clazz) {
         GenericsType[] generics = clazz.redirect().getGenericsTypes();
+        if (generics == null || generics.length == 0) return new String[0];
+        String[] result = new String[generics.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = generics[i].getName();
+        }
+        return result;
+    }
+
+    private static String[] getTypeParameterNames(MethodNode methodNode) {
+        GenericsType[] generics = methodNode.getGenericsTypes();
         if (generics == null || generics.length == 0) return new String[0];
         String[] result = new String[generics.length];
         for (int i = 0; i < result.length; i++) {

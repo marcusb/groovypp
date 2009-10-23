@@ -5,10 +5,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.ClassNodeCache;
-import org.mbte.groovypp.compiler.CompiledClosureBytecodeExpr;
-import org.mbte.groovypp.compiler.CompilerTransformer;
-import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
@@ -21,7 +18,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final ArgumentListExpression bargs;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
-        super(parent, getReturnType(methodNode, object));
+        super(parent, getReturnType(methodNode, object, bargs));
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
@@ -125,10 +122,24 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    private static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object) {
+    private static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
         ClassNode returnType = methodNode.getReturnType();
         if (returnType.equals(ClassHelper.VOID_TYPE)) return TypeUtil.NULL_TYPE;
-        return object != null ? TypeUtil.getSubstitutedType(methodNode.getReturnType(),
+        GenericsType[] typeVars = methodNode.getGenericsTypes();
+        if (typeVars != null && typeVars.length > 0) {
+            Parameter[] params = methodNode.getParameters();
+            // todo varargs?
+            int length = Math.min(params.length, bargs.getExpressions().size());
+            ClassNode[] paramTypes = new ClassNode[length];
+            ClassNode[] argTypes = new ClassNode[length];
+            for (int i = 0; i < length; i++) {
+                paramTypes[i] = params[i].getType();
+                argTypes[i] = bargs.getExpression(i).getType();
+            }
+            ClassNode[] bindings = MethodTypeInference.inferTypeArguments(typeVars, paramTypes, argTypes);
+            returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
+        }
+        return object != null ? TypeUtil.getSubstitutedType(returnType,
                 methodNode.getDeclaringClass(), object.getType()) : returnType;
     }
 
