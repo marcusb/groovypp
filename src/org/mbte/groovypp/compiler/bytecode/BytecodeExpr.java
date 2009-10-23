@@ -839,7 +839,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                     if (type.equals(STRING_TYPE)) {
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
                     } else {
-                        mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                        BytecodeExpr.checkCast(type, mv);
                     }
                 }
             }
@@ -889,7 +889,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -900,18 +900,22 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "size", "()I");
                 mv.visitTypeInsn(ANEWARRAY, BytecodeHelper.getClassInternalName(type.getComponentType()));
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
-                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                BytecodeExpr.checkCast(type, mv);
                 return;
             } else {
                 mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "asArray", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
-                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                BytecodeExpr.checkCast(type, mv);
                 return;
             }
         }
 
         throw new IllegalStateException("Impossible cast");
+    }
+
+    public static void checkCast(ClassNode type, MethodVisitor mv) {
+        mv.visitTypeInsn(CHECKCAST, type.isArray() ? BytecodeHelper.getTypeDescription(type): BytecodeHelper.getClassInternalName(type));
     }
 
     private static void castString(ClassNode expr, ClassNode type, MethodVisitor mv) {
@@ -987,7 +991,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1039,7 +1043,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1094,7 +1098,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1149,7 +1153,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1187,7 +1191,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         } else if (type == BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigDecimal", "toBigInteger", "()Ljava/math/BigInteger;");
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1229,7 +1233,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
         } else if (type == BigInteger_TYPE) {
         } else {
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+            BytecodeExpr.checkCast(type, mv);
         }
     }
 
@@ -1240,7 +1244,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "next", "(Ljava/lang/Number;)Ljava/lang/Number;");
             else
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "previous", "(Ljava/lang/Number;)Ljava/lang/Number;");
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(primType));
+            BytecodeExpr.checkCast(primType, mv);
         } else if (primType == double_TYPE) {
             mv.visitInsn(DCONST_1);
             mv.visitInsn(add ? DADD : DSUB);

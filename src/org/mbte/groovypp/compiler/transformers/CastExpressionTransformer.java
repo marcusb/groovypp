@@ -116,7 +116,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             box(expr.getType(), mv);
             arg1.visit(mv);
             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "asType", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+            BytecodeExpr.checkCast(getType(), mv);
         }
     }
 

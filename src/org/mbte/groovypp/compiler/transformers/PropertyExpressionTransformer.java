@@ -108,7 +108,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
                             mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                         }
-                        mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                        BytecodeExpr.checkCast(getType(), mv);
                     }
                 };
 
@@ -133,7 +133,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                                 }
                                 mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
                                 mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
-                                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                                BytecodeExpr.checkCast(getType(), mv);
                             }
                         };
                         return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
@@ -152,7 +152,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
                         mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                     }
-                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                    BytecodeExpr.checkCast(getType(), mv);
                 }
             };
             return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);

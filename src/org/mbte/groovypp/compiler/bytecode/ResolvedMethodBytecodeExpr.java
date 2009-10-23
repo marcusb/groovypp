@@ -161,8 +161,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             if (object != null) {
                 object.visit(mv);
                 box(object.getType(), mv);
-                if (methodNode.getDeclaringClass() != ClassHelper.OBJECT_TYPE)
-                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass()));
+                BytecodeExpr.checkCast(methodNode.getDeclaringClass(), mv);
             }
 
             classInternalName = ((ClassNodeCache.DGM) methodNode).callClassInternalName;

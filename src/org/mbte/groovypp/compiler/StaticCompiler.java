@@ -179,7 +179,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitVarInsn(ALOAD, iteratorIdx);
         mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;");
         if (etype != ClassHelper.OBJECT_TYPE)
-            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(etype));
+            BytecodeExpr.checkCast(etype, mv);
         helper.storeVar(variable);
 
         forLoop.getLoopBlock().visit(this);

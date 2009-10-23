@@ -53,7 +53,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
                 loadVar(var, mv);
                 unbox(var.getType(), mv);
                 if (!constrParams[i].getType().equals(var.getType())) {
-                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(constrParams[i].getType()));
+                    BytecodeExpr.checkCast(constrParams[i].getType(), mv);
                 }
             }
             else {

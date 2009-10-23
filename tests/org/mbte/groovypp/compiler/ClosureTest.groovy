@@ -34,9 +34,9 @@ public class ClosureTest extends GroovyShellTestCase {
           T calc ()
         }
 
-        @Typed(debug=true)
+        @Typed
         def u () {
-          def x = [ {->10}, {->9} ] as I []
+          def x = (I[])[ {->10}, {->9} ]
 
           [x[0].calc(), x[1].calc () ]
         }

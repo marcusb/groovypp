@@ -104,7 +104,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                 incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
                 if (type != primType) {
                     box(primType, mv);
-                    mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(type));
+                    BytecodeExpr.checkCast(type, mv);
                 }
                 // newvalue ?obj
 

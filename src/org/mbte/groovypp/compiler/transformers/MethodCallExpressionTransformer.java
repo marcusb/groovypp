@@ -67,7 +67,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
                                     mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                                 }
-                                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                                BytecodeExpr.checkCast(getType(), mv);
                             }
                         };
                         return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
@@ -91,7 +91,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                         }
                                         mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
                                         mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
-                                        mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                                        BytecodeExpr.checkCast(getType(), mv);
                                     }
                                 };
                                 return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
@@ -110,7 +110,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
                                 mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                             }
-                            mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+                            BytecodeExpr.checkCast(getType(), mv);
                         }
                     };
                     return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
