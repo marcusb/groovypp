@@ -281,7 +281,8 @@ public class TypeUtil {
             GenericsType typeArg = toSubstituteTypeArgs[i];
             if (typeArg.getType().isGenericsPlaceHolder()) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
-                if (binding != null) substitutedArgs[i] = binding;
+                if (binding == null) return toSubstitute;
+                substitutedArgs[i] = binding;
             } else {
                 ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
                 ClassNode oldLower = typeArg.getLowerBound();

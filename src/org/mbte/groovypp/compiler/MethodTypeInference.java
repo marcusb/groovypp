@@ -68,17 +68,20 @@ public class MethodTypeInference {
                 if (constraints.isContradictory()) return null;   // todo per var contradiction?
             }
             result[i] = constraints.obtainFinalType();
+            if (result[i] == null) return null;
         }
         return result;
     }
 
     private static void match(ClassNode formal, ClassNode instantiated, String name, Constraints constraints, Constraint ifToplevel) {
         if (name.equals(formal.getUnresolvedName())) constraints.addConstraint(instantiated, ifToplevel);
-        if (!formal.redirect().equals(instantiated.redirect()) ||
-                formal.getGenericsTypes().length != instantiated.getGenericsTypes().length) return;
-        for (int i = 0; i < formal.getGenericsTypes().length; i++) {
-            GenericsType fTypearg = formal.getGenericsTypes()[i];
-            GenericsType iTypearg = instantiated.getGenericsTypes()[i];
+        if (!formal.redirect().equals(instantiated.redirect())) return;
+        GenericsType[] fTypeArgs = formal.getGenericsTypes();
+        GenericsType[] iTypeArgs = instantiated.getGenericsTypes();
+        if(fTypeArgs == null || iTypeArgs == null || fTypeArgs.length != iTypeArgs.length) return;
+        for (int i = 0; i < fTypeArgs.length; i++) {
+            GenericsType fTypearg = fTypeArgs[i];
+            GenericsType iTypearg = iTypeArgs[i];
             ClassNode fType = fTypearg.getType();
             ClassNode iType = iTypearg.getType();
             if (isSuper(fTypearg)) {
