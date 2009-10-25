@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler;
 
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import static org.mbte.groovypp.compiler.MethodTypeInference.Constraint.*;
@@ -66,6 +67,8 @@ public class MethodTypeInference {
                     instantiated = instantiated.getComponentType();
                 }
                 if (instantiated.isArray()) continue;
+                formal = TypeUtil.wrapSafely(formal);
+                instantiated = TypeUtil.wrapSafely(instantiated);
 
                 // this is just for parameters, if we ever decide to infer from context, the variance will change
                 instantiated = formal.isGenericsPlaceHolder() ? instantiated :
@@ -98,7 +101,9 @@ public class MethodTypeInference {
                 iType = iType.getComponentType();
             }
             if (iType.isArray()) continue;
-
+            fType = TypeUtil.wrapSafely(fType);
+            iType = TypeUtil.wrapSafely(iType);
+            
             if (isSuper(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
                 fType = iType.isGenericsPlaceHolder() ? fType :
