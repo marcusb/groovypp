@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Types;
@@ -14,20 +15,9 @@ import org.objectweb.asm.MethodVisitor;
 public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpression> {
     public Expression transform(PrefixExpression exp, CompilerTransformer compiler) {
         final Expression operand = exp.getExpression();
-        if (operand instanceof VariableExpression) {
-            return transformVariablePrefixExpression(exp, operand, compiler);
-        }
 
-        if (operand instanceof BinaryExpression && ((BinaryExpression) operand).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
-            return transformArrayPrefixExpression(exp, compiler);
-        }
-
-        if (operand instanceof PropertyExpression) {
-            return transformPrefixPropertyExpression(exp, (PropertyExpression) operand, compiler);
-        }
-
-        compiler.addError("Prefix/Postfix operations allowed only with variable or property or array expressions", exp);
-        return null;
+        final BytecodeExpr oper = (BytecodeExpr) compiler.transform(operand);
+        return oper.createPrefixOp(exp, exp.getOperation().getType(), compiler);
     }
 
     private Expression transformPrefixPropertyExpression(final PrefixExpression exp, PropertyExpression pe, CompilerTransformer compiler) {
@@ -176,25 +166,73 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
             return null;
         }
 
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), true);
+        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        ClassNode vtype;
+        if (var == null) {
+            if (ve.isClosureSharedVariable()) {
+                final PropertyExpression prop = new PropertyExpression(new VariableExpression("$self"), ve.getName());
+                prop.setType(ve.getType());
+                prop.setSourcePosition(exp);
 
-        final ClassNode vtype = ve.isDynamicTyped() ? compiler.getLocalVarInferenceTypes().get(ve) : var.getType();
+                final PostfixExpression pe = new PostfixExpression(prop, exp.getOperation());
+                pe.setSourcePosition(exp);
 
-        if (!TypeUtil.isNumericalType(vtype)) {
-            compiler.addError("Prefix/Postfix operations applicable only to numerical types", exp);
+                return compiler.transform(pe);
+            } else {
+                final PropertyExpression prop = new PropertyExpression(VariableExpression.THIS_EXPRESSION, ve.getName());
+                prop.setSourcePosition(exp);
+
+                final PostfixExpression pe = new PostfixExpression(prop, exp.getOperation());
+                pe.setSourcePosition(exp);
+
+                return compiler.transform(pe);
+            }
+        }
+
+        vtype = compiler.getLocalVarInferenceTypes().get(ve);
+        if (vtype == null)
+            vtype = var.getType();
+
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
+            return new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    final ClassNode primType = ClassHelper.getUnwrapper(getType());
+                    load(getType(), var.getIndex(), mv);
+                    if (getType() != primType)
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
+                    if (getType() != primType)
+                        box(primType, mv);
+                    dup(getType(), mv);
+                    store(var, mv);
+                }
+            };
+        }
+
+        if (ClassHelper.isPrimitiveType(vtype))
+            vtype = TypeUtil.wrapSafely(vtype);
+
+        String methodName = exp.getOperation().getType() == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        if (methodNode == null) {
+            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
             return null;
         }
 
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile(MethodVisitor mv) {
+                        load(var.getType(), var.getIndex(), mv);
+                    }
+                },
+                methodName,
+                new ArgumentListExpression()
+        ));
+
         return new BytecodeExpr(exp, vtype) {
             protected void compile(MethodVisitor mv) {
-                final ClassNode primType = ClassHelper.getUnwrapper(vtype);
-                load(vtype, var.getIndex(), mv);
-                if (vtype != primType)
-                    unbox(primType, mv);
-                incOrDecPrimitive(primType, exp.getOperation().getType(), mv);
-                if (vtype != primType)
-                    box(primType, mv);
-                dup(vtype, mv);
+                nextCall.visit(mv);
+                dup(getType(), mv);
                 store(var, mv);
             }
         };

@@ -138,11 +138,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         be.visit(mv);
         final ClassNode type = be.getType();
         if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
-            if (type == ClassHelper.long_TYPE || type == ClassHelper.double_TYPE) {
-                mv.visitInsn(POP2);
-            } else {
-                mv.visitInsn(POP);
-            }
+            be.pop(type, mv);
         }
     }
 

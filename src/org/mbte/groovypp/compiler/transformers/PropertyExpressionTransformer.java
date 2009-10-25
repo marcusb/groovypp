@@ -182,6 +182,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 call.visit(mv);
                 box(call.getType(), mv);
                 mv.visitLabel(nullLabel);
+                checkCast(getType(), mv);
             }
         };
     }

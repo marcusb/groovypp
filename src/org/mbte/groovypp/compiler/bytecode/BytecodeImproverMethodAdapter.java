@@ -2,6 +2,8 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -65,8 +67,18 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
         }
         else {
           if (unboxing(opcode, owner, name)) {
-              if (boxingDesc != null)
-                boxingDesc = null;
+              if (boxingDesc != null) {
+                String type = name.substring(0, name.indexOf("Unbox"));
+                type = ClassHelper.getWrapper(ClassHelper.make(type)).getNameWithoutPackage();
+                String boxingName = boxingDesc.substring(boxingDesc.lastIndexOf('/')+1, boxingDesc.length()-1);
+                if (boxingName.equals(type)) {
+                    boxingDesc = null;
+                }
+                else {
+                    dropBoxing();
+                    super.visitMethodInsn(opcode, owner, name, desc);
+                }
+              }
               else
                 super.visitMethodInsn(opcode, owner, name, desc);
           }

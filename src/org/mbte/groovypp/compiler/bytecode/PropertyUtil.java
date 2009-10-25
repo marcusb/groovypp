@@ -15,7 +15,7 @@ public class PropertyUtil {
             return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic, compiler);
 
         if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null, needsObjectIfStatic);
+            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null);
 
         if (prop instanceof FieldNode)
             return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null, compiler);
@@ -37,7 +37,7 @@ public class PropertyUtil {
             return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
 
         if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value, needsObjectIfStatic);
+            return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value);
 
         if (prop instanceof FieldNode)
             return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value, compiler);

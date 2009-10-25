@@ -61,19 +61,12 @@ public class TypeUtil {
                 return true;
             }
         } else if (classToTransformTo.isArray() && classToTransformFrom.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
-            return true;
+            return isAssignableFrom(classToTransformTo.getComponentType(), classToTransformFrom.getComponentType());
+        } else if (classToTransformTo.isArray() && classToTransformFrom.isArray()) {
+            return isAssignableFrom(classToTransformTo.getComponentType(), classToTransformFrom.getComponentType());
         }
 
-        if(isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom))
-            return true;
-
-//        if (classToTransformFrom.implementsInterface(TypeUtil.TCLOSURE)) {
-//            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(classToTransformTo);
-//            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, classToTransformFrom);
-//            return one != null && doCall != null;
-//        }
-//
-        return false;
+        return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
@@ -86,10 +79,6 @@ public class TypeUtil {
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
         return type1.implementsInterface(type);
-    }
-
-    public static boolean isIntegralType(ClassNode expr) {
-        return expr.equals(Integer_TYPE) || expr.equals(Byte_TYPE) || expr.equals(Short_TYPE) || expr.equals(Character_TYPE) || expr.equals(Boolean_TYPE);
     }
 
     public static boolean isNumericalType(ClassNode paramType) {

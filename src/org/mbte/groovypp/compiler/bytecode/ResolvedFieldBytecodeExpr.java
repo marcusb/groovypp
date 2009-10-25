@@ -2,8 +2,11 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
@@ -76,7 +79,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             op = fieldNode.isStatic() ? PUTSTATIC : PUTFIELD;
             value.visit(mv);
 
-            if (object != null)
+            if (object != null && !fieldNode.isStatic())
                 dup_x1(value.getType(), mv);
             else
                 dup(value.getType(), mv);
@@ -128,11 +131,172 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         };
     }
 
-    public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        ClassNode vtype = getType();
+
+        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile(MethodVisitor mv) {
+            }
+        };
+
+        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile(MethodVisitor mv) {
+                if (object != null) {
+                    object.visit(mv);
+                    dup(object.getType(), mv);
+                }
+            }
+        };
+
+        final BytecodeExpr get = new ResolvedFieldBytecodeExpr(
+                exp,
+                fieldNode,
+                fakeObject,
+                null,
+                compiler
+        );
+
+        BytecodeExpr incDec;
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
+            incDec = new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    final ClassNode primType = ClassHelper.getUnwrapper(getType());
+
+                    get.visit(mv);
+
+                    if (getType() != primType)
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, type, mv);
+                    if (getType() != primType)
+                        box(primType, mv);
+                }
+            };
+        }
+        else {
+            if (ClassHelper.isPrimitiveType(vtype))
+                vtype = TypeUtil.wrapSafely(vtype);
+
+            String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+            if (methodNode == null) {
+                compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
+                return null;
+            }
+
+            incDec = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                    new BytecodeExpr(exp, get.getType()) {
+                        protected void compile(MethodVisitor mv) {
+                            get.visit(mv);
+                        }
+                    },
+                    methodName,
+                    new ArgumentListExpression()
+            ));
+        }
+
+        final BytecodeExpr put = new ResolvedFieldBytecodeExpr(
+                exp,
+                fieldNode,
+                dupObject,
+                incDec,
+                compiler
+        );
+
+        return new BytecodeExpr(exp, getType()) {
+            protected void compile(MethodVisitor mv) {
+                put.visit(mv);
+            }
+        };
     }
 
-    public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        ClassNode vtype = getType();
+
+        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile(MethodVisitor mv) {
+            }
+        };
+
+        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+            @Override
+            protected void compile(MethodVisitor mv) {
+                if (object != null) {
+                    object.visit(mv);
+                    dup(object.getType(), mv);
+                }
+            }
+        };
+
+        final BytecodeExpr get = new ResolvedFieldBytecodeExpr(
+                exp,
+                fieldNode,
+                fakeObject,
+                null,
+                compiler
+        );
+
+        BytecodeExpr incDec;
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
+            incDec = new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    final ClassNode primType = ClassHelper.getUnwrapper(getType());
+
+                    get.visit(mv);
+                    if (ResolvedFieldBytecodeExpr.this.object != null && !fieldNode.isStatic())
+                        dup_x1(get.getType(), mv);
+                    else
+                        dup(get.getType(), mv);
+
+                    if (getType() != primType)
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, type, mv);
+                    if (getType() != primType)
+                        box(primType, mv);
+                }
+            };
+        }
+        else {
+            if (ClassHelper.isPrimitiveType(vtype))
+                vtype = TypeUtil.wrapSafely(vtype);
+
+            String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+            if (methodNode == null) {
+                compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
+                return null;
+            }
+
+            incDec = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                    new BytecodeExpr(exp, get.getType()) {
+                        protected void compile(MethodVisitor mv) {
+                            get.visit(mv);
+                            if (ResolvedFieldBytecodeExpr.this.object != null && !fieldNode.isStatic())
+                                dup_x1(get.getType(), mv);
+                            else
+                                dup(get.getType(), mv);
+                        }
+                    },
+                    methodName,
+                    new ArgumentListExpression()
+            ));
+        }
+
+        final BytecodeExpr put = new ResolvedFieldBytecodeExpr(
+                exp,
+                fieldNode,
+                dupObject,
+                incDec,
+                compiler
+        );
+
+        return new BytecodeExpr(exp, getType()) {
+            protected void compile(MethodVisitor mv) {
+                put.visit(mv);
+                pop(put.getType(), mv);
+            }
+        };
     }
 }

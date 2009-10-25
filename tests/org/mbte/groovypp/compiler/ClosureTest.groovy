@@ -54,7 +54,7 @@ public class ClosureTest extends GroovyShellTestCase {
 
         class ListOfI extends LinkedList<I> {}
 
-        @Typed(debug=true)
+        @Typed
         def u () {
           def     x = [{14}] as List<I>
           def     y = (List<I>)[{15}]

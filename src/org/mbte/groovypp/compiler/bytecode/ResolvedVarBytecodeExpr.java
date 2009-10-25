@@ -3,10 +3,11 @@ package org.mbte.groovypp.compiler.bytecode;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
@@ -52,11 +53,105 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         return createAssign(parent, (BytecodeExpr) compiler.transform(op), compiler);
     }
 
-    public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        ClassNode vtype = compiler.getLocalVarInferenceTypes().get(ve);
+        if (vtype == null)
+            vtype = var.getType();
+
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
+            return new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    final ClassNode primType = ClassHelper.getUnwrapper(getType());
+                    load(getType(), var.getIndex(), mv);
+                    if (getType() != primType)
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, type, mv);
+                    if (getType() != primType)
+                        box(primType, mv);
+                    dup(getType(), mv);
+                    store(var, mv);
+                }
+            };
+        }
+
+        if (ClassHelper.isPrimitiveType(vtype))
+            vtype = TypeUtil.wrapSafely(vtype);
+
+        String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        if (methodNode == null) {
+            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
+            return null;
+        }
+
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile(MethodVisitor mv) {
+                        load(var.getType(), var.getIndex(), mv);
+                    }
+                },
+                methodName,
+                new ArgumentListExpression()
+        ));
+
+        return new BytecodeExpr(exp, vtype) {
+            protected void compile(MethodVisitor mv) {
+                nextCall.visit(mv);
+                dup(getType(), mv);
+                store(var, mv);
+            }
+        };
     }
 
-    public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        ClassNode vtype = compiler.getLocalVarInferenceTypes().get(ve);
+        if (vtype == null)
+            vtype = var.getType();
+
+        if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
+            return new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    final ClassNode primType = ClassHelper.getUnwrapper(getType());
+                    load(getType(), var.getIndex(), mv);
+                    dup(getType(), mv);
+                    if (getType() != primType)
+                        unbox(primType, mv);
+                    incOrDecPrimitive(primType, type, mv);
+                    if (getType() != primType)
+                        box(primType, mv);
+                    store(var, mv);
+                }
+            };
+        }
+
+        if (ClassHelper.isPrimitiveType(vtype))
+            vtype = TypeUtil.wrapSafely(vtype);
+
+        String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        if (methodNode == null) {
+            compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
+            return null;
+        }
+
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile(MethodVisitor mv) {
+                        load(var.getType(), var.getIndex(), mv);
+                        dup(getType(), mv);
+                    }
+                },
+                methodName,
+                new ArgumentListExpression()
+        ));
+
+        return new BytecodeExpr(exp, vtype) {
+            protected void compile(MethodVisitor mv) {
+                nextCall.visit(mv);
+                store(var, mv);
+            }
+        };
     }
 }

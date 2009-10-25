@@ -32,7 +32,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
 
             if(exp.getType().implementsInterface(TypeUtil.COLLECTION_TYPE)) {
-                ClassNode componentType = getCollectionType(exp.getType(), compiler);
+                ClassNode componentType = compiler.getCollectionType(exp.getType());
                 improveListTypes(listExpression, componentType);
                 final List list = listExpression.getExpressions();
                 for (int i = 0; i != list.size(); ++i) {
@@ -117,12 +117,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
         return collType;
-    }
-
-    private ClassNode getCollectionType(ClassNode type, CompilerTransformer compiler) {
-        MethodNode methodNode = compiler.findMethod(TypeUtil.COLLECTION_TYPE, "add", new ClassNode[]{ClassHelper.OBJECT_TYPE});
-        ClassNode returnType = methodNode.getParameters()[0].getType();
-        return TypeUtil.getSubstitutedType(returnType, methodNode.getDeclaringClass(), type);
     }
 
     private BytecodeExpr listToArray(CastExpression exp, CompilerTransformer compiler) {

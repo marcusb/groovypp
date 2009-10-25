@@ -57,11 +57,11 @@ u (new int [10])
 
     void testCollectionAssignOp() {
       def res = shell.evaluate("""
-  @Typed(debug=true)
+  @Typed
   def u (List<Integer> x) {
      x [0] += 6
   }
-  u ([1] as List<Integer>)
+  u ([1])
   """)
       assertEquals (7, res)
     }

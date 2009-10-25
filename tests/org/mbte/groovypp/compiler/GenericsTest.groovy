@@ -171,7 +171,7 @@ public class GenericsTest extends GroovyShellTestCase {
 
   void testParameterBounds() {
     shell.evaluate """
-      @Typed(debug=true)
+      @Typed
       class Box<A extends Comparable<A> & Cloneable> {
         A a;
         Box(A a) {

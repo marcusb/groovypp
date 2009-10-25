@@ -2,6 +2,8 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.CastExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.classgen.BytecodeExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -51,12 +53,82 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     }
 
 
-    public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPrefixOp(ASTNode exp, int type, CompilerTransformer compiler) {
+        ClassNode vtype = getType();
+        if (TypeUtil.isNumericalType(vtype)) {
+            return new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    BytecodeExpr.this.visit(mv);
+                }
+            };
+        }
+
+        if (ClassHelper.isPrimitiveType(vtype))
+            vtype = TypeUtil.wrapSafely(vtype);
+
+        String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        if (methodNode == null) {
+            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
+            return null;
+        }
+
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile(MethodVisitor mv) {
+                    }
+                },
+                methodName,
+                new ArgumentListExpression()
+        ));
+
+        return new BytecodeExpr(exp, vtype) {
+            protected void compile(MethodVisitor mv) {
+                BytecodeExpr.this.visit(mv);
+                mv.visitInsn(DUP);
+                nextCall.visit(mv);
+                pop(nextCall.getType(), mv);
+            }
+        };
     }
 
-    public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
-        return null;
+    public BytecodeExpr createPostfixOp(ASTNode exp, int type, CompilerTransformer compiler) {
+        ClassNode vtype = getType();
+        if (TypeUtil.isNumericalType(vtype)) {
+            return new BytecodeExpr(exp, vtype) {
+                protected void compile(MethodVisitor mv) {
+                    BytecodeExpr.this.visit(mv);
+                }
+            };
+        }
+
+        if (ClassHelper.isPrimitiveType(vtype))
+            vtype = TypeUtil.wrapSafely(vtype);
+
+        String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        if (methodNode == null) {
+            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
+            return null;
+        }
+
+        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
+                new BytecodeExpr(exp, vtype) {
+                    protected void compile(MethodVisitor mv) {
+                    }
+                },
+                methodName,
+                new ArgumentListExpression()
+        ));
+
+        return new BytecodeExpr(exp, vtype) {
+            protected void compile(MethodVisitor mv) {
+                BytecodeExpr.this.visit(mv);
+                mv.visitInsn(DUP);
+                nextCall.visit(mv);
+                pop(nextCall.getType(), mv);
+            }
+        };
     }
 
     /**
@@ -802,6 +874,10 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         ret.append(end);
     }
 
+    public static boolean isIntegralType(ClassNode expr) {
+        return expr.equals(Integer_TYPE) || expr.equals(Byte_TYPE) || expr.equals(Short_TYPE);
+    }
+
     public static void cast(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (isPrimitiveType(expr) || isPrimitiveType(type)) {
             throw new RuntimeException("Can't convert " + expr.getName() + " to " + type.getName());
@@ -814,8 +890,16 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             return;
         }
 
-        if (TypeUtil.isIntegralType(expr)) {
+        if (isIntegralType(expr)) {
             castIntegral(expr, type, mv);
+        } else if (expr == Character_TYPE) {
+            unbox(getUnwrapper(expr), mv);
+            box (int_TYPE, mv);
+            castIntegral(Integer_TYPE, type, mv);
+        } else if (expr == Boolean_TYPE) {
+            unbox(getUnwrapper(expr), mv);
+            box (int_TYPE, mv);
+            castIntegral(Integer_TYPE, type, mv);
         } else if (expr == Long_TYPE) {
             castLong(expr, type, mv);
         } else if (expr == Double_TYPE) {
@@ -833,7 +917,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         } else if (expr.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
             castCollection(expr, type, mv);
         } else {
-            if (TypeUtil.isNumericalType(type)) {
+            if (TypeUtil.isNumericalType(type) && !type.equals(TypeUtil.Number_TYPE)) {
                 unbox(getUnwrapper(type), mv);
                 box(getUnwrapper(type), mv);
             } else {
@@ -982,11 +1066,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
         } else if (type == BigInteger_TYPE) {
-            if (expr.equals(Character_TYPE)) {
-                mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
-                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
-                box(int_TYPE, mv);
-            }
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigInteger");
             mv.visitInsn(DUP_X1);

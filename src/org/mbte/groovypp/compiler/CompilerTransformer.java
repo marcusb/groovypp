@@ -377,4 +377,10 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         PackageNode fieldPackage = fieldNode.getDeclaringClass().getPackage();
         return (accessPackage == null && fieldPackage == null) || (accessPackage != null && accessPackage.getName().equals(fieldPackage.getName()));
     }
+
+    public ClassNode getCollectionType(ClassNode type) {
+        MethodNode methodNode = findMethod(TypeUtil.COLLECTION_TYPE, "add", new ClassNode[]{ClassHelper.OBJECT_TYPE});
+        ClassNode paramType = methodNode.getParameters()[0].getType();
+        return TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(), type);
+    }
 }

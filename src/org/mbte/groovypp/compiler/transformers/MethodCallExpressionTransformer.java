@@ -150,12 +150,12 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
         ClassNode type = TypeUtil.wrapSafely(object.getType());
 
-        final BytecodeExpr call = (BytecodeExpr) compiler.transform(new MethodCallExpression(new BytecodeExpr(object, type) {
+        MethodCallExpression callExpression = new MethodCallExpression(new BytecodeExpr(object, type) {
             protected void compile(MethodVisitor mv) {
-                // nothing to do
-                // expect parent on stack
             }
-        }, exp.getMethod(), exp.getArguments()));
+        }, exp.getMethod(), exp.getArguments());
+        callExpression.setSourcePosition(exp);
+        final BytecodeExpr call = (BytecodeExpr) compiler.transform(callExpression);
 
         return new BytecodeExpr(exp, TypeUtil.wrapSafely(call.getType())) {
             protected void compile(MethodVisitor mv) {
@@ -166,6 +166,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 call.visit(mv);
                 box(call.getType(), mv);
                 mv.visitLabel(nullLabel);
+                checkCast(getType(), mv);
             }
         };
     }

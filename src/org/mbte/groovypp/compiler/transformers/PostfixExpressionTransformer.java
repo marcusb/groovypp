@@ -15,59 +15,21 @@ import org.objectweb.asm.MethodVisitor;
 public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpression> {
     public Expression transform(final PostfixExpression exp, CompilerTransformer compiler) {
         final Expression operand = exp.getExpression();
-        if (operand instanceof VariableExpression) {
-            return transformPostfixVariableExpression(exp, operand, compiler);
-        }
-
-        if (operand instanceof BinaryExpression && ((BinaryExpression) operand).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
-            return transformArrayPostfixExpression(exp, compiler);
-        }
-
-        if (operand instanceof PropertyExpression) {
-            return transformPostfixPropertyExpression(exp, (PropertyExpression) operand, compiler);
-        }
 
         final BytecodeExpr oper = (BytecodeExpr) compiler.transform(operand);
-        ClassNode vtype = oper.getType();
-        if (TypeUtil.isNumericalType(vtype)) {
-            return new BytecodeExpr(exp, vtype) {
-                protected void compile(MethodVisitor mv) {
-                    oper.visit(mv);
-                }
-            };
-        }
+        return oper.createPostfixOp(exp, exp.getOperation().getType(), compiler);
 
-        if (ClassHelper.isPrimitiveType(vtype))
-            vtype = TypeUtil.wrapSafely(vtype);
-
-        final MethodNode methodNode = compiler.findMethod(vtype, "next", ClassNode.EMPTY_ARRAY);
-        if (methodNode == null) {
-            compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
-            return null;
-        }
-
-//        if (!TypeUtil.isDirectlyAssignableFrom(vtype, methodNode.getReturnType())) {
-//            compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
-//            return null;
+//        if (operand instanceof VariableExpression) {
+//            return transformPostfixVariableExpression(exp, operand, compiler);
 //        }
-
-        final BytecodeExpr nextCall = (BytecodeExpr) compiler.transform(new MethodCallExpression(
-                new BytecodeExpr(exp, vtype) {
-                    protected void compile(MethodVisitor mv) {
-                    }
-                },
-                "next",
-                new ArgumentListExpression()
-        ));
-
-        return new BytecodeExpr(exp, vtype) {
-            protected void compile(MethodVisitor mv) {
-                oper.visit(mv);
-                mv.visitInsn(DUP);
-                nextCall.visit(mv);
-                pop(nextCall.getType(), mv);
-            }
-        };
+//
+//        if (operand instanceof BinaryExpression && ((BinaryExpression) operand).getOperation().getType() == Types.LEFT_SQUARE_BRACKET) {
+//            return transformArrayPostfixExpression(exp, compiler);
+//        }
+//
+//        if (operand instanceof PropertyExpression) {
+//            return transformPostfixPropertyExpression(exp, (PropertyExpression) operand, compiler);
+//        }
     }
 
     private Expression transformPostfixPropertyExpression(final PostfixExpression exp, PropertyExpression pe, CompilerTransformer compiler) {
@@ -268,7 +230,8 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
         if (ClassHelper.isPrimitiveType(vtype))
             vtype = TypeUtil.wrapSafely(vtype);
 
-        final MethodNode methodNode = compiler.findMethod(vtype, "next", ClassNode.EMPTY_ARRAY);
+        String methodName = exp.getOperation().getType() == Types.PLUS_PLUS ? "next" : "previous";
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
         if (methodNode == null) {
             compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
             return null;
@@ -286,7 +249,7 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
                         dup(getType(), mv);
                     }
                 },
-                "next",
+                methodName,
                 new ArgumentListExpression()
         ));
 

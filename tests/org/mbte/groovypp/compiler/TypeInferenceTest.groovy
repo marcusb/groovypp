@@ -4,7 +4,7 @@ public class TypeInferenceTest extends GroovyShellTestCase {
 
   void testAssert() {
     def res = shell.evaluate("""
-@Typed(debug=true)
+@Typed
 class A extends GroovyTestCase {
     def m () {
         def list = [] as List<Number>
@@ -33,7 +33,7 @@ new A().m ()
 
     void testList() {
       def res = shell.evaluate("""
-      @Typed(debug=true)
+      @Typed
       def m () {
           def list = [2] as List<Number>
           def u = list.get(0), w = list.getAt(0), v = list[0]
@@ -41,7 +41,7 @@ new A().m ()
       }
       m ()
           """)
-      assertEquals ([3,3,3], res)
+      assertEquals ([2,2,2], res)
     }
 
     void testArrayInference() {
@@ -61,7 +61,7 @@ new A().m ()
 
     void testArrayInference1() {
       def res = shell.evaluate("""
-      @Typed class Foo {
+      @Typed(debug=true) class Foo {
         def <T> T[] getArray(T[] ts) { ts }
         def bar() {
            int[] arr = new int[1]
