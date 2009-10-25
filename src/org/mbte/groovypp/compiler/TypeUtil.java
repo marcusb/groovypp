@@ -308,22 +308,30 @@ public class TypeUtil {
     }
 
     public static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
+        return mapTypeFromSuper(type, aSuper, bDerived, true);
+    }
+
+    private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived, boolean substituteOwn) {
         if (bDerived.redirect().equals(aSuper)) return type;
         ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(true);
         if (derivedSuperClass != null) {
-            ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass);
+            ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass, false);
             if (rec != null) {
-                return getSubstitutedTypeToplevel(rec, derivedSuperClass.redirect(),
-                            derivedSuperClass.getGenericsTypes());
+                rec = getSubstitutedTypeToplevel(rec, derivedSuperClass.redirect(),
+                        derivedSuperClass.getGenericsTypes());
+                return substituteOwn ? getSubstitutedTypeToplevel(rec, bDerived.redirect(),
+                        bDerived.getGenericsTypes()) : rec;
             }
         }
         ClassNode[] interfaces = bDerived.getUnresolvedInterfaces(true);
         if (interfaces != null) {
             for (ClassNode derivedInterface : interfaces) {
-                ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface);
+                ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface, false);
                 if (rec != null) {
-                    return getSubstitutedTypeToplevel(rec, derivedInterface.redirect(),
+                    rec = getSubstitutedTypeToplevel(rec, derivedInterface.redirect(),
                             derivedInterface.getGenericsTypes());
+                    return substituteOwn ? getSubstitutedTypeToplevel(rec, bDerived.redirect(),
+                            bDerived.getGenericsTypes()) : rec;
                 }
             }
         }

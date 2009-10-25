@@ -44,7 +44,7 @@ public class MethodTypeInference {
         ClassNode obtainFinalType() {
             if (eqType != null) return eqType;
             else if (superType != null) return superType;
-            else return subType;
+            else return /*subType*/null;
         }
     }
 
@@ -59,11 +59,11 @@ public class MethodTypeInference {
             Constraints constraints = new Constraints();
             for (int j = 0; j < Math.min(formals.length, instantiateds.length); ++j) {
                 // this is just for parameters, if we ever decide to infer from context, the variance will change
-                ClassNode formal = mapTypeFromSuper(formals[j], formals[i].redirect(),
-                        instantiateds[i].redirect());
-                if (formal == null) continue;
+                ClassNode instantiated = formals[j].isGenericsPlaceHolder() ? instantiateds[j] :
+                        mapTypeFromSuper(formals[j].redirect(), formals[j].redirect(), instantiateds[j]);
+                if (instantiated == null) continue;
 
-                ClassNode instantiated = instantiateds[j];
+                ClassNode formal = formals[j];
                 match(formal, instantiated, name, constraints, SUBTYPE);
                 if (constraints.isContradictory()) return null;   // todo per var contradiction?
             }
@@ -86,12 +86,14 @@ public class MethodTypeInference {
             ClassNode iType = iTypearg.getType();
             if (isSuper(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
-                fType = mapTypeFromSuper(fType, iType.redirect(), fType.redirect());
+                fType = iType.isGenericsPlaceHolder() ? fType :
+                        mapTypeFromSuper(iType.redirect(), iType.redirect(), fType);
                 if (fType == null) continue;
                 match(fType, iType, name, constraints, SUBTYPE);
             } else if (isExtends(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
-                iType = mapTypeFromSuper(iType, fType.redirect(), iType.redirect());
+                iType = fType.isGenericsPlaceHolder() ? iType :
+                        mapTypeFromSuper(fType.redirect(), fType.redirect(), iType);
                 if (iType == null) continue;
                 match(fType, iType, name, constraints, SUPERTYPE);
             } else {
