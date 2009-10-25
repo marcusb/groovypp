@@ -890,7 +890,9 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             return;
         }
 
-        if (isIntegralType(expr)) {
+        if (expr.isArray()) {
+            castArray (expr, type, mv);
+        } else if (isIntegralType(expr)) {
             castIntegral(expr, type, mv);
         } else if (expr == Character_TYPE) {
             unbox(getUnwrapper(expr), mv);
@@ -930,6 +932,13 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 }
             }
         }
+    }
+
+    private static void castArray(ClassNode expr, ClassNode type, MethodVisitor mv) {
+        mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+        mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "asType", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+        BytecodeExpr.checkCast(type, mv);
     }
 
     private static void castNumber(ClassNode expr, ClassNode type, MethodVisitor mv) {

@@ -65,14 +65,14 @@ new A().m ()
         def <T> T[] getArray(T[] ts) { ts }
         def bar() {
            int[] arr = new int[1]
-           arr[0] = 0
+           arr[0] = 5
            arr = getArray(arr)
-           arr
+           arr[0]
         }
       }
       new Foo().bar()
           """)
-      assertEquals (1, res.length)
+      assertEquals (5, res)
     }
 
 
