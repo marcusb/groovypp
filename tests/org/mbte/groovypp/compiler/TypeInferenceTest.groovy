@@ -4,16 +4,16 @@ public class TypeInferenceTest extends GroovyShellTestCase {
 
   void testAssert() {
     def res = shell.evaluate("""
-@Typed
+@Typed(debug=true)
 class A extends GroovyTestCase {
     def m () {
-        def list = []
+        def list = [] as List<Number>
         list.leftShift 1
         list << 2
         assertEquals ([1,2], list)
 
         if (list.size() == 2) {
-            list = (Number)list [0]
+            list = list [0]
             list++
             assertTrue (list instanceof Integer)
         }
@@ -29,6 +29,20 @@ new A().m ()
         """)
     assertTrue res
   }
+
+
+    void testList() {
+      def res = shell.evaluate("""
+      @Typed(debug=true)
+      def m () {
+          def list = [2] as List<Number>
+          def u = list.get(0), w = list.getAt(0), v = list[0]
+          [u++, w++, v++]
+      }
+      m ()
+          """)
+      assertEquals ([3,3,3], res)
+    }
 
 
   void testCast() {

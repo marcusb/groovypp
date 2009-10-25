@@ -314,8 +314,6 @@ public class ClassNodeCache {
                     params[j] = parameters[j+1];
 
                 DGM mn = createDGM(klazz, methodNode, declaringClass, methodNode.getExceptions(), params);
-                mn.setGenericsTypes(methodNode.getGenericsTypes());
-                mn.original = methodNode;
 
                 List<MethodNode> list = dgmMethods.get(declaringClass);
                 if (list == null) {
@@ -338,6 +336,8 @@ public class ClassNodeCache {
         mn.setDeclaringClass(declaringClass);
         mn.callClassInternalName = BytecodeHelper.getClassInternalName(klazz);
         mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getParameters());
+        mn.setGenericsTypes(method.getGenericsTypes());
+        mn.original = method;
         return mn;
     }
 

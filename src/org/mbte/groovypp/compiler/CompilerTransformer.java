@@ -167,6 +167,8 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         mn.setDeclaringClass(pp[0].getType());
         mn.callClassInternalName = BytecodeHelper.getClassInternalName(method.getDeclaringClass());
         mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getParameters());
+        mn.setGenericsTypes(method.getGenericsTypes());
+        mn.original = method;
         return mn;
     }
 

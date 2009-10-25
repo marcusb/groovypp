@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
@@ -23,6 +24,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         this.index = index;
         this.getter = getter;
         this.getterExpr = new ResolvedMethodBytecodeExpr(parent, getter, array, new ArgumentListExpression(index), compiler);
+        setType(getterExpr.getType());
         this.setter = setter;
     }
 
@@ -58,7 +60,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = compiler.cast((BytecodeExpr) compiler.transform(op), getType());
 
-        final BytecodeExpr result = new BytecodeExpr(this, transformedOp.getType()) {
+        final BytecodeExpr result = new BytecodeExpr(this, TypeUtil.wrapSafely(transformedOp.getType())) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
@@ -73,6 +75,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
                 index.visit(mv);
                 mv.visitInsn(DUP2);
                 transformedOp.visit(mv);
+                box(transformedOp.getType(), mv);
                 dup_x2(getType(), mv);
                 store.visit(mv);
                 if (!setter.getReturnType().equals(ClassHelper.VOID_TYPE)) {

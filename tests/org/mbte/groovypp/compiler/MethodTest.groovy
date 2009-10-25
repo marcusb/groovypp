@@ -152,9 +152,20 @@ class X {
     assertEquals 239, res
   }
 
+    void testGetAt() {
+      def res = shell.evaluate("""
+            @Typed(debug=true)
+            def u () {
+               "null"?.chars?.getAt(0)
+            }
+            u ()
+            """)
+      assertEquals('n', res)
+    }
+
   void testSafe() {
     def res = shell.evaluate("""
-          @Typed
+          @Typed(debug=true)
           def u () {
              String x = null, y = "null"
              if (!x?.equals("abc"))

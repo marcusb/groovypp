@@ -133,7 +133,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             object = null;
         }
         ClassNode returnType = methodNode.getReturnType();
-        if (returnType.equals(ClassHelper.VOID_TYPE)) return TypeUtil.NULL_TYPE;
+        if (returnType.equals(ClassHelper.VOID_TYPE))
+            return ClassHelper.VOID_TYPE;
         GenericsType[] typeVars = methodNode.getGenericsTypes();
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
@@ -222,9 +223,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             be.unbox(paramType, mv);
         }
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
-        if (methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
-            mv.visitInsn(ACONST_NULL);
 
-        cast(TypeUtil.wrapSafely(methodNode.getReturnType()), TypeUtil.wrapSafely(getType()), mv);
+        if (!methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
+            cast(TypeUtil.wrapSafely(methodNode.getReturnType()), TypeUtil.wrapSafely(getType()), mv);
     }
 }
