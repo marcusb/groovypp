@@ -44,6 +44,21 @@ new A().m ()
       assertEquals ([3,3,3], res)
     }
 
+    void testArrayInference() {
+      def res = shell.evaluate("""
+      @Typed class Foo {
+        def <T> T getFirst(T[] ts) { ts[0] }
+        def bar() {
+           int[] arr = new int[1]
+           arr[0] = 0
+           getFirst(arr) * 100
+        }
+      }
+      new Foo().bar()
+          """)
+      assertEquals (0, res)
+    }
+
 
   void testCast() {
     def res = shell.evaluate("""

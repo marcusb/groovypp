@@ -58,12 +58,20 @@ public class MethodTypeInference {
             String name = typeVar.getType().getUnresolvedName();
             Constraints constraints = new Constraints();
             for (int j = 0; j < Math.min(formals.length, instantiateds.length); ++j) {
+                ClassNode formal = formals[j];
+                ClassNode instantiated = instantiateds[j];
+                while (formal.isArray()) {
+                    if (!instantiated.isArray()) continue;
+                    formal = formal.getComponentType();
+                    instantiated = instantiated.getComponentType();
+                }
+                if (instantiated.isArray()) continue;
+
                 // this is just for parameters, if we ever decide to infer from context, the variance will change
-                ClassNode instantiated = formals[j].isGenericsPlaceHolder() ? instantiateds[j] :
-                        mapTypeFromSuper(formals[j].redirect(), formals[j].redirect(), instantiateds[j]);
+                instantiated = formal.isGenericsPlaceHolder() ? instantiated :
+                        mapTypeFromSuper(formal.redirect(), formal.redirect(), instantiated);
                 if (instantiated == null) continue;
 
-                ClassNode formal = formals[j];
                 match(formal, instantiated, name, constraints, SUBTYPE);
                 if (constraints.isContradictory()) return null;   // todo per var contradiction?
             }
@@ -84,6 +92,13 @@ public class MethodTypeInference {
             GenericsType iTypearg = iTypeArgs[i];
             ClassNode fType = fTypearg.getType();
             ClassNode iType = iTypearg.getType();
+            while (fType.isArray()) {
+                if (!iType.isArray()) continue;
+                fType = fType.getComponentType();
+                iType = iType.getComponentType();
+            }
+            if (iType.isArray()) continue;
+
             if (isSuper(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
                 fType = iType.isGenericsPlaceHolder() ? fType :
