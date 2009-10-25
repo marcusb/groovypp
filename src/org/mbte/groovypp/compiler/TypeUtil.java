@@ -312,7 +312,10 @@ public class TypeUtil {
     }
 
     private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived, boolean substituteOwn) {
-        if (bDerived.redirect().equals(aSuper)) return type;
+        if (bDerived.redirect().equals(aSuper)) {
+            return substituteOwn ? getSubstitutedTypeToplevel(type, bDerived.redirect(),
+                        bDerived.getGenericsTypes()) : type;
+        }
         ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(true);
         if (derivedSuperClass != null) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass, false);
