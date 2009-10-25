@@ -243,14 +243,24 @@ public class TypeUtil {
     }
 
     private static ClassNode getSubstitutedTypeToplevelInner(ClassNode toSubstitute, GenericsType[] typeArgs, String[] typeVariables) {
+        int arrayCount = 0;
+        while (toSubstitute.isArray()) {
+            toSubstitute = toSubstitute.getComponentType();
+            arrayCount++;
+        }
         if (!toSubstitute.getName().equals(toSubstitute.getUnresolvedName())/*toSubstitute.isGenericsPlaceHolder() does not always work*/) {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
-            return binding != null ? binding : toSubstitute;
+            return createArrayType(arrayCount, binding != null ? binding : toSubstitute);
         }
         if (typeVariables.length != typeArgs.length) return toSubstitute;
-        return getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs);
+        return createArrayType(arrayCount, getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs));
+    }
+
+    private static ClassNode createArrayType(int arrayCount, ClassNode type) {
+        while (arrayCount-- > 0) type = type.makeArray();
+        return type;
     }
 
     private static String[] getTypeParameterNames(ClassNode clazz) {
