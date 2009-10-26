@@ -9,6 +9,8 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
+import org.mbte.groovypp.runtime.TypedClosure;
+import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
 import java.util.*;
 
@@ -16,6 +18,7 @@ public class TypeUtil {
     public static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
     public static final String DTT_INTERNAL = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
     public static final ClassNode LINKED_HASH_MAP_TYPE = make(LinkedHashMap.class);
+    public static final ClassNode EX_LINKED_HASH_MAP_TYPE = make(LinkedHashMapEx.class);
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);

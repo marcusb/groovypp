@@ -43,7 +43,7 @@ m()
     def res = shell.evaluate("""
 @Typed
 def m () {
-  def u = (Serializable)[:]
+  def u = (List)[:]
   u.put("k","v")
   u
 }

@@ -1,8 +1,12 @@
-package groovy.lang;
+package org.mbte.groovypp.runtime;
 
 import org.codehaus.groovy.runtime.GeneratedClosure;
 
 import java.io.Serializable;
+
+import groovy.lang.GroovyObject;
+import groovy.lang.OwnerAware;
+import groovy.lang.Closure;
 
 /**
  * Closure with delegate of defined type

@@ -46,6 +46,26 @@ public class ClosureTest extends GroovyShellTestCase {
         assertEquals ([10, 9], res)
     }
 
+    void testArgsCoerce () {
+        def res = shell.evaluate("""
+        interface I<T> {
+          T calc ()
+        }
+
+        def v ( I a, I b, I c) {
+           a.calc () + b.calc () + c.calc ()
+        }
+
+        @Typed
+        def u (int add) {
+            v ( {10}, [calc:{value + add}, value:11], {12} )
+        }
+
+        u (10)
+    """)
+        assertEquals (43, res)
+    }
+
     void testMap () {
         def res = shell.evaluate("""
         interface I<T> {

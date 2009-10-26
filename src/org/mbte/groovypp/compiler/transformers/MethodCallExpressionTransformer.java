@@ -3,7 +3,6 @@ package org.mbte.groovypp.compiler.transformers;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
@@ -221,17 +220,64 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         };
     }
 
-    private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
+    private MethodNode findMethodVariatingArgs(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, int firstNonVariating) {
         MethodNode foundMethod = compiler.findMethod(type, methodName, argTypes);
         if (foundMethod != null) {
             return foundMethod;
         }
 
-        if (argTypes.length > 0 && argTypes[argTypes.length - 1] != null && argTypes[argTypes.length - 1].implementsInterface(TypeUtil.TCLOSURE)) {
-            final ClassNode oarg = argTypes[argTypes.length - 1];
-            argTypes[argTypes.length - 1] = null;
-            foundMethod = compiler.findMethod(type, methodName, argTypes);
-            if (foundMethod != null) {
+        if (argTypes.length > 0) {
+            for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
+                final ClassNode oarg = argTypes[i];
+                if (oarg.implementsInterface(TypeUtil.TCLOSURE) || oarg.equals(TypeUtil.EX_LINKED_HASH_MAP_TYPE)) {
+                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+
+                    if (foundMethod != null) {
+                        Parameter p[] = foundMethod.getParameters();
+                        if (p.length == argTypes.length) {
+                            return foundMethod;
+                        }
+                    }
+
+                    argTypes[i] = null;
+                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+                    if (foundMethod != null) {
+                        Parameter p[] = foundMethod.getParameters();
+                        if (p.length == argTypes.length) {
+                            ClassNode argType = p[i].getType();
+
+                            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                            if (one == null || doCall == null) {
+                                foundMethod = null;
+                            } else {
+                                ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+                            }
+                        }
+                    }
+                    argTypes[i] = oarg;
+                    return foundMethod;
+                }
+            }
+        }
+        return null;
+    }
+
+    private MethodNode tryCoerceMap(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, int i, ClassNode oarg) {
+        MethodNode foundMethod;
+        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+
+        if (foundMethod != null) {
+                Parameter p[] = foundMethod.getParameters();
+                if (p.length == argTypes.length) {
+                    return foundMethod;
+                }
+            }
+
+
+        argTypes[i] = null;
+        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+        if (foundMethod != null) {
                 Parameter p[] = foundMethod.getParameters();
                 if (p.length == argTypes.length) {
                     ClassNode argType = p[p.length - 1].getType();
@@ -239,15 +285,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
                     MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
                     if (one == null || doCall == null) {
-                        foundMethod = null;
+                        return null;
                     } else {
                         ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
                     }
                 }
             }
-            argTypes[argTypes.length - 1] = oarg;
-        }
+        argTypes[i] = oarg;
 
         return foundMethod;
+    }
+
+    private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
+        return findMethodVariatingArgs(type, methodName, argTypes, compiler, -1);
     }
 }

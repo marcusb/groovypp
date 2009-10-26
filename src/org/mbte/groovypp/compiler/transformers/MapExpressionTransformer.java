@@ -20,22 +20,22 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
             list.set(i, nme);
         }
 
-        return new MyBytecodeExpr(exp);
+        return new TransformedMapExpr(exp);
 }
 
-    private static class MyBytecodeExpr extends BytecodeExpr {
+    private static class TransformedMapExpr extends BytecodeExpr {
         private final MapExpression exp;
 
-        public MyBytecodeExpr(MapExpression exp) {
-            super(exp, TypeUtil.LINKED_HASH_MAP_TYPE);
+        public TransformedMapExpr(MapExpression exp) {
+            super(exp, TypeUtil.EX_LINKED_HASH_MAP_TYPE);
             this.exp = exp;
         }
 
         protected void compile(MethodVisitor mv) {
             final List list = exp.getMapEntryExpressions();
-            mv.visitTypeInsn(NEW, "java/util/LinkedHashMap");
+            mv.visitTypeInsn(NEW, "org/mbte/groovypp/runtime/LinkedHashMapEx");
             mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL,"java/util/LinkedHashMap","<init>","()V");
+            mv.visitMethodInsn(INVOKESPECIAL,"org/mbte/groovypp/runtime/LinkedHashMapEx","<init>","()V");
             for (int i = 0; i != list.size(); ++i) {
                 mv.visitInsn(DUP);
                 final MapEntryExpression me = (MapEntryExpression) list.get(i);
@@ -45,7 +45,7 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 final BytecodeExpr ve = (BytecodeExpr) me.getValueExpression();
                 ve.visit(mv);
                 box(ve.getType(), mv);
-                mv.visitMethodInsn(INVOKEVIRTUAL,"java/util/LinkedHashMap","put","(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                mv.visitMethodInsn(INVOKEVIRTUAL,"org/mbte/groovypp/runtime/LinkedHashMapEx","put","(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
                 mv.visitInsn(POP);
             }
         }

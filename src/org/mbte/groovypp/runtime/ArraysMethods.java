@@ -1,5 +1,7 @@
 package org.mbte.groovypp.runtime;
 
+import java.util.Iterator;
+
 public class ArraysMethods {
     private static int normaliseIndex(int i, int size) {
         int temp = i;
@@ -82,5 +84,149 @@ public class ArraysMethods {
 
     public static  void putAt (long [] self, int i, long v) {
         self[normaliseIndex(i, self.length)] = v;
+    }
+
+    public static Iterator<Character> iterator (final char self []) {
+        return new Iterator<Character> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Character next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Boolean> iterator (final boolean self []) {
+        return new Iterator<Boolean> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Boolean next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Byte> iterator (final byte self []) {
+        return new Iterator<Byte> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Byte next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Short> iterator (final short self []) {
+        return new Iterator<Short> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Short next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Integer> iterator (final int self []) {
+        return new Iterator<Integer> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Integer next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Long> iterator (final long self []) {
+        return new Iterator<Long> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Long next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Float> iterator (final float self []) {
+        return new Iterator<Float> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Float next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static Iterator<Double> iterator (final double self []) {
+        return new Iterator<Double> () {
+            int count = 0;
+
+            public boolean hasNext() {
+                return count != self.length;
+            }
+
+            public Double next() {
+                return self[count++];
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }

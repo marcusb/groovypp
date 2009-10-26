@@ -3,9 +3,6 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.reflection.CachedClass;
-import org.codehaus.groovy.reflection.CachedMethod;
-import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
@@ -14,9 +11,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
-
-import groovy.util.FilterClosure;
-import groovy.lang.TypedClosure;
 
 public class ClassNodeCache {
 
@@ -41,8 +35,8 @@ public class ClassNodeCache {
         initDgm(DefaultGroovyMethods.class);
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
-        initDgm(FilterClosure.class);
         initDgm("groovy.util.TransformClosure");
+        initDgm("groovy.util.FilterClosure");
     }
 
     private static void initDgm(String klazz) {
