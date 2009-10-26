@@ -141,7 +141,7 @@ m ()
   void testListWithGen() {
     def res = shell.evaluate ("""
         @Typed
-         <T> List<T> u (List<List<T>> list, T toAdd) {
+         <T> List<List<T>> u (List<List<T>> list, T toAdd) {
           for (int i = 0; i != list.size (); ++i)
             list [i] << toAdd
           list
