@@ -366,6 +366,9 @@ public class TypeUtil {
         if (!type1.redirect().equals(type2.redirect())) return false;
         GenericsType[] args1 = type1.getGenericsTypes();
         GenericsType[] args2 = type2.getGenericsTypes();
+        if (args1 == null || args2 == null) {
+            return args1 == null && args2 == null;
+        }
         for (int i = 0; i < args2.length; i++) {
             if (args1[i].isWildcard()) {
                 if (!args2[i].isWildcard()) return false;
