@@ -58,7 +58,7 @@ public class ClosureTest extends GroovyShellTestCase {
 
         @Typed
         def u (int add) {
-            v ( {10}, [calc:{value + add}, value:11], {12} )
+            v ( {10}, {11+add}, {12} )
         }
 
         u (10)
@@ -87,48 +87,4 @@ public class ClosureTest extends GroovyShellTestCase {
     """)
         assertEquals ([14, 15, 16], res)
     }
-
-  void testClosure() {
-    shell.evaluate("""
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-
-@Typed
-class MailBox {
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
-
-    protected final void loop (TypedClosure<MailBox> operation) {
-        executor.submit {
-            operation.setDelegate this
-            operation ()
-            loop (operation)
-        }
-    }
-}
-
-1
-""")
-  }
-
-  void testClosureAsObj() {
-    shell.evaluate("""
-    import java.util.concurrent.ExecutorService
-    import java.util.concurrent.Executors
-
-    @Typed
-    class MailBox {
-        private static final ExecutorService executor = Executors.newCachedThreadPool();
-
-        protected final void loop (TypedClosure<MailBox> operation) {
-            executor.submit {
-                operation.setDelegate this
-                operation ()
-                loop (operation)
-            }
-        }
-    }
-
-    1
-    """)
-  }
 }

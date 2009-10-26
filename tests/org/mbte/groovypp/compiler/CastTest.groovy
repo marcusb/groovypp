@@ -43,7 +43,7 @@ m()
     def res = shell.evaluate("""
 @Typed
 def m () {
-  def u = (List)[:]
+  def u = (Map<Integer,Object>)[:]
   u.put("k","v")
   u
 }

@@ -216,8 +216,6 @@ class SubscriptTest extends GroovyShellTestCase {
           assert sub['a'] == 123
           assert sub['b'] == 456
           assert ! sub.containsKey('c')
-
-          assert map.getClass() == sub.getClass()
         }
 
          u()

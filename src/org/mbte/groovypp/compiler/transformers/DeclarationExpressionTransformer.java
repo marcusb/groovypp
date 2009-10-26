@@ -18,6 +18,12 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             ve.setType(ve.getOriginType());
 
         if (!ve.isDynamicTyped()) {
+            if (ClassHelper.isPrimitiveType(ve.getType()) && (exp.getRightExpression() instanceof ConstantExpression)) {
+                ConstantExpression constantExpression = (ConstantExpression) exp.getRightExpression();
+                if (constantExpression.getValue() == null) {
+                    exp.setRightExpression(new ConstantExpression(0));
+                }
+            }
             CastExpression cast = new CastExpression(ve.getType(), exp.getRightExpression());
             cast.setSourcePosition(exp.getRightExpression());
             exp.setRightExpression(cast);

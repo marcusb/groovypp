@@ -93,27 +93,6 @@ def a = new A()
     assertEquals([8, 5, 4, 3], res)
   }
 
-  void testTypedClosure() {
-    def res = shell.evaluate("""
-def v (TypedClosure<List> cl) {
-  cl.setDelegate ([])
-  cl.call()
-}
-
-@Typed
-def u () {
-   v {
-      add (v { 3 })
-      getDelegate()
-   }
-}
-
-u()
-        """)
-
-    assertEquals([3], res)
-  }
-
   void testClosure() {
     def res = shell.evaluate("""
 def v (Closure cl) {

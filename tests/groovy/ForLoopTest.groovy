@@ -258,7 +258,7 @@ class ForLoopTest extends GroovyShellTestCase {
 
   void testClassicForWithEmptyBody() {
     shell.evaluate("""
-        @Typed
+        @Typed(debug=true)
         def u() {
           int i
           for (i = 0; i < 5; i++);
