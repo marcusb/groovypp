@@ -181,7 +181,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private String getMethodDescr(ClassNode type, String methodName, ClassNode[] argTypes) {
         StringBuilder sb = new StringBuilder(type.getName())
-                .append("#")
+                .append(".")
                 .append(methodName)
                 .append("(");
         for (int i = 0; i != argTypes.length; i++) {

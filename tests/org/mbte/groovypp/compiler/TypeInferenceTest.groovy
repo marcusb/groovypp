@@ -162,7 +162,7 @@ m ()
             def answer = (Map<K, List<T>>)[:]
             for (T element : self) {
                 def value = transform.transform(element)
-                def list = answer.get(value)
+                def list = answer[value]
                 if (list == null) {
                     list = new LinkedList<T> ()
                     answer[value] = list
@@ -178,6 +178,8 @@ m ()
               it instanceof String
             }
         }
+
+        test ()
       """)
       assertEquals (res[true], ["1", "2", "4"])
       assertEquals (res[false],[3, 0])

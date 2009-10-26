@@ -137,10 +137,12 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 ClassNode rtype = TypeUtil.wrapSafely(expr.getType());
                 if (TypeUtil.isDirectlyAssignableFrom(exp.getType(), rtype)) {
                     // c)
-                    if (rtype.equals(exp.getType()))
+                    if (rtype.equals(exp.getType())) {
+                        expr.setType(exp.getType()); // important for correct generic signature
                         return expr;
+                    }
                     else {
-                        return new BytecodeExpr(expr, rtype) {
+                        return new BytecodeExpr(expr, exp.getType()) {
                             protected void compile(MethodVisitor mv) {
                                 expr.visit(mv);
                                 box(expr.getType(), mv);
