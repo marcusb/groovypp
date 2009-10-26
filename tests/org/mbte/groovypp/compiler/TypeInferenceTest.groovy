@@ -138,6 +138,16 @@ m ()
     assertEquals([1, 2, 3, 4, 5, 6.0d, 1, 10, "10 9"], res)
   }
 
-  void testSafe() {
+  void testListWithGen() {
+    def res = shell.evaluate ("""
+        @Typed
+         <T> List<T> u (List<List<T>> list, T toAdd) {
+          for (int i = 0; i != list.size (); ++i)
+            list [i] << toAdd
+          list
+        }
+        u ([[0], [1], [2]], -1)
+    """)
+    assertEquals ([[0, -1], [1,-1], [2,-1]], res)
   }
 }
