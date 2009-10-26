@@ -75,6 +75,17 @@ new A().m ()
       assertEquals (5, res)
     }
 
+    void testVarargsInference() {
+      def res = shell.evaluate("""
+        @Typed
+        def bar() {
+          Arrays.asList("schwiitzi", "nati").get(1).charAt(0)
+        }
+        bar()
+        """)
+      assertEquals ('n', res)
+    }
+
 
   void testCast() {
     def res = shell.evaluate("""

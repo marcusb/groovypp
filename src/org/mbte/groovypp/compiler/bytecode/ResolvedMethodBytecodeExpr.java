@@ -10,6 +10,7 @@ import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final MethodNode methodNode;
@@ -138,12 +139,20 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         GenericsType[] typeVars = methodNode.getGenericsTypes();
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
-            // todo varargs?
-            int length = Math.min(params.length, bargs.getExpressions().size());
+            List<Expression> exprs = bargs.getExpressions();
+            int length;
+            if (exprs.size() > params.length && params[params.length - 1].getType().isArray()) {
+                length = exprs.size();
+            } else {
+                length = Math.min(params.length, exprs.size());
+            }
+
             ClassNode[] paramTypes = new ClassNode[length];
             ClassNode[] argTypes = new ClassNode[length];
             for (int i = 0; i < length; i++) {
-                paramTypes[i] = params[i].getType();
+                paramTypes[i] = i >= params.length - 1 && length > params.length ?
+                        /* varargs case */ params[params.length - 1].getType().getComponentType() :
+                        params[i].getType();
                 argTypes[i] = bargs.getExpression(i).getType();
             }
             ClassNode[] bindings = MethodTypeInference.inferTypeArguments(typeVars, paramTypes, argTypes);
@@ -218,8 +227,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             final ClassNode paramType = parameters[i].getType();
             final ClassNode type = be.getType();
             box(type, mv);
-            be.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
-            be.unbox(paramType, mv);
+            cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+            unbox(paramType, mv);
         }
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
 
