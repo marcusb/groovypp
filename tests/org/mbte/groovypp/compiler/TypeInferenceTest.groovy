@@ -150,4 +150,36 @@ m ()
     """)
     assertEquals ([[0, -1], [1,-1], [2,-1]], res)
   }
+
+    void testGroupBy() {
+      def res = shell.evaluate ("""
+        interface Transform<K,V> {
+           V transform (K key)
+        }
+
+        @Typed
+        static <K,T> Map<K, List<T>> groupBy(Collection<T> self, Transform<T,K> transform) {
+            def answer = (Map<K, List<T>>)[:]
+            for (T element : self) {
+                def value = transform.transform(element)
+                def list = answer.get(value)
+                if (list == null) {
+                    list = new LinkedList<T> ()
+                    answer[value] = list
+                }
+                list << element
+            }
+            answer
+        }
+
+        @Typed
+        def test () {
+            groupBy(["1", 3, "2", "4", 0]){
+              it instanceof String
+            }
+        }
+      """)
+      assertEquals (res[true], ["1", "2", "4"])
+      assertEquals (res[false],[3, 0])
+    }
 }
