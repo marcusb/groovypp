@@ -16,6 +16,7 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 
 import groovy.util.FilterClosure;
+import groovy.lang.TypedClosure;
 
 public class ClassNodeCache {
 
@@ -41,6 +42,15 @@ public class ClassNodeCache {
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
         initDgm(FilterClosure.class);
+        initDgm("groovy.util.TransformClosure");
+    }
+
+    private static void initDgm(String klazz) {
+        try {
+            Class<?> aClass = Class.forName(klazz);
+            initDgm(aClass);
+        } catch (ClassNotFoundException e) { //
+        }
     }
 
     static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {
