@@ -58,11 +58,12 @@ public class MethodTypeInference {
             GenericsType typeVar = typeVars[i];
             String name = typeVar.getType().getUnresolvedName();
             Constraints constraints = new Constraints();
+            NextParam:
             for (int j = 0; j < Math.min(formals.length, instantiateds.length); ++j) {
                 ClassNode formal = formals[j];
                 ClassNode instantiated = instantiateds[j];
                 while (formal.isArray()) {
-                    if (!instantiated.isArray()) continue;
+                    if (!instantiated.isArray()) continue NextParam;
                     formal = formal.getComponentType();
                     instantiated = instantiated.getComponentType();
                 }
@@ -103,7 +104,7 @@ public class MethodTypeInference {
             if (iType.isArray()) continue;
             fType = TypeUtil.wrapSafely(fType);
             iType = TypeUtil.wrapSafely(iType);
-            
+
             if (isSuper(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
                 fType = iType.isGenericsPlaceHolder() ? fType :
