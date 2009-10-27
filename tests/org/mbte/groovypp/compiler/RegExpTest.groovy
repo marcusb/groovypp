@@ -120,10 +120,11 @@ public class RegExpTest extends GroovyShellTestCase {
 
   void testBitwiseNegateGStringSyntax() {
     shell.evaluate """
-      //@Typed
+      @Typed
       def u () {
           def value = "foo"
-          def pattern = ~"\$value";
+          def pattern = ~"\$value"
+          assert pattern instanceof java.util.regex.Pattern
       }
       u()
     """
