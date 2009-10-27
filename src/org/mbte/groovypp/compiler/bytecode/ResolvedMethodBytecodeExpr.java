@@ -139,24 +139,27 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         GenericsType[] typeVars = methodNode.getGenericsTypes();
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
-            List<Expression> exprs = bargs.getExpressions();
-            int length;
-            if (exprs.size() > params.length && params[params.length - 1].getType().isArray()) {
-                length = exprs.size();
-            } else {
-                length = Math.min(params.length, exprs.size());
-            }
+            if (params.length > 0) {
+                List<Expression> exprs = bargs.getExpressions();
+                int length;
+                if (exprs.size() > params.length && params[params.length - 1].getType().isArray()) {
+                    length = exprs.size();
+                } else {
+                    length = Math.min(params.length, exprs.size());
+                }
 
-            ClassNode[] paramTypes = new ClassNode[length];
-            ClassNode[] argTypes = new ClassNode[length];
-            for (int i = 0; i < length; i++) {
-                paramTypes[i] = i >= params.length - 1 && length > params.length ?
-                        /* varargs case */ params[params.length - 1].getType().getComponentType() :
-                        params[i].getType();
-                argTypes[i] = bargs.getExpression(i).getType();
+                ClassNode[] paramTypes = new ClassNode[length];
+                ClassNode[] argTypes = new ClassNode[length];
+                for (int i = 0; i < length; i++) {
+                    paramTypes[i] = i > params.length - 1 ||
+                            (i == params.length - 1 && params[i].getType().isArray() && !bargs.getExpression(i).getType().isArray()) ?
+                            /* varargs case */ params[params.length - 1].getType().getComponentType() :
+                            params[i].getType();
+                    argTypes[i] = bargs.getExpression(i).getType();
+                }
+                ClassNode[] bindings = MethodTypeInference.inferTypeArguments(typeVars, paramTypes, argTypes);
+                returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
             }
-            ClassNode[] bindings = MethodTypeInference.inferTypeArguments(typeVars, paramTypes, argTypes);
-            returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
         }
         return object != null ? TypeUtil.getSubstitutedType(returnType,
                 methodNode.getDeclaringClass(), object.getType()) : returnType;
