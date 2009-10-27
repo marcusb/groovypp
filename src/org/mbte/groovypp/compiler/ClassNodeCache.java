@@ -37,6 +37,12 @@ public class ClassNodeCache {
         initDgm(ArraysMethods.class);
         initDgm("groovy.util.TransformClosure");
         initDgm("groovy.util.FilterClosure");
+        initDgm("groovy.util.FilterMapClosure");
+        initDgm("groovy.util.IterationClosure");
+        initDgm("groovy.util.IterationClosureWithIndex");
+        initDgm("groovy.util.MapIterationClosure");
+        initDgm(Arrays.class);
+        initDgm(Collections.class);
     }
 
     private static void initDgm(String klazz) {

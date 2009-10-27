@@ -108,7 +108,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
                             mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
                         }
-                        BytecodeExpr.checkCast(getType(), mv);
+//                        BytecodeExpr.checkCast(getType(), mv);
                     }
                 };
 

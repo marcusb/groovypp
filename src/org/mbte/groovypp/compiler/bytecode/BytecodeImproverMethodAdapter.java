@@ -182,5 +182,4 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
         dropBoxing ();
         super.visitTryCatchBlock(start, end, handler, type);
     }
-
 }

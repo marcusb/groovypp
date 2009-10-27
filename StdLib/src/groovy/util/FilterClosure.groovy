@@ -27,19 +27,19 @@ abstract class FilterClosure<T> extends DefaultGroovyMethodsSupport {
             if (condition.checkCondition(el))
                 return el
         }
-        return null
+        null
     }
 
      static <T> T find(Iterable<T> self, FilterClosure<T> condition) {
-        return find(self.iterator(), condition)
+        find(self.iterator(), condition)
     }
 
      static <T> T find(T[] self, FilterClosure<T> condition) {
-        return find(Arrays.asList(self), condition)
+        find(Arrays.asList(self), condition)
     }
 
      static <K,V> Map.Entry<K,V> find(Map<K,V> self, FilterClosure<Map.Entry<K,V>> condition) {
-        return find(self.entrySet(), condition)
+        find(self.entrySet(), condition)
     }
 
      static <T> Collection<T> findAll(Iterator<T> self, Collection<T> answer, FilterClosure<T> condition) {
@@ -62,11 +62,11 @@ abstract class FilterClosure<T> extends DefaultGroovyMethodsSupport {
     }
 
      static <T> Collection<T> findAll(Collection<T> self, FilterClosure<T> condition) {
-        return findAll(self.iterator(), createSimilarCollection(self), condition)
+        findAll(self.iterator(), createSimilarCollection(self), condition)
     }
 
      static <T> Collection<T> findAll(T[] self, FilterClosure<T> condition) {
-        return findAll(Arrays.asList(self), condition)
+        findAll(Arrays.asList(self), condition)
     }
 
      static <T> boolean any(Iterator<T> self, FilterClosure<T> condition) {
@@ -76,28 +76,27 @@ abstract class FilterClosure<T> extends DefaultGroovyMethodsSupport {
                 return true
             }
         }
-        return false
+        false
     }
 
      static <K,V> boolean any(Map<K,V> self, FilterClosure<Map.Entry<K,V>> condition) {
-        return any(self.entrySet(), condition)
+        any(self.entrySet(), condition)
     }
 
      static <T> boolean any(Collection<T> self, FilterClosure<T> condition) {
-        return any(self.iterator(), condition)
+        any(self.iterator(), condition)
     }
 
      static <T> boolean any(T [] self, FilterClosure<T> condition) {
-        return any(Arrays.asList(self), condition)
+        any(Arrays.asList(self), condition)
     }
 
      static <T> boolean any(Iterable<T> self, FilterClosure<T> condition) {
-        return any(self.iterator(), condition)
+        any(self.iterator(), condition)
     }
 
     @Typed
     private static class MyIterator<T> implements Iterator<T> {
-
         private T next
             private boolean nextChecked
             private boolean hasNext
@@ -112,7 +111,7 @@ abstract class FilterClosure<T> extends DefaultGroovyMethodsSupport {
 
             boolean hasNext() {
                 checkNext ()
-                return hasNext
+                hasNext
             }
 
             private void checkNext() {
@@ -141,7 +140,7 @@ abstract class FilterClosure<T> extends DefaultGroovyMethodsSupport {
                 T res = next
                 nextChecked = false
                 next = null
-                return res
+                res
             }
 
             void remove() {
