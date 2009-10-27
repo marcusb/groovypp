@@ -98,7 +98,11 @@ public class RegExpTest extends GroovyShellTestCase {
     shell.evaluate """
       @Typed
       def u () {
-        assert "cheesecheese" =~ "cheese"
+        def a = ("cheesecheese" =~ "cheese");
+        assert a instanceof java.util.regex.Matcher
+        assert("cheesecheese" =~ "cheese")
+        assert !("cheese" =~ "cheesecheese")
+        assert !("cheesecheese" =~ "asdf")
       }
       u()
     """
@@ -116,17 +120,12 @@ public class RegExpTest extends GroovyShellTestCase {
 
   void testBitwiseNegateGStringSyntax() {
     shell.evaluate """
-      @Typed
+      //@Typed
       def u () {
-          def AREA_CODE = /\\d{3}/
-          def EXCHANGE = /\\d{3}/
-          def STATION_NUMBER = /\\d{4}/
-          def phone = /(\$AREA_CODE)-(\$EXCHANGE)-(\$STATION_NUMBER)/
-
-          def compiledPhonePattern = ~phone
+          def value = "foo"
+          def pattern = ~"\$value";
       }
       u()
     """
   }
-
 }

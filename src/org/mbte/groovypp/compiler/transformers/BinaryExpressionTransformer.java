@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -132,19 +133,18 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.INTDIV_EQUAL:
                 return evaluateMathOperationAssign(exp, INTDIV, compiler);
 
-/*
             case Types.FIND_REGEX:
-                evaluateBinaryExpression(findRegexMethod, expression);
-                break;
+                return evaluateFindRegexp(exp, compiler);
 
             case Types.MATCH_REGEX:
-                evaluateBinaryExpression(matchRegexMethod, expression);
-                break;
+				return evaluateMatchRegexp(exp, compiler);
 
+/*
             case Types.KEYWORD_IN:
-                evaluateBinaryExpression(isCaseMethod, expression);
-                break;
+	            compiler.addError("Operation: " + exp.getOperation() + " not supported", exp);
+	            return null;
 */
+
             default: {
                 compiler.addError("Operation: " + exp.getOperation() + " not supported", exp);
                 return null;
@@ -478,7 +478,48 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             };
     }
 
-    private static class Logical extends BytecodeExpr {
+    private static BytecodeExpr evaluateFindRegexp(final BinaryExpression exp, final CompilerTransformer compiler) {
+        final BytecodeExpr left = (BytecodeExpr) compiler.transform(exp.getLeftExpression());
+        final BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+
+        return new BytecodeExpr(exp, TypeUtil.MATCHER) {
+            protected void compile(MethodVisitor mv) {
+                left.visit(mv);
+                if (ClassHelper.isPrimitiveType(left.getType()))
+                    box(left.getType(), mv);
+                right.visit(mv);
+                if (ClassHelper.isPrimitiveType(right.getType()))
+                    box(right.getType(), mv);
+
+                mv.visitMethodInsn(
+                        INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper",
+                        "findRegex", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/regex/Matcher;");
+            }
+        };
+    }
+
+    private static BytecodeExpr evaluateMatchRegexp(final BinaryExpression exp, final CompilerTransformer compiler) {
+        final BytecodeExpr left = (BytecodeExpr) compiler.transform(exp.getLeftExpression());
+        final BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+
+        return new BytecodeExpr(exp, ClassHelper.boolean_TYPE) {
+            protected void compile(MethodVisitor mv) {
+                left.visit(mv);
+                if (ClassHelper.isPrimitiveType(left.getType()))
+                    box(left.getType(), mv);
+                right.visit(mv);
+                if (ClassHelper.isPrimitiveType(right.getType()))
+                    box(right.getType(), mv);
+
+                mv.visitMethodInsn(
+                        INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper",
+                        "matchRegex", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+
+            }
+        };
+    }
+
+	private static class Logical extends BytecodeExpr {
         private final Label _false = new Label(), _end = new Label();
         private final BytecodeExpr be;
 

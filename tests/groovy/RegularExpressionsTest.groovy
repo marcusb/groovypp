@@ -168,17 +168,14 @@ class RegularExpressionsTest extends GroovyShellTestCase {
     shell.evaluate """
       @Typed
       def u () {
-        def count = 0
         def result = []
-        ("cheesecheese" =~ "cheese").each {value -> result += value; count = count + 1}
-        assert count == 2
+        ("cheesecheese" =~ "cheese").each {value -> result << value}
         assert result == ['cheese', 'cheese']
 
-        count = 0
         result = []
-        ("cheesecheese" =~ "ee+").each { result += it; count = count + 1}
-        assert count == 2
+        ("cheesecheese" =~ "ee+").each { result << it;}
         assert result == ['ee', 'ee']
+
 
         def matcher = "cheese please" =~ /([^e]+)e+/
         def resultAll = []
@@ -194,6 +191,7 @@ class RegularExpressionsTest extends GroovyShellTestCase {
         result = []
         matcher.each { result << it }
         assert [["chee", "ch"], ["se", "s"], [" ple", " pl"], ["ase", "as"]] == result
+
       }
       u()
     """
@@ -291,34 +289,6 @@ class RegularExpressionsTest extends GroovyShellTestCase {
 
   }
 
-  void testGetLastMatcher() {
-    shell.evaluate """
-        import java.util.regex.Pattern
-
-        @Typed
-        def u () {
-          assert "cheese" ==~ "cheese"
-          assert Matcher.getLastMatcher().matches()
-
-          switch ("cheesefoo") {
-              case ~"cheesecheese":
-                  assert false;
-                  break;
-              case ~"(cheese)(foo)":
-                  def m = Matcher.getLastMatcher();
-                  assert m.group(0) == "cheesefoo"
-                  assert m.group(1) == "cheese"
-                  assert m.group(2) == "foo"
-                  assert m.groupCount() == 2
-                  break;
-              default:
-                  assert false
-          }
-        }
-        u()
-      """
-  }
-
   void testRyhmeMatchGina() {
     shell.evaluate """
         @Typed
@@ -326,18 +296,17 @@ class RegularExpressionsTest extends GroovyShellTestCase {
           def myFairStringy = 'The rain in Spain stays mainly in the plain!'
           def BOUNDS = /\\b/
           def rhyme = /\$BOUNDS\\w*ain\$BOUNDS/
-          def found = ''
-          myFairStringy.eachMatch(rhyme) {match ->
-              found += match + ' '
+          def found = []
+          myFairStringy.eachMatch(rhyme) {String match ->
+              found << match
           }
-          assert found == 'rain Spain plain '
-          // a second way that is equivalent
-          found = ''
-          (myFairStringy =~ rhyme).each {match ->
-              found += match + ' '
-          }
-          assert found == 'rain Spain plain '
+          assert found == ["rain", "Spain", "plain"]
 
+          found = []
+          (myFairStringy =~ rhyme).each {String match ->
+              found << match
+          }
+          assert found == ["rain", "Spain", "plain"]
         }
         u()
       """
@@ -375,19 +344,21 @@ class RegularExpressionsTest extends GroovyShellTestCase {
         @Typed
         def u () {
           def m = 'coffee' =~ /ee/
-          def result = ''
-          m.each { result += it }
-          assert result == 'ee'
-          result = ''
-          m.each { result += it }
-          assert result == 'ee'
+          def result = []
+          m.each { result << it }
+          assert result == ["ee"]
+
+          result = []
+          m.each { result << it }
+          assert result == ['ee']
           m.reset()
-          result = ''
-          m.each { result += it }
-          assert result == 'ee'
+
+          result = []
+          m.each { result << it }
+          assert result == ['ee']
 
           m = 'reek coffee' =~ /ee/
-          assert m.collect { it }.join(',') == 'ee,ee'
+          assert m.collect { it } == ["ee", "ee"]
           assert m.collect { it }.join(',') == 'ee,ee'
           m.reset()
           assert m.collect { it }.join(',') == 'ee,ee'
@@ -403,29 +374,29 @@ class RegularExpressionsTest extends GroovyShellTestCase {
         def u () {
         def string = 'a:1 b:2 c:3'
         def result = []
-        def letters = ''
-        def numbers = ''
+        def letters = []
+        def numbers = []
         string.eachMatch(/([a-z]):(\\d)/) {full, group1, group2 ->
-            result += full
-            letters += group1
-            numbers += group2
+            result << full
+            letters << group1
+            numbers << group2
         }
         assert result == ['a:1', 'b:2', 'c:3']
-        assert letters == 'abc'
-        assert numbers == '123'
+        assert letters.join('') == 'abc'
+        assert numbers.join('') == '123'
 
         result = []
-        letters = ''
-        numbers = ''
+        letters = []
+        numbers = []
         def matcher = string =~ /([a-z]):(\\d)/
-        matcher.each {match ->
-            result += match[0]
-            letters += match[1]
-            numbers += match[2]
+        matcher.each {List match ->
+            result << match[0]
+            letters << match[1]
+            numbers << match[2]
         }
         assert result == ['a:1', 'b:2', 'c:3']
-        assert letters == 'abc'
-        assert numbers == '123'
+        assert letters.join('') == 'abc'
+        assert numbers.join('') == '123'
 
         }
         u()
@@ -493,11 +464,14 @@ class RegularExpressionsTest extends GroovyShellTestCase {
     def script = '''
         @Typed
         def u () {
-          def matcher = "\$abc." =~ "\\\\\\$(.*)\\\\."
+          def matcher = "\\$abc." =~ "\\\\\\$(.*)\\\\."
+          assert matcher instanceof java.util.regex.Matcher
           matcher.matches();                   // must be invoked
           assert matcher.group(1) == "abc"     // is one, not zero
-          assert matcher[0] == ["\\$abc.", "abc"]
-          assert matcher[0][1] == "abc"
+
+          // Not in typed mode
+          //assert matcher[0] == ["\\$abc.", "abc"]
+          //assert matcher[0][1] == "abc"
         }
         u()
 
@@ -513,8 +487,10 @@ class RegularExpressionsTest extends GroovyShellTestCase {
           assert "\\\\\\$(.*)\\\\." == /\\$(.*)\\./
           matcher.matches();
           assert matcher.group(1) == "abc"
-          assert matcher[0] == ["\\$abc.", "abc"]
-          assert matcher[0][1] == "abc"
+
+          // Not in typed mode
+          //assert matcher[0] == ["\\$abc.", "abc"]
+          //assert matcher[0][1] == "abc"
         }
         u()
       ''';
@@ -534,7 +510,7 @@ class RegularExpressionsTest extends GroovyShellTestCase {
 
           for (i in 0..<m.count) {
               assert m.groupCount() == 0 // no groups
-              result += "\$i:\${m[i]}"
+              result << "\$i:\${m[i]}"
           }
           assert result == ['0:abd', '1:abf']
 

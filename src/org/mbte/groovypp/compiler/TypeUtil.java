@@ -13,6 +13,7 @@ import org.mbte.groovypp.runtime.TypedClosure;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class TypeUtil {
     public static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
@@ -36,7 +37,8 @@ public class TypeUtil {
     public static final ClassNode TREE_SET_TYPE = make(TreeSet.class);
     public static final ClassNode LINKED_LIST_TYPE = make(LinkedList.class);
     public static final ClassNode LINKED_HASH_SET_TYPE = make(LinkedHashSet.class);
-
+    public static final ClassNode MATCHER = make(Matcher.class);
+    
     public static class Null {
     }
 
