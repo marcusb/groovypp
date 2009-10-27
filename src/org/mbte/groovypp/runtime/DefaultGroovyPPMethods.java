@@ -2,7 +2,10 @@ package org.mbte.groovypp.runtime;
 
 import groovy.lang.GString;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
+
+import java.util.regex.Pattern;
 
 public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
     public static Number plus(Number self, Number other) {
@@ -63,5 +66,9 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
         }
 
         return strings;
+    }
+
+    public static Pattern bitwiseNegate(GString self) {
+        return DefaultGroovyMethods.bitwiseNegate(self.toString());
     }
 }
