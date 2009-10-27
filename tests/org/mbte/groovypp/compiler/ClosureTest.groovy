@@ -2,8 +2,8 @@ package org.mbte.groovypp.compiler
 
 public class ClosureTest extends GroovyShellTestCase {
 
-  void testAssignable () {
-      def res = shell.evaluate("""
+  void testAssignable() {
+    def res = shell.evaluate("""
       interface I<T> {
         T calc ()
       }
@@ -25,11 +25,11 @@ public class ClosureTest extends GroovyShellTestCase {
 
       u ()
   """)
-      assertEquals ([11, 12, 13], res)
+    assertEquals([11, 12, 13], res)
   }
-    
-    void testListAsArray () {
-        def res = shell.evaluate("""
+
+  void testListAsArray() {
+    def res = shell.evaluate("""
         interface I<T> {
           T calc ()
         }
@@ -43,11 +43,11 @@ public class ClosureTest extends GroovyShellTestCase {
 
         u ()
     """)
-        assertEquals ([10, 9], res)
-    }
+    assertEquals([10, 9], res)
+  }
 
-    void testArgsCoerce () {
-        def res = shell.evaluate("""
+  void testArgsCoerce() {
+    def res = shell.evaluate("""
         interface I<T> {
           T calc ()
         }
@@ -63,11 +63,11 @@ public class ClosureTest extends GroovyShellTestCase {
 
         u (10)
     """)
-        assertEquals (43, res)
-    }
+    assertEquals(43, res)
+  }
 
-    void testMap () {
-        def res = shell.evaluate("""
+  void testMap() {
+    def res = shell.evaluate("""
         interface I<T> {
           T calc ()
         }
@@ -85,6 +85,19 @@ public class ClosureTest extends GroovyShellTestCase {
 
         u ()
     """)
-        assertEquals ([14, 15, 16], res)
-    }
+    assertEquals([14, 15, 16], res)
+  }
+
+  void testModifyExternalVar() {
+    shell.evaluate """
+      @Typed
+      def u() {
+        def sum = 0;
+        [1, 2, 3].each {int it -> sum += it}
+        assert sum == 6
+      }
+      u();
+  """
+  }
+
 }
