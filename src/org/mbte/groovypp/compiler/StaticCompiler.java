@@ -30,9 +30,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     // exception blocks list
     private List<Runnable> exceptionBlocks = new ArrayList<Runnable>();
 
+    final boolean shouldImproveReturnType;
+
+    ClassNode calculatedReturnType = TypeUtil.NULL_TYPE;
+
     public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, TypePolicy policy) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, policy);
         this.methodBytecode = methodBytecode;
+        shouldImproveReturnType = methodNode.getName().equals("$doCall");
     }
 
     protected Statement getCode() {
@@ -284,16 +289,28 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         final BytecodeExpr bytecodeExpr = (BytecodeExpr) statement.getExpression();
         bytecodeExpr.visit(mv);
-        final ClassNode exprType = bytecodeExpr.getType();
-        final ClassNode returnType = methodNode.getReturnType();
+        ClassNode exprType = bytecodeExpr.getType();
+        ClassNode returnType = methodNode.getReturnType();
         if (returnType.equals(ClassHelper.VOID_TYPE)) {
             compileStack.applyFinallyBlocks();
         } else {
-            if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
-                mv.visitInsn(ACONST_NULL);
-            } else {
-                bytecodeExpr.box(exprType, mv);
-                bytecodeExpr.cast(TypeUtil.wrapSafely(exprType), TypeUtil.wrapSafely(returnType), mv);
+            if (shouldImproveReturnType) {
+                if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
+                    mv.visitInsn(ACONST_NULL);
+                } else {
+                    BytecodeExpr.box(exprType, mv);
+                    exprType = TypeUtil.wrapSafely(exprType);
+                    calculatedReturnType = TypeUtil.commonType(calculatedReturnType, exprType);
+                    BytecodeExpr.cast(exprType, calculatedReturnType, mv);
+                }
+            }
+            else {
+                if (bytecodeExpr.getType().equals(ClassHelper.VOID_TYPE)) {
+                    mv.visitInsn(ACONST_NULL);
+                } else {
+                    BytecodeExpr.box(exprType, mv);
+                    BytecodeExpr.cast(TypeUtil.wrapSafely(exprType), TypeUtil.wrapSafely(returnType), mv);
+                }
             }
 
             if (compileStack.hasFinallyBlocks()) {
@@ -301,8 +318,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 compileStack.applyFinallyBlocks();
                 mv.visitVarInsn(ALOAD, returnValueIdx);
             }
-            bytecodeExpr.unbox(returnType, mv);
+            BytecodeExpr.unbox(returnType, mv);
         }
+
         bytecodeExpr.doReturn(returnType, mv);
     }
 

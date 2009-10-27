@@ -41,6 +41,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.IterationClosure");
         initDgm("groovy.util.IterationClosureWithIndex");
         initDgm("groovy.util.MapIterationClosure");
+        initDgm("groovy.util.ClosureWithState");
         initDgm(Arrays.class);
         initDgm(Collections.class);
     }

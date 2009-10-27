@@ -68,7 +68,7 @@ class TryCatchTest extends GroovyShellTestCase {
             assert true , "Should never fail"
          }
 
-         @Typed(debug=true)
+         @Typed
          def u() {
            boolean catchVisited = false
            boolean finallyVisited = false

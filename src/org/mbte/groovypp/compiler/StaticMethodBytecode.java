@@ -50,8 +50,9 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
         final Statement code = methodNode.getCode();
         if (!(code instanceof BytecodeSequence)) {
             final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug, policy);
-            methodNode.setCode(new MyBytecodeSequence(methodBytecode) {
-            });
+            methodNode.setCode(new MyBytecodeSequence(methodBytecode));
+            if (methodBytecode.compiler.shouldImproveReturnType && !TypeUtil.NULL_TYPE.equals(methodBytecode.compiler.calculatedReturnType))
+                methodNode.setReturnType(methodBytecode.compiler.calculatedReturnType);
         }
     }
 

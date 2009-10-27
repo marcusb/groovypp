@@ -90,10 +90,9 @@ public class ClosureTest extends GroovyShellTestCase {
 
   void testModifyExternalVar() {
     shell.evaluate """
-      @Typed
+      @Typed(debug=true)
       def u() {
-        def sum = 0;
-        [1, 2, 3].each {int it -> sum += it}
+        def sum = [1, 2, 3].each(0){int it, int sum -> sum += it}
         assert sum == 6
       }
       u();

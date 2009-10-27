@@ -61,7 +61,8 @@ new A().m ()
 
     void testArrayInference1() {
       def res = shell.evaluate("""
-      @Typed(debug=true) class Foo {
+      @Typed 
+      class Foo {
         def <T> T[] getArray(T[] ts) { ts }
         def bar() {
            int[] arr = new int[1]

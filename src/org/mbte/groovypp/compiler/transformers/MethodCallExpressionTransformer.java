@@ -278,19 +278,19 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         argTypes[i] = null;
         foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
         if (foundMethod != null) {
-                Parameter p[] = foundMethod.getParameters();
-                if (p.length == argTypes.length) {
-                    ClassNode argType = p[p.length - 1].getType();
+            Parameter p[] = foundMethod.getParameters();
+            if (p.length == argTypes.length) {
+                ClassNode argType = p[p.length - 1].getType();
 
-                    List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                    MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
-                    if (one == null || doCall == null) {
-                        return null;
-                    } else {
-                        ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
-                    }
+                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                if (one == null || doCall == null) {
+                    return null;
+                } else {
+                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
                 }
             }
+        }
         argTypes[i] = oarg;
 
         return foundMethod;

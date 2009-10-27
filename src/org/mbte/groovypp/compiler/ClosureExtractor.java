@@ -123,8 +123,8 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         currentClosureName = oldCCN;
         currentClosureMethod = oldCmn;
 
-        createCallMethod(ce, newType, newParams, "doCall");
-        createCallMethod(ce, newType, newParams, "call");
+        createCallMethod(ce, _doCallMethod, "doCall");
+        createCallMethod(ce, _doCallMethod, "call");
 
         OpenVerifier v = new OpenVerifier();
         v.addDefaultParameterMethods(newType);
@@ -141,7 +141,9 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         return ce;
     }
 
-    private void createCallMethod(ClosureExpression ce, ClassNode newType, final Parameter[] newParams, final String name) {
+    private void createCallMethod(ClosureExpression ce, final ClosureMethodNode method, final String name) {
+        final Parameter[] newParams = method.getParameters();
+        ClassNode newType = newParams[0].getType();
         newType.addMethod(
                 name,
                 Opcodes.ACC_PUBLIC,
@@ -169,7 +171,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                                 mv.visitVarInsn(ALOAD, k++);
                             }
                         }
-                        mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(classNode), "$doCall", BytecodeHelper.getMethodDescriptor(ClassHelper.OBJECT_TYPE, newParams));
+                        mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(classNode), "$doCall", BytecodeHelper.getMethodDescriptor(method.getReturnType(), newParams));
                         mv.visitInsn(ARETURN);
                     }
                 }));
