@@ -15,7 +15,6 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
-import org.mbte.groovypp.compiler.transformers.ClassExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -363,7 +362,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
         if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
             List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
-            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, expr.getType());
+            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType());
             ClosureUtil.makeOneMethodClass(expr.getType(), type, one, doCall);
             return new CastExpressionTransformer.Cast(type, expr);
         }

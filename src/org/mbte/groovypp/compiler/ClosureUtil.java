@@ -1,9 +1,6 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -74,7 +71,7 @@ public class ClosureUtil {
         return info.isOneMethodAbstract;
     }
 
-    public static MethodNode isMatch(List<MethodNode> one, ClassNode closureType) {
+    public static MethodNode isMatch(List<MethodNode> one, ClosureClassNode closureType) {
         class Mutation {
             final Parameter p;
             final ClassNode t;
@@ -89,19 +86,28 @@ public class ClosureUtil {
             }
         }
 
+        ClassNode outmost = closureType;
+        while (outmost instanceof ClosureClassNode) {
+            outmost = ((ClosureClassNode)outmost).getOwner();
+        }
+
         List<Mutation> mutations = null;
 
         MethodNode missing = one.get(0);
         Parameter[] missingMethodParameters = missing.getParameters();
-        for (MethodNode method : closureType.getDeclaredMethods("doCall")) {
+        List<MethodNode> methods = outmost.getDeclaredMethods("$doCall");
+        for (MethodNode method : methods) {
             Parameter[] closureParameters = method.getParameters();
-            if (closureParameters.length != missingMethodParameters.length)
+            if (closureParameters.length == 0 || closureParameters[0].getType() != closureType)
+                continue;
+
+            if (closureParameters.length != missingMethodParameters.length+1)
                 continue;
 
             boolean match = true;
-            for (int i = 0; i < closureParameters.length; i++) {
+            for (int i = 1; i < closureParameters.length; i++) {
                 Parameter closureParameter = closureParameters[i];
-                Parameter missingMethodParameter = missingMethodParameters[i];
+                Parameter missingMethodParameter = missingMethodParameters[i-1];
 
                 if (!TypeUtil.isAssignableFrom(missingMethodParameter.getType(), closureParameter.getType())) {
                     if (closureParameter.getType() == ClassHelper.DYNAMIC_TYPE) {
@@ -161,6 +167,7 @@ public class ClosureUtil {
                                 Parameter pp[] = missed.getParameters();
                                 for (int i = 0, k = 1; i != pp.length; ++i) {
                                     final ClassNode type = pp[i].getType();
+                                    ClassNode expectedType = doCall.getParameters()[i + 1].getType();
                                     if (ClassHelper.isPrimitiveType(type)) {
                                         if (type == ClassHelper.long_TYPE) {
                                             mv.visitVarInsn(Opcodes.LLOAD, k++);
@@ -177,14 +184,13 @@ public class ClosureUtil {
                                         mv.visitVarInsn(Opcodes.ALOAD, k++);
                                     }
                                     BytecodeExpr.box(type, mv);
-                                    ClassNode doCallParamType = doCall.getParameters()[i].getType();
-                                    BytecodeExpr.checkCast(TypeUtil.wrapSafely(doCallParamType), mv);
-                                    BytecodeExpr.unbox(doCallParamType, mv);
+                                    BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(expectedType), mv);
+                                    BytecodeExpr.unbox(expectedType, mv);
                                 }
                                 mv.visitMethodInsn(
-                                        Opcodes.INVOKEVIRTUAL,
-                                        BytecodeHelper.getClassInternalName(oarg),
-                                        "doCall",
+                                        Opcodes.INVOKESTATIC,
+                                        BytecodeHelper.getClassInternalName(doCall.getDeclaringClass()),
+                                        doCall.getName(),
                                         BytecodeHelper.getMethodDescriptor(doCall.getReturnType(), doCall.getParameters())
                                 );
 

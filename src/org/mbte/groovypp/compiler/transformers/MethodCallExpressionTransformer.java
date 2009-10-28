@@ -247,7 +247,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             ClassNode argType = p[i].getType();
 
                             List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
                             if (one == null || doCall == null) {
                                 foundMethod = null;
                             } else {
@@ -283,7 +283,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 ClassNode argType = p[p.length - 1].getType();
 
                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
                 if (one == null || doCall == null) {
                     return null;
                 } else {

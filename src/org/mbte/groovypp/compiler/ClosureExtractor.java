@@ -76,17 +76,16 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         if (!ce.getType().equals(ClassHelper.CLOSURE_TYPE))
             return exp;
 
+        boolean addDefault = false;
         if (ce.getParameters() != null && ce.getParameters().length == 0) {
+            addDefault = true;
             final VariableScope scope = ce.getVariableScope();
             ce = new ClosureExpression(new Parameter[1], ce.getCode());
             ce.setVariableScope(scope);
             ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it", ConstantExpression.NULL);
         }
 
-        final ClassNode newType = new ClassNode(
-                currentClosureName,
-                0,
-                ClassHelper.CLOSURE_TYPE);
+        final ClassNode newType = new ClosureClassNode(classNode, currentClosureName);
         newType.setInterfaces(new ClassNode[]{TypeUtil.TCLOSURE});
 
         final Parameter[] newParams;
@@ -98,7 +97,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         }
         newParams[0] = new Parameter(newType, "$self");
 
-        ClosureMethodNode _doCallMethod = new ClosureMethodNode(
+        final ClosureMethodNode _doCallMethod = new ClosureMethodNode(
                 "$doCall",
                 Opcodes.ACC_STATIC,
                 ClassHelper.OBJECT_TYPE,
@@ -109,6 +108,42 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
 
         toProcess.add(_doCallMethod);
         toProcess.add(policy);
+
+        if (addDefault) {
+            ClosureMethodNode _doCallMethodDef = new ClosureMethodNode(
+                    "$doCall",
+                    Opcodes.ACC_STATIC,
+                    ClassHelper.OBJECT_TYPE,
+                    new Parameter[] {new Parameter(newType, "$self")},
+                    new BytecodeSequence(new BytecodeInstruction(){
+                        public void visit(MethodVisitor mv) {
+                            mv.visitVarInsn(ALOAD, 0);
+                            final ClassNode type = _doCallMethod.getParameters()[1].getType();
+                            if (ClassHelper.isPrimitiveType(type)) {
+                                if (type == ClassHelper.long_TYPE) {
+                                    mv.visitInsn(LCONST_0);
+                                } else if (type == ClassHelper.double_TYPE) {
+                                    mv.visitInsn(DCONST_0);
+                                } else if (type == ClassHelper.float_TYPE) {
+                                    mv.visitInsn(FCONST_0);
+                                } else {
+                                    mv.visitInsn(ICONST_0);
+                                }
+                            } else {
+                                mv.visitInsn(ACONST_NULL);
+                            }
+                            mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(classNode), "$doCall", BytecodeHelper.getMethodDescriptor(_doCallMethod.getReturnType(),_doCallMethod.getParameters()));
+                            mv.visitInsn(ARETURN);
+                        }
+                    })){
+                @Override
+                public ClassNode getReturnType() {
+                    return _doCallMethod.getReturnType();
+                }
+            };
+
+            methodNode.getDeclaringClass().addMethod(_doCallMethodDef);
+        }
 
         _doCallMethod.setOwner(currentClosureMethod);
 

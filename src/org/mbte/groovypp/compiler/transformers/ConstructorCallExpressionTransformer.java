@@ -8,6 +8,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.ClosureUtil;
+import org.mbte.groovypp.compiler.ClosureClassNode;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
@@ -34,7 +35,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         ClassNode argType = p[p.length - 1].getType();
                         List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
 
-                        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, oarg);
+                        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
                         if (one == null || doCall == null) {
                             constructor = null;
                         } else {
