@@ -284,9 +284,7 @@ public class ClosureUtil {
                     for (int i = 0; i < genericTypes.length; i++) {
                         genericTypes[i] = new GenericsType(unified[i]);
                     }
-                    ClassNode newBase = ClassHelper.makeWithoutCaching(baseType.getName());
-                    newBase.setRedirect(baseType);
-                    newBase.setGenericsTypes(genericTypes);
+                    ClassNode newBase = TypeUtil.setGenericTypes(baseType, genericTypes);
                     improveClosureType(closureType, newBase);
                     returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, baseType);
                 }

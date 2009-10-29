@@ -38,7 +38,7 @@ public class TypeUtil {
     public static final ClassNode LINKED_LIST_TYPE = make(LinkedList.class);
     public static final ClassNode LINKED_HASH_SET_TYPE = make(LinkedHashSet.class);
     public static final ClassNode MATCHER = make(Matcher.class);
-    
+
     public static class Null {
     }
 
@@ -256,14 +256,7 @@ public class TypeUtil {
     }
 
     private static boolean isTypeParameterPlaceholder(ClassNode type) {
-        // This is a hack that does not always work.
-        // return !getSimpleName(type.getName()).equals(getSimpleName(type.getUnresolvedName()));
         return type.isGenericsPlaceHolder();
-    }
-
-    private static String getSimpleName(String name) {
-        int idx = name.lastIndexOf('.');
-        return idx < 0 ? name : name.substring(idx + 1);
     }
 
     private static ClassNode createArrayType(int arrayCount, ClassNode type) {
@@ -319,9 +312,7 @@ public class TypeUtil {
                 substitutedArgs[i].setResolved(typeArg.isResolved());
             }
         }
-        ClassNode result = ClassHelper.makeWithoutCaching(toSubstitute.getName());
-        result.setGenericsTypes(substitutedArgs);
-        result.setRedirect(toSubstitute.redirect());
+        ClassNode result = setGenericTypes(toSubstitute, substitutedArgs);
         return result;
     }
 
@@ -397,6 +388,13 @@ public class TypeUtil {
             if (!equal(args1[i].getType(), args2[i].getType())) return false;
         }
         return true;
+    }
+
+    public static ClassNode setGenericTypes(ClassNode baseType, GenericsType[] genericTypes) {
+        ClassNode newBase = makeWithoutCaching(baseType.getName());
+        newBase.setRedirect(baseType);
+        newBase.setGenericsTypes(genericTypes);
+        return newBase;
     }
 
     public static ClassNode wrapSafely(ClassNode type) {
