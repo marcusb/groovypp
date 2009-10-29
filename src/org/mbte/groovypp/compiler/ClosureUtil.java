@@ -142,7 +142,7 @@ public class ClosureUtil {
                 closureType.addMethod(
                 missed.getName(),
                 Opcodes.ACC_PUBLIC,
-                missed.getReturnType(),
+                getSubstitutedReturnType(doCall, missed, baseType),
                 missed.getParameters(),
                 ClassNode.EMPTY_ARRAY,
                 new BytecodeSequence(
@@ -260,6 +260,35 @@ public class ClosureUtil {
                             }
                     ));
         }
+    }
+
+    private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode baseType) {
+        ClassNode returnType = missed.getReturnType();
+        if (missed.getParameters().length + 1 == doCall.getParameters().length) {
+            int nParams = missed.getParameters().length;
+            ClassNode declaringClass = missed.getDeclaringClass();
+            GenericsType[] typeVars = declaringClass.getGenericsTypes();
+            if (typeVars != null && typeVars.length > 0) {
+                ClassNode[] formals = new ClassNode[nParams + 1];
+                ClassNode[] actuals = new ClassNode[nParams + 1];
+                for (int i = 0; i < nParams; i++) {
+                    actuals[i] = doCall.getParameters()[i + 1].getType();
+                    formals[i] = missed.getParameters()[i].getType();
+                }
+                actuals[actuals.length - 1] = doCall.getReturnType();
+                formals[formals.length - 1] = missed.getReturnType();
+                ClassNode[] unified = TypeUnification.inferTypeArguments(typeVars, formals, actuals);
+                if (unified != null) {
+                    GenericsType[] genericTypes = new GenericsType[unified.length];
+                    for (int i = 0; i < genericTypes.length; i++) {
+                        genericTypes[i] = new GenericsType(unified[i]);
+                    }
+                    //baseType.setGenericsTypes(genericTypes);
+                    returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, baseType);
+                }
+            }
+        }
+        return returnType;
     }
 
     public static void improveClosureType(final ClassNode closureType, ClassNode baseType) {

@@ -1,15 +1,14 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
-import static org.mbte.groovypp.compiler.MethodTypeInference.Constraint.*;
+import static org.mbte.groovypp.compiler.TypeUnification.Constraint.*;
 import static org.mbte.groovypp.compiler.TypeUtil.*;
 
 /**
  * @author ven
  */
-public class MethodTypeInference {
+public class TypeUnification {
     static enum Constraint {
         EQ, SUBTYPE, SUPERTYPE
     }
@@ -71,7 +70,7 @@ public class MethodTypeInference {
                 formal = TypeUtil.wrapSafely(formal);
                 instantiated = TypeUtil.wrapSafely(instantiated);
 
-                // this is just for parameters, if we ever decide to infer from context, the variance will change
+                // this is just one variance, be sure to add another if ever needed.
                 instantiated = formal.isGenericsPlaceHolder() ? instantiated :
                         mapTypeFromSuper(formal.redirect(), formal.redirect(), instantiated);
                 if (instantiated == null) continue;

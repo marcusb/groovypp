@@ -150,12 +150,13 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             ClassNode[] paramTypes = new ClassNode[length];
             ClassNode[] argTypes = new ClassNode[length];
             for (int i = 0; i < length; i++) {
-                paramTypes[i] = i >= params.length - 1 && length > params.length ?
+                paramTypes[i] = i > params.length - 1 ||
+                            (i == params.length - 1 && params[i].getType().isArray() && !bargs.getExpression(i).getType().isArray()) ?
                         /* varargs case */ params[params.length - 1].getType().getComponentType() :
                         params[i].getType();
                 argTypes[i] = bargs.getExpression(i).getType();
             }
-            ClassNode[] bindings = MethodTypeInference.inferTypeArguments(typeVars, paramTypes, argTypes);
+            ClassNode[] bindings = TypeUnification.inferTypeArguments(typeVars, paramTypes, argTypes);
             returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
         }
         return object != null ? TypeUtil.getSubstitutedType(returnType,

@@ -111,4 +111,28 @@ class GenericsTest extends GroovyShellTestCase {
     """)
     assertEquals "schwiitzi nati", res
   }
+
+  void testClosure() {
+    def res = shell.evaluate("""
+      @Typed
+      abstract class TransformClosure<T,R> {
+        abstract R transform(T element)
+
+        static <T,R> List<R> transform(Collection<T> c, TransformClosure<T,R> f) {
+          def res = new ArrayList<R>()
+          for (elem in c) {
+            res.add(f.transform(elem))
+          }
+          return res
+        }
+      }
+      @Typed
+      static def foo() {
+        def l = Arrays.asList(0)
+        TransformClosure.transform(l, {int i -> String.valueOf(i)}).get(0).chars
+      }
+      foo()
+    """)
+    assertEquals "0", res
+  }
 }
