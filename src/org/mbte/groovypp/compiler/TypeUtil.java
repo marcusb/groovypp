@@ -79,7 +79,7 @@ public class TypeUtil {
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
         return from == null
                 || from == TypeUtil.NULL_TYPE
-                || (from.isDerivedFrom(to) && !from.implementsInterface(TCLOSURE))
+                || (from.isDerivedFrom(to) && (!from.implementsInterface(TCLOSURE) || to.equals(ClassHelper.CLOSURE_TYPE)))
                 || to.isInterface() && implementsInterface(to, from)
                 || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray();
     }

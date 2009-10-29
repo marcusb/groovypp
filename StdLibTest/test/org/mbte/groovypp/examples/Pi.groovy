@@ -23,20 +23,7 @@ public class Pi extends GroovyTestCase {
       def data = new double [actorCount]
       data.fill 0d
 
-      for(int index = 0; index != actorCount; ++index) {
-        long start = index * sliceSize
-        long end = ( index + 1l ) * sliceSize -1
-        new Thread({
-//            PiJava.calculation(start, end, delta, data, index, cdl);
-            double sum = 0.0d, x
-            for ( long i = start ; i <= end ; ++i ) {
-              x = ( i - 0.5d ) * delta
-              sum += 1.0d / ( 1.0d + x * x )
-            }
-            data [index] = sum
-            cdl.countDown()
-        }).start ()
-      }
+      startThreads(sliceSize, actorCount, delta, data, cdl)
 
       cdl.await ()
 
@@ -45,11 +32,32 @@ public class Pi extends GroovyTestCase {
           sum += data[index]
       }
 
-      final double pi = 4.0d * sum * delta
-      final double elapseTime = ( System.nanoTime ( ) - startTimeNanos ) / 1e9
-      println ( "==== Groovy GPars ActorScript pi = " + pi )
-      println ( "==== Groovy GPars ActorScript iteration count = " + n )
-      println ( "==== Groovy GPars ActorScript elapse = " + elapseTime )
-      println ( "==== Groovy GPars ActorScript actor count = " + actorCount )
+      printResults(actorCount, n, startTimeNanos, delta, sum)
+    }
+
+    private def printResults(int actorCount, long n, long startTimeNanos, double delta, double sum) {
+        final double pi = 4.0d * sum * delta
+        final double elapseTime = (System.nanoTime() - startTimeNanos) / 1e9
+        println("==== Groovy GPars ActorScript pi = " + pi)
+        println("==== Groovy GPars ActorScript iteration count = " + n)
+        println("==== Groovy GPars ActorScript elapse = " + elapseTime)
+        println("==== Groovy GPars ActorScript actor count = " + actorCount)
+    }
+
+    private void startThreads(double sliceSize, int actorCount, double delta, double [] data, CountDownLatch cdl) {
+        for (int index = 0; index != actorCount; ++index) {
+            long start = index * sliceSize
+            long end = (index + 1l) * sliceSize - 1
+            new Thread({
+//            PiJava.calculation(start, end, delta, data, index, cdl);
+                double sum = 0.0d, x
+                for (long i = start; i <= end; ++i) {
+                    x = (i - 0.5d) * delta
+                    sum += 1.0d / (1.0d + x * x)
+                }
+                data[index] = sum
+                cdl.countDown()
+            }).start()
+        }
     }
 }

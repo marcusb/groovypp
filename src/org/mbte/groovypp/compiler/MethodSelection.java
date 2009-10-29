@@ -194,7 +194,7 @@ public class MethodSelection {
          *       information
          */
 
-        if (parameter.equals(argument)) return 0;
+        if (argument == null || parameter.equals(argument)) return 0;
 
         if (parameter.isInterface()) {
             return getMaximumInterfaceDistance(argument, parameter) << INTERFACE_SHIFT;
