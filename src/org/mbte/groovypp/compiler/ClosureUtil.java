@@ -142,7 +142,7 @@ public class ClosureUtil {
                 closureType.addMethod(
                 missed.getName(),
                 Opcodes.ACC_PUBLIC,
-                getSubstitutedReturnType(doCall, missed, baseType),
+                getSubstitutedReturnType(doCall, missed, closureType, baseType),
                 missed.getParameters(),
                 ClassNode.EMPTY_ARRAY,
                 new BytecodeSequence(
@@ -262,7 +262,8 @@ public class ClosureUtil {
         }
     }
 
-    private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode baseType) {
+    private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode closureType,
+                                                      ClassNode baseType) {
         ClassNode returnType = missed.getReturnType();
         if (missed.getParameters().length + 1 == doCall.getParameters().length) {
             int nParams = missed.getParameters().length;
@@ -283,7 +284,10 @@ public class ClosureUtil {
                     for (int i = 0; i < genericTypes.length; i++) {
                         genericTypes[i] = new GenericsType(unified[i]);
                     }
-                    //baseType.setGenericsTypes(genericTypes);
+                    ClassNode newBase = ClassHelper.makeWithoutCaching(baseType.getName());
+                    newBase.setRedirect(baseType);
+                    newBase.setGenericsTypes(genericTypes);
+                    improveClosureType(closureType, newBase);
                     returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, baseType);
                 }
             }

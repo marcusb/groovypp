@@ -129,7 +129,7 @@ class GenericsTest extends GroovyShellTestCase {
       @Typed
       static def foo() {
         def l = Arrays.asList(0)
-        TransformClosure.transform(l, {int i -> String.valueOf(i)}).get(0).chars
+        TransformClosure.transform(l, {int i -> String.valueOf(i)}).get(0).toLowerCase()
       }
       foo()
     """)

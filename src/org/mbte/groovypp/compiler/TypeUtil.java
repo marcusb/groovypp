@@ -11,6 +11,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -244,7 +245,7 @@ public class TypeUtil {
             toSubstitute = toSubstitute.getComponentType();
             arrayCount++;
         }
-        if (!toSubstitute.getName().equals(toSubstitute.getUnresolvedName())/*toSubstitute.isGenericsPlaceHolder() does not always work*/) {
+        if (isTypeParameterPlaceholder(toSubstitute)) {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
@@ -252,6 +253,16 @@ public class TypeUtil {
         }
         if (typeVariables.length != typeArgs.length) return toSubstitute;
         return createArrayType(arrayCount, getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs));
+    }
+
+    private static boolean isTypeParameterPlaceholder(ClassNode type) {
+        // This is a hack that does not always work.
+        return !getSimpleName(type.getName()).equals(getSimpleName(type.getUnresolvedName()));
+    }
+
+    private static String getSimpleName(String name) {
+        int idx = name.lastIndexOf('.');
+        return idx < 0 ? name : name.substring(idx + 1);
     }
 
     private static ClassNode createArrayType(int arrayCount, ClassNode type) {
@@ -285,7 +296,7 @@ public class TypeUtil {
         GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
         for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
             GenericsType typeArg = toSubstituteTypeArgs[i];
-            if (typeArg.getType().isGenericsPlaceHolder()) {
+            if (isTypeParameterPlaceholder(typeArg.getType())) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
                 if (binding == null) return toSubstitute;
                 substitutedArgs[i] = binding;
