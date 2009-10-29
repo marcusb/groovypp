@@ -257,7 +257,8 @@ public class TypeUtil {
 
     private static boolean isTypeParameterPlaceholder(ClassNode type) {
         // This is a hack that does not always work.
-        return !getSimpleName(type.getName()).equals(getSimpleName(type.getUnresolvedName()));
+        // return !getSimpleName(type.getName()).equals(getSimpleName(type.getUnresolvedName()));
+        return type.isGenericsPlaceHolder();
     }
 
     private static String getSimpleName(String name) {

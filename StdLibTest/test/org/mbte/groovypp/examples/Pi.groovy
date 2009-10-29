@@ -49,9 +49,8 @@ public class Pi extends GroovyTestCase {
             long start = index * sliceSize
             long end = (index + 1l) * sliceSize - 1
             new Thread({
-//            PiJava.calculation(start, end, delta, data, index, cdl);
                 double sum = 0.0d, x
-                for (long i = start; i <= end; ++i) {
+                for (long i = start; i != end; ++i) {
                     x = (i - 0.5d) * delta
                     sum += 1.0d / (1.0d + x * x)
                 }
