@@ -5,27 +5,28 @@ import org.codehaus.groovy.ast.GroovyCodeVisitor;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.control.SourceUnit;
 import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 
-class StaticMethodBytecode extends StoredBytecodeInstruction {
+public class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;
     final SourceUnit su;
     Statement code;
     private final TypePolicy policy;
     final StaticCompiler compiler;
 
-    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, boolean debug, TypePolicy policy) {
+    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, int debug, TypePolicy policy) {
         this.methodNode = methodNode;
         this.su = su;
         this.code = code;
         this.policy = policy;
 
         MethodVisitor mv = createStorage();
-        if (debug) {
+        if (debug != -1) {
             try {
-                mv = DebugMethodAdapter.create(mv);
+                mv = DebugMethodAdapter.create(mv, debug);
             }
             catch (Throwable t) {
                 throw new RuntimeException(t);
@@ -37,16 +38,20 @@ class StaticMethodBytecode extends StoredBytecodeInstruction {
                 this,
                 mv,
                 compileStack,
+                debug,
                 policy);
 //
-        if (debug)
-            System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName());
+        if (debug != -1)
+            System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ")");
         compiler.execute();
-        if (debug)
+        if (debug != -1)
             System.out.println("------------");
     }
 
-    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, boolean debug, TypePolicy policy) {
+    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, int debug, TypePolicy policy) {
+        if (methodNode instanceof ClosureMethodNode.Dependent)
+            methodNode = ((ClosureMethodNode.Dependent)methodNode).getMaster();
+        
         final Statement code = methodNode.getCode();
         if (!(code instanceof BytecodeSequence)) {
             final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug, policy);

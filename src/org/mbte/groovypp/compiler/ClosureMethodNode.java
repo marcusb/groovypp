@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 
 public class ClosureMethodNode extends MethodNode {
     private ClosureMethodNode owner;
@@ -19,5 +20,18 @@ public class ClosureMethodNode extends MethodNode {
 
     public void setOwner(ClosureMethodNode owner) {
         this.owner = owner;
+    }
+
+    public static class Dependent extends ClosureMethodNode {
+        private ClosureMethodNode master;
+
+        public Dependent(ClosureMethodNode master, String name, int modifiers, ClassNode returnType, Parameter[] parameters, Statement code) {
+            super(name, modifiers, returnType, parameters, code);
+            this.master = master;
+        }
+
+        public ClosureMethodNode getMaster() {
+            return master;
+        }
     }
 }

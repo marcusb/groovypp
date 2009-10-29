@@ -99,7 +99,7 @@ def v (Closure cl) {
   cl.call()
 }
 
-@Typed
+@Typed(debug=true)
 def u () {
    List s = [1, 2, 3, 4]
 
@@ -109,8 +109,8 @@ def u () {
          n.addAll(s)
          n
      }
-     System.out.println getOwner ()
-     println getDelegate ()
+//     System.out.println getOwner ()
+//     println getDelegate ()
      n
    }
 }

@@ -130,21 +130,26 @@ new A().u ().a
 
   void testAssignField() {
     def res = shell.evaluate("""
-@Typed
+@Typed(debug=true)
 class A {
   protected int a
+  protected int b
 
   A u () {
-    (0..10).each { int it ->
-        a = it
+    (0..4).each { int it ->
+        a += it
+        (0..it).each { int jt ->
+           b += a
+        }
     }
     this
   }
 }
 
-new A().u ().a
+new A().u ()
 """)
-    assertEquals 10, res
+    assertEquals 10, res.a
+    assertEquals 85, res.b
   }
 
   void testAssignFieldOp() {

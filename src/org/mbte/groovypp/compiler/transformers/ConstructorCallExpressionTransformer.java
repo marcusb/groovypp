@@ -35,7 +35,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         ClassNode argType = p[p.length - 1].getType();
                         List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
 
-                        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
+                        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
                         if (one == null || doCall == null) {
                             constructor = null;
                         } else {

@@ -85,7 +85,7 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
             ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it", ConstantExpression.NULL);
         }
 
-        final ClassNode newType = new ClosureClassNode(classNode, currentClosureName);
+        final ClosureClassNode newType = new ClosureClassNode(classNode, currentClosureName);
         newType.setInterfaces(new ClassNode[]{TypeUtil.TCLOSURE});
 
         final Parameter[] newParams;
@@ -105,12 +105,19 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
                 ce.getCode());
 
         methodNode.getDeclaringClass().addMethod(_doCallMethod);
+        newType.setDoCallMethod(_doCallMethod);
+        if (currentClosureMethod != null)
+            newType.addField("$owner", Opcodes.ACC_PUBLIC, currentClosureMethod.getParameters()[0].getType(), null);
+        else
+            if (!methodNode.isStatic())
+                newType.addField("$owner", Opcodes.ACC_PUBLIC, classNode, null);
 
-        toProcess.add(_doCallMethod);
-        toProcess.add(policy);
+//        toProcess.add(_doCallMethod);
+//        toProcess.add(policy);
 
         if (addDefault) {
-            ClosureMethodNode _doCallMethodDef = new ClosureMethodNode(
+            ClosureMethodNode _doCallMethodDef = new ClosureMethodNode.Dependent(
+                    _doCallMethod,
                     "$doCall",
                     Opcodes.ACC_STATIC,
                     ClassHelper.OBJECT_TYPE,
@@ -159,16 +166,10 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         currentClosureMethod = oldCmn;
 
         createCallMethod(ce, _doCallMethod, "doCall");
-        createCallMethod(ce, _doCallMethod, "call");
+//        createCallMethod(ce, _doCallMethod, "call");
 
         OpenVerifier v = new OpenVerifier();
         v.addDefaultParameterMethods(newType);
-
-        for (Object o : newType.getMethods("doCall")) {
-            MethodNode mn = (MethodNode) o;
-            toProcess.add(mn);
-            toProcess.add(policy);
-        }
 
         newType.setModule(classNode.getModule());
         ce.setType(newType);

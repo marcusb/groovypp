@@ -104,6 +104,8 @@ public class ClassNodeCache {
     }
 
     static synchronized Object getMethods(ClassNode type, String methodName) {
+        type = castPrimitiveArray (type);
+
         final ClassNodeInfo info = getClassNodeInfo(type);
 
         Map<String, Object> nameMap = info.methods;
@@ -334,6 +336,24 @@ public class ClassNodeCache {
                 list.add(mn);
             }
         }
+    }
+
+    private static ClassNode castPrimitiveArray(ClassNode type) {
+        int isArray = 0;
+        ClassNode substitue = type;
+        while (substitue.isArray()) {
+            substitue = substitue.getComponentType();
+            isArray++;
+        }
+
+        if (!ClassHelper.isPrimitiveType(substitue))
+            return type;
+
+        substitue = TypeUtil.wrapSafely(substitue);
+        while (isArray-- > 0) {
+            substitue = substitue.makeArray();
+        }
+        return substitue;
     }
 
     private static DGM createDGM(Class klazz, MethodNode method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params) {

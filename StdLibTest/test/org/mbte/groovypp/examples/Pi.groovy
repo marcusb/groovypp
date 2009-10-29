@@ -2,7 +2,7 @@ package org.mbte.groovypp.examples
 
 import java.util.concurrent.CountDownLatch
 
-@Typed
+@Typed(debug = true)
 public class Pi extends GroovyTestCase {
 
     void test1 () {

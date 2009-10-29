@@ -71,7 +71,7 @@ public class ClosureUtil {
         return info.isOneMethodAbstract;
     }
 
-    public static MethodNode isMatch(List<MethodNode> one, ClosureClassNode closureType) {
+    public static MethodNode isMatch(List<MethodNode> one, ClosureClassNode closureType, CompilerTransformer compiler, ClassNode baseType) {
         class Mutation {
             final Parameter p;
             final ClassNode t;
@@ -126,35 +126,20 @@ public class ClosureUtil {
                     for (Mutation mutation : mutations) {
                         mutation.mutate();
                     }
+
+                improveClosureType(closureType, baseType);
+                StaticMethodBytecode.replaceMethodCode(compiler.su, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy);
                 return method;
             }
         }
         return null;
     }
 
-    public static void makeOneMethodClass(final ClassNode oarg, ClassNode tp, List<MethodNode> am, final MethodNode doCall) {
-        final ClassNode[] oifaces = oarg.getInterfaces();
-        ClassNode[] ifaces;
-        if (tp.isInterface()) {
-            ifaces = new ClassNode[oifaces.length + 1];
-            System.arraycopy(oifaces, 0, ifaces, 1, oifaces.length);
-            ifaces[0] = tp;
-        } else {
-            ifaces = new ClassNode[oifaces.length];
-            for (int i = 0, k = 0; i != oifaces.length; i++) {
-                if (oifaces[i] != TypeUtil.TCLOSURE)
-                    ifaces[k++] = oifaces[i];
-            }
-            ifaces[oifaces.length - 1] = TypeUtil.OWNER_AWARE_SETTER;
-            oarg.setSuperClass(tp);
-            oarg.addProperty("owner", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE, null, null, null);
-        }
-        oarg.setInterfaces(ifaces);
-
+    public static void makeOneMethodClass(final ClassNode closureType, ClassNode baseType, List<MethodNode> abstractMethods, final MethodNode doCall) {
         int k = 0;
-        for (final MethodNode missed : am) {
+        for (final MethodNode missed : abstractMethods) {
             if (k == 0) {
-                oarg.addMethod(
+                closureType.addMethod(
                 missed.getName(),
                 Opcodes.ACC_PUBLIC,
                 missed.getReturnType(),
@@ -208,21 +193,21 @@ public class ClosureUtil {
                 if (ClosureUtil.likeGetter(missed)) {
                     String pname = missed.getName().substring(3);
                     pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                    oarg.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
+                    closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
                 }
 
                 if (ClosureUtil.likeSetter(missed)) {
                     String pname = missed.getName().substring(3);
                     pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                    oarg.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
+                    closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
                 }
             }
             k++;
         }
 
-        if (am.size() == 1) {
-            final MethodNode missed = am.get(0);
-            oarg.addMethod(
+        if (abstractMethods.size() == 1) {
+            final MethodNode missed = abstractMethods.get(0);
+            closureType.addMethod(
                     missed.getName(),
                     Opcodes.ACC_PUBLIC,
                     missed.getReturnType(),
@@ -253,7 +238,7 @@ public class ClosureUtil {
                                     }
                                     mv.visitMethodInsn(
                                             Opcodes.INVOKEVIRTUAL,
-                                            BytecodeHelper.getClassInternalName(oarg),
+                                            BytecodeHelper.getClassInternalName(closureType),
                                             "doCall",
                                             BytecodeHelper.getMethodDescriptor(ClassHelper.OBJECT_TYPE, pp)
                                     );
@@ -274,6 +259,15 @@ public class ClosureUtil {
                                 }
                             }
                     ));
+        }
+    }
+
+    public static void improveClosureType(final ClassNode closureType, ClassNode baseType) {
+        if (baseType.isInterface()) {
+            closureType.setInterfaces(new ClassNode[]{baseType});
+        } else {
+            closureType.setInterfaces(ClassNode.EMPTY_ARRAY);
+            closureType.setSuperClass(baseType);
         }
     }
 }

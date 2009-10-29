@@ -10,6 +10,7 @@ import org.objectweb.asm.Opcodes;
 
 public class ClosureClassNode extends ClassNode {
     private final ClassNode owner;
+    private ClosureMethodNode doCallMethod;
 
     public ClosureClassNode(ClassNode owner, String name) {
         super(name, Opcodes.ACC_PUBLIC|Opcodes.ACC_FINAL, ClassHelper.CLOSURE_TYPE, ClassNode.EMPTY_ARRAY, null);
@@ -18,5 +19,13 @@ public class ClosureClassNode extends ClassNode {
 
     public ClassNode getOwner() {
         return owner;
+    }
+
+    public void setDoCallMethod(ClosureMethodNode doCallMethod) {
+        this.doCallMethod = doCallMethod;
+    }
+
+    public ClosureMethodNode getDoCallMethod() {
+        return doCallMethod;
     }
 }

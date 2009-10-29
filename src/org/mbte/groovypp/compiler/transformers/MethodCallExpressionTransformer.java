@@ -3,9 +3,11 @@ package org.mbte.groovypp.compiler.transformers;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
@@ -53,66 +55,31 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             return createCall(exp, compiler, args, null, foundMethod);
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
-                int level = 0;
-                for (ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode; cmn != null; cmn = cmn.getOwner(), level++) {
-                    ClassNode thisType = cmn.getParameters()[0].getType();
+                ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode;
+                ClassNode thisType = cmn.getParameters()[0].getType();
+                while (thisType != null) {
                     foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler);
+
                     if (foundMethod != null) {
-                        final int level1 = level;
-                        object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
+                        final ClassNode thisTypeFinal = thisType;
+                        object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                             protected void compile(MethodVisitor mv) {
                                 mv.visitVarInsn(ALOAD, 0);
-                                for (int i = 0; i != level1; ++i) {
-                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                                    mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
+                                ClosureMethodNode cmn2 = (ClosureMethodNode) compiler.methodNode;
+                                ClassNode curThis = cmn2.getParameters()[0].getType();
+                                while (curThis != thisTypeFinal) {
+                                    ClassNode next = curThis.getField("$owner").getType();
+                                    mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));
+                                    curThis = next;
                                 }
-                                BytecodeExpr.checkCast(getType(), mv);
                             }
                         };
+
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
 
-                    // checkDelegate
-                    if (thisType.implementsInterface(TypeUtil.TCLOSURE)) {
-                        final ClassNode tclosure = thisType.getInterfaces()[0];
-                        final GenericsType[] genericsTypes = tclosure.getGenericsTypes();
-                        if (genericsTypes != null) {
-                            final ClassNode delegateType = genericsTypes[0].getType();
-                            foundMethod = compiler.findMethod(delegateType, methodName, argTypes);
-                            if (foundMethod != null) {
-                                final int level3 = level;
-                                object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
-                                    protected void compile(MethodVisitor mv) {
-                                        mv.visitVarInsn(ALOAD, 0);
-                                        for (int i = 0; i != level3; ++i) {
-                                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                                            mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
-                                        }
-                                        mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                        mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
-                                        BytecodeExpr.checkCast(getType(), mv);
-                                    }
-                                };
-                                return createCall(exp, compiler, args, object, foundMethod);
-                            }
-                        }
-                    }
-                }
-
-                foundMethod = findMethodWithClosureCoercion(compiler.classNode, methodName, argTypes, compiler);
-                if (foundMethod != null) {
-                    final int level2 = level;
-                    object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
-                        protected void compile(MethodVisitor mv) {
-                            mv.visitVarInsn(ALOAD, 0);
-                            for (int i = 0; i != level2; ++i) {
-                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                                mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
-                            }
-                            BytecodeExpr.checkCast(getType(), mv);
-                        }
-                    };
-                    return createCall(exp, compiler, args, object, foundMethod);
+                    FieldNode ownerField = thisType.getField("$owner");
+                    thisType = ownerField == null ? null : ownerField.getType();
                 }
 
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Can't find method ");
@@ -246,12 +213,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         if (p.length == argTypes.length) {
                             ClassNode argType = p[i].getType();
 
-                            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
-                            if (one == null || doCall == null) {
-                                foundMethod = null;
-                            } else {
-                                ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+                            if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
+                                ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
+                                StaticMethodBytecode.replaceMethodCode(compiler.su, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy);
+                            }
+                            else {
+                                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
+                                if (one == null || doCall == null) {
+                                    foundMethod = null;
+                                } else {
+                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+                                }
                             }
                         }
                     }
@@ -261,39 +234,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
         }
         return null;
-    }
-
-    private MethodNode tryCoerceMap(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, int i, ClassNode oarg) {
-        MethodNode foundMethod;
-        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-
-        if (foundMethod != null) {
-                Parameter p[] = foundMethod.getParameters();
-                if (p.length == argTypes.length) {
-                    return foundMethod;
-                }
-            }
-
-
-        argTypes[i] = null;
-        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-        if (foundMethod != null) {
-            Parameter p[] = foundMethod.getParameters();
-            if (p.length == argTypes.length) {
-                ClassNode argType = p[p.length - 1].getType();
-
-                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg);
-                if (one == null || doCall == null) {
-                    return null;
-                } else {
-                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
-                }
-            }
-        }
-        argTypes[i] = oarg;
-
-        return foundMethod;
     }
 
     private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {

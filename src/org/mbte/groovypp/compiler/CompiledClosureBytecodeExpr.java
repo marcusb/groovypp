@@ -10,6 +10,7 @@ import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,12 +20,15 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
 
     ClassNode delegateType;
     private final ClosureExpression ce;
+    private final ArrayList<FieldNode> fields;
 
     public CompiledClosureBytecodeExpr(CompilerTransformer compiler, ClosureExpression ce, ClassNode newType) {
         super(ce, newType);
         this.compiler = compiler;
-        setType(newType);
         this.ce = ce;
+
+        fields = createFields(ce, newType);
+        compiler.pendingClosures.add(this);
     }
 
     protected void compile(MethodVisitor mv) {
@@ -62,17 +66,29 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             }
         }
         mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
-        if (needsOwner == 0) {
+
+        FieldNode ownerField = getType().getDeclaredField("$owner");
+        if (ownerField != null) {
             mv.visitInsn(DUP);
-            if (!compiler.methodNode.isStatic() || (compiler.methodNode instanceof ClosureMethodNode))
-                mv.visitVarInsn(ALOAD, 0);
-            else
-                mv.visitInsn(ACONST_NULL);
-            mv.visitMethodInsn(INVOKEINTERFACE, BytecodeHelper.getClassInternalName(TypeUtil.OWNER_AWARE_SETTER), "setOwner", "(Ljava/lang/Object;)V");
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitFieldInsn(PUTFIELD, classInternalName, "$owner", BytecodeHelper.getTypeDescription(ownerField.getType()));
         }
     }
 
     private Parameter[] createClosureParams(ClosureExpression ce, ClassNode newType) {
+        int needsOwner = newType.getSuperClass() == ClassHelper.CLOSURE_TYPE ? 1 : 0;
+        final Parameter constrParams [] = new Parameter[fields.size() + needsOwner];
+
+        if (needsOwner == 1)
+          constrParams [0] = new Parameter(ClassHelper.OBJECT_TYPE, "$owner");
+        for (int i = 0; i != fields.size(); ++i) {
+            final FieldNode fieldNode = fields.get(i);
+            constrParams [i+needsOwner] = new Parameter(fieldNode.getType(), fieldNode.getName());
+        }
+        return constrParams;
+    }
+
+    private ArrayList<FieldNode> createFields(ClosureExpression ce, ClassNode newType) {
         ArrayList<FieldNode> refs = new ArrayList<FieldNode> ();
         for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
 
@@ -91,17 +107,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             final FieldNode fieldNode = newType.addField(astVar.getName(), ACC_FINAL, vtype, null);
             refs.add(fieldNode);
         }
-
-        int needsOwner = newType.getSuperClass() == ClassHelper.CLOSURE_TYPE ? 1 : 0;
-        final Parameter constrParams [] = new Parameter[refs.size() + needsOwner];
-
-        if (needsOwner == 1)
-          constrParams [0] = new Parameter(ClassHelper.OBJECT_TYPE, "$owner");
-        for (int i = 0; i != refs.size(); ++i) {
-            final FieldNode fieldNode = refs.get(i);
-            constrParams [i+needsOwner] = new Parameter(fieldNode.getType(), fieldNode.getName());
-        }
-        return constrParams;
+        return refs;
     }
 
     public static Expression createCompiledClosureBytecodeExpr(final CompilerTransformer transformer, final ClosureExpression ce) {

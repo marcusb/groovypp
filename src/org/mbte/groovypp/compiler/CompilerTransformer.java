@@ -3,8 +3,10 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.TypePolicy;
 import groovy.lang.Use;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -15,24 +17,30 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
+import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.List;
+import java.util.LinkedList;
 
 public abstract class CompilerTransformer extends ReturnsAdder implements Opcodes, LocalVarTypeInferenceState {
 
     public final CompilerStack compileStack;
     public final ClassNode classNode;
     protected final MethodVisitor mv;
+    public final int debug;
     public final TypePolicy policy;
     private static final ClassNode USE = ClassHelper.make(Use.class);
+    private int nestedLevel;
+    LinkedList<CompiledClosureBytecodeExpr> pendingClosures = new LinkedList<CompiledClosureBytecodeExpr> ();
 
-    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, TypePolicy policy) {
+    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy) {
         super(source, methodNode);
         this.classNode = classNode;
         this.mv = mv;
+        this.debug = debug;
         this.policy = policy;
         this.compileStack = new CompilerStack(compileStack);
     }
@@ -48,13 +56,30 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
     @Override
     public Expression transform(Expression exp) {
+        nestedLevel++;
         try {
-            return ExprTransformer.transformExpression(exp, this);
+            Expression result = transformExpression(exp, this);
+            if (nestedLevel == 1) {
+                if (!pendingClosures.isEmpty()) {
+                    for (CompiledClosureBytecodeExpr pendingClosure : pendingClosures) {
+                        ClosureClassNode type = (ClosureClassNode) pendingClosure.getType();
+                        ClosureMethodNode doCallMethod = type.getDoCallMethod();
+                        Statement code = doCallMethod.getCode();
+                        if (!(code instanceof BytecodeSequence))
+                            StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy);
+                    }
+                    pendingClosures.clear();
+                }
+            }
+            return result;
         }
         catch (Throwable e) {
             e.printStackTrace();
             addError(e.getMessage(), exp);
             return null;
+        }
+        finally {
+            nestedLevel--;
         }
     }
 
@@ -362,7 +387,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
         if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
             List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
-            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType());
+            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType(), this, type);
             ClosureUtil.makeOneMethodClass(expr.getType(), type, one, doCall);
             return new CastExpressionTransformer.Cast(type, expr);
         }

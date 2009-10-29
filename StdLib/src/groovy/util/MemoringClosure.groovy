@@ -5,6 +5,7 @@ package groovy.util
  *
  * @param <T> type of iterated elements
  */
+@Typed
 abstract class ClosureWithState<T,S> {
     abstract S call(T element, S state)
 

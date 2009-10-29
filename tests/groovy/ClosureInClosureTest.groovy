@@ -15,7 +15,7 @@ class ClosureInClosureTest extends GroovyShellTestCase {
 	void testInvisibleVariable() {
 
       shell.evaluate("""
-          @Typed
+          @Typed(debug=true)
           def u() {
             def text = "test "
 

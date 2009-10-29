@@ -124,9 +124,12 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 usedNames.put(mn.getName(), integer);
 
                 extractor.extract(code, mn.getName() + (integer == 1 ? "" : integer.toString()));
-                StaticMethodBytecode.replaceMethodCode(source, mn, new CompilerStack(null), localDebug, policy);
+                if (!mn.getName().equals("$doCall"))
+                    StaticMethodBytecode.replaceMethodCode(source, mn, new CompilerStack(null), localDebug ? 0 : -1, policy);
             }
         }
+
+        return;
     }
 
     private TypePolicy getPolicy(AnnotatedNode ann, SourceUnit source, TypePolicy def) {

@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
-    private SourceUnit su;
+    public SourceUnit su;
     public final MethodNode methodNode;
 
     public ReturnsAdder(SourceUnit su, MethodNode methodNode) {

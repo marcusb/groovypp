@@ -1,9 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.ClosureMethodNode;
@@ -94,68 +91,32 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
     private Expression inCaseOfClosure(final PropertyExpression exp, final CompilerTransformer compiler, String propName) {
         BytecodeExpr object;
-        int level = 0;
-        for (ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode; cmn != null; cmn = cmn.getOwner(), level++) {
-            ClassNode thisType = cmn.getParameters()[0].getType();
 
+        ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode;
+        ClassNode thisType = cmn.getParameters()[0].getType();
+        while (thisType != null) {
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
+
             if (prop != null) {
-                final int level1 = level;
-                object = new BytecodeExpr(exp.getObjectExpression(), thisType) {
+                final ClassNode thisTypeFinal = thisType;
+                object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                     protected void compile(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
-                        for (int i = 0; i != level1; ++i) {
-                            mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                            mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
+                        ClosureMethodNode cmn2 = (ClosureMethodNode) compiler.methodNode;
+                        ClassNode curThis = cmn2.getParameters()[0].getType();
+                        while (curThis != thisTypeFinal) {
+                            ClassNode next = curThis.getField("$owner").getType();
+                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));
+                            curThis = next;
                         }
-//                        BytecodeExpr.checkCast(getType(), mv);
                     }
                 };
 
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
             }
 
-            // checkDelegate
-            if (thisType.implementsInterface(TypeUtil.TCLOSURE)) {
-                final ClassNode tclosure = thisType.getInterfaces()[0];
-                final GenericsType[] genericsTypes = tclosure.getGenericsTypes();
-                if (genericsTypes != null) {
-                    final ClassNode delegateType = genericsTypes[0].getType();
-                    prop = PropertyUtil.resolveGetProperty(delegateType, propName, compiler);
-                    if (prop != null) {
-                        final int level3 = level;
-                        object = new BytecodeExpr(exp.getObjectExpression(), delegateType) {
-                            protected void compile(MethodVisitor mv) {
-                                mv.visitVarInsn(ALOAD, 0);
-                                for (int i = 0; i != level3; ++i) {
-                                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                                    mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
-                                }
-                                mv.visitTypeInsn(CHECKCAST, "groovy/lang/Closure");
-                                mv.visitMethodInsn(INVOKEVIRTUAL, "groovy/lang/Closure", "getDelegate", "()Ljava/lang/Object;");
-                                BytecodeExpr.checkCast(getType(), mv);
-                            }
-                        };
-                        return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
-                    }
-                }
-            }
-        }
-
-        Object prop = PropertyUtil.resolveGetProperty(compiler.classNode, propName, compiler);
-        if (prop != null) {
-            final int level2 = level;
-            object = new BytecodeExpr(exp.getObjectExpression(), compiler.classNode) {
-                protected void compile(MethodVisitor mv) {
-                    mv.visitVarInsn(ALOAD, 0);
-                    for (int i = 0; i != level2; ++i) {
-                        mv.visitTypeInsn(CHECKCAST, "groovy/lang/OwnerAware");
-                        mv.visitMethodInsn(INVOKEINTERFACE, "groovy/lang/OwnerAware", "getOwner", "()Ljava/lang/Object;");
-                    }
-                    BytecodeExpr.checkCast(getType(), mv);
-                }
-            };
-            return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
+            FieldNode ownerField = thisType.getField("$owner");
+            thisType = ownerField == null ? null : ownerField.getType();
         }
 
         compiler.addError("Can't resolve property " + propName, exp);

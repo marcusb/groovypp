@@ -27,13 +27,16 @@ class DebugMethodAdapter{
         }
     }
 
-    static MethodVisitor create(final MethodVisitor mv) {
+    static MethodVisitor create(final MethodVisitor mv, final int debug) {
         final Set codes = new HashSet();
         codes.addAll(Arrays.asList("visitVarInsn", "visitMethodInsn", "visitInsn", "visitJumpInsn", "visitTypeInsn", "visitFieldInsn", "visitIntInsn"));
+        final char[] debugTab = new char[debug];
+        Arrays.fill(debugTab, '\t');
+        final String tab = String.valueOf(debugTab);
         return (MethodVisitor) Proxy.newProxyInstance(DebugMethodAdapter.class.getClassLoader(), new Class[]{MethodVisitor.class}, new InvocationHandler(){
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() != Class.class) {
-                    System.out.print(method.getName() + "(");
+                    System.out.print(tab + method.getName() + "(");
                     for (int i = 0; i < args.length; i++) {
                         Object arg = args[i];
                         if (i == 0 && codes.contains(method.getName())) {

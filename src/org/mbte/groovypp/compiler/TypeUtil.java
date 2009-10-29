@@ -9,7 +9,6 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
-import org.mbte.groovypp.runtime.TypedClosure;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
 import java.util.*;
@@ -40,6 +39,9 @@ public class TypeUtil {
     public static final ClassNode MATCHER = make(Matcher.class);
     
     public static class Null {
+    }
+
+    public static interface TypedClosure {
     }
 
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
@@ -77,7 +79,7 @@ public class TypeUtil {
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
         return from == null
                 || from == TypeUtil.NULL_TYPE
-                || from.isDerivedFrom(to)
+                || (from.isDerivedFrom(to) && !from.implementsInterface(TCLOSURE))
                 || to.isInterface() && implementsInterface(to, from)
                 || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray();
     }

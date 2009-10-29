@@ -157,8 +157,6 @@ abstract class Reaction extends HashMap {
 
   abstract void define()
 
-  ;
-
   protected final void onMessage(Class type, AsyncHandler handler) {
     put(type, handler)
   }
@@ -192,7 +190,7 @@ class Execution {
 
   private init(Runnable run) {
     Scheduler.async {
-      execution = owner
+      execution = Execution.this
       run.run()
       decrement()
     }
