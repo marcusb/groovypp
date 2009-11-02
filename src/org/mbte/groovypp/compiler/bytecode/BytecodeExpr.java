@@ -1,7 +1,6 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -46,9 +45,10 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 return null;
             }
 
-            MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType(), getter.getReturnType()});
+            ClassNode ret = TypeUtil.getSubstitutedType(getter.getReturnType(), getter.getDeclaringClass(), getType());
+            //MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType(), ret});
 
-            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, setter, compiler);
+            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, compiler);
         }
     }
 

@@ -31,6 +31,18 @@ class GenericsTest extends GroovyShellTestCase {
     """
   }
 
+  void testIllegalAdd() {
+    shouldNotCompile """
+      @Typed
+      public class Test {
+          public String foo(List<Integer> l) {
+              l.add("")
+          }
+      }
+      new Test().foo([])
+    """
+  }
+
   void testSecondOrder() {
     shouldCompile """
       @Typed

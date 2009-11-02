@@ -15,7 +15,7 @@ public class GenericsTest extends GroovyShellTestCase {
 
           @Typed
           def u () {
-            new X<String> ().add (10)
+            new X<String> ().add ("10")
           }
 
           u ()

@@ -84,9 +84,10 @@ public class MethodSelection {
         return Math.max(max, superClassMax);
     }
 
-    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode[] arguments) {
+    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode type, ClassNode[] arguments) {
         if (methodOrList instanceof MethodNode) {
-            if (isValidMethod(((MethodNode) methodOrList).getParameters(), arguments)) {
+            if (isValidMethod(((MethodNode) methodOrList).getParameters(), arguments,
+                    type, ((MethodNode) methodOrList).getDeclaringClass())) {
                 return methodOrList;
             }
             return null;
@@ -99,7 +100,7 @@ public class MethodSelection {
             return null;
         } else if (methodCount == 1) {
             MethodNode method = (MethodNode) methods.get(0);
-            if (isValidMethod(method.getParameters(), arguments)) {
+            if (isValidMethod(method.getParameters(), arguments, type, method.getDeclaringClass())) {
                 return method;
             }
             return null;
@@ -118,7 +119,7 @@ public class MethodSelection {
                 Object method = data[i];
 
                 // making this false helps find matches
-                if (isValidMethod(((MethodNode) method).getParameters(), arguments)) {
+                if (isValidMethod(((MethodNode) method).getParameters(), arguments, type, ((MethodNode) method).getDeclaringClass())) {
                     if (matchingMethods == null)
                         matchingMethods = method;
                     else if (matchingMethods instanceof ArrayList)
@@ -474,7 +475,7 @@ public class MethodSelection {
         return (pt.length == 1 && pt[pt.length - 1].getType().isArray());
     }
 
-    public static boolean isValidMethod(Parameter[] pt, ClassNode[] arguments) {
+    private static boolean isValidMethod(Parameter[] pt, ClassNode[] arguments, ClassNode accessType, ClassNode declaringClass) {
         if (arguments == null) return true;
 
         final int size = arguments.length;
@@ -483,19 +484,23 @@ public class MethodSelection {
         boolean isVargsMethod = pt.length != 0 && pt[pt.length - 1].getType().isArray();
 
         if (isVargsMethod && size >= paramMinus1)
-            return isValidVarargsMethod(arguments, size, pt, paramMinus1);
+            return isValidVarargsMethod(arguments, size, pt, paramMinus1, accessType, declaringClass);
         else if (pt.length == size)
-            return isValidExactMethod(arguments, pt);
+            return isValidExactMethod(arguments, pt, accessType, declaringClass);
         else if (pt.length == 1 && size == 0)
             return true;
         return false;
     }
 
-    private static boolean isValidExactMethod(ClassNode[] arguments, Parameter[] pt) {
+    private static boolean isValidExactMethod(ClassNode[] arguments, Parameter[] pt, ClassNode accessType, ClassNode declaringClass) {
         // lets check the parameter types match
         int size = pt.length;
         for (int i = 0; i < size; i++) {
-            if (!TypeUtil.isAssignableFrom(pt[i].getType(), arguments[i])) {
+            ClassNode t = pt[i].getType();
+            if (accessType != null) {
+                t = TypeUtil.getSubstitutedType(t, declaringClass, accessType);
+            }
+            if (!TypeUtil.isAssignableFrom(t, arguments[i])) {
                 return false;
             }
         }
@@ -507,25 +512,38 @@ public class MethodSelection {
         return component != null && TypeUtil.isAssignableFrom(toTestAgainst, component);
     }
 
-    private static boolean isValidVarargsMethod(ClassNode[] arguments, int size, Parameter[] pt, int paramMinus1) {
+    private static boolean isValidVarargsMethod(ClassNode[] arguments,
+                                                int size,
+                                                Parameter[] pt,
+                                                int paramMinus1,
+                                                ClassNode accessType,
+                                                ClassNode declaringClass) {
         // first check normal number of parameters
         for (int i = 0; i < paramMinus1; i++) {
-            if (TypeUtil.isAssignableFrom(pt[i].getType(), arguments[i])) continue;
+            ClassNode t = pt[i].getType();
+            if (accessType != null) {
+                t = TypeUtil.getSubstitutedType(t, declaringClass, accessType);
+            }
+            if (TypeUtil.isAssignableFrom(t, arguments[i])) continue;
             return false;
         }
 
         // check direct match
         ClassNode varg = pt[paramMinus1].getType();
-        ClassNode clazz = varg.getComponentType();
+        ClassNode componentType = varg.getComponentType();
+        if (accessType != null) {
+            componentType = TypeUtil.getSubstitutedType(componentType, declaringClass, accessType);
+        }
+
         if (size == pt.length &&
                 (TypeUtil.isDirectlyAssignableFrom(varg, arguments[paramMinus1]) ||
-                        testComponentAssignable(clazz, arguments[paramMinus1]))) {
+                        testComponentAssignable(componentType, arguments[paramMinus1]))) {
             return true;
         }
 
         // check varged
         for (int i = paramMinus1; i < size; i++) {
-            if (TypeUtil.isAssignableFrom(clazz, arguments[i])) continue;
+            if (TypeUtil.isAssignableFrom(componentType, arguments[i])) continue;
             return false;
         }
         return true;

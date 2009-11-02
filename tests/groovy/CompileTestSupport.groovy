@@ -11,7 +11,7 @@ public class CompileTestSupport {
     } catch (CompilationFailedException e) {
       return;
     }
-    fail("Given code fragmet should not compile");
+    fail("Given code fragment should not compile");
   }
 
   static void shouldCompile(String script) {
@@ -19,7 +19,7 @@ public class CompileTestSupport {
     try {
       shell.evaluate (script)
     } catch (CompilationFailedException e) {
-      fail("Given code fragmet should compile");
+      fail("Given code fragment should compile");
     }
   }
 
