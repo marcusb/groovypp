@@ -7,7 +7,6 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
@@ -146,10 +145,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
     }
 
     private String getMethodDescr(ClassNode type, String methodName, ClassNode[] argTypes) {
-        StringBuilder sb = new StringBuilder(type.getName())
-                .append(".")
-                .append(methodName)
-                .append("(");
+        StringBuilder sb = new StringBuilder();
+        getPresentableText(type, sb);
+        sb.append(".");
+        sb.append(methodName);
+        sb.append("(");
         for (int i = 0; i != argTypes.length; i++) {
             if (i != 0)
                 sb.append(", ");
@@ -160,6 +160,29 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    private void getPresentableText(ClassNode type, StringBuilder builder) {
+        builder.append(type.getName());
+        GenericsType[] generics = type.getGenericsTypes();
+        if (generics != null && generics.length > 0) {
+            builder.append("<");
+            for (int i = 0; i < generics.length; i++) {
+                if (i > 0) builder.append(",");
+                if (generics[i].isWildcard()) {
+                    if (TypeUtil.isExtends(generics[i])) {
+                        builder.append("? extends ");
+                    } else if (TypeUtil.isSuper(generics[i])) {
+                        builder.append("? super ");
+                    } else {
+                        builder.append("?");
+                        continue;
+                    }
+                }
+                getPresentableText(generics[i].getType(), builder);
+            }
+            builder.append(">");
+        }
     }
 
     private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
