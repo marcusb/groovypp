@@ -87,16 +87,4 @@ public class ClosureTest extends GroovyShellTestCase {
     """)
     assertEquals([14, 15, 16], res)
   }
-
-  void testModifyExternalVar() {
-    shell.evaluate """
-      @Typed(debug=true)
-      def u() {
-        def sum = [1, 2, 3].each(0){int it, int sum -> sum += it}
-        assert sum == 6
-      }
-      u();
-  """
-  }
-
 }
