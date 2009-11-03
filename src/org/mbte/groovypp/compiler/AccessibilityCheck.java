@@ -18,7 +18,14 @@ public class AccessibilityCheck {
         } else if ((modifiers & Opcodes.ACC_PROTECTED) != 0) {
             if (declaringClass == null) return true;
             if (samePackage(declaringClass, placeClass)) return true;
-            return placeClass.isDerivedFrom(declaringClass);
+            while (placeClass != null) {
+                if (placeClass.isDerivedFrom(declaringClass)) {
+                    return accessType == null || accessType.isDerivedFrom(placeClass);
+                }
+                if ((placeClass.getModifiers() & Opcodes.ACC_STATIC) != 0) break;
+                placeClass = placeClass.getOuterClass();
+            }
+            return false;
         } else if ((modifiers & Opcodes.ACC_PUBLIC) != 0) {
             return true;
         }
