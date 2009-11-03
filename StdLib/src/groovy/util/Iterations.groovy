@@ -9,7 +9,7 @@ abstract class Iterations {
     static <T> void each(Iterator<T> self, Function1<T,Void> op) {
         while (self.hasNext()) {
             T el = self.next()
-            op.apply(el)
+            op.call(el)
         }
     }
 
@@ -17,7 +17,7 @@ abstract class Iterations {
         def state = initState
         while (self.hasNext()) {
             T el = self.next()
-            state = op.apply(el, state)
+            state = op.call(el, state)
         }
         state
     }
@@ -25,7 +25,7 @@ abstract class Iterations {
     static <K,V> void eachEntry(Map<K,V> self, Function2<K,V,Void> op) {
         while (self.entrySet().hasNext()) {
             Map.Entry<K,V> el = self.next()
-            op.apply el.key, el.value
+            op.call el.key, el.value
         }
     }
 
@@ -33,7 +33,7 @@ abstract class Iterations {
         def state = initState
         while (self.entrySet().hasNext()) {
             Map.Entry<K,V> el = self.next()
-            state = op.apply(el.key, el.value, state)
+            state = op.call(el.key, el.value, state)
         }
         state
     }
