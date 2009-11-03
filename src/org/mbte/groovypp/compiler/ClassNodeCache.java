@@ -38,8 +38,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.TransformClosure");
         initDgm("groovy.util.FilterClosure");
         initDgm("groovy.util.FilterMapClosure");
-        initDgm("groovy.util.IterationClosure");
-        initDgm("groovy.util.IterationClosureWithIndex");
+        initDgm("groovy.util.Iterations");
         initDgm("groovy.util.MapIterationClosure");
         initDgm("groovy.util.ClosureWithState");
         initDgm(Arrays.class);
@@ -48,9 +47,9 @@ public class ClassNodeCache {
 
     private static void initDgm(String klazz) {
         try {
-            Class<?> aClass = Class.forName(klazz);
-            initDgm(aClass);
+            initDgm(Class.forName(klazz));
         } catch (ClassNotFoundException e) { //
+            System.err.println("failed to load " + klazz);
         }
     }
 

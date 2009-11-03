@@ -8,7 +8,6 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.ReturnAdder;
 import org.codehaus.groovy.control.SourceUnit;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
 //            }
 //            newBlock.addStatement(ReturnStatement.RETURN_NULL_OR_VOID);
 //            newBlock.setSourcePosition(statement);
-//            setCode(newBlock);
+//            setClosureExpression(newBlock);
             setCode(addReturnsIfNeeded(statement, methodNode.getVariableScope()));
         }
     }

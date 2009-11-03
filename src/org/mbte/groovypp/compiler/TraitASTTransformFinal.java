@@ -77,81 +77,79 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
         }
     }
 
-    private void improveAbstractMethods(final ClassNode classNode) {
+    public static void improveAbstractMethods(final ClassNode classNode) {
         List<MethodNode> abstractMethods = getAbstractMethods(classNode);
         if (abstractMethods != null) {
             for (final MethodNode method : abstractMethods) {
                 List<AnnotationNode> list = method.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
                 if (list != null && !list.isEmpty()) {
                     Expression klazz = list.get(0).getMember("value");
-                    if (klazz != null) {
-                        Expression field = list.get(0).getMember("fieldName");
-                        if (field == null) {
-                            final Parameter[] oldParams = method.getParameters();
-                            final Parameter[] params = new Parameter[oldParams.length + 1];
-                            params[0] = new Parameter(method.getDeclaringClass(), "$self");
-                            System.arraycopy(oldParams, 0, params, 1, oldParams.length);
-                            final MethodNode found = klazz.getType().getMethod(method.getName(), params);
-                            if (found != null) {
-                                addImplMethod(classNode, method, oldParams, found);
-                            }
-                        } else {
-                            if ((classNode.getModifiers() & Opcodes.ACC_ABSTRACT) != 0)
-                                continue;
-
-                            final ClassNode fieldType;
-                            final boolean getter;
-                            if (method.getName().startsWith("get")) {
-                                fieldType = method.getReturnType();
-                                getter = true;
-                            } else {
-                                fieldType = method.getParameters()[0].getType();
-                                getter = false;
-                            }
-
-                            final String fieldName = (String) ((ConstantExpression) field).getValue();
-                            FieldNode klazzField = classNode.getField(fieldName);
-                            if (klazzField == null)
-                                klazzField = classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
-
-                            classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, method.getParameters(), ClassNode.EMPTY_ARRAY,
-                                    new BytecodeSequence(new BytecodeInstruction() {
-                                        public void visit(MethodVisitor mv) {
-                                            if (getter) {
-                                                mv.visitVarInsn(ALOAD, 0);
-                                                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
-                                                BytecodeExpr.doReturn(mv, fieldType);
-                                            } else {
-                                                mv.visitVarInsn(ALOAD, 0);
-                                                if (fieldType == double_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.DLOAD, 1);
-                                                } else if (fieldType == float_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.FLOAD, 1);
-                                                } else if (fieldType == long_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.LLOAD, 1);
-                                                } else if (
-                                                        fieldType == boolean_TYPE
-                                                                || fieldType == char_TYPE
-                                                                || fieldType == byte_TYPE
-                                                                || fieldType == int_TYPE
-                                                                || fieldType == short_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.ILOAD, 1);
-                                                } else {
-                                                    mv.visitVarInsn(Opcodes.ALOAD, 1);
-                                                }
-                                                mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
-                                                mv.visitInsn(RETURN);
-                                            }
-                                        }
-                                    }));
+                    Expression field = list.get(0).getMember("fieldName");
+                    if (field == null || (field instanceof ConstantExpression) && (((ConstantExpression)field).getValue() == null || "".equals((((ConstantExpression)field).getValue())))) {
+                        final Parameter[] oldParams = method.getParameters();
+                        final Parameter[] params = new Parameter[oldParams.length + 1];
+                        params[0] = new Parameter(method.getDeclaringClass(), "$self");
+                        System.arraycopy(oldParams, 0, params, 1, oldParams.length);
+                        final MethodNode found = klazz.getType().getMethod(method.getName(), params);
+                        if (found != null) {
+                            addImplMethod(classNode, method, oldParams, found);
                         }
+                    } else {
+                        if ((classNode.getModifiers() & Opcodes.ACC_ABSTRACT) != 0)
+                            continue;
+
+                        final ClassNode fieldType;
+                        final boolean getter;
+                        if (method.getName().startsWith("get")) {
+                            fieldType = method.getReturnType();
+                            getter = true;
+                        } else {
+                            fieldType = method.getParameters()[0].getType();
+                            getter = false;
+                        }
+
+                        final String fieldName = (String) ((ConstantExpression) field).getValue();
+                        FieldNode klazzField = classNode.getField(fieldName);
+                        if (klazzField == null)
+                            klazzField = classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
+
+                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, method.getParameters(), ClassNode.EMPTY_ARRAY,
+                                new BytecodeSequence(new BytecodeInstruction() {
+                                    public void visit(MethodVisitor mv) {
+                                        if (getter) {
+                                            mv.visitVarInsn(ALOAD, 0);
+                                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
+                                            BytecodeExpr.doReturn(mv, fieldType);
+                                        } else {
+                                            mv.visitVarInsn(ALOAD, 0);
+                                            if (fieldType == double_TYPE) {
+                                                mv.visitVarInsn(Opcodes.DLOAD, 1);
+                                            } else if (fieldType == float_TYPE) {
+                                                mv.visitVarInsn(Opcodes.FLOAD, 1);
+                                            } else if (fieldType == long_TYPE) {
+                                                mv.visitVarInsn(Opcodes.LLOAD, 1);
+                                            } else if (
+                                                    fieldType == boolean_TYPE
+                                                            || fieldType == char_TYPE
+                                                            || fieldType == byte_TYPE
+                                                            || fieldType == int_TYPE
+                                                            || fieldType == short_TYPE) {
+                                                mv.visitVarInsn(Opcodes.ILOAD, 1);
+                                            } else {
+                                                mv.visitVarInsn(Opcodes.ALOAD, 1);
+                                            }
+                                            mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
+                                            mv.visitInsn(RETURN);
+                                        }
+                                    }
+                                }));
                     }
                 }
             }
         }
     }
 
-    private void addImplMethod(ClassNode classNode, MethodNode method, final Parameter[] oldParams, final MethodNode found) {
+    private static void addImplMethod(ClassNode classNode, MethodNode method, final Parameter[] oldParams, final MethodNode found) {
         classNode.addMethod(method.getName(), Opcodes.ACC_PUBLIC, method.getReturnType(), oldParams, method.getExceptions(), new BytecodeSequence(new BytecodeInstruction() {
             public void visit(MethodVisitor mv) {
                 mv.visitVarInsn(ALOAD, 0);

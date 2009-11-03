@@ -118,8 +118,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
     private Expression inCaseOfClosure(final PropertyExpression exp, final CompilerTransformer compiler, String propName) {
         BytecodeExpr object;
 
-        ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode;
-        ClassNode thisType = cmn.getParameters()[0].getType();
+        ClassNode thisType = compiler.methodNode.getDeclaringClass();
         while (thisType != null) {
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
             if (prop != null) {
@@ -128,8 +127,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                     protected void compile(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
-                        ClosureMethodNode cmn2 = (ClosureMethodNode) compiler.methodNode;
-                        ClassNode curThis = cmn2.getParameters()[0].getType();
+                        ClassNode curThis = compiler.methodNode.getDeclaringClass();
                         while (curThis != thisTypeFinal) {
                             ClassNode next = curThis.getField("$owner").getType();
                             mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));

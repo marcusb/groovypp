@@ -62,7 +62,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
             }
             else {
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getParameters()[0].getType()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
+                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getDeclaringClass()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
             }
         }
         mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
@@ -102,7 +102,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
                    vtype = var.getType();
             }
             else {
-                vtype = compiler.methodNode.getParameters()[0].getType().getField(astVar.getName()).getType();
+                vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
             }
             final FieldNode fieldNode = newType.addField(astVar.getName(), ACC_FINAL, vtype, null);
             refs.add(fieldNode);

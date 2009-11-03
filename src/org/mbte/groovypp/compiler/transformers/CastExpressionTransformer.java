@@ -123,7 +123,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         return standardCast(exp, compiler, (BytecodeExpr) compiler.transform(exp.getExpression()));
     }
 
-    private BytecodeExpr standardCast(CastExpression exp, CompilerTransformer compiler, final BytecodeExpr expr) {
+    private BytecodeExpr standardCast(final CastExpression exp, CompilerTransformer compiler, final BytecodeExpr expr) {
         if (exp.isCoerce()) {
             // a)
             final ClassNode type = TypeUtil.wrapSafely(exp.getType());
@@ -135,6 +135,23 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 return new Cast(exp.getType(), expr);
             } else {
                 ClassNode rtype = TypeUtil.wrapSafely(expr.getType());
+                if (rtype.equals(TypeUtil.NULL_TYPE) && ClassHelper.isPrimitiveType(exp.getType())) {
+                    return new BytecodeExpr(exp, exp.getType()) {
+                        protected void compile(MethodVisitor mv) {
+                            if (exp.getType() == ClassHelper.double_TYPE) {
+                                mv.visitLdcInsn((double)0);
+                            } else if (exp.getType() == ClassHelper.float_TYPE) {
+                                mv.visitLdcInsn((float)0);
+                                mv.visitInsn(FRETURN);
+                            } else if (exp.getType() == ClassHelper.long_TYPE) {
+                                mv.visitLdcInsn(0L);
+                                mv.visitInsn(LRETURN);
+                            } else
+                                mv.visitInsn(ICONST_0);
+                            }
+                    };
+                }
+
                 if (TypeUtil.isDirectlyAssignableFrom(exp.getType(), rtype)) {
                     // c)
                     if (rtype.equals(exp.getType())) {

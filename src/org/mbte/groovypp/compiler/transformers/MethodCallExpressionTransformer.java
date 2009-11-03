@@ -56,9 +56,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
             return createCall(exp, compiler, args, null, foundMethod);
         } else {
-            if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
-                ClosureMethodNode cmn = (ClosureMethodNode) compiler.methodNode;
-                ClassNode thisType = cmn.getParameters()[0].getType();
+            if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
+                ClassNode thisType = compiler.methodNode.getDeclaringClass();
                 while (thisType != null) {
                     foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler);
 
@@ -67,8 +66,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                             protected void compile(MethodVisitor mv) {
                                 mv.visitVarInsn(ALOAD, 0);
-                                ClosureMethodNode cmn2 = (ClosureMethodNode) compiler.methodNode;
-                                ClassNode curThis = cmn2.getParameters()[0].getType();
+                                ClassNode curThis = compiler.methodNode.getDeclaringClass();
                                 while (curThis != thisTypeFinal) {
                                     ClassNode next = curThis.getField("$owner").getType();
                                     mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));
@@ -251,7 +249,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                             if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
                                 ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
-                                StaticMethodBytecode.replaceMethodCode(compiler.su, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy);
+                                StaticMethodBytecode.replaceMethodCode(compiler.su, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
                             }
                             else {
                                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);

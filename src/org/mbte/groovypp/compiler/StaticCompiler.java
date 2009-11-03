@@ -35,11 +35,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     ClassNode calculatedReturnType = TypeUtil.NULL_TYPE;
 
-    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy) {
-        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy);
+    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName);
         this.methodBytecode = methodBytecode;
         this.debug = debug;
-        shouldImproveReturnType = methodNode.getName().equals("$doCall");
+        shouldImproveReturnType = methodNode.getName().equals("doCall");
     }
 
     protected Statement getCode() {
@@ -287,9 +287,16 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public void visitReturnStatement(ReturnStatement statement) {
         visitStatement(statement);
 
+        if (!shouldImproveReturnType && !methodNode.getReturnType().equals(ClassHelper.VOID_TYPE)) {
+            CastExpression castExpression = new CastExpression(methodNode.getReturnType(), statement.getExpression());
+            castExpression.setSourcePosition(statement.getExpression());
+            statement.setExpression(castExpression);
+        }
+
         super.visitReturnStatement(statement);
 
         final BytecodeExpr bytecodeExpr = (BytecodeExpr) statement.getExpression();
+
         bytecodeExpr.visit(mv);
         ClassNode exprType = bytecodeExpr.getType();
         ClassNode returnType = methodNode.getReturnType();

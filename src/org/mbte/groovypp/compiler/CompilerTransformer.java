@@ -35,13 +35,16 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     private static final ClassNode USE = ClassHelper.make(Use.class);
     private int nestedLevel;
     LinkedList<CompiledClosureBytecodeExpr> pendingClosures = new LinkedList<CompiledClosureBytecodeExpr> ();
+    private int nextClosureIndex = 1;
+    private final String baseClosureName;
 
-    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy) {
+    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         super(source, methodNode);
         this.classNode = classNode;
         this.mv = mv;
         this.debug = debug;
         this.policy = policy;
+        this.baseClosureName = baseClosureName;
         this.compileStack = new CompilerStack(compileStack);
     }
 
@@ -66,7 +69,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                         ClosureMethodNode doCallMethod = type.getDoCallMethod();
                         Statement code = doCallMethod.getCode();
                         if (!(code instanceof BytecodeSequence))
-                            StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy);
+                            StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
                     }
                     pendingClosures.clear();
                 }
@@ -406,5 +409,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         MethodNode methodNode = findMethod(TypeUtil.COLLECTION_TYPE, "add", new ClassNode[]{ClassHelper.OBJECT_TYPE});
         ClassNode paramType = methodNode.getParameters()[0].getType();
         return TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(), type);
+    }
+
+    public String getNextClosureName() {
+        return baseClosureName + "$" + (nextClosureIndex++);
     }
 }

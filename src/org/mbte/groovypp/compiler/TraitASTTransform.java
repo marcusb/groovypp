@@ -14,6 +14,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Handles generation of code for the @Trait annotation
@@ -65,6 +66,8 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 //            typedAnn.addMember("debug", ConstantExpression.TRUE);
             innerClassNode.addAnnotation(typedAnn);
 
+            innerClassNode.setGenericsTypes(classNode.getGenericsTypes());
+
             ClassNode superClass = classNode.getSuperClass();
             if (!ClassHelper.OBJECT_TYPE.equals(superClass)) {
                 ClassNode[] ifaces = classNode.getInterfaces();
@@ -78,8 +81,8 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
             classNode.getModule().addClass(innerClassNode);
 
             for (FieldNode fieldNode : classNode.getFields()) {
-                if (fieldNode.isStatic())
-                    continue;
+//                if (fieldNode.isStatic())
+//                    continue;
 
                 MethodNode getter = classNode.addMethod("get" + Verifier.capitalize(fieldNode.getName()), ACC_PUBLIC | ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
                 AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
@@ -119,7 +122,21 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
                 Parameter[] parameters = methodNode.getParameters();
 
-                innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC, methodNode.getReturnType(), parameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
+                MethodNode newMethod = innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC, methodNode.getReturnType(), parameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
+                ArrayList<GenericsType> gt = new ArrayList<GenericsType>();
+                if (classNode.getGenericsTypes() != null)
+                    for (int i = 0; i < classNode.getGenericsTypes().length; i++) {
+                        GenericsType genericsType = classNode.getGenericsTypes()[i];
+                        gt.add(genericsType);
+                    }
+                if (methodNode.getGenericsTypes() != null)
+                    for (int i = 0; i < methodNode.getGenericsTypes().length; i++) {
+                        GenericsType genericsType = methodNode.getGenericsTypes()[i];
+                        gt.add(genericsType);
+                    }
+
+                if (!gt.isEmpty())
+                    newMethod.setGenericsTypes(gt.toArray(new GenericsType[gt.size()]));
 
                 AnnotationNode annotationNode = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
                 annotationNode.addMember("value", new ClassExpression(innerClassNode));

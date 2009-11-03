@@ -109,8 +109,6 @@ def u () {
          n.addAll(s)
          n
      }
-//     System.out.println getOwner ()
-//     println getDelegate ()
      n
    }
 }

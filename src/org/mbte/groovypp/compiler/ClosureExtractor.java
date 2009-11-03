@@ -34,11 +34,11 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
     }
 
     void extract(Statement code, String baseName) {
-        currentClosureName = classNode.getName() + "$" + baseName.replace('<', '_').replace('>', '_');
-        currentClosureIndex = 1;
-
-        if (!methodNode.getName().equals("$doCall") && !methodNode.isAbstract())
-            code.visit(this);
+//        currentClosureName = classNode.getName() + "$" + baseName.replace('<', '_').replace('>', '_');
+//        currentClosureIndex = 1;
+//
+//        if (!methodNode.getName().equals("$doCall") && !methodNode.isAbstract())
+//            code.visit(this);
     }
 
     protected SourceUnit getSourceUnit() {
@@ -109,8 +109,8 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         if (currentClosureMethod != null)
             newType.addField("$owner", Opcodes.ACC_PUBLIC, currentClosureMethod.getParameters()[0].getType(), null);
         else
-            if (!methodNode.isStatic())
-                newType.addField("$owner", Opcodes.ACC_PUBLIC, classNode, null);
+            if (!methodNode.isStatic() || classNode.getName().endsWith("$TraitImpl"))
+                newType.addField("$owner", Opcodes.ACC_PUBLIC, !methodNode.isStatic() ? classNode : methodNode.getParameters()[0].getType(), null);
 
 //        toProcess.add(_doCallMethod);
 //        toProcess.add(policy);
