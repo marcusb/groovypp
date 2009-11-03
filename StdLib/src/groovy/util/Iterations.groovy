@@ -9,7 +9,7 @@ abstract class Iterations {
     static <T> void each(Iterator<T> self, Function1<T,Void> op) {
         while (self.hasNext()) {
             T el = self.next()
-            op.call(el)
+            op.apply(el)
         }
     }
 
@@ -17,7 +17,7 @@ abstract class Iterations {
         def state = initState
         while (self.hasNext()) {
             T el = self.next()
-            state = op.call(el, state)
+            state = op.apply(el, state)
         }
         state
     }
@@ -26,7 +26,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            op.call el.key, el.value
+            op.apply el.key, el.value
         }
     }
 
@@ -35,7 +35,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            state = op.call(el.key, el.value, state)
+            state = op.apply(el.key, el.value, state)
         }
         state
     }
@@ -83,7 +83,7 @@ abstract class Iterations {
     static <T> void each(Iterator<T> self, Function2<T,Integer,Void> op) {
         for (int index = 0; self.hasNext(); index++) {
             T el = self.next()
-            op.call(el, index)
+            op.apply(el, index)
         }
     }
 
@@ -91,7 +91,7 @@ abstract class Iterations {
         def state = initState
         for (int index = 0; self.hasNext(); index++) {
             T el = self.next()
-            state = op.call(el, state, index)
+            state = op.apply(el, state, index)
         }
         state
     }
