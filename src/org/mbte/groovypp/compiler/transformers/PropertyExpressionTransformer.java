@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.mbte.groovypp.compiler.AccessibilityCheck;
 import org.mbte.groovypp.compiler.ClosureMethodNode;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -10,6 +11,8 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+
+import java.text.MessageFormat;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression> {
     public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
@@ -39,7 +42,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
 
             Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
-
+            if (!checkAccessible(prop, exp, type, compiler)) return null;
             return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
@@ -71,6 +74,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
                     if (prop == null)
                         prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                    if (!checkAccessible(prop, exp, type, compiler)) return null;
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
             } else {
@@ -84,9 +88,31 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
                 if (prop == null)
                     prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                if (!checkAccessible(prop, exp, type, compiler)) return null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         }
+    }
+
+    private boolean checkAccessible(Object prop, PropertyExpression exp, ClassNode type, CompilerTransformer compiler) {
+        if (prop instanceof MethodNode) {
+            MethodNode methodNode = (MethodNode) prop;
+            if (!AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(),
+                    compiler.classNode, type)) {
+                compiler.addError(MessageFormat.format("Cannot access method ''{0}''", methodNode.getName()),
+                        exp.getProperty());
+                return false;
+            }
+        } else if (prop instanceof FieldNode) {
+            FieldNode fieldNode = (FieldNode) prop;
+            if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
+                    compiler.classNode, type)) {
+                compiler.addError(MessageFormat.format("Cannot access field ''{0}''", fieldNode.getName()),
+                        exp.getProperty());
+                return false;
+            }
+        }
+        return true;
     }
 
     private Expression inCaseOfClosure(final PropertyExpression exp, final CompilerTransformer compiler, String propName) {
@@ -96,8 +122,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         ClassNode thisType = cmn.getParameters()[0].getType();
         while (thisType != null) {
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
-
             if (prop != null) {
+                if (!checkAccessible(prop, exp, thisType, compiler)) return null;
                 final ClassNode thisTypeFinal = thisType;
                 object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                     protected void compile(MethodVisitor mv) {

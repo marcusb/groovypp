@@ -52,6 +52,11 @@ public class AccessibilityCheck {
     }
 
     private static boolean samePackage(ClassNode c1, ClassNode c2) {
-        return c1.getPackageName().equals(c2.getPackageName());
+        if (c1.redirect().equals(c2.redirect())) return true; 
+        String name1 = c1.getPackageName();
+        String name2 = c2.getPackageName();
+        if (name1 == null) name1 = "";  // why is it nullable?
+        if (name2 == null) name2 = "";
+        return name1.equals(name2);
     }
 }
