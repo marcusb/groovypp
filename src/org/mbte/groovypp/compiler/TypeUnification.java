@@ -90,13 +90,14 @@ public class TypeUnification {
         GenericsType[] fTypeArgs = formal.getGenericsTypes();
         GenericsType[] iTypeArgs = instantiated.getGenericsTypes();
         if(fTypeArgs == null || iTypeArgs == null || fTypeArgs.length != iTypeArgs.length) return;
+        NextArg:
         for (int i = 0; i < fTypeArgs.length; i++) {
             GenericsType fTypearg = fTypeArgs[i];
             GenericsType iTypearg = iTypeArgs[i];
             ClassNode fType = fTypearg.getType();
             ClassNode iType = iTypearg.getType();
             while (fType.isArray()) {
-                if (!iType.isArray()) continue;
+                if (!iType.isArray()) continue NextArg;
                 fType = fType.getComponentType();
                 iType = iType.getComponentType();
             }
