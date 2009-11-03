@@ -2,9 +2,9 @@ package groovy.lang
 
 @Trait
 abstract class Function1<T,R> {
-    abstract def apply (T param)
+    abstract R call (T param)
 
-    public <R1> Function1<T,R1> addThen (Function1<R,R1> g) {
+    public <R1> Function1<T,R1> andThen (Function1<R,R1> g) {
         { T arg -> g.apply(apply(arg)) }
     }
 
