@@ -48,9 +48,12 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
             foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
             if (foundMethod == null || !foundMethod.isStatic()) {
-                return dynamicOrError(exp, compiler, methodName, type, argTypes, "Can't find static method ");
+                return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
             }
-
+            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                    foundMethod.getDeclaringClass(), compiler.classNode, type)) {
+                return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
+            }
             return createCall(exp, compiler, args, null, foundMethod);
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION) && compiler.methodNode instanceof ClosureMethodNode) {
@@ -74,6 +77,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             }
                         };
 
+                        if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
+                            return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
+                        }
+
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
 
@@ -81,7 +89,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     thisType = ownerField == null ? null : ownerField.getType();
                 }
 
-                return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Can't find method ");
+                return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                 type = TypeUtil.wrapSafely(object.getType());
@@ -89,7 +97,12 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
 
                 if (foundMethod == null) {
-                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Can't find method ");
+                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
+                }
+
+                if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                        foundMethod.getDeclaringClass(), compiler.classNode, type)) {
+                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
                 }
 
                 return createCall(exp, compiler, args, object, foundMethod);
@@ -138,7 +151,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName, ClassNode type, ClassNode[] argTypes, final String msg) {
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError(msg + getMethodDescr(type, methodName, argTypes), exp);
+            compiler.addError(msg + getMethodDescr(type, methodName, argTypes), exp.getMethod());
             return null;
         } else
             return createDynamicCall(exp, compiler);

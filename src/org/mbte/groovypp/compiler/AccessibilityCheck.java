@@ -1,6 +1,5 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.objectweb.asm.Opcodes;
 
@@ -10,13 +9,12 @@ import org.objectweb.asm.Opcodes;
 public class AccessibilityCheck {
     public static boolean isAccessible(int modifiers,
                                        ClassNode declaringClass,
-                                       AnnotatedNode place,
+                                       ClassNode placeClass,
                                        ClassNode accessType) {
-        if (accessType != null && !isAccessible(accessType.getModifiers(), accessType.getDeclaringClass(), place, null)) return false;
-        ClassNode placeClass = place instanceof  ClassNode ? (ClassNode)place : place.getDeclaringClass();
+        if (accessType != null && !isAccessible(accessType.getModifiers(), accessType.getOuterClass(), placeClass, null)) return false;
         if ((modifiers & Opcodes.ACC_PRIVATE) != 0) {
             if (declaringClass == null) return true;
-            return getToplevelClass(declaringClass).equals(getToplevelClass(place));
+            return getToplevelClass(declaringClass).equals(getToplevelClass(placeClass));
         } else if ((modifiers & Opcodes.ACC_PROTECTED) != 0) {
             if (declaringClass == null) return true;
             if (samePackage(declaringClass, placeClass)) return true;
@@ -37,7 +35,7 @@ public class AccessibilityCheck {
                     break;
                 }
                 if ((placeClass.getModifiers() & Opcodes.ACC_STATIC) != 0) break;
-                placeClass = placeClass.getDeclaringClass();
+                placeClass = placeClass.getOuterClass();
             }
         }
         while (clazz != null && !clazz.equals(declaringClass)) {
@@ -47,10 +45,10 @@ public class AccessibilityCheck {
         return true;
     }
 
-    private static ClassNode getToplevelClass(AnnotatedNode node) {
-        ClassNode clazz = node instanceof ClassNode ? (ClassNode) node : node.getDeclaringClass();
-        while (clazz.getDeclaringClass() != null) clazz = clazz.getDeclaringClass();
-        return clazz;
+    private static ClassNode getToplevelClass(ClassNode node) {
+        ClassNode toplevel = node;
+        while (toplevel.getOuterClass() != null) toplevel = toplevel.getOuterClass();
+        return toplevel;
     }
 
     private static boolean samePackage(ClassNode c1, ClassNode c2) {
