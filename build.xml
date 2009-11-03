@@ -2,30 +2,38 @@
 
 <project name="Groovy Compiler" default="make.jar">
 
-	<property name="app.name" value="groovycompiler" />
+	<property name="app.name" value="groovypp" />
 
     <property name="output.dir" location="out" />
-    <property name="compiler.module.name" value="Groovycompiler" />
+    <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
-    <property name="stdlib.test.module.name" value="StdLibTest" />
+    <property name="stdlibtest.module.name" value="StdLibTest" />
 
 
     <property name="compiler.src" location="src" />
-    <property name="compiler.test.src" location="tests" />
+    <property name="compiler.tests" location="tests" />
     <property name="stdlib.src" location="${stdlib.module.name}/src" />
-    <property name="stdlib.test.src" location="${stdlib.test.module.name}/test" />
+    <property name="stdlib.tests" location="${stdlib.module.name}/tests" />
+    <property name="stdlibtest.tests" location="${stdlibtest.module.name}/tests" />
 
     <property name="compiler.prod.output" location="${output.dir}/production/${compiler.module.name}" />
     <property name="compiler.test.output" location="${output.dir}/test/${compiler.module.name}" />
     <property name="stdlib.prod.output" location="${output.dir}/production/${stdlib.module.name}" />
-    <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.test.module.name}" />
+    <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.module.name}" />
+    <property name="stdlibtest.prod.output" location="${output.dir}/production/${stdlibtest.module.name}" />
+    <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
 
 	<property name="jar.name" location="${app.name}.jar"/>
 	<property name="target.jvm" value="5" />
 
-
 	<path id="compiler.classpath">
 		<fileset dir="libs" includes="*.jar"/>
+	</path>
+
+    <path id="compiler.test.classpath">
+		<path refid="compiler.classpath"/>
+		<pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${compiler.test.output}"/>
 	</path>
 
     <path id="stdlib.classpath">
@@ -33,15 +41,18 @@
         <pathelement location="${compiler.prod.output}"/>
     </path>
 
-    <path id="compiler.test.classpath">
-		<path refid="compiler.classpath"/>
-		<pathelement location="${compiler.prod.output}"/>
-	</path>
-
     <path id="stdlib.test.classpath">
         <path refid="compiler.classpath"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
+        <pathelement location="${stdlib.test.output}"/>
+    </path>
+
+    <path id="stdlibtest.test.classpath">
+        <path refid="compiler.classpath"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+        <pathelement location="${stdlibtest.test.output}"/>
     </path>
 
     <taskdef name="groovyc"
@@ -55,6 +66,8 @@
         <mkdir dir="${compiler.test.output}"/>
         <mkdir dir="${stdlib.prod.output}"/>
         <mkdir dir="${stdlib.test.output}"/>
+        <mkdir dir="${stdlibtest.prod.output}"/>
+        <mkdir dir="${stdlibtest.test.output}"/>
 	</target>
 
 	<target name="compile.compiler" depends="clean" description="compiles compiler source files">
@@ -68,18 +81,37 @@
 		</copy>
 	</target>
 
-	<target name="compile.tests.compiler" depends="clean, compile.compiler" >
-		<groovyc classpathref="compiler.test.classpath" srcdir="${compiler.test.src}"
+	<target name="compile.tests.compiler" depends="compile.compiler" >
+		<groovyc classpathref="compiler.test.classpath" srcdir="${compiler.tests}"
 			destdir="${compiler.test.output}">
             <javac />
 		</groovyc >
 	</target>
 
+    <!-- STDLIB -->
+    <target name="compile.stdlib" depends="compile.compiler" description="compiles stdlib">
+        <groovyc classpathref="stdlib.classpath" srcdir="${stdlib.src}"
+            destdir="${stdlib.prod.output}">
+        </groovyc >
+    </target>
+
+    <target name="compile.tests.stdlib"  depends="compile.stdlib">
+        <groovyc classpathref="stdlib.test.classpath" srcdir="${stdlib.tests}" fork="yes"
+            destdir="${stdlib.test.output}" verbose="true">
+        </groovyc >
+    </target>
+
+    <target name="compile.tests.stdlibtest"  depends="compile.stdlib">
+        <groovyc classpathref="stdlibtest.test.classpath" srcdir="${stdlibtest.tests}" fork="yes"
+            destdir="${stdlibtest.test.output}" verbose="true">
+            <javac sourcepath="${stdlibtest.tests}"/>
+        </groovyc >
+    </target>
+
     <target  name="run.tests.compiler" depends="compile.tests.compiler" description="Runs unit tests for compiler">
         <junit printsummary="yes">
             <classpath>
                 <path refid="compiler.test.classpath" />
-                <pathelement location="${compiler.test.output}"/>
             </classpath>
 
             <batchtest>
@@ -90,20 +122,7 @@
         </junit>
     </target>
 
-    <!-- STDLIB -->
-    <target name="compile.stdlib" depends="compile.compiler" description="compiles stdlib">
-        <groovyc classpathref="stdlib.classpath" srcdir="${stdlib.src}"
-            destdir="${stdlib.prod.output}">
-        </groovyc >
-    </target>
-
-    <target name="compile.tests.stdlib"  depends="compile.stdlib">
-        <groovyc classpathref="stdlib.test.classpath" srcdir="${stdlib.test.src}" fork="yes" 
-            destdir="${stdlib.test.output}" verbose="true">
-        </groovyc >
-    </target>
-
-    <target  name="run.tests.stdlib" depends="compile.tests.stdlib" description="Runs unit tests for stdlib">
+    <target  name="run.tests.stdlib" depends="compile.tests.stdlib" description="Runs unit tests for StdLib">
         <junit printsummary="yes">
             <classpath>
                 <path refid="stdlib.test.classpath" />
@@ -117,7 +136,23 @@
         </junit>
     </target>
 
-    <target name="make.jar" depends="compile.compiler, compile.stdlib" description="Build application jar file">
+    <target  name="run.tests.stdlibtest" depends="compile.tests.stdlibtest" description="Runs unit tests for StdLibTest">
+        <junit printsummary="yes">
+            <classpath>
+                <path refid="stdlibtest.test.classpath" />
+            </classpath>
+
+            <batchtest>
+                <fileset dir="${stdlibtest.test.output}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="testAll" depends="run.tests.compiler, run.tests.stdlib, run.tests.stdlibtest"/>
+
+    <target name="make.jar" depends="testAll" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
@@ -125,6 +160,6 @@
     </target>
 
     <target name="all"
-        depends="clean, run.tests.compiler, run.tests.stdlib, make.jar" description="Build application, run tests &amp; create jar file" />
+        depends="clean, make.jar" description="Build application, run tests &amp; create jar file" />
 
 </project>
