@@ -23,16 +23,18 @@ abstract class Iterations {
     }
 
     static <K,V> void eachEntry(Map<K,V> self, Function2<K,V,Void> op) {
-        while (self.entrySet().hasNext()) {
-            Map.Entry<K,V> el = self.next()
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
             op.call el.key, el.value
         }
     }
 
-    static <K,V,S> void eachEntry(Map<K,V> self, S initState, Function3<K,V,S,S> op) {
+    static <K,V,S> S eachEntry(Map<K,V> self, S initState, Function3<K,V,S,S> op) {
         def state = initState
-        while (self.entrySet().hasNext()) {
-            Map.Entry<K,V> el = self.next()
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
             state = op.call(el.key, el.value, state)
         }
         state
