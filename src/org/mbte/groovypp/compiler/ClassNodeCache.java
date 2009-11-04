@@ -32,15 +32,13 @@ public class ClassNodeCache {
     static final Map<ClassNode, List<MethodNode>> dgmMethods = new HashMap<ClassNode, List<MethodNode>>();
 
     static {
-        initDgm(DefaultGroovyMethods.class);
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex"));
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
         initDgm("groovy.util.TransformClosure");
         initDgm("groovy.util.FilterClosure");
         initDgm("groovy.util.FilterMapClosure");
         initDgm("groovy.util.Iterations");
-        initDgm("groovy.util.MapIterationClosure");
-        initDgm("groovy.util.ClosureWithState");
         initDgm(Arrays.class);
         initDgm(Collections.class);
     }
@@ -313,12 +311,19 @@ public class ClassNodeCache {
     }
 
     private static void initDgm(final Class klazz) {
+        initDgm(klazz, Collections.EMPTY_LIST);
+    }
+
+    private static void initDgm(final Class klazz, List<String> ignore) {
         ClassNode classNode = ClassHelper.make(klazz);
         List<MethodNode> methodList = classNode.getMethods();
 
         for (MethodNode methodNode : methodList) {
             Parameter[] parameters = methodNode.getParameters();
             if (methodNode.isPublic() && methodNode.isStatic() && parameters.length > 0) {
+                if (ignore.contains(methodNode.getName()))
+                    continue;
+                
                 ClassNode declaringClass = methodNode.getParameters()[0].getType();
 
                 Parameter params[] = parameters.length > 1 ? new Parameter[parameters.length - 1] : Parameter.EMPTY_ARRAY;

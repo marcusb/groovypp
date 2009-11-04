@@ -5,42 +5,23 @@ package groovy.util
  *
  * @param <T> type of iterated elements
  */
+@Typed
 abstract class Iterations {
-    static <T> void each(Iterator<T> self, Function1<T,Void> op) {
+    static <T> void each(Iterator<T> self, Function1<T,Object> op) {
         while (self.hasNext()) {
-            T el = self.next()
-            op.apply(el)
+            op.call(self.next())
         }
     }
 
     static <T,S> S each(Iterator<T> self, S initState, Function2<T,S,S> op) {
         def state = initState
         while (self.hasNext()) {
-            T el = self.next()
-            state = op.apply(el, state)
+            state = op.call(self.next(), state)
         }
         state
     }
 
-    static <K,V> void eachEntry(Map<K,V> self, Function2<K,V,Void> op) {
-        def it = self.entrySet().iterator()
-        while (it.hasNext()) {
-            def el = it.next()
-            op.apply el.key, el.value
-        }
-    }
-
-    static <K,V,S> S eachEntry(Map<K,V> self, S initState, Function3<K,V,S,S> op) {
-        def state = initState
-        def it = self.entrySet().iterator()
-        while (it.hasNext()) {
-            def el = it.next()
-            state = op.apply(el.key, el.value, state)
-        }
-        state
-    }
-
-    static <T> void each(Iterable<T> self, Function1<T,Void> op) {
+    static <T> void each(Iterable<T> self, Function1<T,Object> op) {
         each(self.iterator(), op)
     }
 
@@ -48,15 +29,7 @@ abstract class Iterations {
         each(self.iterator(), initState, op)
     }
 
-    static <K, V> void eachEntry(Map<K, V> self, Function1<Map.Entry<K, V>,Void> op) {
-        each(self.entrySet().iterator(), op)
-    }
-
-    static <K, V, S> S eachEntry(Map<K, V> self, S initState, Function2<Map.Entry<K, V>,S,S> op) {
-        each(self.entrySet().iterator(), initState, op)
-    }
-
-    static <T> void each(T[] self, Function1<T,Void> op) {
+    static <T> void each(T[] self, Function1<T,Object> op) {
         each(Arrays.asList(self), op)
     }
 
@@ -64,76 +37,80 @@ abstract class Iterations {
         each(Arrays.asList(self), initState, op)
     }
 
-    static <K> void eachKey(Map<K, ?> self, Function1<K,Void> op) {
-        each(self.keySet().iterator(), op)
-    }
-
-    static <K,S> S eachKey(Map<K, ?> self, S initState, Function2<K,S,S> op) {
-        each(self.keySet().iterator(), initState, op)
-    }
-
-    static <V> void eachValue(Map<?, V> self, Function1<V,Void> op) {
-        each(self.values().iterator(), op)
-    }
-
-    static <V,S> S eachValue(Map<?, V> self, S initValue, Function2<V,S,S> op) {
-        each(self.values().iterator(), initValue, op)
-    }
-
-    static <T> void each(Iterator<T> self, Function2<T,Integer,Void> op) {
+    static <T> void eachWithIndex(Iterator<T> self, Function2<T,Integer,Object> op) {
         for (int index = 0; self.hasNext(); index++) {
-            T el = self.next()
-            op.apply(el, index)
+            op.call(self.next(), index)
         }
     }
 
-    static <T,S> S each(Iterator<T> self, S initState, Function3<T,S,Integer,S> op) {
+    static <T,S> S eachWithIndex(Iterator<T> self, S initState, Function3<T,S,Integer,S> op) {
         def state = initState
         for (int index = 0; self.hasNext(); index++) {
-            T el = self.next()
-            state = op.apply(el, state, index)
+            state = op.call(self.next(), state, index)
         }
         state
     }
 
-    static <T> void each(Iterable<T> self, Function2<T,Integer,Void> op) {
-        each(self.iterator(), op)
+    static <T> void eachWithIndex(Iterable<T> self, Function2<T,Integer,Object> op) {
+        eachWithIndex(self.iterator(), op)
     }
 
-    static <T,S> S each(Iterable<T> self, S initState, Function3<T,S,Integer,S> op) {
-        each(self.iterator(), initState, op)
+    static <T,S> S eachWithIndex(Iterable<T> self, S initState, Function3<T,S,Integer,S> op) {
+        eachWithIndex(self.iterator(), initState, op)
     }
 
-    static <K, V> void each(Map<K, V> self, Function2<Map.Entry<K, V>,Integer,Void> op) {
-        each(self.entrySet().iterator(), op)
+    static <K, V> void eachWithIndex(Map<K, V> self, Function2<Map.Entry<K, V>,Integer,Object> op) {
+        eachWithIndex(self.entrySet().iterator(), op)
     }
 
-    static <K, V, S> S each(Map<K, V> self, S initState, Function3<Map.Entry<K, V>,S,Integer,S> op) {
-        each(self.entrySet().iterator(), initState, op)
+    static <K, V, S> S eachWithIndex(Map<K, V> self, S initState, Function3<Map.Entry<K, V>,S,Integer,S> op) {
+        eachWithIndex(self.entrySet().iterator(), initState, op)
     }
 
-    static <T> void each(T[] self, Function2<T,Integer,Void> op) {
-        each(Arrays.asList(self), op)
+    static <T> void eachWithIndex(T[] self, Function2<T,Integer,Object> op) {
+        eachWithIndex(Arrays.asList(self), op)
     }
 
-    static <T,S> S each(T[] self, S initState, Function3<T,S, Integer,S> op) {
-        each(Arrays.asList(self), initState, op)
+    static <T,S> S eachWithIndex(T[] self, S initState, Function3<T,S, Integer,S> op) {
+        eachWithIndex(Arrays.asList(self), initState, op)
     }
 
-    static <K> void eachKey(Map<K, ?> self, Function2<K,Integer,Void> op) {
-        each(self.keySet().iterator(), op)
+    static <K,V> void eachKeyValue(Map<K,V> self, Function2<K,V,Object> op) {
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
+            op.call el.key, el.value
+        }
     }
 
-    static <K,S> S eachKey(Map<K, ?> self, S initState, Function3<K,S,Integer,S> op) {
-        each(self.keySet().iterator(), initState, op)
+    static <K,V,S> S eachKeyValue(Map<K,V> self, S initState, Function3<K,V,S,S> op) {
+        def state = initState
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
+            state = op.call(el.key, el.value, state)
+        }
+        state
     }
 
-    static <V> void eachValue(Map<?, V> self, Function2<V,Integer,Void> op) {
-        each(self.values().iterator(), op)
+    static <K,V> void eachKeyValueWithIndex(Map<K,V> self, Function3<K,V,Integer,Object> op) {
+        def index = 0
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
+            op.call el.key, el.value, index++
+        }
     }
 
-    static <V,S> S eachValue(Map<?, V> self, S initState, Function3<V,S,Integer,S> op) {
-        each(self.values().iterator(), initState, op)
+    static <K,V,S> S eachKeyValueWithIndex(Map<K,V> self, S initState, Function4<K,V,S,Integer,S> op) {
+        def index = 0
+        def state = initState
+        def it = self.entrySet().iterator()
+        while (it.hasNext()) {
+            def el = it.next()
+            state = op.call(el.key, el.value, state, index++)
+        }
+        state
     }
 
     public static <T> Iterator<T> iterator(T[] self) {

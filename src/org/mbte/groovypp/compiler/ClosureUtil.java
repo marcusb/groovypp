@@ -95,7 +95,15 @@ public class ClosureUtil {
         MethodNode missing = one.get(0);
         Parameter[] missingMethodParameters = missing.getParameters();
         List<MethodNode> methods = closureType.getDeclaredMethods("doCall");
+
+//if (missing.getName().equals("call"))
+//        System.err.println("MISSING " + missing.getDeclaringClass() + " " + missing.toString());
+
         for (MethodNode method : methods) {
+            
+//if (missing.getName().equals("call"))
+//        System.err.println(method.getDeclaringClass() + " " + method.toString());
+
             Parameter[] closureParameters = method.getParameters();
 
             if (closureParameters.length != missingMethodParameters.length)
@@ -111,8 +119,13 @@ public class ClosureUtil {
                         if (mutations == null)
                             mutations = new LinkedList<Mutation> ();
                         mutations.add(new Mutation(missingMethodParameter.getType(), closureParameter));
+//if (missing.getName().equals("call"))
+//        System.err.println("MUTATE: " + missingMethodParameter.getType() + " " + closureParameter.getName());
                         continue;
                     }
+//if (missing.getName().equals("call"))
+//        System.err.println("FAIL: " + missingMethodParameter.getType() + " " + closureParameter.getType());
+
                     match = false;
                     break;
                 }

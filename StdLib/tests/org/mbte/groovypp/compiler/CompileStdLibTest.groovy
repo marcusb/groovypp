@@ -12,7 +12,7 @@ public class CompileStdLibTest extends GroovyTestCase {
 //        }
 //        new FileSystemCompiler (new CompilerConfiguration()).compile (names)
 
-        String [] names = finder.getFileNames("./StdLibTest/test/", "**/*.groovy")
+        String [] names = finder.getFileNames("./StdLibTest/tests/", "**/*.groovy")
         names.each {
             println it
         }

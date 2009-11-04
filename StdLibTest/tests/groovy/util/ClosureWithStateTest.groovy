@@ -13,8 +13,8 @@ public class ClosureWithStateTest extends GroovyShellTestCase {
       """)
     }
 
-    void testRun() {
-      def sum = [1, 2, 3].each(0){int it, int sum -> sum + it}
-      assertEquals(6, sum)
-    }
+//    void testRun() {
+//      def sum = [1, 2, 3].each(0){int it, int sum -> sum + it}
+//      assertEquals(6, sum)
+//    }
 }
