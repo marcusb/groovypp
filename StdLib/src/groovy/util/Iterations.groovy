@@ -1,5 +1,7 @@
 package groovy.util
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
 /**
  * Closure for iterations
  *
@@ -8,26 +10,26 @@ package groovy.util
 @Typed
 abstract class Iterations {
     static <T,R> R each(Iterator<T> self, Function1<T,R> op) {
-        R res = null
+        R last = null
         while (self.hasNext()) {
-            res = op.apply(self.next())
+            last = op.apply(self.next())
         }
-        res
+        last
     }
 
-    static <T,R> void each(Iterable<T> self, Function1<T,R> op) {
+    static <T,R> R each(Iterable<T> self, Function1<T,R> op) {
         each(self.iterator(), op)
     }
 
-    static <T,R> void each(T[] self, Function1<T,R> op) {
+    static <T,R> R each(T[] self, Function1<T,R> op) {
         each(self.iterator(), op)
     }
 
-    static <T,R> void each(Enumeration<T> self, Function1<T,R> op) {
+    static <T,R> R each(Enumeration<T> self, Function1<T,R> op) {
         each(self.iterator(), op)
     }
 
-    static <K,V,R> void each(Map<K,V> self, Function2<K,V,R> op) {
+    static <K,V,R> R each(Map<K,V> self, Function2<K,V,R> op) {
         R res = null
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
@@ -37,18 +39,22 @@ abstract class Iterations {
         res
     }
 
-    public static <T> Iterator<T> iterator(T[] self) {
+    static <T> T each(T self, Closure closure) {
+        return DefaultGroovyMethods.each(self, closure)
+    }
+
+    static <T> Iterator<T> iterator(T[] self) {
         return Arrays.asList(self).iterator();
     }
 
-    public static <T> T[] toArray(Iterator<T> self) {
+    static <T> T[] toArray(Iterator<T> self) {
         ArrayList<T> list = new ArrayList<T>();
         while (self.hasNext())
             list.add(self.next());
         return (T[]) list.toArray();
     }
 
-    public static <T> T[] toArray(Iterable<T> self) {
+    static <T> T[] toArray(Iterable<T> self) {
         if (self instanceof Collection) {
             return (T[]) ((Collection<T>) self).toArray();
         } else {

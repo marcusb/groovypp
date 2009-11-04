@@ -28,7 +28,7 @@ public class EachTest extends GroovyShellTestCase {
     void testIteratorWithState () {
         def res = []
         res << ((List<Integer>)[1,2,3,4]).iterator().each { int it ->
-            @Field state = 0
+            @Field int state = 0
             res << (state += it)
             state
         }
@@ -46,11 +46,29 @@ public class EachTest extends GroovyShellTestCase {
     void testCollectionWithState () {
         def res = []
         res << ((List<Integer>)[1,2,3,4]).each { int it ->
+            assert this instanceof Function1
             @Field int state = 0
             res << (state += it)
             state
         }
         assertEquals ([1,3,6,10,10], res)
+    }
+
+    void testCollectionWithStateCompile () {
+        shell.evaluate """
+@Typed(debug=true)
+def u () {
+        def res = []
+        res << ((List<Integer>)[1,2,3,4]).each { int it ->
+            assert this instanceof Function1
+            @Field int state = 0
+            res << (state += it)
+            state
+        }
+        assert [1,3,6,10,10] == res
+}
+u()
+        """
     }
 
     void testArray () {

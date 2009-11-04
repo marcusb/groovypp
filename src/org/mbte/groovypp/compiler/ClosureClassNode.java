@@ -11,7 +11,7 @@ public class ClosureClassNode extends ClassNode {
     private ClosureExpression closureExpression;
 
     public ClosureClassNode(ClassNode owner, String name) {
-        super(name, Opcodes.ACC_PUBLIC|Opcodes.ACC_FINAL, ClassHelper.CLOSURE_TYPE, ClassNode.EMPTY_ARRAY, null);
+        super(name, Opcodes.ACC_PUBLIC|Opcodes.ACC_FINAL, ClassHelper.OBJECT_TYPE, ClassNode.EMPTY_ARRAY, null);
         this.owner = owner;
     }
 

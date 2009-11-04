@@ -68,8 +68,10 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                         ClosureClassNode type = (ClosureClassNode) pendingClosure.getType();
                         ClosureMethodNode doCallMethod = type.getDoCallMethod();
                         Statement code = doCallMethod.getCode();
-                        if (!(code instanceof BytecodeSequence))
+                        if (!(code instanceof BytecodeSequence)) {
+                            ClosureUtil.improveClosureType(type, ClassHelper.CLOSURE_TYPE);
                             StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
+                        }
                     }
                     pendingClosures.clear();
                 }

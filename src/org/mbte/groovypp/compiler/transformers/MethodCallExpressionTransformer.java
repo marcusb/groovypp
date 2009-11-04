@@ -95,6 +95,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
 
                 if (foundMethod == null) {
+                    if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
+                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLOSURE_TYPE, methodName, argTypes, compiler);
+                        if (foundMethod != null) {
+                            ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
+                            return createCall(exp, compiler, args, object, foundMethod);
+                        }
+                    }
+
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
                 }
 

@@ -49,7 +49,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                 type = right.getType();
             }
 
-            FieldNode fieldNode = compiler.classNode.addField(compiler.methodNode.getName() + "$" + ve.getName(), ACC_PRIVATE, type, right);
+            FieldNode fieldNode = compiler.classNode.addField(compiler.methodNode.getName() + "$" + ve.getName(), ACC_PRIVATE, type, exp.getRightExpression());
             ve.setAccessedVariable(fieldNode);
             return new BytecodeExpr(exp, TypeUtil.NULL_TYPE) {
                 protected void compile(MethodVisitor mv) {
