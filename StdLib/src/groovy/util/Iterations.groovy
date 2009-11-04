@@ -3,18 +3,11 @@ package groovy.util
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 /**
- * Closure for iterations
- *
- * @param <T> type of iterated elements
  */
 @Typed
 abstract class Iterations {
-    static <T,R> R each(Iterator<T> self, Function1<T,R> op) {
-        R last = null
-        while (self.hasNext()) {
-            last = op.apply(self.next())
-        }
-        last
+    static <T,R> R each(Iterator<T> self, Function1<T,R> op, R last = null) {
+        self.hasNext() ? each(self, op, op.apply(self.next())) : last
     }
 
     static <T,R> R each(Iterable<T> self, Function1<T,R> op) {
@@ -29,14 +22,17 @@ abstract class Iterations {
         each(self.iterator(), op)
     }
 
-    static <K,V,R> R each(Map<K,V> self, Function2<K,V,R> op) {
-        R res = null
-        def it = self.entrySet().iterator()
-        while (it.hasNext()) {
+    private static <K,V,R> R eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,R> op, R last) {
+        if (!it.hasNext())
+           last
+        else {
             def el = it.next()
-            res = op.apply (el.key, el.value)
+            eachMap(it, op, op.apply (el.key, el.value))
         }
-        res
+    }
+
+    static <K,V,R> R each(Map<K,V> self, Function2<K,V,R> op) {
+        eachMap(self.entrySet().iterator(), op, null)
     }
 
     static <T> T each(T self, Closure closure) {

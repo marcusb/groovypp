@@ -16,6 +16,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final MethodNode methodNode;
     private final BytecodeExpr object;
     private final String methodName;
+
     private final ArgumentListExpression bargs;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
@@ -235,5 +236,13 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
 
         if (!methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
             cast(TypeUtil.wrapSafely(methodNode.getReturnType()), TypeUtil.wrapSafely(getType()), mv);
+    }
+
+    public MethodNode getMethodNode() {
+        return methodNode;
+    }
+
+    public ArgumentListExpression getBargs() {
+        return bargs;
     }
 }

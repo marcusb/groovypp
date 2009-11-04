@@ -25,6 +25,20 @@ public class EachTest extends GroovyShellTestCase {
         assertEquals ([2,3,4], res)
     }
 
+    void testIteratorIntType () {
+        def res = shell.evaluate("""
+        @Typed u () {
+            def res = []
+            ((List<Integer>)(0..100000)).iterator().each { int it ->
+                res << it + 1
+            }
+            res
+        }
+        u ()
+        """)
+        assertEquals ((1..100001), res)
+    }
+
     void testIteratorWithState () {
         def res = []
         res << ((List<Integer>)[1,2,3,4]).iterator().each { int it ->

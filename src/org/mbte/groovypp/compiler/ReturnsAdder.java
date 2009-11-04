@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
@@ -62,8 +63,21 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
         if (statement instanceof ExpressionStatement) {
             ExpressionStatement expStmt = (ExpressionStatement) statement;
             Expression expr = expStmt.getExpression();
-            ReturnStatement ret = new ReturnStatement(expr);
-            ret.setSourcePosition(expr);
+            Statement ret;
+            if (expr.getClass() == TernaryExpression.class) {
+                TernaryExpression t = (TernaryExpression)expr;
+                ExpressionStatement trueExpr = new ExpressionStatement(t.getTrueExpression());
+                trueExpr.setSourcePosition(t.getTrueExpression());
+                ExpressionStatement falseExpr = new ExpressionStatement(t.getFalseExpression());
+                falseExpr.setSourcePosition(t.getFalseExpression());
+                ret = new IfStatement(t.getBooleanExpression(), trueExpr, falseExpr);
+                ret.setSourcePosition(expr);
+                ret = addReturnsIfNeeded(ret, scope);
+            }
+            else {
+                ret = new ReturnStatement(expr);
+                ret.setSourcePosition(expr);
+            }
             return ret;
         }
 

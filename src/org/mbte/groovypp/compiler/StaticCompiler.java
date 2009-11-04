@@ -12,10 +12,7 @@ import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
-import org.mbte.groovypp.compiler.bytecode.LocalVarInferenceTypes;
-import org.mbte.groovypp.compiler.bytecode.StackAwareMethodAdapter;
+import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -34,12 +31,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     final boolean shouldImproveReturnType;
 
     ClassNode calculatedReturnType = TypeUtil.NULL_TYPE;
+    private Label startLabel = new Label ();
 
     public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName);
         this.methodBytecode = methodBytecode;
         this.debug = debug;
         shouldImproveReturnType = methodNode.getName().equals("doCall");
+        mv.visitLabel(startLabel);
     }
 
     protected Statement getCode() {
@@ -296,6 +295,28 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         super.visitReturnStatement(statement);
 
         final BytecodeExpr bytecodeExpr = (BytecodeExpr) statement.getExpression();
+        if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
+            ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
+            if (resolvedMethodBytecodeExpr.getMethodNode() == methodNode) {
+                if (methodNode.isStatic()) {
+                    Parameter[] parameters = methodNode.getParameters();
+                    for (int i = 0; i != parameters.length; ++i) {
+                        BytecodeExpr be = (BytecodeExpr) resolvedMethodBytecodeExpr.getBargs().getExpressions().get(i);
+                        be.visit(mv);
+                        final ClassNode paramType = parameters[i].getType();
+                        final ClassNode type = be.getType();
+                        BytecodeExpr.box(type, mv);
+                        BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+                        BytecodeExpr.unbox(paramType, mv);
+                    }
+                    for (int i = parameters.length-1; i >= 0; --i) {
+                        mv.visitVarInsn(ASTORE,i);
+                    }
+                    mv.visitJumpInsn(GOTO, startLabel);
+                }
+            }
+
+        }
 
         bytecodeExpr.visit(mv);
         ClassNode exprType = bytecodeExpr.getType();
