@@ -9,14 +9,14 @@ package groovy.util
 abstract class Iterations {
     static <T> void each(Iterator<T> self, Function1<T,Object> op) {
         while (self.hasNext()) {
-            op.call(self.next())
+            op.apply(self.next())
         }
     }
 
     static <T,S> S each(Iterator<T> self, S initState, Function2<T,S,S> op) {
         def state = initState
         while (self.hasNext()) {
-            state = op.call(self.next(), state)
+            state = op.apply(self.next(), state)
         }
         state
     }
@@ -39,14 +39,14 @@ abstract class Iterations {
 
     static <T> void eachWithIndex(Iterator<T> self, Function2<T,Integer,Object> op) {
         for (int index = 0; self.hasNext(); index++) {
-            op.call(self.next(), index)
+            op.apply(self.next(), index)
         }
     }
 
     static <T,S> S eachWithIndex(Iterator<T> self, S initState, Function3<T,S,Integer,S> op) {
         def state = initState
         for (int index = 0; self.hasNext(); index++) {
-            state = op.call(self.next(), state, index)
+            state = op.apply(self.next(), state, index)
         }
         state
     }
@@ -79,7 +79,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            op.call el.key, el.value
+            op.apply el.key, el.value
         }
     }
 
@@ -88,7 +88,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            state = op.call(el.key, el.value, state)
+            state = op.apply(el.key, el.value, state)
         }
         state
     }
@@ -98,7 +98,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            op.call el.key, el.value, index++
+            op.apply el.key, el.value, index++
         }
     }
 
@@ -108,7 +108,7 @@ abstract class Iterations {
         def it = self.entrySet().iterator()
         while (it.hasNext()) {
             def el = it.next()
-            state = op.call(el.key, el.value, state, index++)
+            state = op.apply(el.key, el.value, state, index++)
         }
         state
     }

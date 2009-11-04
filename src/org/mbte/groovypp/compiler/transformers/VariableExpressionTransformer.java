@@ -1,12 +1,14 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
@@ -48,8 +50,13 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 pe.setSourcePosition(exp);
                 return compiler.transform(pe);
             } else if (exp.getAccessedVariable() != null) {
-                // it is property
-                final PropertyExpression pe = new PropertyExpression(VariableExpression.THIS_EXPRESSION, exp.getName());
+                String name = exp.getName();
+                if (exp.getAccessedVariable() instanceof VariableExpression && DeclarationExpressionTransformer.hasFieldAnnotation((VariableExpression)exp.getAccessedVariable())) {
+                    // @Field
+                    FieldNode fieldNode = (FieldNode) ((VariableExpression)exp.getAccessedVariable()).getAccessedVariable();
+                    name = fieldNode.getName();
+                }
+                PropertyExpression pe = new PropertyExpression(VariableExpression.THIS_EXPRESSION, name);
                 pe.setImplicitThis(true);
                 pe.setSourcePosition(exp);
                 return compiler.transform(pe);

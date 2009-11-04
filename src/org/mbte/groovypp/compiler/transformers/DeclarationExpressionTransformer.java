@@ -1,11 +1,16 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+
+import java.util.List;
 
 public class DeclarationExpressionTransformer extends ExprTransformer<DeclarationExpression> {
     public Expression transform(DeclarationExpression exp, final CompilerTransformer compiler) {
@@ -36,14 +41,42 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             right = (BytecodeExpr) compiler.transform(cnst);
         }
 
-        if (!ve.isDynamicTyped()) {
-            right = compiler.cast(right, ve.getType());
-            return new Static(exp, ve, right, compiler);
-        } else {
-            // let's try local type inference
-            compiler.getLocalVarInferenceTypes().add(ve, TypeUtil.wrapSafely(right.getType()));
-            return new Dynamic(exp, right, compiler, ve);
+        if (hasFieldAnnotation(ve)) {
+            ClassNode type;
+            if (!ve.isDynamicTyped()) {
+                type = ve.getType();
+            } else {
+                type = right.getType();
+            }
+
+            FieldNode fieldNode = compiler.classNode.addField(compiler.methodNode.getName() + "$" + ve.getName(), ACC_PRIVATE, type, right);
+            ve.setAccessedVariable(fieldNode);
+            return new BytecodeExpr(exp, TypeUtil.NULL_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    mv.visitInsn(ACONST_NULL);
+                }
+            };
         }
+        else {
+            if (!ve.isDynamicTyped()) {
+                right = compiler.cast(right, ve.getType());
+                return new Static(exp, ve, right, compiler);
+            } else {
+                // let's try local type inference
+                compiler.getLocalVarInferenceTypes().add(ve, TypeUtil.wrapSafely(right.getType()));
+                return new Dynamic(exp, right, compiler, ve);
+            }
+        }
+    }
+
+    public static boolean hasFieldAnnotation(VariableExpression ve) {
+        for (AnnotationNode node : ve.getAnnotations()) {
+            if ("Field".equals(node.getClassNode().getName()))
+                return true;
+            if ("groovy.lang.Field".equals(node.getClassNode().getName()))
+                return true;
+        }
+        return false;
     }
 
     private static class Static extends BytecodeExpr {
