@@ -1,13 +1,27 @@
 package groovy.util
 
 @Typed
-public class EachTest extends GroovyTestCase {
+public class EachTest extends GroovyShellTestCase {
 
     void testIterator () {
         def res = []
         ((List<Integer>)[1,2,3]).iterator().each { int it ->
             res << it + 1
         }
+        assertEquals ([2,3,4], res)
+    }
+
+    void testIteratorDefType () {
+        def res = shell.evaluate("""
+        @Typed u () {
+            def res = []
+            ((List<Integer>)[1,2,3]).iterator().each {
+                res << it + 1
+            }
+            res
+        }
+        u ()
+        """)
         assertEquals ([2,3,4], res)
     }
 
