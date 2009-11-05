@@ -19,33 +19,31 @@ abstract class Iterations {
         self.hasNext() ? op.apply(self.next(), foldRight(self, init, op)) : init
     }
 
-    static <T,R> R each(Iterator<T> self, Function1<T,R> op, R last = null) {
-        self.hasNext() ? each(self, op, op.apply(self.next())) : last
+    static <T> void each(Iterator<T> self, Function1<T,Void> op) {
+        while(self.hasNext()) op.apply(self.next())
     }
 
-    static <T,R> R each(Iterable<T> self, Function1<T,R> op) {
+    static <T> void each(Iterable<T> self, Function1<T,Void> op) {
         each(self.iterator(), op)
     }
 
-    static <T,R> R each(T[] self, Function1<T,R> op) {
+    static <T> void each(T[] self, Function1<T,Void> op) {
         each(self.iterator(), op)
     }
 
-    static <T,R> R each(Enumeration<T> self, Function1<T,R> op) {
+    static <T> void each(Enumeration<T> self, Function1<T,Void> op) {
         each(self.iterator(), op)
     }
 
-    private static <K,V,R> R eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,R> op, R last) {
-        if (!it.hasNext())
-           last
-        else {
+    private static <K,V> void eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,Void> op) {
+        while(it.hasNext()) {
             def el = it.next()
-            eachMap(it, op, op.apply (el.key, el.value))
+            op.apply (el.key, el.value)
         }
     }
 
-    static <K,V,R> R each(Map<K,V> self, Function2<K,V,R> op) {
-        eachMap(self.entrySet().iterator(), op, null)
+    static <K,V> void each(Map<K,V> self, Function2<K,V,Void> op) {
+        eachMap(self.entrySet().iterator(), op)
     }
 
     static <T> T each(T self, Closure closure) {
