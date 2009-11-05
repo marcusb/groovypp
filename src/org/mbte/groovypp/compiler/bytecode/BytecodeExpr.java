@@ -1403,4 +1403,8 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(AASTORE);
         }
     }
+
+    public boolean isThis() {
+        return false;
+    }
 }

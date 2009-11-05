@@ -4,6 +4,8 @@ import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Parameter;
+import static org.codehaus.groovy.ast.ClassHelper.*;
+import static org.codehaus.groovy.ast.ClassHelper.short_TYPE;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -298,8 +300,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
             if (resolvedMethodBytecodeExpr.getMethodNode() == methodNode) {
-                if (methodNode.isStatic()) {
+                if (methodNode.isStatic() || resolvedMethodBytecodeExpr.getObject().isThis()) {
                     Parameter[] parameters = methodNode.getParameters();
+
+                    int varIndex = methodNode.isStatic() ? 0 : 1;
                     for (int i = 0; i != parameters.length; ++i) {
                         BytecodeExpr be = (BytecodeExpr) resolvedMethodBytecodeExpr.getBargs().getExpressions().get(i);
                         be.visit(mv);
@@ -308,14 +312,39 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                         BytecodeExpr.box(type, mv);
                         BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
                         BytecodeExpr.unbox(paramType, mv);
+
+                        varIndex += (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
                     }
+
                     for (int i = parameters.length-1; i >= 0; --i) {
-                        mv.visitVarInsn(ASTORE,i);
+                        final ClassNode paramType = parameters[i].getType();
+                        varIndex -= (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
+
+                        if (paramType == double_TYPE) {
+                            mv.visitVarInsn(Opcodes.DSTORE, varIndex);
+                        } else if (paramType == float_TYPE) {
+                            mv.visitVarInsn(Opcodes.FSTORE, varIndex);
+                        } else if (paramType == long_TYPE) {
+                            mv.visitVarInsn(Opcodes.LSTORE, varIndex);
+                        } else if (
+                               paramType == boolean_TYPE
+                            || paramType == char_TYPE
+                            || paramType == byte_TYPE
+                            || paramType == int_TYPE
+                            || paramType == short_TYPE) {
+                            mv.visitVarInsn(Opcodes.ISTORE, varIndex);
+                        } else {
+                            mv.visitVarInsn(Opcodes.ASTORE, varIndex);
+                        }
+                    }
+
+                    if (!methodNode.isStatic()) {
+                        mv.visitVarInsn(ASTORE, 0);
                     }
                     mv.visitJumpInsn(GOTO, startLabel);
+                    return;
                 }
             }
-
         }
 
         bytecodeExpr.visit(mv);

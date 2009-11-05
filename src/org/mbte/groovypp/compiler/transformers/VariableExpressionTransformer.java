@@ -86,6 +86,11 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
         public This(VariableExpression exp, CompilerTransformer compiler) {
             super(exp, compiler.classNode);
         }
+
+        @Override
+        public boolean isThis() {
+            return true;
+        }
     }
 
     public static class Super extends ThisBase {
@@ -97,6 +102,11 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
     public static class Self extends ThisBase {
         public Self(VariableExpression exp, CompilerTransformer compiler) {
             super(exp, compiler.methodNode.getParameters()[0].getType());
+        }
+
+        @Override
+        public boolean isThis() {
+            return true;
         }
     }
 }

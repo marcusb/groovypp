@@ -245,4 +245,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     public ArgumentListExpression getBargs() {
         return bargs;
     }
+
+    public BytecodeExpr getObject() {
+        return object;
+    }
 }

@@ -19,30 +19,30 @@ abstract class Iterations {
         self.hasNext() ? op.apply(self.next(), foldRight(self, init, op)) : init
     }
 
-    static <T> void each(Iterator<T> self, Function1<T,Void> op) {
+    static <T> void each(Iterator<T> self, Function1<T,Object> op) {
         while(self.hasNext()) op.apply(self.next())
     }
 
-    static <T> void each(Iterable<T> self, Function1<T,Void> op) {
+    static <T> void each(Iterable<T> self, Function1<T,Object> op) {
         each(self.iterator(), op)
     }
 
-    static <T> void each(T[] self, Function1<T,Void> op) {
+    static <T> void each(T[] self, Function1<T,Object> op) {
         each(self.iterator(), op)
     }
 
-    static <T> void each(Enumeration<T> self, Function1<T,Void> op) {
+    static <T> void each(Enumeration<T> self, Function1<T,Object> op) {
         each(self.iterator(), op)
     }
 
-    private static <K,V> void eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,Void> op) {
+    private static <K,V> void eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,Object> op) {
         while(it.hasNext()) {
             def el = it.next()
             op.apply (el.key, el.value)
         }
     }
 
-    static <K,V> void each(Map<K,V> self, Function2<K,V,Void> op) {
+    static <K,V> void each(Map<K,V> self, Function2<K,V,Object> op) {
         eachMap(self.entrySet().iterator(), op)
     }
 

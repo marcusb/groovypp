@@ -6,14 +6,15 @@ public class FieldAnnotationTest extends GroovyShellTestCase {
 @Typed
 def u () {
         def res = []
-        res << ((List<Integer>)[1,2,3,4]).iterator().each { int it ->
+        ((List<Integer>)[1,2,3,4]).iterator().each { int it ->
             @Field int state = 0
             res << (state += it)
             state
         }
+        res
 }
 
-assert [1,3,6,10,10] == u() 
+assert [1,3,6,10] == u()
         """)
     }
 }
