@@ -27,7 +27,7 @@
 	<property name="target.jvm" value="5" />
 
 	<path id="compiler.classpath">
-		<fileset dir="libs" includes="*.jar"/>
+		<fileset dir="lib" includes="*.jar"/>
 	</path>
 
     <path id="compiler.test.classpath">
