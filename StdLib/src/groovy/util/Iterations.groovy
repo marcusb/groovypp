@@ -6,6 +6,15 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
  */
 @Typed
 abstract class Iterations {
+    static <T,R> R foldLeft(Iterator<T> self, R init, Function2<T,R,R> op) {
+        self.hasNext() ? foldLeft(self, op.apply(self.next(), init), op) : init
+    }
+
+    // Not tail-recursive!!!
+    static <T,R> R foldRight(Iterator<T> self, R init, Function2<T,R,R> op) {
+        self.hasNext() ? op.apply(self.next(), foldRight(self, init, op)) : init
+    }
+
     static <T,R> R each(Iterator<T> self, Function1<T,R> op, R last = null) {
         self.hasNext() ? each(self, op, op.apply(self.next())) : last
     }
