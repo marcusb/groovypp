@@ -114,11 +114,13 @@ public class ClosureUtil {
                 Parameter closureParameter = closureParameters[i];
                 Parameter missingMethodParameter = missingMethodParameters[i];
 
-                if (!TypeUtil.isAssignableFrom(missingMethodParameter.getType(), closureParameter.getType())) {
+                ClassNode parameterType = missingMethodParameter.getType();
+                parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
+                if (!TypeUtil.isAssignableFrom(parameterType, closureParameter.getType())) {
                     if (closureParameter.getType() == ClassHelper.DYNAMIC_TYPE) {
                         if (mutations == null)
                             mutations = new LinkedList<Mutation> ();
-                        mutations.add(new Mutation(missingMethodParameter.getType(), closureParameter));
+                        mutations.add(new Mutation(parameterType, closureParameter));
 //if (missing.getName().equals("call"))
 //        System.err.println("MUTATE: " + missingMethodParameter.getType() + " " + closureParameter.getName());
                         continue;
@@ -243,7 +245,7 @@ public class ClosureUtil {
                 actuals[actuals.length - 1] = doCall.getReturnType();
                 formals[formals.length - 1] = missed.getReturnType();
                 ClassNode[] unified = TypeUnification.inferTypeArguments(typeVars, formals, actuals);
-                if (unified != null) {
+                if (totalInference(unified)) {
                     GenericsType[] genericTypes = new GenericsType[unified.length];
                     for (int i = 0; i < genericTypes.length; i++) {
                         genericTypes[i] = new GenericsType(unified[i]);
@@ -255,6 +257,13 @@ public class ClosureUtil {
             }
         }
         return returnType;
+    }
+
+    private static boolean totalInference(ClassNode[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i] == null) return false;
+        }
+        return true;
     }
 
     public static void improveClosureType(final ClassNode closureType, ClassNode baseType) {

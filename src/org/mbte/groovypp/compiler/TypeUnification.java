@@ -42,7 +42,8 @@ public class TypeUnification {
         }
 
         ClassNode obtainFinalType() {
-            if (eqType != null) return eqType;
+            if (contradictory) return null;
+            else if (eqType != null) return eqType;
             else if (superType != null) return superType;
             else return /*subType*/null;
         }
@@ -76,16 +77,18 @@ public class TypeUnification {
                 if (instantiated == null) continue;
 
                 match(formal, instantiated, name, constraints, SUBTYPE);
-                if (constraints.isContradictory()) return null;   // todo per var contradiction?
+                if (constraints.isContradictory()) break;
             }
             result[i] = constraints.obtainFinalType();
-            if (result[i] == null) return null;
         }
         return result;
     }
 
     private static void match(ClassNode formal, ClassNode instantiated, String name, Constraints constraints, Constraint ifToplevel) {
-        if (name.equals(formal.getUnresolvedName())) constraints.addConstraint(instantiated, ifToplevel);
+        if (name.equals(formal.getUnresolvedName())) {
+            constraints.addConstraint(instantiated, ifToplevel);
+            return;
+        }
         if (!formal.redirect().equals(instantiated.redirect())) return;
         GenericsType[] fTypeArgs = formal.getGenericsTypes();
         GenericsType[] iTypeArgs = instantiated.getGenericsTypes();

@@ -227,7 +227,7 @@ public class TypeUtil {
         if (methodTypeArgs == null || methodTypeArgs.length == 0) return toSubstitute;
         GenericsType[] genericsTypes = new GenericsType[methodTypeArgs.length];
         for (int i = 0; i < genericsTypes.length; i++) {
-            genericsTypes[i] = new GenericsType(methodTypeArgs[i]);
+            genericsTypes[i] = methodTypeArgs[i] == null ? null : new GenericsType(methodTypeArgs[i]);
         }
         return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method));
     }
@@ -292,8 +292,7 @@ public class TypeUtil {
             GenericsType typeArg = toSubstituteTypeArgs[i];
             if (isTypeParameterPlaceholder(typeArg.getType())) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
-                if (binding == null) return toSubstitute;
-                substitutedArgs[i] = binding;
+                substitutedArgs[i] = binding != null ? binding : typeArg;
             } else {
                 ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
                 ClassNode oldLower = typeArg.getLowerBound();

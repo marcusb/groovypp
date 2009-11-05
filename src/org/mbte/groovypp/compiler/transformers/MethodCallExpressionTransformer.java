@@ -254,13 +254,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         Parameter p[] = foundMethod.getParameters();
                         if (p.length == argTypes.length) {
                             ClassNode argType = p[i].getType();
-
                             if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
                                 ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
                                 StaticMethodBytecode.replaceMethodCode(compiler.su, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
                             }
                             else {
                                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                                GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
+                                if (methodTypeVars != null && methodTypeVars.length > 0) {
+                                    ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+                                            new ClassNode[]{foundMethod.getDeclaringClass()}, new ClassNode[]{type});
+                                    argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
+                                }
                                 MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
                                 if (one == null || doCall == null) {
                                     foundMethod = null;
