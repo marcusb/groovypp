@@ -10,6 +10,10 @@ abstract class Iterations {
         self.hasNext() ? foldLeft(self, op.apply(self.next(), init), op) : init
     }
 
+    static <T,R> R foldLeft(Iterable<T> self, R init, Function2<T,R,R> op) {
+      foldLeft(self.iterator(), init, op)
+    }
+
     // Not tail-recursive!!!
     static <T,R> R foldRight(Iterator<T> self, R init, Function2<T,R,R> op) {
         self.hasNext() ? op.apply(self.next(), foldRight(self, init, op)) : init

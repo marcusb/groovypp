@@ -14,6 +14,19 @@ public class IterationsTest extends GroovyShellTestCase {
         assertEquals ([1,3,5], res)
     }
 
+    void testFoldLeft () {
+        def res = shell.evaluate("""
+            @Typed
+            u () {
+                ((List<Integer>)[0,1,2,3,4,5]).foldLeft(0) { int el, int sum ->
+                   el + sum
+                }
+            }
+            u ()
+        """)
+        assertEquals (15, res)
+    }
+
     void testFunctions () {
         def res = shell.evaluate("""
 @Trait
