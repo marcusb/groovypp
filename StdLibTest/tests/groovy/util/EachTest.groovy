@@ -5,7 +5,7 @@ public class EachTest extends GroovyShellTestCase {
 
     void testIterator () {
         def res = []
-        ((List<Integer>)[1,2,3]).iterator().each { int it ->
+        [1,2,3].iterator().each {
             res << it + 1
         }
         assertEquals ([2,3,4], res)
@@ -15,7 +15,7 @@ public class EachTest extends GroovyShellTestCase {
         def res = shell.evaluate("""
         @Typed u () {
             def res = []
-            ((List<Integer>)[1,2,3]).iterator().each {
+            [1,2,3].iterator().each {
                 res << it + 1
             }
             res
@@ -57,7 +57,7 @@ public class EachTest extends GroovyShellTestCase {
 
     void testIteratorWithState () {
         def res = []
-        res << ((List<Integer>)[1,2,3,4]).iterator().each { int it ->
+        res << [1,2,3,4].iterator().each { int it ->
             @Field int state = 0
             res << (state += it)
             state
@@ -67,7 +67,7 @@ public class EachTest extends GroovyShellTestCase {
 
     void testCollection () {
         def res = []
-        ((List<Integer>)[1,2,3]).each { int it ->
+        [1,2,3].each { int it ->
             res << it + 1
         }
         assertEquals ([2,3,4], res)
@@ -75,7 +75,7 @@ public class EachTest extends GroovyShellTestCase {
 
     void testCollectionWithState () {
         def res = []
-        res << ((List<Integer>)[1,2,3,4]).each { int it ->
+        res << [1,2,3,4].each { int it ->
             assert this instanceof Function1
             @Field int state = 0
             res << (state += it)
@@ -86,10 +86,10 @@ public class EachTest extends GroovyShellTestCase {
 
     void testCollectionWithStateCompile () {
         shell.evaluate """
-@Typed(debug=true)
+@Typed
 def u () {
         def res = []
-        res << ((List<Integer>)[1,2,3,4]).each { int it ->
+        res << [1,2,3,4].each {
             assert this instanceof Function1
             @Field int state = 0
             res << (state += it)
@@ -103,7 +103,7 @@ u()
 
     void testArray () {
         def res = []
-        ((Integer[])[1,2,3]).each { int it ->
+        [1,2,3].each { int it ->
             res << it + 1
         }
         assertEquals ([2,3,4], res)

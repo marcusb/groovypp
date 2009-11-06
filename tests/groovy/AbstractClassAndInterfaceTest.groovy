@@ -208,6 +208,8 @@ public class AbstractClassAndInterfaceTest extends GroovyShellTestCase {
         interface I {}
         @Typed
         class C implements I {}
+
+        10
         """
         shouldNotCompile """
         interface I {}

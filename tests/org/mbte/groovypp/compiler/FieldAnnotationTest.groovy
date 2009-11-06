@@ -6,7 +6,7 @@ public class FieldAnnotationTest extends GroovyShellTestCase {
 @Typed
 def u () {
         def res = []
-        ((List<Integer>)[1,2,3,4]).iterator().each { int it ->
+        [1,2,3,4].iterator().each {
             @Field int state = 0
             res << (state += it)
             state

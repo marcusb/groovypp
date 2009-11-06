@@ -204,14 +204,9 @@ class NumberMathTest extends GroovyShellTestCase {
 
           @Typed
           def u() {
-            try {
-              Integer i = 12
+              def i = 12
               i += " angry men"
-              println (i.getClass().getName());
-            } catch (ClassCastException e) {
-                assert true;
-            }
-            assert false;
+              assert ['1','2','n','g'] == i.chars[[0,1,-1,5]];
           }
           u()
         """
