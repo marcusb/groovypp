@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.ClassNode;
@@ -14,12 +15,21 @@ import java.util.List;
 
 public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
     public Expression transform(final ListExpression exp, CompilerTransformer compiler) {
-        final List list = exp.getExpressions();
+        final List<Expression> list = exp.getExpressions();
+        ClassNode genericArg = null;
         for (int i = 0; i != list.size(); ++i) {
-            list.set(i, compiler.transform((Expression) list.get(i)));
+            Expression transformed = compiler.transform(list.get(i));
+            list.set(i, transformed);
+            genericArg = genericArg == null ? transformed.getType() :
+                    TypeUtil.commonType(genericArg, transformed.getType());
         }
 
-        return new ResolvedListExpression(exp, TypeUtil.ARRAY_LIST_TYPE);
+        ClassNode arrayListType = TypeUtil.ARRAY_LIST_TYPE;
+        if (genericArg != null) {
+            genericArg = TypeUtil.wrapSafely(genericArg);
+            arrayListType = TypeUtil.withGenericTypes(arrayListType, new GenericsType[] {new GenericsType(genericArg)});
+        }
+        return new ResolvedListExpression(exp, arrayListType);
     }
 
     public static class ResolvedListExpression extends BytecodeExpr {

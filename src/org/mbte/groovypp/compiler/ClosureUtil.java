@@ -4,7 +4,6 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.MethodVisitor;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -250,7 +249,7 @@ public class ClosureUtil {
                     for (int i = 0; i < genericTypes.length; i++) {
                         genericTypes[i] = new GenericsType(unified[i]);
                     }
-                    ClassNode newBase = TypeUtil.setGenericTypes(baseType, genericTypes);
+                    ClassNode newBase = TypeUtil.withGenericTypes(baseType, genericTypes);
                     improveClosureType(closureType, newBase);
                     returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, baseType);
                 }

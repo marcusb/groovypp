@@ -11,7 +11,6 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -311,7 +310,7 @@ public class TypeUtil {
                 substitutedArgs[i].setResolved(typeArg.isResolved());
             }
         }
-        ClassNode result = setGenericTypes(toSubstitute, substitutedArgs);
+        ClassNode result = withGenericTypes(toSubstitute, substitutedArgs);
         return result;
     }
 
@@ -389,7 +388,7 @@ public class TypeUtil {
         return true;
     }
 
-    public static ClassNode setGenericTypes(ClassNode baseType, GenericsType[] genericTypes) {
+    public static ClassNode withGenericTypes(ClassNode baseType, GenericsType[] genericTypes) {
         ClassNode newBase = makeWithoutCaching(baseType.getName());
         newBase.setRedirect(baseType);
         newBase.setGenericsTypes(genericTypes);
