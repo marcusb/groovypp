@@ -36,8 +36,8 @@ public class ClassNodeCache {
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
         initDgm("groovy.util.TransformClosure");
-        initDgm("groovy.util.FilterClosure");
         initDgm("groovy.util.FilterMapClosure");
+        initDgm("groovy.util.Filters");
         initDgm("groovy.util.Iterations");
         initDgm(Arrays.class);
         initDgm(Collections.class);
