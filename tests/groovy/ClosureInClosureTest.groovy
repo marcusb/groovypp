@@ -21,7 +21,7 @@ class ClosureInClosureTest extends GroovyShellTestCase {
 
             def l = [1..11, 2..12, 3..13, 4..14]
 
-            l.each{
+            l.each{List it ->
                 it.each{
                     println(text)
                 }

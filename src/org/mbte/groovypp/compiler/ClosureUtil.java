@@ -116,7 +116,7 @@ public class ClosureUtil {
                 ClassNode parameterType = missingMethodParameter.getType();
                 parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
                 if (!TypeUtil.isAssignableFrom(parameterType, closureParameter.getType())) {
-                    if (closureParameter.getType() == ClassHelper.DYNAMIC_TYPE) {
+                    if (TypeUtil.isAssignableFrom(closureParameter.getType(), parameterType)) {
                         if (mutations == null)
                             mutations = new LinkedList<Mutation> ();
                         mutations.add(new Mutation(parameterType, closureParameter));
