@@ -27,7 +27,7 @@ class MappersTest extends GroovyShellTestCase {
         def iter = [0, 1, 2].iterator().map { it.toString() }
         def res = []
         while (iter.hasNext()) {
-            res << iter.next ()
+            res << iter.next ().toUpperCase()
         }
         assertEquals (["0", "1", "2"], res )
     }
