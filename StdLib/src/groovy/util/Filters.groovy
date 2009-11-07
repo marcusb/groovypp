@@ -31,8 +31,12 @@ class Filters extends DefaultGroovyMethodsSupport {
     find(Arrays.asList(self), condition)
   }
 
-  static <K, V> Map.Entry<K, V> find(Map<K, V> self, Function1<Map.Entry<K, V>, Boolean> condition) {
-    find(self.entrySet(), condition)
+  static <K, V> Map.Entry<K, V> find(Map<K, V> self, Function2<K, V, Boolean> condition) {
+    for (Map.Entry<K, V> entry: self.entrySet()) {
+      if (condition.apply(entry.getKey(), entry.getValue()))
+        return entry
+    }
+    null
   }
 
   static <T> Collection<T> findAll(Iterator<T> self, Collection<T> answer, Function1<T, Boolean> condition) {
@@ -45,10 +49,10 @@ class Filters extends DefaultGroovyMethodsSupport {
     return answer
   }
 
-  static <K, V> Map<K, V> findAll(Map<K, V> self, Function1<Map.Entry<K, V>, Boolean> condition) {
+  static <K, V> Map<K, V> findAll(Map<K, V> self, Function2<K, V, Boolean> condition) {
     Map<K, V> map = createSimilarMap(self)
     for (Map.Entry<K, V> entry: self.entrySet()) {
-      if (condition.apply(entry))
+      if (condition.apply(entry.getKey(), entry.getValue()))
         map.put(entry.getKey(), entry.getValue())
     }
     return map
@@ -72,8 +76,13 @@ class Filters extends DefaultGroovyMethodsSupport {
     false
   }
 
-  static <K, V> boolean any(Map<K, V> self, Function1<Map.Entry<K, V>, Boolean> condition) {
-    any(self.entrySet(), condition)
+  static <K, V> boolean any(Map<K, V> self, Function2<K, V, Boolean> condition) {
+    for (Map.Entry<K, V> entry : self.entrySet()) {
+      if (condition.apply(entry.getKey(), entry.getValue())) {
+        return true
+      }
+    }
+    false
   }
 
   static <T> boolean any(Collection<T> self, Function1<T, Boolean> condition) {
