@@ -3,9 +3,7 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.classgen.BytecodeSequence;
 
 public class ClosureMethodNode extends MethodNode {
     private ClosureMethodNode owner;
@@ -32,6 +30,20 @@ public class ClosureMethodNode extends MethodNode {
 
         public ClosureMethodNode getMaster() {
             return master;
+        }
+
+        public String getTypeDescriptor() {
+            StringBuilder buf = new StringBuilder(master.getName().length()+20);
+            buf.append(master.getReturnType().getName());
+            buf.append(' ');
+            buf.append(master.getName());
+            buf.append("()");
+            return buf.toString();
+        }
+
+        @Override
+        public ClassNode getReturnType() {
+            return master.getReturnType();
         }
     }
 }

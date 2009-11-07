@@ -1,6 +1,13 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -95,14 +102,8 @@ public class ClosureUtil {
         Parameter[] missingMethodParameters = missing.getParameters();
         List<MethodNode> methods = closureType.getDeclaredMethods("doCall");
 
-//if (missing.getName().equals("call"))
-//        System.err.println("MISSING " + missing.getDeclaringClass() + " " + missing.toString());
-
         for (MethodNode method : methods) {
             
-//if (missing.getName().equals("call"))
-//        System.err.println(method.getDeclaringClass() + " " + method.toString());
-
             Parameter[] closureParameters = method.getParameters();
 
             if (closureParameters.length != missingMethodParameters.length)
@@ -120,12 +121,8 @@ public class ClosureUtil {
                         if (mutations == null)
                             mutations = new LinkedList<Mutation> ();
                         mutations.add(new Mutation(parameterType, closureParameter));
-//if (missing.getName().equals("call"))
-//        System.err.println("MUTATE: " + missingMethodParameter.getType() + " " + closureParameter.getName());
                         continue;
                     }
-//if (missing.getName().equals("call"))
-//        System.err.println("FAIL: " + missingMethodParameter.getType() + " " + closureParameter.getType());
 
                     match = false;
                     break;
@@ -273,5 +270,161 @@ public class ClosureUtil {
             closureType.setInterfaces(ClassNode.EMPTY_ARRAY);
             closureType.setSuperClass(baseType);
         }
+    }
+
+    public static ClosureMethodNode createDependentMethod(final ClassNode newType, final ClosureMethodNode _doCallMethod) {
+        ClosureMethodNode _doCallMethodDef = new ClosureMethodNode.Dependent(
+                _doCallMethod,
+                _doCallMethod.getName(),
+                Opcodes.ACC_PUBLIC,
+                ClassHelper.OBJECT_TYPE,
+                Parameter.EMPTY_ARRAY,
+                new BytecodeSequence(new BytecodeInstruction(){
+                    public void visit(MethodVisitor mv) {
+                        mv.visitVarInsn(Opcodes.ALOAD, 0);
+                        final ClassNode type = _doCallMethod.getParameters()[0].getType();
+                        if (ClassHelper.isPrimitiveType(type)) {
+                            if (type == ClassHelper.long_TYPE) {
+                                mv.visitInsn(Opcodes.LCONST_0);
+                            } else if (type == ClassHelper.double_TYPE) {
+                                mv.visitInsn(Opcodes.DCONST_0);
+                            } else if (type == ClassHelper.float_TYPE) {
+                                mv.visitInsn(Opcodes.FCONST_0);
+                            } else {
+                                mv.visitInsn(Opcodes.ICONST_0);
+                            }
+                        } else {
+                            mv.visitInsn(Opcodes.ACONST_NULL);
+                        }
+                        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(newType), _doCallMethod.getName(), BytecodeHelper.getMethodDescriptor(_doCallMethod.getReturnType(),_doCallMethod.getParameters()));
+                        BytecodeExpr.doReturn (mv, _doCallMethod.getReturnType());
+                    }
+                })){
+
+            @Override
+            public ClassNode getReturnType() {
+                return _doCallMethod.getReturnType();
+            }
+        };
+
+        newType.addMethod(_doCallMethodDef);
+        return _doCallMethodDef;
+    }
+
+    public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams) {
+
+        final ClassNode superClass = newType.getSuperClass();
+
+        ArgumentListExpression superCallArgs = new ArgumentListExpression();
+        if (superClass == ClassHelper.CLOSURE_TYPE) {
+            superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+        }
+        ConstructorCallExpression superCall = new ConstructorCallExpression(ClassNode.SUPER, superCallArgs);
+
+        BytecodeSequence fieldInit = new BytecodeSequence(new BytecodeInstruction() {
+            public void visit(MethodVisitor mv) {
+                for (int i = 0, k = 1; i != constrParams.length; i++) {
+                    mv.visitVarInsn(Opcodes.ALOAD, 0);
+
+                    final ClassNode type = constrParams[i].getType();
+                    if (ClassHelper.isPrimitiveType(type)) {
+                        if (type == ClassHelper.long_TYPE) {
+                            mv.visitVarInsn(Opcodes.LLOAD, k++);
+                            k++;
+                        } else if (type == ClassHelper.double_TYPE) {
+                            mv.visitVarInsn(Opcodes.DLOAD, k++);
+                            k++;
+                        } else if (type == ClassHelper.float_TYPE) {
+                            mv.visitVarInsn(Opcodes.FLOAD, k++);
+                        } else {
+                            mv.visitVarInsn(Opcodes.ILOAD, k++);
+                        }
+                    } else {
+                        mv.visitVarInsn(Opcodes.ALOAD, k++);
+                    }
+                    mv.visitFieldInsn(Opcodes.PUTFIELD, BytecodeHelper.getClassInternalName(newType), constrParams[i].getName(), BytecodeHelper.getTypeDescription(type));
+                }
+                mv.visitInsn(Opcodes.RETURN);
+            }
+        });
+
+
+        ConstructorNode cn = new ConstructorNode(
+                    Opcodes.ACC_PUBLIC,
+                    constrParams,
+                    ClassNode.EMPTY_ARRAY,
+                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit}, new VariableScope()));
+        newType.addConstructor(cn);
+    }
+
+    public static void addFields(ClosureExpression ce, ClassNode newType, CompilerTransformer compiler) {
+        for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
+            Variable astVar = (Variable) it.next();
+            final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(astVar.getName(), false);
+
+            ClassNode vtype;
+            if (var != null) {
+                vtype = compiler.getLocalVarInferenceTypes().get(astVar);
+                if (vtype == null)
+                   vtype = var.getType();
+            }
+            else {
+                vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
+            }
+
+            if (newType.getDeclaredField(astVar.getName()) == null) {
+                newType.addField(astVar.getName(), Opcodes.ACC_FINAL, vtype, null);
+            }
+        }
+    }
+
+    public static Parameter[] createClosureConstructorParams(ClassNode newType) {
+        List<FieldNode> fields = newType.getFields();
+
+        final Parameter constrParams [] = new Parameter[fields.size()];
+
+        int k = 0;
+        FieldNode ownerField = newType.getField("$owner");
+        if (ownerField != null)
+            constrParams [k++] = new Parameter(ownerField.getType(), "$owner");
+        for (int i = 0; i != fields.size(); ++i) {
+            final FieldNode fieldNode = fields.get(i);
+            if (!fieldNode.getName().equals("$owner"))
+                constrParams [k++] = new Parameter(fieldNode.getType(), fieldNode.getName());
+        }
+        return constrParams;
+    }
+
+    public static void instantiateClass(ClassNode type, CompilerTransformer compiler, MethodVisitor mv) {
+        type.getModule().addClass(type);
+
+        Parameter[] constrParams = createClosureConstructorParams(type);
+        createClosureConstructor(type, constrParams);
+
+        final String classInternalName = BytecodeHelper.getClassInternalName(type);
+        mv.visitTypeInsn(Opcodes.NEW, classInternalName);
+        mv.visitInsn(Opcodes.DUP);
+
+        if (!compiler.methodNode.isStatic() || (compiler.methodNode instanceof ClosureMethodNode))
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+        else
+            mv.visitInsn(Opcodes.ACONST_NULL);
+
+        for (int i = 1; i != constrParams.length; i++) {
+            final String name = constrParams[i].getName();
+            final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(name, false);
+            if (var != null) {
+                BytecodeExpr.loadVar(var, mv);
+                BytecodeExpr.unbox(var.getType(), mv);
+                if (!constrParams[i].getType().equals(var.getType())) {
+                    BytecodeExpr.checkCast(constrParams[i].getType(), mv);
+                }
+            }
+            else {
+                mv.visitVarInsn(Opcodes.ALOAD, 0);
+                mv.visitFieldInsn(Opcodes.GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getDeclaringClass()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
+            }
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
     }
 }

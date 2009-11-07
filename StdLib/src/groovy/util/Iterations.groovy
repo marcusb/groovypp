@@ -6,11 +6,11 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
  */
 @Typed
 abstract class Iterations {
-    static <T,R> R foldLeft(Iterator<T> self, R init, Function2<T,R,R> op) {
+    static <T,R> R foldLeft(Iterator<T> self, R init = null, Function2<T,R,R> op) {
         self.hasNext() ? foldLeft(self, op.apply(self.next(), init), op) : init
     }
 
-    static <T,R> R foldLeft(Iterable<T> self, R init, Function2<T,R,R> op) {
+    static <T,R> R foldLeft(Iterable<T> self, R init = null, Function2<T,R,R> op) {
       foldLeft(self.iterator(), init, op)
     }
 
@@ -33,6 +33,10 @@ abstract class Iterations {
 
     static <T> void each(Enumeration<T> self, Function1<T,Object> op) {
         each(self.iterator(), op)
+    }
+
+    static <T,R> Iterator<R> map (Iterator<T> self, Function1<T,R> op ) {
+        [ next: { op[self.next()] }, hasNext: { self.hasNext() }, remove: { self.remove() } ]
     }
 
     private static <K,V> void eachMap(Iterator<Map.Entry<K,V>> it, Function2<K,V,Object> op) {

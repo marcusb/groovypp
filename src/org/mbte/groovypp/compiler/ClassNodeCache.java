@@ -99,7 +99,7 @@ public class ClassNodeCache {
         return list;
     }
 
-    static synchronized Object getMethods(ClassNode type, String methodName) {
+    public static synchronized Object getMethods(ClassNode type, String methodName) {
 //        type = castPrimitiveArray (type);
 
         final ClassNodeInfo info = getClassNodeInfo(type);

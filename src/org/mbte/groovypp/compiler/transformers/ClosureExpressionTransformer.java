@@ -2,12 +2,8 @@ package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
-import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.MethodVisitor;
 
 public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpression> {
     public Expression transform(ClosureExpression ce, CompilerTransformer compiler) {
@@ -39,41 +35,7 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
             newType.addField("$owner", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
 
         if (addDefault) {
-            ClosureMethodNode _doCallMethodDef = new ClosureMethodNode.Dependent(
-                    _doCallMethod,
-                    "doCall",
-                    Opcodes.ACC_PUBLIC,
-                    ClassHelper.OBJECT_TYPE,
-                    Parameter.EMPTY_ARRAY,
-                    new BytecodeSequence(new BytecodeInstruction(){
-                        public void visit(MethodVisitor mv) {
-                            mv.visitVarInsn(ALOAD, 0);
-                            final ClassNode type = _doCallMethod.getParameters()[0].getType();
-                            if (ClassHelper.isPrimitiveType(type)) {
-                                if (type == ClassHelper.long_TYPE) {
-                                    mv.visitInsn(LCONST_0);
-                                } else if (type == ClassHelper.double_TYPE) {
-                                    mv.visitInsn(DCONST_0);
-                                } else if (type == ClassHelper.float_TYPE) {
-                                    mv.visitInsn(FCONST_0);
-                                } else {
-                                    mv.visitInsn(ICONST_0);
-                                }
-                            } else {
-                                mv.visitInsn(ACONST_NULL);
-                            }
-                            mv.visitMethodInsn(INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(newType), "doCall", BytecodeHelper.getMethodDescriptor(_doCallMethod.getReturnType(),_doCallMethod.getParameters()));
-                            mv.visitInsn(ARETURN);
-                        }
-                    })){
-
-                @Override
-                public ClassNode getReturnType() {
-                    return _doCallMethod.getReturnType();
-                }
-            };
-
-            newType.addMethod(_doCallMethodDef);
+            ClosureUtil.createDependentMethod(newType, _doCallMethod);
         }
 
 

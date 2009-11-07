@@ -1,15 +1,15 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.CastExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Cast processing rules:
@@ -44,6 +44,16 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
 
+        if (exp.getExpression() instanceof MapExpression) {
+            MapExpression mapExpression = (MapExpression) exp.getExpression();
+
+            if (!exp.getType().implementsInterface(ClassHelper.MAP_TYPE)
+             && !exp.getType().equals(ClassHelper.MAP_TYPE)
+             && !TypeUtil.isAssignableFrom(exp.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
+                return buildClassFromMap (mapExpression, exp.getType(), compiler);
+            }
+        }
+
         final BytecodeExpr expr = (BytecodeExpr) compiler.transform(exp.getExpression());
 
         if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
@@ -64,6 +74,169 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
 
         return standardCast(exp, compiler, expr);
+    }
+
+    private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
+
+        ClassNode objType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL, ClassHelper.OBJECT_TYPE);
+
+        if (type.isInterface()) {
+            objType.setInterfaces(new ClassNode [] {type} );
+        }
+        else {
+            objType.setSuperClass(type);
+        }
+
+        objType.setModule(compiler.classNode.getModule());
+
+        if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
+            objType.addField("$owner", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+
+        Set<String> fieldNames = new HashSet<String> ();
+
+        final List list = exp.getMapEntryExpressions();
+        for (int i = 0; i != list.size(); ++i) {
+            final MapEntryExpression me = (MapEntryExpression) list.get(i);
+
+            Expression key = me.getKeyExpression();
+            if (!(key instanceof ConstantExpression) || !(((ConstantExpression)key).getValue() instanceof String)) {
+                compiler.addError( "<key> must have java.lang.String type", key);
+                return null;
+            }
+
+            String keyName = (String) ((ConstantExpression)key).getValue();
+
+            Expression value = me.getValueExpression();
+            if (value instanceof ClosureExpression) {
+                ClosureExpression ce = (ClosureExpression) value;
+
+                boolean addDefault = false;
+                if (ce.getParameters() != null && ce.getParameters().length == 0) {
+                    addDefault = true;
+                    final VariableScope scope = ce.getVariableScope();
+                    ce = new ClosureExpression(new Parameter[1], ce.getCode());
+                    ce.setVariableScope(scope);
+                    ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it");
+                }
+                
+                final ClosureMethodNode _doCallMethod = new ClosureMethodNode(
+                        keyName,
+                        Opcodes.ACC_PUBLIC,
+                        ClassHelper.OBJECT_TYPE,
+                        ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
+                        ce.getCode());
+                objType.addMethod(_doCallMethod);
+
+                ClosureMethodNode defMethod = null;
+                if (addDefault) {
+                    defMethod = ClosureUtil.createDependentMethod(objType, _doCallMethod);
+                }
+
+                Object methods = ClassNodeCache.getMethods(type, keyName);
+                if (methods != null) {
+                    if (methods instanceof MethodNode) {
+                        MethodNode baseMethod = (MethodNode) methods;
+                        checkOveride (_doCallMethod, defMethod, baseMethod, type);
+                    }
+                    else {
+                        FastArray methodsArr = (FastArray) methods;
+                        int methodCount = methodsArr.size();
+                        for (int j = 0; j != methodCount; ++j) {
+                            MethodNode baseMethod = (MethodNode) methodsArr.get(j);
+                            checkOveride (_doCallMethod, defMethod, baseMethod, type);
+                        }
+                    }
+                }
+
+                for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
+                    Variable astVar = (Variable) it.next();
+                    final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(astVar.getName(), false);
+
+                    ClassNode vtype;
+                    if (var != null) {
+                        vtype = compiler.getLocalVarInferenceTypes().get(astVar);
+                        if (vtype == null)
+                           vtype = var.getType();
+                    }
+                    else {
+                        vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
+                    }
+
+                    if (!fieldNames.contains(astVar.getName())) {
+                        fieldNames.add(astVar.getName());
+                        objType.addField(astVar.getName(), ACC_FINAL, vtype, null);
+                    }
+                }
+
+                StaticMethodBytecode.replaceMethodCode(compiler.su, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+            }
+            else {
+                // @todo
+            }
+        }
+
+        return new BytecodeExpr(exp, objType) {
+            protected void compile(MethodVisitor mv) {
+                ClosureUtil.instantiateClass(getType(), compiler, mv);
+            }
+        };
+    }
+
+    private void checkOveride(ClosureMethodNode callMethod, ClosureMethodNode defMethod, MethodNode baseMethod, ClassNode baseType) {
+        class Mutation {
+            final Parameter p;
+            final ClassNode t;
+
+            public Mutation(ClassNode t, Parameter p) {
+                this.t = t;
+                this.p = p;
+            }
+
+            void mutate () {
+                p.setType(t);
+            }
+        }
+
+        List<Mutation> mutations = null;
+
+        Parameter[] baseMethodParameters = baseMethod.getParameters();
+        Parameter[] closureParameters = callMethod.getParameters();
+
+        boolean match = true;
+        if (closureParameters.length == baseMethodParameters.length) {
+            for (int i = 0; i < closureParameters.length; i++) {
+                Parameter closureParameter = closureParameters[i];
+                Parameter missingMethodParameter = baseMethodParameters[i];
+
+                ClassNode parameterType = missingMethodParameter.getType();
+                parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
+                if (!TypeUtil.isAssignableFrom(parameterType, closureParameter.getType())) {
+                    if (TypeUtil.isAssignableFrom(closureParameter.getType(), parameterType)) {
+                        if (mutations == null)
+                            mutations = new LinkedList<Mutation>();
+                        mutations.add(new Mutation(parameterType, closureParameter));
+                        continue;
+                    }
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                if (mutations != null)
+                    for (Mutation mutation : mutations) {
+                        mutation.mutate();
+                    }
+                ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
+                callMethod.setReturnType(returnType);
+                return;
+            }
+        }
+
+        if (defMethod != null && baseMethodParameters.length == 0) {
+            ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
+            callMethod.setReturnType(returnType);
+        }
     }
 
     private ClassNode calcResultCollectionType(CastExpression exp, ClassNode componentType, CompilerTransformer compiler) {

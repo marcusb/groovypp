@@ -11,6 +11,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression> {
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
@@ -262,8 +263,22 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
                                 GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
                                 if (methodTypeVars != null && methodTypeVars.length > 0) {
+                                    ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+                                    ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+
+                                    if (!foundMethod.isStatic()) {
+                                        formals.add(foundMethod.getDeclaringClass());
+                                        instantiateds.add(type);
+                                    }
+
+                                    for (int j = 0; j != i; j++) {
+                                        formals.add(foundMethod.getParameters()[j].getType());
+                                        instantiateds.add(argTypes[j]);
+                                    }
+                                    
                                     ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
-                                            new ClassNode[]{foundMethod.getDeclaringClass()}, new ClassNode[]{type});
+                                            formals.toArray(new ClassNode[formals.size()]),
+                                            instantiateds.toArray(new ClassNode[instantiateds.size()]));
                                     argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
                                 }
                                 MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);

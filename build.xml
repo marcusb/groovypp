@@ -101,7 +101,7 @@
         </groovyc >
     </target>
 
-    <target name="compile.tests.stdlibtest"  depends="compile.stdlib">
+    <target name="compile.tests.stdlibtest"  depends="compile.stdlib,compile.tests.stdlib,compile.tests.compiler">
         <groovyc classpathref="stdlibtest.test.classpath" srcdir="${stdlibtest.tests}" fork="yes"
             destdir="${stdlibtest.test.output}" verbose="true">
             <javac sourcepath="${stdlibtest.tests}"/>

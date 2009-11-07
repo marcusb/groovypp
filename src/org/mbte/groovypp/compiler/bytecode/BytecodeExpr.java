@@ -402,7 +402,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void load(ClassNode type, int idx, MethodVisitor mv) {
+    public static void load(ClassNode type, int idx, MethodVisitor mv) {
         if (type == double_TYPE) {
             mv.visitVarInsn(Opcodes.DLOAD, idx);
         } else if (type == float_TYPE) {
@@ -421,7 +421,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void load(Variable v, MethodVisitor mv) {
+    public static void load(Variable v, MethodVisitor mv) {
         load(v.getType(), v.getIndex(), mv);
     }
 
@@ -530,7 +530,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
      * @param variable
      * @param mv
      */
-    public void loadVar(Variable variable, MethodVisitor mv) {
+    public static void loadVar(Variable variable, MethodVisitor mv) {
         int index = variable.getIndex();
         load(variable, mv);
         box(variable.getType(), mv);
