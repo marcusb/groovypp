@@ -34,7 +34,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
         Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, right.getType(), compiler);
-        return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop, needsObjectIfStatic);
+        return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
@@ -58,7 +58,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
         Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler);
-        return PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop, needsObjectIfStatic);
+        return PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {

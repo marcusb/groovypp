@@ -473,7 +473,16 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     box(r.getType(), mv);
 
                     mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
-                    mv.visitJumpInsn(onTrue && be.getOperation().getType() == Types.COMPARE_EQUAL ? IFNE : IFEQ, label);
+                    if (onTrue)
+                        if (be.getOperation().getType() == Types.COMPARE_EQUAL)
+                            mv.visitJumpInsn(IFNE, label);
+                        else
+                            mv.visitJumpInsn(IFEQ, label);
+                    else
+                        if (be.getOperation().getType() == Types.COMPARE_EQUAL)
+                            mv.visitJumpInsn(IFEQ, label);
+                        else
+                            mv.visitJumpInsn(IFNE, label);
                 }
             };
     }

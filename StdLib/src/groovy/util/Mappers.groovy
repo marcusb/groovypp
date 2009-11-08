@@ -27,6 +27,29 @@ public class Mappers extends DefaultGroovyMethodsSupport {
         [ next: { op[self.next()] }, hasNext: { self.hasNext() }, remove: { self.remove() } ]
     }
 
+    @Typed(debug=true)
+    static <T1,T2> Iterator<Pair<T1,T2>> product (Iterator<T1> self, Function1<T1,Iterator<T2>> op) {
+        [ first : (T1)null,
+
+          second : (Iterator<T2>) null,
+
+          hasNext : {
+              second != null && second.hasNext() || self.hasNext() && (second = op [first = self.next ()]).hasNext ()
+          },
+
+          next : { new Pair(first, second.next ()) },
+
+          remove : { throw new UnsupportedOperationException("remove () method is not supported") } ]
+    }
+
+//    static <T1,T2> Iterator<Pair<T1,T2>> product (Iterator<T1> self, Iterator<T2> op) {
+//        product(self) { op }
+//    }
+//
+//    static <T1,T2> Iterator<Pair<T1,T2>> product (Iterator<T1> self, Iterable<T2> op) {
+//        product(self) { op.iterator() }
+//    }
+
     static <T,K> Map<K, List<T>> groupBy(Collection<T> self, Function1<T,K> op) {
         def answer = (Map<K, List<T>>)[:]
         for (T element : self) {

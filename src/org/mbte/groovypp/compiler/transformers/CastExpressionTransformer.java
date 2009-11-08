@@ -3,9 +3,9 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.util.FastArray;
-import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -78,21 +78,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
     private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
 
-        ClassNode objType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL, ClassHelper.OBJECT_TYPE);
-
-        if (type.isInterface()) {
-            objType.setInterfaces(new ClassNode [] {type} );
-        }
-        else {
-            objType.setSuperClass(type);
-        }
-
-        objType.setModule(compiler.classNode.getModule());
-
-        if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
-            objType.addField("$owner", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
-
         final List list = exp.getMapEntryExpressions();
+
         for (int i = 0; i != list.size(); ++i) {
             final MapEntryExpression me = (MapEntryExpression) list.get(i);
 
@@ -101,68 +88,138 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 compiler.addError( "<key> must have java.lang.String type", key);
                 return null;
             }
+        }
 
-            String keyName = (String) ((ConstantExpression)key).getValue();
+        ClassNode objType = null;
 
+        if ((type.getModifiers() & ACC_ABSTRACT) != 0) {
+            objType = createNewType(type, compiler);
+        }
+
+        List<MapEntryExpression> methods = new LinkedList<MapEntryExpression>();
+        List<MapEntryExpression> fields = new LinkedList<MapEntryExpression>();
+
+        for (int i = 0; i != list.size(); ++i) {
+            final MapEntryExpression me = (MapEntryExpression) list.get(i);
+
+            String keyName = (String) ((ConstantExpression)me.getKeyExpression()).getValue();
             Expression value = me.getValueExpression();
-            if (value instanceof ClosureExpression) {
-                ClosureExpression ce = (ClosureExpression) value;
 
-                boolean addDefault = false;
-                if (ce.getParameters() != null && ce.getParameters().length == 0) {
-                    addDefault = true;
-                    final VariableScope scope = ce.getVariableScope();
-                    ce = new ClosureExpression(new Parameter[1], ce.getCode());
-                    ce.setVariableScope(scope);
-                    ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it");
-                }
-                
-                final ClosureMethodNode _doCallMethod = new ClosureMethodNode(
-                        keyName,
-                        Opcodes.ACC_PUBLIC,
-                        ClassHelper.OBJECT_TYPE,
-                        ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
-                        ce.getCode());
-                objType.addMethod(_doCallMethod);
+            final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler);
+            if (prop != null) {
+                ClassNode propType = null;
+                if (prop instanceof MethodNode)
+                    propType = ((MethodNode)prop).getParameters()[0].getType();
+                else
+                    if (prop instanceof FieldNode)
+                        propType = ((FieldNode)prop).getType();
+                    else
+                        propType = ((PropertyNode)prop).getType();
 
-                ClosureMethodNode defMethod = null;
-                if (addDefault) {
-                    defMethod = ClosureUtil.createDependentMethod(objType, _doCallMethod);
-                }
-
-                Object methods = ClassNodeCache.getMethods(type, keyName);
-                if (methods != null) {
-                    if (methods instanceof MethodNode) {
-                        MethodNode baseMethod = (MethodNode) methods;
-                        checkOveride (_doCallMethod, defMethod, baseMethod, type);
-                    }
-                    else {
-                        FastArray methodsArr = (FastArray) methods;
-                        int methodCount = methodsArr.size();
-                        for (int j = 0; j != methodCount; ++j) {
-                            MethodNode baseMethod = (MethodNode) methodsArr.get(j);
-                            checkOveride (_doCallMethod, defMethod, baseMethod, type);
-                        }
-                    }
-                }
-
-                ClosureUtil.addFields(ce, objType, compiler);
-                
-                StaticMethodBytecode.replaceMethodCode(compiler.su, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+                final CastExpression cast = new CastExpression(propType, value);
+                cast.setSourcePosition(value);
+                exp.getMapEntryExpressions().set(i, new MapEntryExpression(me.getKeyExpression(), cast));
             }
             else {
-                // @todo
+                if (value instanceof ClosureExpression) {
+                    if (objType == null)
+                        objType = createNewType(type, compiler);
+
+                    ClosureExpression ce = (ClosureExpression) value;
+
+                    methods.add (me);
+
+                    ClosureUtil.addFields(ce, objType, compiler);
+                }
+                else {
+                    if (objType == null)
+                        objType = createNewType(type, compiler);
+
+                    fields.add(me);
+                }
             }
         }
 
         Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
         ClosureUtil.createClosureConstructor(objType, constrParams);
 
+        for (MapEntryExpression me : fields) {
+            final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
+
+            final Expression init = compiler.transform(me.getValueExpression());
+
+            objType.addField(keyName, ACC_PRIVATE, init.getType(), init);
+        }
+
+        for (MapEntryExpression me : methods) {
+            final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
+            closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
+        }
+
         return new BytecodeExpr(exp, objType) {
             protected void compile(MethodVisitor mv) {
                 ClosureUtil.instantiateClass(getType(), compiler, mv);
             }
         };
+    }
+
+    private void closureToMethod(ClassNode type, CompilerTransformer compiler, ClassNode objType, String keyName, ClosureExpression ce) {
+        boolean addDefault = false;
+        if (ce.getParameters() != null && ce.getParameters().length == 0) {
+            addDefault = true;
+            final VariableScope scope = ce.getVariableScope();
+            ce = new ClosureExpression(new Parameter[1], ce.getCode());
+            ce.setVariableScope(scope);
+            ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it");
+        }
+
+        final ClosureMethodNode _doCallMethod = new ClosureMethodNode(
+                keyName,
+                Opcodes.ACC_PUBLIC,
+                ClassHelper.OBJECT_TYPE,
+                ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
+                ce.getCode());
+        objType.addMethod(_doCallMethod);
+
+        ClosureMethodNode defMethod = null;
+        if (addDefault) {
+            defMethod = ClosureUtil.createDependentMethod(objType, _doCallMethod);
+        }
+
+        Object methods = ClassNodeCache.getMethods(type, keyName);
+        if (methods != null) {
+            if (methods instanceof MethodNode) {
+                MethodNode baseMethod = (MethodNode) methods;
+                checkOveride (_doCallMethod, defMethod, baseMethod, type);
+            }
+            else {
+                FastArray methodsArr = (FastArray) methods;
+                int methodCount = methodsArr.size();
+                for (int j = 0; j != methodCount; ++j) {
+                    MethodNode baseMethod = (MethodNode) methodsArr.get(j);
+                    checkOveride (_doCallMethod, defMethod, baseMethod, type);
+                }
+            }
+        }
+
+        StaticMethodBytecode.replaceMethodCode(compiler.su, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+    }
+
+    private ClassNode createNewType(ClassNode type, CompilerTransformer compiler) {
+        ClassNode objType;
+        objType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL, ClassHelper.OBJECT_TYPE);
+        if (type.isInterface()) {
+            objType.setInterfaces(new ClassNode [] {type} );
+        }
+        else {
+            objType.setSuperClass(type);
+        }
+        objType.setModule(compiler.classNode.getModule());
+
+        if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
+            objType.addField("$owner", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+
+        return objType;
     }
 
     private void checkOveride(ClosureMethodNode callMethod, ClosureMethodNode defMethod, MethodNode baseMethod, ClassNode baseType) {

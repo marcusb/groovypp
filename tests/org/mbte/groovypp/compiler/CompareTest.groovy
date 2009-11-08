@@ -1,6 +1,20 @@
 package org.mbte.groovypp.compiler
 
 public class CompareTest extends GroovyShellTestCase {
+
+    void testAndOr() {
+      def res = shell.evaluate("""
+        @Typed(debug=true)
+        def u () {
+           Iterator<Integer> s = null
+           s != null && s.hasNext() || (s = [1,2].iterator ()).hasNext ()
+        }
+        u ()
+      """)
+
+        assertTrue res
+    }
+
   void testMath() {
     shell.evaluate("""
       @Typed

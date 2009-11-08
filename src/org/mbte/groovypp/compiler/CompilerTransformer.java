@@ -414,6 +414,19 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public String getNextClosureName() {
-        return baseClosureName + "$" + (nextClosureIndex++);
+        while (true) {
+            String name = baseClosureName + "$" + (nextClosureIndex++);
+            if (checkNotExist(name))
+                return name;
+        }
+    }
+
+    private boolean checkNotExist (String name) {
+        for (ClassNode node : classNode.getModule().getClasses()) {
+            if (name.equals(node.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

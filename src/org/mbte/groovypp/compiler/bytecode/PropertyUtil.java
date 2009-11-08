@@ -32,7 +32,7 @@ public class PropertyUtil {
         return dynamicOrFail(exp, compiler, propName, object, null);
     }
 
-    public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop, boolean needsObjectIfStatic) {
+    public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
         if (prop instanceof MethodNode)
             return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
 
