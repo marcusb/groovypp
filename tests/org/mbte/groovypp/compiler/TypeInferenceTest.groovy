@@ -173,7 +173,7 @@ m ()
             answer
         }
 
-        @Typed
+        @Typed(debug=true)
         def test () {
             groupBy(["1", 3, "2", "4", 0]){
               it instanceof String

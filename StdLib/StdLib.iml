@@ -15,6 +15,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="Groovypp" />
   </component>
 </module>

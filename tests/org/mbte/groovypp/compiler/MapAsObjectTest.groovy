@@ -13,11 +13,11 @@ public class MapAsObjectTest extends GroovyShellTestCase {
             }
 
             @Typed(debug=true)
-            <T,R> Iterator<R> map (Iterator<T> self, Function1<T,R> op) {
+            static <T,R> Iterator<R> map (Iterator<T> self, Function1<T,R> op) {
                 [next: { op [ self.next() ] }, hasNext: { self.hasNext() }, remove: { self.remove() } ]
             }
 
-            @Typed
+            @Typed(debug=true)
             def u () {
                 def res = []
 

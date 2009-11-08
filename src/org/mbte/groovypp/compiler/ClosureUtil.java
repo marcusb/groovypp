@@ -398,31 +398,31 @@ public class ClosureUtil {
     public static void instantiateClass(ClassNode type, CompilerTransformer compiler, MethodVisitor mv) {
         type.getModule().addClass(type);
 
-        Parameter[] constrParams = createClosureConstructorParams(type);
-        createClosureConstructor(type, constrParams);
-
         final String classInternalName = BytecodeHelper.getClassInternalName(type);
         mv.visitTypeInsn(Opcodes.NEW, classInternalName);
         mv.visitInsn(Opcodes.DUP);
 
-        if (!compiler.methodNode.isStatic() || (compiler.methodNode instanceof ClosureMethodNode))
-            mv.visitVarInsn(Opcodes.ALOAD, 0);
-        else
-            mv.visitInsn(Opcodes.ACONST_NULL);
+        final Parameter[] constrParams = type.getDeclaredConstructors().get(0).getParameters();
 
-        for (int i = 1; i != constrParams.length; i++) {
+        for (int i = 0; i != constrParams.length; i++) {
             final String name = constrParams[i].getName();
-            final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(name, false);
-            if (var != null) {
-                BytecodeExpr.loadVar(var, mv);
-                BytecodeExpr.unbox(var.getType(), mv);
-                if (!constrParams[i].getType().equals(var.getType())) {
-                    BytecodeExpr.checkCast(constrParams[i].getType(), mv);
-                }
+
+            if ("$owner".equals(name)) {
+                mv.visitVarInsn(Opcodes.ALOAD,0);
             }
             else {
-                mv.visitVarInsn(Opcodes.ALOAD, 0);
-                mv.visitFieldInsn(Opcodes.GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getDeclaringClass()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
+                final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(name, false);
+                if (var != null) {
+                    BytecodeExpr.loadVar(var, mv);
+                    BytecodeExpr.unbox(var.getType(), mv);
+                    if (!constrParams[i].getType().equals(var.getType())) {
+                        BytecodeExpr.checkCast(constrParams[i].getType(), mv);
+                    }
+                }
+                else {
+                    mv.visitVarInsn(Opcodes.ALOAD, 0);
+                    mv.visitFieldInsn(Opcodes.GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getDeclaringClass()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
+                }
             }
         }
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));

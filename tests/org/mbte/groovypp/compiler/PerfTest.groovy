@@ -38,21 +38,21 @@ public class PerfTest extends GroovyShellTestCase {
       long start = System.currentTimeMillis()
       def nsum = res.normalMethod(i)
       long t1 = System.currentTimeMillis() - start
-      print t1
+      print "normel: $t1"
 
       Thread.sleep 0L
 
       start = System.currentTimeMillis()
       def fsum = res.fastMethod(i)
       long t2 = System.currentTimeMillis() - start
-      print " $t2 ${1d * t1 / t2}"
+      print " fast: $t2 ${1d * t1 / t2}"
 
       Thread.sleep 0L
 
       start = System.currentTimeMillis()
       def fisum = res.fastMethodWithInference(i)
       long ti2 = System.currentTimeMillis() - start
-      println " $ti2 ${1d * t1 / ti2}"
+      println " fastInference: $ti2 ${1d * t1 / ti2}"
 
       assertEquals nsum, fsum
     }

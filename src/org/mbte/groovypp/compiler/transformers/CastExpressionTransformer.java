@@ -90,9 +90,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         objType.setModule(compiler.classNode.getModule());
 
         if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
-            objType.addField("$owner", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
-
-        Set<String> fieldNames = new HashSet<String> ();
+            objType.addField("$owner", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
 
         final List list = exp.getMapEntryExpressions();
         for (int i = 0; i != list.size(); ++i) {
@@ -148,32 +146,17 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     }
                 }
 
-                for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
-                    Variable astVar = (Variable) it.next();
-                    final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(astVar.getName(), false);
-
-                    ClassNode vtype;
-                    if (var != null) {
-                        vtype = compiler.getLocalVarInferenceTypes().get(astVar);
-                        if (vtype == null)
-                           vtype = var.getType();
-                    }
-                    else {
-                        vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
-                    }
-
-                    if (!fieldNames.contains(astVar.getName())) {
-                        fieldNames.add(astVar.getName());
-                        objType.addField(astVar.getName(), ACC_FINAL, vtype, null);
-                    }
-                }
-
+                ClosureUtil.addFields(ce, objType, compiler);
+                
                 StaticMethodBytecode.replaceMethodCode(compiler.su, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
             }
             else {
                 // @todo
             }
         }
+
+        Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
+        ClosureUtil.createClosureConstructor(objType, constrParams);
 
         return new BytecodeExpr(exp, objType) {
             protected void compile(MethodVisitor mv) {

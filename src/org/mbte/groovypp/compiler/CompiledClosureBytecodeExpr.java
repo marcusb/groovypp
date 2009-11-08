@@ -9,16 +9,21 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
     private CompilerTransformer compiler;
 
     ClassNode delegateType;
+    private final Parameter[] constrParams;
 
     public CompiledClosureBytecodeExpr(CompilerTransformer compiler, ClosureExpression ce, ClassNode newType) {
         super(ce, newType);
         this.compiler = compiler;
 
         ClosureUtil.addFields(ce, newType, compiler);
+
+        constrParams = ClosureUtil.createClosureConstructorParams(newType);
+
         compiler.pendingClosures.add(this);
     }
 
     protected void compile(MethodVisitor mv) {
+        ClosureUtil.createClosureConstructor(getType(), constrParams);
         ClosureUtil.instantiateClass(getType(), compiler, mv);
     }
 
