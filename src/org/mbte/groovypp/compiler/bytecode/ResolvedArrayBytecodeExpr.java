@@ -31,6 +31,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "("+BytecodeHelper.getTypeDescription(array.getType()) + "I)" + BytecodeHelper.getTypeDescription(getType()));
         else {
             mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/ArraysMethods", "getAt", "([Ljava/lang/Object;I)Ljava/lang/Object;");
+            checkCast(getType(), mv);
         }
     }
 
