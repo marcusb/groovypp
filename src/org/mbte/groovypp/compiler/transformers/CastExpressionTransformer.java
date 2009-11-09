@@ -42,6 +42,10 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 ClassNode collType = calcResultCollectionType(exp, componentType, compiler);
                 return new ListExpressionTransformer.ResolvedListExpression(listExpression, collType);
             }
+
+            final ConstructorCallExpression constr = new ConstructorCallExpression(exp.getType(), new ArgumentListExpression(listExpression.getExpressions()));
+            constr.setSourcePosition(exp);
+            return (BytecodeExpr) compiler.transform(constr);
         }
 
         if (exp.getExpression() instanceof MapExpression) {

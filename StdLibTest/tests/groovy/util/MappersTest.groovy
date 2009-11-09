@@ -38,8 +38,9 @@ class MappersTest extends GroovyShellTestCase {
             println (-10 + it + 10) // to make sure it is integer
             (0..it).iterator ()
         }.each {
-            println "${it.first} ${it.second}"
-            // @todo followind line fails
+            Pair<Pair,Pair> p = [it, it]
+            println "${p.first.first} ${p.second.second}"
+            // @todo following line fails
 //            println "${it.first} ${it.second} ${it.first + it.second}"
         }
     }

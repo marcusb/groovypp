@@ -13,9 +13,10 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr object;
     private final boolean needsObjectIfStatic;
     private final BytecodeExpr getter;
+    private static final ArgumentListExpression EMPTY_ARGS = new ArgumentListExpression();
 
     public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
-        super(parent, methodNode.getReturnType());
+        super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS));
         this.methodNode = methodNode;
         this.object = object;
         this.needsObjectIfStatic = needsObjectIfStatic;
@@ -23,7 +24,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 parent,
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : object,
-                new ArgumentListExpression(), compiler);
+                EMPTY_ARGS, compiler);
     }
 
     protected void compile(MethodVisitor mv) {
@@ -51,7 +52,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 parent,
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : fakeObject,
-                new ArgumentListExpression(), compiler);
+                EMPTY_ARGS, compiler);
 
         final BinaryExpression op = new BinaryExpression(get, method, right);
         op.setSourcePosition(parent);

@@ -239,7 +239,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         if (argTypes.length > 0) {
             for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
                 final ClassNode oarg = argTypes[i];
-                if (oarg.implementsInterface(TypeUtil.TCLOSURE) || oarg.equals(TypeUtil.EX_LINKED_HASH_MAP_TYPE)) {
+                if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
                     foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
 
                     if (foundMethod != null) {
