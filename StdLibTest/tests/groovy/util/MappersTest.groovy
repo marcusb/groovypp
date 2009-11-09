@@ -40,8 +40,7 @@ class MappersTest extends GroovyShellTestCase {
         }.each {
             Pair<Pair,Pair> p = [it, it]
             println "${p.first.first} ${p.second.second}"
-            // @todo following line fails
-//            println "${it.first} ${it.second} ${it.first + it.second}"
+            println "${it.first} ${it.second} ${it.first + it.second}"
         }
     }
 }
