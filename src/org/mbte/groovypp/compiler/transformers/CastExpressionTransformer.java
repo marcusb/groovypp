@@ -43,9 +43,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 return new ListExpressionTransformer.ResolvedListExpression(listExpression, collType);
             }
 
-            final ConstructorCallExpression constr = new ConstructorCallExpression(exp.getType(), new ArgumentListExpression(listExpression.getExpressions()));
-            constr.setSourcePosition(exp);
-            return (BytecodeExpr) compiler.transform(constr);
+            if (!TypeUtil.isDirectlyAssignableFrom(exp.getType(), TypeUtil.ARRAY_LIST_TYPE)) {
+                final ConstructorCallExpression constr = new ConstructorCallExpression(exp.getType(), new ArgumentListExpression(listExpression.getExpressions()));
+                constr.setSourcePosition(exp);
+                return (BytecodeExpr) compiler.transform(constr);
+            }
         }
 
         if (exp.getExpression() instanceof MapExpression) {
