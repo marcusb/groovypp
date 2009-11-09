@@ -174,11 +174,12 @@ public class ClosureUtil {
                                             } else {
                                                 mv.visitVarInsn(Opcodes.ILOAD, k++);
                                             }
+                                            BytecodeExpr.box(type, mv);
+                                            BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(expectedType), mv);
                                         } else {
                                             mv.visitVarInsn(Opcodes.ALOAD, k++);
+                                            BytecodeExpr.checkCast(TypeUtil.wrapSafely(expectedType), mv);
                                         }
-                                        BytecodeExpr.box(type, mv);
-                                        BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(expectedType), mv);
                                         BytecodeExpr.unbox(expectedType, mv);
                                     }
                                     mv.visitMethodInsn(

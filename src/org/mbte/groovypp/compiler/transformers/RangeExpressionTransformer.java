@@ -15,7 +15,9 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
     public Expression transform(final RangeExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr from = (BytecodeExpr) compiler.transform(exp.getFrom());
         final BytecodeExpr to = (BytecodeExpr) compiler.transform(exp.getTo());
-        final boolean intRange = (from.getType() == ClassHelper.int_TYPE && to.getType() == ClassHelper.int_TYPE);
+        final boolean intRange =
+                   (from.getType() == ClassHelper.int_TYPE || from.getType().equals(ClassHelper.Integer_TYPE))
+                && (to.getType() == ClassHelper.int_TYPE || to.getType().equals(ClassHelper.Integer_TYPE));
         return new BytecodeExpr(exp, intRange ? TypeUtil.INT_RANGE_TYPE : ClassHelper.RANGE_TYPE) {
             protected void compile(MethodVisitor mv) {
                 from.visit(mv);

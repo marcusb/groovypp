@@ -32,14 +32,15 @@ class MappersTest extends GroovyShellTestCase {
         assertEquals (["0", "1", "2"], res )
     }
 
+    @Typed
     void testProduct () {
-        [0,1,2,3,4].iterator().product{
-            println it + 10
-            [0,1,2,3].iterator ()
-        }.each { pair ->
-            println "${pair.first} ${pair.second}"
+        (0..<5).iterator().product{
+            println (-10 + it + 10) // to make sure it is integer
+            (0..it).iterator ()
+        }.each {
+            println "${it.first} ${it.second}"
             // @todo followind line fails
-//            println "${pair.first} ${pair.second} ${pair.first + pair.second}"
+//            println "${it.first} ${it.second} ${it.first + it.second}"
         }
     }
 }
