@@ -27,6 +27,12 @@ public class Mappers extends DefaultGroovyMethodsSupport {
         [ next: { op[self.next()] }, hasNext: { self.hasNext() }, remove: { self.remove() } ]
     }
 
+    static <T1,T2> Iterator<Pair<T1,T2>> zip (Iterator<T1> self, Iterator<T2> other) {
+      [ next: { [self.next(), other.next()] },
+        hasNext: { self.hasNext() && other.hasNext() },
+        remove: { throw new UnsupportedOperationException("remove() is not supported") } ]
+    }
+
     static <T1,T2> Iterator<Pair<T1,T2>> product (Iterator<T1> self, Function1<T1,Iterator<T2>> op) {
         [ first : (T1)null,
 

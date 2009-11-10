@@ -43,4 +43,13 @@ class MappersTest extends GroovyShellTestCase {
             println "${it.first} ${it.second} ${it.first + it.second}"
         }
     }
+
+    @Typed
+    void testZip () {
+      def range = 0..2
+      def zipped = range.iterator().zip(range.map {it + 1}.iterator())
+      def list = []
+      while (zipped.hasNext()) list << zipped.next()
+      assertEquals((List<Pair>) [[0, 1], [1, 2], [2, 3]], list)
+    }
 }
