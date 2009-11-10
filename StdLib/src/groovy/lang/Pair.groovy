@@ -1,32 +1,27 @@
 package groovy.lang
 
-class Pair<T1,T2> {
-    T1 first
-    T2 second
+class Pair<T1, T2> {
+  T1 first
+  T2 second
 
-    Pair (T1 first, T2 second) {
-        this.first = first;
-        this.second = second
-    }
+  Pair(T1 first, T2 second) {
+    this.first = first;
+    this.second = second
+  }
 
-  boolean equals(o) {
-    if (this.is(o)) return true;
+  boolean equals(obj) {
+    this.is(obj) || (obj instanceof Pair && eq(first, ((Pair) obj).first) && eq(second, ((Pair) obj).second))
+  }
 
-    if (!(o instanceof Pair)) return false;
-
-    Pair pair = (Pair) o;
-
-    if (first != null ? !first.equals(pair.first) : pair.first != null) return false;
-    if (second != null ? !second.equals(pair.second) : pair.second != null) return false;
-
-    return true;
+  private boolean eq(obj1, obj2) {
+    obj1 == null ? obj2 == null : obj1.equals(obj2)
   }
 
   int hashCode() {
-    int result;
+    31 * hash(first) + hash(second)
+  }
 
-    result = (first ? first.hashCode() : 0);
-    result = 31 * result + (second ? second.hashCode() : 0);
-    return result;
+  private int hash(obj) {
+    return obj != null ? obj.hashCode() : 0
   }
 }
