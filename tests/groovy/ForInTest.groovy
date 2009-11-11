@@ -5,7 +5,7 @@ import static groovy.CompileTestSupport.shouldNotCompile
 
 class ForInTest extends GroovyShellTestCase {
 
-  void testForIn() {
+  void testForInString() {
     def res = shell.evaluate("""
       @Typed
       public def foo(List<String> l) {
@@ -17,6 +17,17 @@ class ForInTest extends GroovyShellTestCase {
     """)
     assertEquals(["es", "geht"], res)
   }
-
+  void testForInIntRange() {
+    def res = shell.evaluate("""
+      @Typed(debug=true)
+      public def foo() {
+        def res = []
+        for (i in 0..2) res << i.byteValue()
+        res
+      }
+      foo()
+    """)
+    assertEquals([0,1,2], res)
+  }
 
 }
