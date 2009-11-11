@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.Parameter;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import static org.codehaus.groovy.ast.ClassHelper.short_TYPE;
@@ -154,20 +155,24 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private void visitForLoopWithCollection(ForStatement forLoop) {
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
 
+        final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
+
+        ClassNode collectionType = TypeUtil.getSubstitutedType(TypeUtil.COLLECTION_TYPE, TypeUtil.COLLECTION_TYPE,
+                collectionExpression.getType());
+        ClassNode etype =  ClassHelper.OBJECT_TYPE;
+        GenericsType[] generics = collectionType.getGenericsTypes();
+        if (generics != null && generics.length == 1) {
+            if (!TypeUtil.isSuper(generics[0])) {
+                etype = generics[0].getType();
+                if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
+            }
+        }
+
         Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
 
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
         BytecodeHelper helper = new BytecodeHelper(mv);
-
-        final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
-
-        ClassNode etype = ClassHelper.OBJECT_TYPE;
-        if (collectionExpression.getType() == TypeUtil.INT_RANGE_TYPE) {
-            variable.setType(ClassHelper.Integer_TYPE);
-            etype = ClassHelper.Integer_TYPE;
-        }
-
         MethodCallExpression iterator = new MethodCallExpression(
                 collectionExpression, "iterator", new ArgumentListExpression());
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
@@ -183,8 +188,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         mv.visitVarInsn(ALOAD, iteratorIdx);
         mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;");
-        if (etype != ClassHelper.OBJECT_TYPE)
-            BytecodeExpr.checkCast(etype, mv);
+        BytecodeExpr.cast(ClassHelper.OBJECT_TYPE, etype, mv);
         helper.storeVar(variable);
 
         forLoop.getLoopBlock().visit(this);

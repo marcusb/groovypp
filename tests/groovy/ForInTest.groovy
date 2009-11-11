@@ -11,6 +11,7 @@ class ForInTest extends GroovyShellTestCase {
       public def foo(List<String> l) {
         def res = []
         for (el in l) res << el.toLowerCase()
+        res
       }
       foo(["Es", "GEHT"])
     """)
