@@ -33,6 +33,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
 
         if (isVarArg) {
             if (bargs.getExpressions().size() == parameters.length - 1) {
+                // no var args
                 BytecodeExpr last = (BytecodeExpr) compiler.transform(new ArrayExpression(parameters[parameters.length - 1].getType().getComponentType(), new ArrayList<Expression>()));
                 bargs.getExpressions().add(last);
             } else {
@@ -72,55 +73,59 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         for (int i = 0; i != parameters.length; ++i) {
             final BytecodeExpr arg = (BytecodeExpr) bargs.getExpressions().get(i);
             ClassNode ptype = parameters[i].getType();
-            if (ptype.equals(ClassHelper.STRING_TYPE)) {
-                if (!arg.getType().equals(ClassHelper.STRING_TYPE)) {
-                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile(MethodVisitor mv) {
-                            arg.visit(mv);
-                            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-                        }
-                    });
-                }
-            } else if (ptype.isArray()) {
-                final ClassNode componentType = ptype.getComponentType();
-                if (ClassHelper.isPrimitiveType(componentType)) {
-                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile(MethodVisitor mv) {
-                            arg.visit(mv);
-                            if (componentType == ClassHelper.byte_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToByteArray", "(Ljava/lang/Object;)[B");
-                            else if (componentType == ClassHelper.boolean_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToBooleanArray", "(Ljava/lang/Object;)[Z");
-                            else if (componentType == ClassHelper.short_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToShortArray", "(Ljava/lang/Object;)[S");
-                            else if (componentType == ClassHelper.int_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToIntArray", "(Ljava/lang/Object;)[I");
-                            else if (componentType == ClassHelper.char_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToCharArray", "(Ljava/lang/Object;)[C");
-                            else if (componentType == ClassHelper.long_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToLongArray", "(Ljava/lang/Object;)[L");
-                            else if (componentType == ClassHelper.float_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToFloatArray", "(Ljava/lang/Object;)[F");
-                            else if (componentType == ClassHelper.double_TYPE)
-                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToDoubleArray", "(Ljava/lang/Object;)[D");
-                        }
-                    });
-                } else if (componentType.equals(ClassHelper.OBJECT_TYPE) && ClassHelper.isPrimitiveType(arg.getType().getComponentType())) {
-                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile(MethodVisitor mv) {
-                            arg.visit(mv);
-                            mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "primitiveArrayBox", "(Ljava/lang/Object;)[Ljava/lang/Object;");
-                        }
-                    });
-                } else if (componentType.equals(ClassHelper.STRING_TYPE) && arg.getType().getComponentType().equals(ClassHelper.GSTRING_TYPE)) {
-                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
-                        protected void compile(MethodVisitor mv) {
-                            arg.visit(mv);
-                            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "gstringArrayToStringArray", "([Lgroovy/lang/GString;)[Ljava/lang/String;");
-                        }
-                    });
-                }
-            }
+
+            if (!ptype.equals(arg.getType()))
+                bargs.getExpressions().set(i, compiler.cast(arg, ptype));
+
+//            if (ptype.equals(ClassHelper.STRING_TYPE)) {
+//                if (!arg.getType().equals(ClassHelper.STRING_TYPE)) {
+//                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
+//                        protected void compile(MethodVisitor mv) {
+//                            arg.visit(mv);
+//                            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
+//                        }
+//                    });
+//                }
+//            } else if (ptype.isArray()) {
+//                final ClassNode componentType = ptype.getComponentType();
+//                if (ClassHelper.isPrimitiveType(componentType)) {
+//                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
+//                        protected void compile(MethodVisitor mv) {
+//                            arg.visit(mv);
+//                            if (componentType == ClassHelper.byte_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToByteArray", "(Ljava/lang/Object;)[B");
+//                            else if (componentType == ClassHelper.boolean_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToBooleanArray", "(Ljava/lang/Object;)[Z");
+//                            else if (componentType == ClassHelper.short_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToShortArray", "(Ljava/lang/Object;)[S");
+//                            else if (componentType == ClassHelper.int_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToIntArray", "(Ljava/lang/Object;)[I");
+//                            else if (componentType == ClassHelper.char_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToCharArray", "(Ljava/lang/Object;)[C");
+//                            else if (componentType == ClassHelper.long_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToLongArray", "(Ljava/lang/Object;)[L");
+//                            else if (componentType == ClassHelper.float_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToFloatArray", "(Ljava/lang/Object;)[F");
+//                            else if (componentType == ClassHelper.double_TYPE)
+//                                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "convertToDoubleArray", "(Ljava/lang/Object;)[D");
+//                        }
+//                    });
+//                } else if (componentType.equals(ClassHelper.OBJECT_TYPE) && ClassHelper.isPrimitiveType(arg.getType().getComponentType())) {
+//                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
+//                        protected void compile(MethodVisitor mv) {
+//                            arg.visit(mv);
+//                            mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "primitiveArrayBox", "(Ljava/lang/Object;)[Ljava/lang/Object;");
+//                        }
+//                    });
+//                } else if (componentType.equals(ClassHelper.STRING_TYPE) && arg.getType().getComponentType().equals(ClassHelper.GSTRING_TYPE)) {
+//                    bargs.getExpressions().set(i, new BytecodeExpr(arg, ptype) {
+//                        protected void compile(MethodVisitor mv) {
+//                            arg.visit(mv);
+//                            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "gstringArrayToStringArray", "([Lgroovy/lang/GString;)[Ljava/lang/String;");
+//                        }
+//                    });
+//                }
+//            }
         }
     }
 
@@ -229,7 +234,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             final ClassNode paramType = parameters[i].getType();
             final ClassNode type = be.getType();
             box(type, mv);
-            cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+//            cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
             unbox(paramType, mv);
         }
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);

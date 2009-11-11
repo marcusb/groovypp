@@ -5,7 +5,7 @@ class IfTest extends GroovyShellTestCase {
     void testUsingNumber() {
         shell.evaluate  """
 
-          @Typed
+          @Typed(debug=true)
           def u() {
             def x = 1
 

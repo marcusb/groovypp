@@ -5,11 +5,8 @@ class GroovyTruthTest extends GroovyShellTestCase {
   void testTruth() {
     def res = shell.evaluate("""
         @Typed
-        def addBool(List v, Object b) {
-          if (b)
-            v << true;
-          else
-            v << false;
+        def addBool(List v, boolean b) {
+            v << b
         }
 
         @Typed
@@ -52,6 +49,14 @@ class GroovyTruthTest extends GroovyShellTestCase {
       """
     )
 
+      [false, true, true, false, false, false,
+              true, true, true, true, false, true, true,
+              false, false, false, true, false, false,
+              true, true, false, true, true, false,
+              true, false, false].eachWithIndex { it, index ->
+          assertEquals ([it, index], [res[index], index])
+      };
+
     assertEquals(
             [false, true, true, false, false, false,
                     true, true, true, true, false, true, true,
@@ -60,14 +65,39 @@ class GroovyTruthTest extends GroovyShellTestCase {
                     true, false, false], res);
   }
 
+    void testInstTruth() {
+      def res = shell.evaluate("""
+          @Typed
+          def addBool(List v, boolean b) {
+              v << b
+          }
+
+          @Typed(debug=true)
+          def u(List v) {
+            addBool(v, 1234);
+            addBool(v, 0);
+            addBool(v, 0.3f);
+            addBool(v, new Double(3.0f));
+            addBool(v, 0.0f);
+            addBool(v, new Character((char) 1));
+            addBool(v, new Character((char) 0));
+
+            return v;
+          }
+          u([]);
+        """
+      )
+
+        [true, false, true, true, false, true, false].eachWithIndex { it, index ->
+            assertEquals ([it, index], [res[index], index])
+        };
+    }
+
   void testIteratorTruth() {
     def res = shell.evaluate("""
         @Typed
-        def addBool(List v, Object b) {
-          if (b)
-            v << true;
-          else
-            v << false;
+        def addBool(List v, boolean b) {
+            v << b
         }
 
         @Typed
@@ -84,11 +114,8 @@ class GroovyTruthTest extends GroovyShellTestCase {
   void testEnumerationTruth() {
     def res = shell.evaluate("""
           @Typed
-          def addBool(List v, Object b) {
-            if (b)
-              v << true;
-            else
-              v << false;
+          def addBool(List v, boolean b) {
+              v << b
           }
 
 

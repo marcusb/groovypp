@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -73,29 +74,69 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         if (type == ClassHelper.VOID_TYPE) {
             return be;
         }
-        return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
-            protected void compile(MethodVisitor mv) {
-                be.visit(mv);
 
-                if (ClassHelper.isPrimitiveType(type)) {
-                    if (type == ClassHelper.byte_TYPE
-                            || type == ClassHelper.short_TYPE
-                            || type == ClassHelper.char_TYPE
-                            || type == ClassHelper.boolean_TYPE
-                            || type == ClassHelper.int_TYPE) {
-                    } else if (type == ClassHelper.long_TYPE) {
-                        mv.visitInsn(L2I);
-                    } else if (type == ClassHelper.float_TYPE) {
-                        mv.visitInsn(F2I);
-                    } else if (type == ClassHelper.double_TYPE) {
-                        mv.visitInsn(D2I);
+        if (ClassHelper.isPrimitiveType(type)) {
+            return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    be.visit(mv);
+                    if (ClassHelper.isPrimitiveType(type)) {
+                        if (type == ClassHelper.byte_TYPE
+                                || type == ClassHelper.short_TYPE
+                                || type == ClassHelper.char_TYPE
+                                || type == ClassHelper.boolean_TYPE
+                                || type == ClassHelper.int_TYPE) {
+                        } else if (type == ClassHelper.long_TYPE) {
+                            mv.visitInsn(L2I);
+                        } else if (type == ClassHelper.float_TYPE) {
+                            mv.visitInsn(F2I);
+                        } else if (type == ClassHelper.double_TYPE) {
+                            mv.visitInsn(D2I);
+                        }
+                        mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
                     }
-                } else {
-                    mv.visitMethodInsn(INVOKESTATIC, DTT, "castToBoolean", "(Ljava/lang/Object;)Z");
                 }
-                mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
-            }
-        };
+            };
+        }
+        else {
+            MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(exp, be.getType()) {
+            protected void compile(MethodVisitor mv) {
+            }        }, "asBoolean", ArgumentListExpression.EMPTY_ARGUMENTS);
+            safeCall.setSourcePosition(exp);
+
+            final BytecodeExpr call = (BytecodeExpr) compiler.transform(safeCall);
+
+            if (!call.getType().equals(ClassHelper.boolean_TYPE))
+                compiler.addError("asBoolean should return 'boolean'", exp);
+
+            return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    be.visit(mv);
+                    mv.visitInsn(DUP);
+                    Label nullLabel = new Label(), endLabel = new Label ();
+
+                    mv.visitJumpInsn(IFNULL, nullLabel);
+
+                    call.visit(mv);
+                    if (onTrue) {
+                        mv.visitJumpInsn(IFEQ, endLabel);
+                        mv.visitJumpInsn(GOTO, label);
+
+                        mv.visitLabel(nullLabel);
+                        mv.visitInsn(POP);
+                    }
+                    else {
+                        mv.visitJumpInsn(IFNE, endLabel);
+                        mv.visitJumpInsn(GOTO, label);
+
+                        mv.visitLabel(nullLabel);
+                        mv.visitInsn(POP);
+                        mv.visitJumpInsn(GOTO, label);
+                    }
+
+                    mv.visitLabel(endLabel);
+                }
+            };
+        }
     }
 
     private static final String DTT = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());

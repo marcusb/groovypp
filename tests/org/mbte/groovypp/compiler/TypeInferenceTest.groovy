@@ -46,7 +46,7 @@ new A().m ()
 
     void testArrayInference() {
       def res = shell.evaluate("""
-      @Typed class Foo {
+      @Typed(debug=true) class Foo {
         def <T> T getFirst(T[] ts) { ts[0] }
         def bar() {
            int[] arr = new int[1]

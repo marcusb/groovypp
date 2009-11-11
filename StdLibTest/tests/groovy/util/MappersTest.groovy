@@ -34,7 +34,7 @@ class MappersTest extends GroovyShellTestCase {
 
     @Typed
     void testProduct () {
-        (0..<5).iterator().product{
+        (0..<10).iterator().product{
             println (-10 + it + 10) // to make sure it is integer
             (0..it).iterator ()
         }.each {

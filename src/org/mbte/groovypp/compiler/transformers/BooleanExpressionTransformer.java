@@ -41,13 +41,13 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
 
     private Expression transformNotExpression(final NotExpression exp, CompilerTransformer compiler) {
         final BytecodeExpr internal = (BytecodeExpr) compiler.transform(exp.getExpression());
-        return new MyBytecodeExpr(exp, internal);
+        return new NotBytecodeExpr(exp, internal);
     }
 
-    private static class MyBytecodeExpr extends BytecodeExpr {
+    private static class NotBytecodeExpr extends BytecodeExpr {
         private final BytecodeExpr internal;
 
-        public MyBytecodeExpr(NotExpression exp, BytecodeExpr internal) {
+        public NotBytecodeExpr(NotExpression exp, BytecodeExpr internal) {
             super(exp, ClassHelper.Boolean_TYPE);
             this.internal = internal;
         }

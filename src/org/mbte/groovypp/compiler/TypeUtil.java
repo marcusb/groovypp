@@ -49,8 +49,13 @@ public class TypeUtil {
     public static boolean isAssignableFrom(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
         if (classToTransformFrom == null) return true;
         if (classToTransformFrom == TypeUtil.NULL_TYPE) return true;
-        if (classToTransformTo.equals(classToTransformFrom)) return true;
-        if (classToTransformTo.equals(OBJECT_TYPE)) return true;
+
+        if (classToTransformTo.equals(classToTransformFrom)||
+            classToTransformTo.equals(OBJECT_TYPE) ||
+            classToTransformTo.equals(boolean_TYPE) ||
+            classToTransformTo.equals(Boolean_TYPE) ||
+            classToTransformTo.equals(STRING_TYPE))
+            return true;
 
         classToTransformTo = TypeUtil.wrapSafely(classToTransformTo);
         classToTransformFrom = TypeUtil.wrapSafely(classToTransformFrom);
@@ -81,7 +86,7 @@ public class TypeUtil {
                 || from == TypeUtil.NULL_TYPE
                 || (from.isDerivedFrom(to) && (!from.implementsInterface(TCLOSURE) || to.equals(ClassHelper.CLOSURE_TYPE)))
                 || to.isInterface() && implementsInterface(to, from)
-                || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray();
+                || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray() && !ClassHelper.isPrimitiveType(from.getComponentType());
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {

@@ -13,6 +13,7 @@ public class Pi extends GroovyTestCase {
     }
 
     private def calc ( int actorCount ) {
+        
       long   n = 100000000l // 10 times fewer due to speed issues.
       double delta = 1.0d / n
       double sliceSize = n / actorCount

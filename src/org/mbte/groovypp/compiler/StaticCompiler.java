@@ -112,6 +112,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                     mv.visitInsn(D2I);
                 }
             } else {
+
                 mv.visitMethodInsn(INVOKESTATIC, DTT, "castToBoolean", "(Ljava/lang/Object;)Z");
             }
         }
@@ -258,11 +259,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         visitStatement(ifElse);
 
         final BooleanExpression ifExpr = ifElse.getBooleanExpression();
-        final BytecodeExpr be = (BytecodeExpr) transform(ifExpr.getExpression());
-        be.visit(mv);
 
         Label elseLabel = new Label();
-        branch(be, IFEQ, elseLabel, mv);
+
+        final BytecodeExpr condition = transformLogical(ifExpr, elseLabel, false);
+        condition.visit(mv);
 
         compileStack.pushBooleanExpression();
         ifElse.getIfBlock().visit(this);
@@ -301,47 +302,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
             if (resolvedMethodBytecodeExpr.getMethodNode() == methodNode) {
                 if (methodNode.isStatic() || resolvedMethodBytecodeExpr.getObject().isThis()) {
-                    Parameter[] parameters = methodNode.getParameters();
-
-                    int varIndex = methodNode.isStatic() ? 0 : 1;
-                    for (int i = 0; i != parameters.length; ++i) {
-                        BytecodeExpr be = (BytecodeExpr) resolvedMethodBytecodeExpr.getBargs().getExpressions().get(i);
-                        be.visit(mv);
-                        final ClassNode paramType = parameters[i].getType();
-                        final ClassNode type = be.getType();
-                        BytecodeExpr.box(type, mv);
-                        BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
-                        BytecodeExpr.unbox(paramType, mv);
-
-                        varIndex += (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
-                    }
-
-                    for (int i = parameters.length-1; i >= 0; --i) {
-                        final ClassNode paramType = parameters[i].getType();
-                        varIndex -= (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
-
-                        if (paramType == double_TYPE) {
-                            mv.visitVarInsn(Opcodes.DSTORE, varIndex);
-                        } else if (paramType == float_TYPE) {
-                            mv.visitVarInsn(Opcodes.FSTORE, varIndex);
-                        } else if (paramType == long_TYPE) {
-                            mv.visitVarInsn(Opcodes.LSTORE, varIndex);
-                        } else if (
-                               paramType == boolean_TYPE
-                            || paramType == char_TYPE
-                            || paramType == byte_TYPE
-                            || paramType == int_TYPE
-                            || paramType == short_TYPE) {
-                            mv.visitVarInsn(Opcodes.ISTORE, varIndex);
-                        } else {
-                            mv.visitVarInsn(Opcodes.ASTORE, varIndex);
-                        }
-                    }
-
-                    if (!methodNode.isStatic()) {
-                        mv.visitVarInsn(ASTORE, 0);
-                    }
-                    mv.visitJumpInsn(GOTO, startLabel);
+                    tailRecursive(resolvedMethodBytecodeExpr);
                     return;
                 }
             }
@@ -381,6 +342,51 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
 
         bytecodeExpr.doReturn(returnType, mv);
+    }
+
+    private void tailRecursive(ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr) {
+        Parameter[] parameters = methodNode.getParameters();
+
+        int varIndex = methodNode.isStatic() ? 0 : 1;
+        for (int i = 0; i != parameters.length; ++i) {
+            BytecodeExpr be = (BytecodeExpr) resolvedMethodBytecodeExpr.getBargs().getExpressions().get(i);
+            be.visit(mv);
+            final ClassNode paramType = parameters[i].getType();
+            final ClassNode type = be.getType();
+            BytecodeExpr.box(type, mv);
+            BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+            BytecodeExpr.unbox(paramType, mv);
+
+            varIndex += (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
+        }
+
+        for (int i = parameters.length-1; i >= 0; --i) {
+            final ClassNode paramType = parameters[i].getType();
+            varIndex -= (paramType == ClassHelper.long_TYPE || paramType == ClassHelper.double_TYPE) ? 2 : 1;
+
+            if (paramType == double_TYPE) {
+                mv.visitVarInsn(Opcodes.DSTORE, varIndex);
+            } else if (paramType == float_TYPE) {
+                mv.visitVarInsn(Opcodes.FSTORE, varIndex);
+            } else if (paramType == long_TYPE) {
+                mv.visitVarInsn(Opcodes.LSTORE, varIndex);
+            } else if (
+                   paramType == boolean_TYPE
+                || paramType == char_TYPE
+                || paramType == byte_TYPE
+                || paramType == int_TYPE
+                || paramType == short_TYPE) {
+                mv.visitVarInsn(Opcodes.ISTORE, varIndex);
+            } else {
+                mv.visitVarInsn(Opcodes.ASTORE, varIndex);
+            }
+        }
+
+        if (!methodNode.isStatic()) {
+            mv.visitVarInsn(ASTORE, 0);
+        }
+        mv.visitJumpInsn(GOTO, startLabel);
+        return;
     }
 
     @Override

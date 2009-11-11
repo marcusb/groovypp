@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler
 
 public class MapAsObjectTest extends GroovyShellTestCase {
+
     void testMe () {
         def res = shell.evaluate ("""
             @Trait
@@ -35,5 +36,33 @@ public class MapAsObjectTest extends GroovyShellTestCase {
         """)
 
        assertEquals ([12, 13, 14, 15], res) 
+    }
+
+    void testTree () {
+        shell.evaluate """
+@Typed(debug=true)
+class TreeNode
+{
+    TreeNode left, right;
+    int item;
+
+    static TreeNode bottomUpTree(int item, int depth){
+        if (depth>0){
+            [left : bottomUpTree(2*item-1, depth-1), right : bottomUpTree(2*item, depth-1), item : item]
+        }
+        else {
+            [item : item]
+        }
+    }
+
+    int itemCheck(){
+        // if necessary deallocate here
+        if (left) return item;
+        else return item + left.itemCheck() - right.itemCheck();
+    }
+}
+
+TreeNode.bottomUpTree(0,5)
+        """
     }
 }

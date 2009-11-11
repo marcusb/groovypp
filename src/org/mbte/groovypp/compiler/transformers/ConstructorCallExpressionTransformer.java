@@ -18,12 +18,63 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
+    private static final ClassNode[] MAP_ARGS = new ClassNode[]{TypeUtil.LINKED_HASH_MAP_TYPE};
 
     public Expression transform(ConstructorCallExpression exp, CompilerTransformer compiler) {
+
+        MethodNode constructor;
+        if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
+            MapExpression me = (MapExpression) ((TupleExpression)exp.getArguments()).getExpressions().get(0);
+
+            constructor = compiler.findConstructor(exp.getType(), MAP_ARGS);
+            if (constructor == null) {
+                final ArrayList<BytecodeExpr> propSetters = new ArrayList<BytecodeExpr> ();
+
+                constructor = compiler.findConstructor(exp.getType(), ClassNode.EMPTY_ARRAY);
+                if (constructor != null) {
+                    for (MapEntryExpression mee : me.getMapEntryExpressions()) {
+
+                        BytecodeExpr obj = new BytecodeExpr(mee, exp.getType()) {
+                            protected void compile(MethodVisitor mv) {
+                                mv.visitInsn(DUP);
+                            }
+                        };
+
+                        propSetters.add(
+                                (BytecodeExpr) compiler.transform(
+                                        new BinaryExpression(
+                                                new PropertyExpression(
+                                                        obj,
+                                                        mee.getKeyExpression()
+                                                ),
+                                                Token.newSymbol(Types.ASSIGN, -1, -1),
+                                                mee.getValueExpression()
+                                        )
+                                )
+                        );
+                    }
+
+                    return new BytecodeExpr(exp, exp.getType()) {
+                        protected void compile(MethodVisitor mv) {
+                            final String classInternalName = BytecodeHelper.getClassInternalName(getType());
+                            mv.visitTypeInsn(NEW, classInternalName);
+                            mv.visitInsn(DUP);
+                            mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", "()V");
+
+                            for (BytecodeExpr prop : propSetters) {
+                                prop.visit(mv);
+                                pop(prop.getType(), mv);
+                            }
+                        }
+                    };
+                }
+            }
+        }
+
         final Expression newArgs = compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        MethodNode constructor = compiler.findConstructor(exp.getType(), argTypes);
+        constructor = compiler.findConstructor(exp.getType(), argTypes);
         if (constructor == null) {
             if (argTypes.length > 0 && argTypes[argTypes.length-1] != null && argTypes[argTypes.length-1].implementsInterface(TypeUtil.TCLOSURE)) {
                 final ClassNode oarg = argTypes[argTypes.length-1];
@@ -104,52 +155,6 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constructor1.getParameters()));
                 }
             };
-        }
-
-        if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
-            MapExpression me = (MapExpression) ((TupleExpression)exp.getArguments()).getExpressions().get(0);
-
-            constructor = compiler.findConstructor(exp.getType(), ClassNode.EMPTY_ARRAY);
-            final ArrayList<BytecodeExpr> propSetters = new ArrayList<BytecodeExpr> ();
-
-            for (Iterator it = me.getMapEntryExpressions().iterator(); it.hasNext(); ) {
-                MapEntryExpression mee = (MapEntryExpression) it.next();
-
-                BytecodeExpr obj = new BytecodeExpr(mee, exp.getType()) {
-                    protected void compile(MethodVisitor mv) {
-                        mv.visitInsn(DUP);
-                    }
-                };
-
-                propSetters.add(
-                        (BytecodeExpr) compiler.transform(
-                        new BinaryExpression(
-                                new PropertyExpression(
-                                    obj,
-                                    mee.getKeyExpression()
-                                ),
-                                Token.newSymbol(Types.ASSIGN, -1, -1),
-                                mee.getValueExpression()
-                           )
-                        )
-                );
-            }
-
-            if (constructor != null) {
-                return new BytecodeExpr(exp, exp.getType()) {
-                    protected void compile(MethodVisitor mv) {
-                        final String classInternalName = BytecodeHelper.getClassInternalName(getType());
-                        mv.visitTypeInsn(NEW, classInternalName);
-                        mv.visitInsn(DUP);
-                        mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", "()V");
-
-                        for (BytecodeExpr prop : propSetters) {
-                            prop.visit(mv);
-                            pop(prop.getType(), mv);
-                        }
-                    }
-                };
-            }
         }
 
         compiler.addError("Can't find constructor", exp);

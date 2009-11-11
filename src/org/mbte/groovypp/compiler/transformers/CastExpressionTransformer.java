@@ -146,27 +146,34 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
 
-        Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
-        ClosureUtil.createClosureConstructor(objType, constrParams);
+        if (objType != null) {
+            Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
+            ClosureUtil.createClosureConstructor(objType, constrParams);
 
-        for (MapEntryExpression me : fields) {
-            final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
+            for (MapEntryExpression me : fields) {
+                final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
 
-            final Expression init = compiler.transform(me.getValueExpression());
+                final Expression init = compiler.transform(me.getValueExpression());
 
-            objType.addField(keyName, ACC_PRIVATE, init.getType(), init);
-        }
-
-        for (MapEntryExpression me : methods) {
-            final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
-            closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
-        }
-
-        return new BytecodeExpr(exp, objType) {
-            protected void compile(MethodVisitor mv) {
-                ClosureUtil.instantiateClass(getType(), compiler, mv);
+                objType.addField(keyName, ACC_PRIVATE, init.getType(), init);
             }
-        };
+
+            for (MapEntryExpression me : methods) {
+                final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
+                closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
+            }
+
+            return new BytecodeExpr(exp, objType) {
+                protected void compile(MethodVisitor mv) {
+                    ClosureUtil.instantiateClass(getType(), compiler, mv);
+                }
+            };
+        }
+        else {
+            final ConstructorCallExpression constr = new ConstructorCallExpression(type, new ArgumentListExpression(exp));
+            constr.setSourcePosition(exp);
+            return (BytecodeExpr) compiler.transform(constr);
+        }
     }
 
     private void closureToMethod(ClassNode type, CompilerTransformer compiler, ClassNode objType, String keyName, ClosureExpression ce) {
