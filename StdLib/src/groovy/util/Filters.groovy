@@ -11,7 +11,48 @@ class Filters extends DefaultGroovyMethodsSupport {
   private def Filters() {}
 
   static <T> Iterator<T> filter(final Iterator<T> self, final Function1<T, Boolean> condition) {
-    return new MyIterator<T>(self, condition)
+      [
+              nextElem : (T)null,
+              nextChecked: false,
+              nextFound: false,
+
+              checkNext: { ->
+                  if (!nextChecked) {
+                      nextChecked = true
+                  }
+
+                  nextFound = self.hasNext()
+                  if (nextFound) {
+                    nextElem = self.next()
+                  }
+                  while (nextFound && !condition.apply(nextElem)) {
+                    nextFound = self.hasNext()
+                    if (nextFound) {
+                      nextElem = self.next()
+                    }
+                  }
+              },
+
+              hasNext : {
+                checkNext()
+                nextFound
+              },
+
+              next : { ->
+                  checkNext()
+                  if (!nextFound)
+                    throw new IllegalStateException("Iterator does not contain more elements")
+
+                  T res = nextElem
+                  nextChecked = false
+                  nextElem = null
+                  res
+              },
+
+              remove : { ->
+                  throw new UnsupportedOperationException("remove () is unsupported by the iterator")
+              }
+      ]
   }
 
   static <T> T find(Iterator<T> self, Function1<T, Boolean> condition) {
@@ -95,58 +136,5 @@ class Filters extends DefaultGroovyMethodsSupport {
 
   static <T> boolean any(Iterable<T> self, Function1<T, Boolean> condition) {
     any(self.iterator(), condition)
-  }
-
-  @Typed
-  private static class MyIterator<T> implements Iterator<T> {
-    private T next
-    private boolean nextChecked
-    private boolean hasNext
-
-    private Iterator<T> self
-    private Function1<T, Boolean> condition
-
-    MyIterator(Iterator<T> self, Function1<T, Boolean> filter) {
-      this.self = self;
-      this.condition = filter;
-    }
-
-    boolean hasNext() {
-      checkNext()
-      hasNext
-    }
-
-    private void checkNext() {
-      if (nextChecked)
-        return
-
-      nextChecked = true
-
-      hasNext = self.hasNext()
-      if (hasNext) {
-        next = self.next()
-      }
-      while (hasNext && !condition.apply(next)) {
-        hasNext = self.hasNext()
-        if (hasNext) {
-          next = self.next()
-        }
-      }
-    }
-
-    T next() {
-      checkNext()
-      if (!hasNext)
-        throw new IllegalStateException("Iterator does not contain more elements")
-
-      T res = next
-      nextChecked = false
-      next = null
-      res
-    }
-
-    void remove() {
-      throw new UnsupportedOperationException("Iterator.remove() does not supported")
-    }
   }
 }
