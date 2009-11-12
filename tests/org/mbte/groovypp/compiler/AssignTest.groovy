@@ -107,7 +107,7 @@ new A().u ().a
 
   void testAssignPropertyOp() {
     def res = shell.evaluate("""
-@Typed
+@Typed(debug=true)
 class A {
   int a
 

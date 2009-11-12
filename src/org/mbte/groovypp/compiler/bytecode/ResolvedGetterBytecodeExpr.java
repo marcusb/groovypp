@@ -59,7 +59,15 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
         Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler);
-        return PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
+        final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
+
+        return new BytecodeExpr(parent, propExpr.getType()) {
+            protected void compile(MethodVisitor mv) {
+                object.visit(mv);
+                mv.visitInsn(DUP);
+                propExpr.visit(mv);
+            }
+        };
     }
 
     public BytecodeExpr createPrefixOp(ASTNode parent, int type, CompilerTransformer compiler) {

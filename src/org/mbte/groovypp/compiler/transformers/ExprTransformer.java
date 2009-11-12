@@ -4,10 +4,12 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.BytecodeExpression;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.MethodVisitor;
@@ -52,7 +54,18 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
         transformers.put(ElvisOperatorExpression.class, ternary);
     }
 
-    public static Expression transformExpression(Expression exp, CompilerTransformer compiler) {
+    public static Expression transformExpression(final Expression exp, CompilerTransformer compiler) {
+        if (exp instanceof BytecodeExpression) {
+            if (exp instanceof BytecodeExpr)
+                return exp;
+
+            return new BytecodeExpr(exp, exp.getType()) {
+                protected void compile(MethodVisitor mv) {
+                    ((BytecodeExpression)exp).visit(mv);
+                }
+            };
+        }
+
         ExprTransformer t = transformers.get(exp.getClass());
         if (t == null)
             return compiler.transformImpl(exp);
@@ -79,21 +92,19 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
             return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     be.visit(mv);
-                    if (ClassHelper.isPrimitiveType(type)) {
-                        if (type == ClassHelper.byte_TYPE
-                                || type == ClassHelper.short_TYPE
-                                || type == ClassHelper.char_TYPE
-                                || type == ClassHelper.boolean_TYPE
-                                || type == ClassHelper.int_TYPE) {
-                        } else if (type == ClassHelper.long_TYPE) {
-                            mv.visitInsn(L2I);
-                        } else if (type == ClassHelper.float_TYPE) {
-                            mv.visitInsn(F2I);
-                        } else if (type == ClassHelper.double_TYPE) {
-                            mv.visitInsn(D2I);
-                        }
-                        mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+                    if (type == ClassHelper.byte_TYPE
+                            || type == ClassHelper.short_TYPE
+                            || type == ClassHelper.char_TYPE
+                            || type == ClassHelper.boolean_TYPE
+                            || type == ClassHelper.int_TYPE) {
+                    } else if (type == ClassHelper.long_TYPE) {
+                        mv.visitInsn(L2I);
+                    } else if (type == ClassHelper.float_TYPE) {
+                        mv.visitInsn(F2I);
+                    } else if (type == ClassHelper.double_TYPE) {
+                        mv.visitInsn(D2I);
                     }
+                    mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
                 }
             };
         }
@@ -103,39 +114,52 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
             }        }, "asBoolean", ArgumentListExpression.EMPTY_ARGUMENTS);
             safeCall.setSourcePosition(exp);
 
-            final BytecodeExpr call = (BytecodeExpr) compiler.transform(safeCall);
+            final ResolvedMethodBytecodeExpr call = (ResolvedMethodBytecodeExpr) compiler.transform(safeCall);
 
             if (!call.getType().equals(ClassHelper.boolean_TYPE))
                 compiler.addError("asBoolean should return 'boolean'", exp);
 
-            return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
-                protected void compile(MethodVisitor mv) {
-                    be.visit(mv);
-                    mv.visitInsn(DUP);
-                    Label nullLabel = new Label(), endLabel = new Label ();
-
-                    mv.visitJumpInsn(IFNULL, nullLabel);
-
-                    call.visit(mv);
-                    if (onTrue) {
-                        mv.visitJumpInsn(IFEQ, endLabel);
-                        mv.visitJumpInsn(GOTO, label);
-
-                        mv.visitLabel(nullLabel);
-                        mv.visitInsn(POP);
+            if(call.getMethodNode().getDeclaringClass().equals(ClassHelper.OBJECT_TYPE)) {
+                // fast path
+                return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
+                    protected void compile(MethodVisitor mv) {
+                        be.visit(mv);
+                        mv.visitJumpInsn( onTrue ? IFNONNULL : IFNULL, label);
                     }
-                    else {
-                        mv.visitJumpInsn(IFNE, endLabel);
-                        mv.visitJumpInsn(GOTO, label);
+                };
+            }
+            else {
+                return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
+                    protected void compile(MethodVisitor mv) {
+                        be.visit(mv);
+                        mv.visitInsn(DUP);
+                        Label nullLabel = new Label(), endLabel = new Label ();
 
-                        mv.visitLabel(nullLabel);
-                        mv.visitInsn(POP);
-                        mv.visitJumpInsn(GOTO, label);
+                        mv.visitJumpInsn(IFNULL, nullLabel);
+
+                        call.visit(mv);
+                        mv.visitJumpInsn( onTrue ? IFNONNULL : IFNULL, label);
+
+                        if (onTrue) {
+                            mv.visitJumpInsn(IFEQ, endLabel);
+                            mv.visitJumpInsn(GOTO, label);
+
+                            mv.visitLabel(nullLabel);
+                            mv.visitInsn(POP);
+                        }
+                        else {
+                            mv.visitJumpInsn(IFNE, endLabel);
+                            mv.visitJumpInsn(GOTO, label);
+
+                            mv.visitLabel(nullLabel);
+                            mv.visitInsn(POP);
+                            mv.visitJumpInsn(GOTO, label);
+                        }
+
+                        mv.visitLabel(endLabel);
                     }
-
-                    mv.visitLabel(endLabel);
-                }
-            };
+                };
+            }
         }
     }
 

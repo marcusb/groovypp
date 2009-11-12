@@ -68,7 +68,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
 
         @Override
         public void visit(GroovyCodeVisitor visitor) {
-            ((StaticMethodBytecode) getInstructions().get(0)).code.visit(visitor);
+//            ((StaticMethodBytecode) getInstructions().get(0)).code.visit(visitor);
         }
     }
 }

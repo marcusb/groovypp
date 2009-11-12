@@ -30,6 +30,8 @@ import java.util.List;
 public class CompileASTTransform implements ASTTransformation, Opcodes {
     private static final ClassNode COMPILE_TYPE = ClassHelper.make(Typed.class);
 
+    private OpenVerifier verifier = new OpenVerifier();
+
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         if (!(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
             throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
@@ -40,60 +42,59 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         LinkedList toProcess = new LinkedList();
         final ClassNode classNode;
 
-        if (parent instanceof MethodNode) {
+        verifier = new OpenVerifier();
+        if (parent instanceof ConstructorNode) {
             TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
             TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
 
-            final MethodNode mn = (MethodNode) parent;
-            classNode = mn.getDeclaringClass();
+            classNode = ((ConstructorNode)parent).getDeclaringClass();
             if (methodPolicy != TypePolicy.DYNAMIC) {
-                toProcess.addLast(mn);
+                toProcess.addLast(parent);
                 toProcess.addLast(methodPolicy);
             }
 
-            new OpenVerifier().addDefaultParameterMethods(classNode);
-        } else {
-            if (parent instanceof ClassNode) {
-                classNode = (ClassNode) parent;
-                TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
-                for (MethodNode mn : classNode.getMethods()) {
-                    if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
-                        TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
-                        if (methodPolicy != TypePolicy.DYNAMIC) {
-                            toProcess.addLast(mn);
-                            toProcess.addLast(methodPolicy);
-                        }
-                    }
+            verifier.visitClass(classNode);
+        } else
+            if (parent instanceof MethodNode) {
+                TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
+                TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
+
+                final MethodNode mn = (MethodNode) parent;
+                classNode = mn.getDeclaringClass();
+                if (methodPolicy != TypePolicy.DYNAMIC) {
+                    toProcess.addLast(mn);
+                    toProcess.addLast(methodPolicy);
                 }
 
-                new OpenVerifier().addDefaultParameterMethods(classNode);
+                verifier.visitClass(classNode);
             } else {
-                if (parent instanceof PackageNode) {
-                    TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
-                    for (ClassNode node : source.getAST().getClasses()) {
-                        TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
-                        for (MethodNode mn : node.getMethods()) {
-                            if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
-                                TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
-                                if (methodPolicy != TypePolicy.DYNAMIC) {
-                                    toProcess.addLast(mn);
-                                    toProcess.addLast(methodPolicy);
-                                }
-                            }
-                        }
+                if (parent instanceof ClassNode) {
+                    classNode = (ClassNode) parent;
+                    TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
 
-                        new OpenVerifier().addDefaultParameterMethods(node);
-                    }
+                    verifier.visitClass(classNode);
+
+                    allMethods(source, toProcess, classNode, classPolicy);
                 } else {
-                    int line = parent.getLineNumber();
-                    int col = parent.getColumnNumber();
-                    source.getErrorCollector().addError(
-                            new SyntaxErrorMessage(new SyntaxException("@Typed applicable only to classes or methods or package declaration" + '\n', line, col), source), true
-                    );
-                    return;
+                    if (parent instanceof PackageNode) {
+                        TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
+                        for (ClassNode node : source.getAST().getClasses()) {
+                            TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
+
+                            verifier.visitClass(node);
+
+                            allMethods(source, toProcess, node, classPolicy);
+                        }
+                    } else {
+                        int line = parent.getLineNumber();
+                        int col = parent.getColumnNumber();
+                        source.getErrorCollector().addError(
+                                new SyntaxErrorMessage(new SyntaxException("@Typed applicable only to classes or methods or package declaration" + '\n', line, col), source), true
+                        );
+                        return;
+                    }
                 }
             }
-        }
 
         final Expression member = ((AnnotationNode) nodes[0]).getMember("debug");
         boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression) member).getValue().equals(Boolean.TRUE);
@@ -130,6 +131,28 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         }
 
         return;
+    }
+
+    private void allMethods(SourceUnit source, LinkedList toProcess, ClassNode classNode, TypePolicy classPolicy) {
+        for (MethodNode mn : classNode.getMethods()) {
+            if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
+                TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
+                if (methodPolicy != TypePolicy.DYNAMIC) {
+                    toProcess.addLast(mn);
+                    toProcess.addLast(methodPolicy);
+                }
+            }
+        }
+
+        for (MethodNode mn : classNode.getDeclaredConstructors()) {
+            if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
+                TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
+                if (methodPolicy != TypePolicy.DYNAMIC) {
+                    toProcess.addLast(mn);
+                    toProcess.addLast(methodPolicy);
+                }
+            }
+        }
     }
 
     private TypePolicy getPolicy(AnnotatedNode ann, SourceUnit source, TypePolicy def) {

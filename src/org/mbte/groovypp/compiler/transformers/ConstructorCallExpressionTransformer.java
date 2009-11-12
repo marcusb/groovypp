@@ -11,6 +11,7 @@ import org.mbte.groovypp.compiler.ClosureUtil;
 import org.mbte.groovypp.compiler.ClosureClassNode;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
     private static final ClassNode[] MAP_ARGS = new ClassNode[]{TypeUtil.LINKED_HASH_MAP_TYPE};
 
     public Expression transform(ConstructorCallExpression exp, CompilerTransformer compiler) {
+
+        if (exp.isSuperCall() || exp.isThisCall())
+            return transformSpecial (exp, compiler);
 
         MethodNode constructor;
         if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
@@ -63,7 +67,8 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
                             for (BytecodeExpr prop : propSetters) {
                                 prop.visit(mv);
-                                pop(prop.getType(), mv);
+                                if (!ClassHelper.VOID_TYPE.equals(prop.getType()))
+                                    pop(prop.getType(), mv);
                             }
                         }
                     };
@@ -155,6 +160,23 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constructor1.getParameters()));
                 }
             };
+        }
+
+        compiler.addError("Can't find constructor", exp);
+        return null;
+    }
+
+    private Expression transformSpecial(ConstructorCallExpression exp, CompilerTransformer compiler) {
+        final Expression newArgs = compiler.transform(exp.getArguments());
+        final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
+
+        MethodNode constructor = compiler.findConstructor(exp.isSuperCall() ? compiler.classNode.getSuperClass() : compiler.classNode, argTypes);
+        if (constructor != null) {
+            return new ResolvedMethodBytecodeExpr(exp, constructor,
+                    exp.isSuperCall() ?
+                        new VariableExpressionTransformer.Super(VariableExpression.SUPER_EXPRESSION, compiler)
+                      : new VariableExpressionTransformer.This(VariableExpression.THIS_EXPRESSION, compiler), 
+                    (ArgumentListExpression) newArgs, compiler);
         }
 
         compiler.addError("Can't find constructor", exp);

@@ -286,4 +286,23 @@ class ForLoopTest extends GroovyShellTestCase {
     )
 
   }
+
+  void testCondition () {
+      shell.evaluate("""
+          @Typed(debug=true)
+          def u() {
+			int iterations = 20
+			int check = 0
+
+            int i = 1
+			while (i <= iterations){
+				check += 1
+				check += 1
+                i++
+			}
+          }
+          u();
+        """
+      )
+  }
 }

@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.ConstructorNode;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import static org.codehaus.groovy.ast.ClassHelper.short_TYPE;
 import org.codehaus.groovy.ast.expr.*;
@@ -41,7 +42,13 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         this.methodBytecode = methodBytecode;
         this.debug = debug;
         shouldImproveReturnType = methodNode.getName().equals("doCall");
+
         mv.visitLabel(startLabel);
+        if (methodNode instanceof ConstructorNode && !((ConstructorNode) methodNode).firstStatementIsSpecialConstructorCall()) {
+            // invokes the super class constructor
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(classNode.getSuperClass()), "<init>", "()V");
+        }
     }
 
     protected Statement getCode() {

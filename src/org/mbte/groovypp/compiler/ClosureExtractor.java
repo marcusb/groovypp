@@ -168,9 +168,6 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         createCallMethod(ce, _doCallMethod, "doCall");
 //        createCallMethod(ce, _doCallMethod, "call");
 
-        OpenVerifier v = new OpenVerifier();
-        v.addDefaultParameterMethods(newType);
-
         newType.setModule(classNode.getModule());
         ce.setType(newType);
 

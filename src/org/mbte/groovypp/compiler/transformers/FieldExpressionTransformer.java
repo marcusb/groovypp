@@ -9,13 +9,16 @@ import org.objectweb.asm.MethodVisitor;
 
 public class FieldExpressionTransformer extends ExprTransformer<FieldExpression> {
 
-    public Expression transform(FieldExpression exp, CompilerTransformer compiler) {
+    public Expression transform(final FieldExpression exp, CompilerTransformer compiler) {
         return new ResolvedFieldBytecodeExpr(
                 exp,
                 exp.getField(),
                 new BytecodeExpr(exp, compiler.classNode) {
                     protected void compile(MethodVisitor mv) {
-                        mv.visitVarInsn(ALOAD, 0);
+                        if (!exp.getField().isStatic())
+                            mv.visitVarInsn(ALOAD, 0);
+                        else
+                            mv.visitInsn(ACONST_NULL);
                     }
                 },
                 null,

@@ -55,6 +55,16 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
         final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+
+        if (var != null && var.getType().equals(ClassHelper.int_TYPE)) {
+            return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    mv.visitIincInsn(var.getIndex(), type == Types.PLUS_PLUS ? 1 : -1);
+                    mv.visitVarInsn(ILOAD, var.getIndex());
+                }
+            };
+        }
+
         ClassNode vtype = compiler.getLocalVarInferenceTypes().get(ve);
         if (vtype == null)
             vtype = var.getType();
@@ -106,6 +116,15 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
         final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        if (var != null && var.getType().equals(ClassHelper.int_TYPE)) {
+            return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    mv.visitVarInsn(ILOAD, var.getIndex());
+                    mv.visitIincInsn(var.getIndex(), type == Types.PLUS_PLUS ? 1 : -1);
+                }
+            };
+        }
+
         ClassNode vtype = compiler.getLocalVarInferenceTypes().get(ve);
         if (vtype == null)
             vtype = var.getType();

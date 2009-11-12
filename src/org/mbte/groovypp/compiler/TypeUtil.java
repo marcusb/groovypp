@@ -82,6 +82,9 @@ public class TypeUtil {
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
+        if(to.equals(ClassHelper.OBJECT_TYPE))
+            return !ClassHelper.isPrimitiveType(from);
+
         return from == null
                 || from == TypeUtil.NULL_TYPE
                 || (from.isDerivedFrom(to) && (!from.implementsInterface(TCLOSURE) || to.equals(ClassHelper.CLOSURE_TYPE)))

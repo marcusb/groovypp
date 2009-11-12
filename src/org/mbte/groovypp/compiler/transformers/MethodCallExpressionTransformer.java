@@ -142,18 +142,50 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         callExpression.setSourcePosition(exp);
         final BytecodeExpr call = (BytecodeExpr) compiler.transform(callExpression);
 
-        return new BytecodeExpr(exp, TypeUtil.wrapSafely(call.getType())) {
-            protected void compile(MethodVisitor mv) {
-                object.visit(mv);
-                Label nullLabel = new Label();
-                mv.visitInsn(DUP);
-                mv.visitJumpInsn(IFNULL, nullLabel);
-                call.visit(mv);
-                box(call.getType(), mv);
-                mv.visitLabel(nullLabel);
-                checkCast(getType(), mv);
-            }
-        };
+        if (ClassHelper.isPrimitiveType(call.getType())) {
+            return new BytecodeExpr(exp,call.getType()) {
+                protected void compile(MethodVisitor mv) {
+                    Label nullLabel = new Label(), endLabel = new Label ();
+
+                    object.visit(mv);
+                    mv.visitInsn(DUP);
+                    mv.visitJumpInsn(IFNULL, nullLabel);
+
+                    call.visit(mv);
+                    mv.visitJumpInsn(GOTO, endLabel);
+
+                    mv.visitLabel(nullLabel);
+                    mv.visitInsn(POP);
+
+                    if (call.getType() == ClassHelper.long_TYPE) {
+                        mv.visitInsn(LCONST_0);
+                    } else
+                    if (call.getType() == ClassHelper.float_TYPE) {
+                        mv.visitInsn(FCONST_0);
+                    } else
+                    if (call.getType() == ClassHelper.double_TYPE) {
+                        mv.visitInsn(DCONST_0);
+                    } else
+                        mv.visitInsn(ICONST_0);
+
+                    mv.visitLabel(endLabel);
+                }
+            };
+        }
+        else {
+            return new BytecodeExpr(exp, call.getType()) {
+                protected void compile(MethodVisitor mv) {
+                    object.visit(mv);
+                    Label nullLabel = new Label();
+                    mv.visitInsn(DUP);
+                    mv.visitJumpInsn(IFNULL, nullLabel);
+                    call.visit(mv);
+                    box(call.getType(), mv);
+                    mv.visitLabel(nullLabel);
+                    checkCast(getType(), mv);
+                }
+            };
+        }
     }
 
     private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName, ClassNode type, ClassNode[] argTypes, final String msg) {

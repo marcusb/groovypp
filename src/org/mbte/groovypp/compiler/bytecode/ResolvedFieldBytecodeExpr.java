@@ -20,9 +20,9 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         super(parent, getType(object, fieldNode));
         this.fieldNode = fieldNode;
         this.object = object;
-        this.value = value;
+        this.value = value != null ? compiler.cast(value, fieldNode.getType() ): null;
 
-        if (fieldNode.isFinal() && value != null) {
+        if (fieldNode.isFinal() && value != null && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
             compiler.addError("Can't modify final field " + formatFieldName(), parent);
         }
 
@@ -83,9 +83,6 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
                 dup_x1(value.getType(), mv);
             else
                 dup(value.getType(), mv);
-
-            box(value.getType(), mv);
-            unbox(fieldNode.getType(), mv);
         }
         mv.visitFieldInsn(op, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
         cast(TypeUtil.wrapSafely(fieldNode.getType()), TypeUtil.wrapSafely(getType()), mv);

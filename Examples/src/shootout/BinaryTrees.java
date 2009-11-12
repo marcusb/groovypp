@@ -64,7 +64,8 @@ public class BinaryTrees {
 
 		private int itemCheck(){
 			// if necessary deallocate here
-			if (left==null) return item;
+			if (left==null)
+                return item;
 			else return item + left.itemCheck() - right.itemCheck();
 		}
 	}

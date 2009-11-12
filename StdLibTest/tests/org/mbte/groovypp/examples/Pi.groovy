@@ -49,7 +49,7 @@ public class Pi extends GroovyTestCase {
         for (int index = 0; index != actorCount; ++index) {
             long start = index * sliceSize
             long end = (index + 1l) * sliceSize - 1
-            new Thread({
+            new Thread((Runnable){
                 double sum = 0.0d, x
                 for (long i = start; i != end; ++i) {
                     x = (i - 0.5d) * delta
