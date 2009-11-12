@@ -81,6 +81,6 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     }
 
     static <T, R> Iterator<R> flatMap(Iterable<Iterable<T>> self, Function1<T, R> op) {
-      flatMap(self.iterator().map{it.iterator()}, op)
+      self.iterator().map{it.iterator()}.flatMap(op)
     }
 }

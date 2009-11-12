@@ -12,6 +12,7 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
@@ -123,51 +124,56 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         return (FieldNode) fields;
     }
 
+    private Object findCategoryMethod(ClassNode category, String methodName, ClassNode objectType, ClassNode [] args, Object candidates) {
+        final Object o = ClassNodeCache.getMethods(category, methodName);
+        if (o instanceof MethodNode) {
+            MethodNode mn = (MethodNode) o;
+            if (mn.isStatic()) {
+                final Parameter[] parameters = mn.getParameters();
+                if (parameters.length > 0 && objectType.isDerivedFrom(parameters[0].getType())) {
+                    candidates = createDGM(mn);
+                }
+            }
+        } else {
+            FastArray ms = (FastArray) o;
+            if (ms == null) return null;
+            for (int i = 0; i != ms.size(); ++i) {
+                MethodNode mn = (MethodNode) ms.get(i);
+                if (mn.isStatic()) {
+                    final Parameter[] parameters = mn.getParameters();
+                    if (parameters.length > 0 && objectType.isDerivedFrom(parameters[0].getType())) {
+                        if (candidates == null)
+                            candidates = createDGM(mn);
+                        else if (candidates instanceof FastArray) {
+                            ((FastArray) candidates).add(createDGM(mn));
+                        } else {
+                            MethodNode _1st = (MethodNode) candidates;
+                            candidates = new FastArray(2);
+                            ((FastArray) candidates).add(_1st);
+                            ((FastArray) candidates).add(createDGM(mn));
+                        }
+                    }
+                }
+            }
+        }
+
+        return candidates;
+    }
+
     public MethodNode findMethod(ClassNode type, String methodName, ClassNode[] args) {
         Object methods = ClassNodeCache.getMethods(type, methodName);
         final Object res = MethodSelection.chooseMethod(methodName, methods, type, args);
         if (res instanceof MethodNode)
             return (MethodNode) res;
 
-        Object candidates = null;
+        Object candidates = findCategoryMethod(classNode, methodName, type, args, null);
         final List<AnnotationNode> list = classNode.getAnnotations(USE);
         for (AnnotationNode annotationNode : list) {
             final Expression member = annotationNode.getMember("value");
             if (member != null && (member instanceof ClassExpression)) {
                 ClassExpression expression = (ClassExpression) member;
                 final ClassNode category = expression.getType();
-
-                final Object o = ClassNodeCache.getMethods(category, methodName);
-                if (o instanceof MethodNode) {
-                    MethodNode mn = (MethodNode) o;
-                    if (mn.isStatic()) {
-                        final Parameter[] parameters = mn.getParameters();
-                        if (parameters.length > 0 && type.isDerivedFrom(parameters[0].getType())) {
-                            candidates = createDGM(mn);
-                        }
-                    }
-                } else {
-                    FastArray ms = (FastArray) o;
-                    if (ms == null) return null;
-                    for (int i = 0; i != ms.size(); ++i) {
-                        MethodNode mn = (MethodNode) ms.get(i);
-                        if (mn.isStatic()) {
-                            final Parameter[] parameters = mn.getParameters();
-                            if (parameters.length > 0 && type.isDerivedFrom(parameters[0].getType())) {
-                                if (candidates == null)
-                                    candidates = createDGM(mn);
-                                else if (candidates instanceof FastArray) {
-                                    ((FastArray) candidates).add(createDGM(mn));
-                                } else {
-                                    MethodNode _1st = (MethodNode) candidates;
-                                    candidates = new FastArray(2);
-                                    ((FastArray) candidates).add(_1st);
-                                    ((FastArray) candidates).add(createDGM(mn));
-                                }
-                            }
-                        }
-                    }
-                }
+                candidates = findCategoryMethod(category, methodName, type, args, candidates);
             }
         }
 

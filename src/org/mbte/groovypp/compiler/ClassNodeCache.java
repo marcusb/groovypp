@@ -102,7 +102,7 @@ public class ClassNodeCache {
     public static synchronized Object getMethods(ClassNode type, String methodName) {
 //        type = castPrimitiveArray (type);
 
-        final ClassNodeInfo info = getClassNodeInfo(type);
+        final ClassNodeInfo info = getClassNodeInfo(type.redirect());
 
         Map<String, Object> nameMap = info.methods;
         if (nameMap == null) {
