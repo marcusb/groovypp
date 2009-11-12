@@ -52,4 +52,10 @@ class MappersTest extends GroovyShellTestCase {
       while (zipped.hasNext()) list << zipped.next()
       assertEquals((List<Pair>) [[0, 1], [1, 2], [2, 3]], list)
     }
+
+    @Typed
+    void testFlatMap () {
+      def l = [[0,1,2], [3,4]]
+      assertEquals(["0", "1", "2", "3", "4"], l.flatMap{it.toString()})
+    }
 }
