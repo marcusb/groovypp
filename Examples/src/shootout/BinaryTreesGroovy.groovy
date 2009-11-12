@@ -58,7 +58,7 @@ private static class TreeNode
         }
     }
 
-    int itemCheck(){
+    final int itemCheck(){
         this.@item + (this.@left ? this.@left.itemCheck() - this.@right.itemCheck() : 0);
     }
 }
