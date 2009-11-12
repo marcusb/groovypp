@@ -7,16 +7,16 @@ public class CompileStdLibTest extends GroovyTestCase {
     void testCompile () {
         def finder = new FileNameFinder ()
         
-//        String [] names = finder.getFileNames("./StdLib/src/", "**/*.groovy")
-//        names.each {
-//            println it
-//        }
-//        new FileSystemCompiler (new CompilerConfiguration()).compile (names)
-
-        String [] names = finder.getFileNames("./StdLibTest/tests/", "**/*.groovy")
+        String [] names = finder.getFileNames("./StdLib/src/", "**/*.groovy")
         names.each {
             println it
         }
         new FileSystemCompiler (new CompilerConfiguration()).compile (names)
+
+//        String [] names = finder.getFileNames("./StdLibTest/tests/", "**/*.groovy")
+//        names.each {
+//            println it
+//        }
+//        new FileSystemCompiler (new CompilerConfiguration()).compile (names)
     }
 }

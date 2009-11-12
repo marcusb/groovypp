@@ -5,7 +5,7 @@ class InstanceofTest extends GroovyShellTestCase {
     void testTrue() {
       shell.evaluate  """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             def x = false
             def o = 12

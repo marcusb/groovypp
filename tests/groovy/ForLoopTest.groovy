@@ -289,7 +289,7 @@ class ForLoopTest extends GroovyShellTestCase {
 
   void testCondition () {
       shell.evaluate("""
-          @Typed(debug=true)
+          @Typed
           def u() {
 			int iterations = 20
 			int check = 0

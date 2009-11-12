@@ -72,7 +72,7 @@ class GroovyTruthTest extends GroovyShellTestCase {
               v << b
           }
 
-          @Typed(debug=true)
+          @Typed
           def u(List v) {
             addBool(v, 1234);
             addBool(v, 0);

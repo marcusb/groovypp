@@ -138,7 +138,6 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
                         mv.visitJumpInsn(IFNULL, nullLabel);
 
                         call.visit(mv);
-                        mv.visitJumpInsn( onTrue ? IFNONNULL : IFNULL, label);
 
                         if (onTrue) {
                             mv.visitJumpInsn(IFEQ, endLabel);

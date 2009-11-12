@@ -390,7 +390,7 @@ y''' == 'x\\ny'
             if (!s.contains('\\r')) assert s == rt
         }
 
-        @Typed(debug=true)
+        @Typed
         void doNormalizationFileRoundTrip(String s) {
             
             def arr = [s, s.replace('\\n', '\\r'), s.replace('\\n', '\\r\\n'), s.replace('\\n', '\\n\\n')];

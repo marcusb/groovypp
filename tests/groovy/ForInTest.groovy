@@ -19,7 +19,7 @@ class ForInTest extends GroovyShellTestCase {
   }
   void testForInIntRange() {
     def res = shell.evaluate("""
-      @Typed(debug=true)
+      @Typed
       public def foo() {
         def res = []
         for (i in 0..2) res << i.byteValue()

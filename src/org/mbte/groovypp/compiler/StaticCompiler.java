@@ -276,7 +276,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         final BytecodeExpr condition = transformLogical(ifExpr, elseLabel, false);
         condition.visit(mv);
 
-        compileStack.pushBooleanExpression();
+        compileStack.pushBooleanExpression();                                             
         ifElse.getIfBlock().visit(this);
         compileStack.pop();
 
