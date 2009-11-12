@@ -71,16 +71,24 @@ public class Mappers extends DefaultGroovyMethodsSupport {
 
     static <T, R> Iterator<R> flatMap(Iterator<Iterator<T>> self, Function1<T, R> op) {
         [
-            curr : self.next(),
+            curr : (Iterator<T>)null,
             hasNext : {
-              curr.hasNext() || (self.hasNext() &&(curr = self.next()).hasNext())
+              (curr != null && curr.hasNext()) || (self.hasNext() &&(curr = self.next()).hasNext())
             },
             next : { op.apply(curr.next()) },
-            remove : { throw new UnsupportedOperationException("remove () is not supported") }
+            remove : { throw new UnsupportedOperationException("remove() is not supported") }
         ]
     }
 
     static <T, R> Iterator<R> flatMap(Iterable<Iterable<T>> self, Function1<T, R> op) {
-      self.iterator().map{it.iterator()}.flatMap(op)
+      flatMap(self.iterator().map{it.iterator()}, op)
+    }
+
+    static <T> Iterator<T> flatten(Iterator<Iterator<T>> self) {
+      flatMap(self, {it})
+    }
+
+    static <T> Iterator<T> flatten(Iterable<Iterable<T>> self) {
+      flatMap(self, {it})
     }
 }

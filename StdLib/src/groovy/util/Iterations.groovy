@@ -68,4 +68,12 @@ abstract class Iterations {
             return toArray(self.iterator());
         }
     }
+
+  public static <T> List<T> asList(Iterator<T> self) {
+      List<T> result = new ArrayList<T>();
+      while (self.hasNext()) {
+          result.add(self.next());
+      }
+      return result;
+  }
 }
