@@ -249,7 +249,7 @@ public class ClosureUtil {
                     }
                     ClassNode newBase = TypeUtil.withGenericTypes(baseType, genericTypes);
                     improveClosureType(closureType, newBase);
-                    returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, baseType);
+                    returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, newBase);
                 }
             }
         }
