@@ -19,10 +19,6 @@ class Pair<T1, T2> {
   }
 
   int hashCode() {
-    31 * hash(first) + hash(second)
-  }
-
-  private int hash(obj) {
-    return obj != null ? obj.hashCode() : 0
+    31 * first?.hashCode () + second?.hashCode ()
   }
 }
