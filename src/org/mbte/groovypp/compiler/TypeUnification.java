@@ -127,7 +127,7 @@ public class TypeUnification {
                         mapTypeFromSuper(fType, fType.redirect(), iType);
                 if (iType1 != null) iType = iType1; else {
                     fType = iType.isGenericsPlaceHolder() ? fType :
-                        mapTypeFromSuper(iType, iType.redirect(), fType.redirect());
+                        mapTypeFromSuper(iType, iType.redirect(), fType);
                     if (fType == null) continue;
                 }
                 match(fType, iType, name, constraints, EQ);
