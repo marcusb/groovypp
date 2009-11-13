@@ -124,10 +124,10 @@ public class TypeUnification {
                 if (iTypearg.isWildcard()) continue;
                 // Since we allow unchecked variance in type parameter, allow it also here.
                 ClassNode iType1 = fType.isGenericsPlaceHolder() ? iType :
-                        mapTypeFromSuper(fType.redirect(), fType.redirect(), iType);
+                        mapTypeFromSuper(fType, fType.redirect(), iType);
                 if (iType1 != null) iType = iType1; else {
                     fType = iType.isGenericsPlaceHolder() ? fType :
-                        mapTypeFromSuper(iType.redirect(), iType.redirect(), fType);
+                        mapTypeFromSuper(iType, iType.redirect(), fType.redirect());
                     if (fType == null) continue;
                 }
                 match(fType, iType, name, constraints, EQ);
