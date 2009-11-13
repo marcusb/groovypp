@@ -55,6 +55,10 @@ class Filters extends DefaultGroovyMethodsSupport {
       ]
   }
 
+  static <T> List<T> filter(List<T> self, final Function1<T, Boolean> condition) {
+    self.iterator().filter(condition).asList()
+  }
+
   static <T> T find(Iterator<T> self, Function1<T, Boolean> condition) {
     while (self.hasNext()) {
       T el = self.next()
