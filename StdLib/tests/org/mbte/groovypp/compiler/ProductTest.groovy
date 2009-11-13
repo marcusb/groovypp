@@ -10,8 +10,8 @@ public class ProductTest extends GroovyShellTestCase {
             (0..it).iterator ()
         }.each {
             Pair<Pair,Pair> p = [it, it]
-            println "\${p.first.first} \${p.second.second}"
-            println "\${it.first} \${it.second} \${it.first + it.second}"
+            println " \${p.first.first} \${p.second.second}"
+            println " \${it.first} \${it.second} \${it.first + it.second}"
         }
     }
     testProduct ()

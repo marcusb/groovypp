@@ -26,30 +26,51 @@
 	<property name="jar.name" location="${app.name}.jar"/>
 	<property name="target.jvm" value="5" />
 
-	<path id="compiler.classpath">
+	<path id="libs">
 		<fileset dir="lib" includes="*.jar"/>
 	</path>
 
-    <path id="compiler.test.classpath">
-		<path refid="compiler.classpath"/>
+    <path id="compile.compiler.classpath">
+		<path refid="libs"/>
+	</path>
+
+    <path id="compile.compiler.tests.classpath">
+		<path refid="libs"/>
+		<pathelement location="${compiler.prod.output}"/>
+	</path>
+
+    <path id="run.compiler.tests.classpath">
+		<path refid="libs"/>
 		<pathelement location="${compiler.prod.output}"/>
         <pathelement location="${compiler.test.output}"/>
 	</path>
 
-    <path id="stdlib.classpath">
-        <path refid="compiler.classpath"/>
+    <path id="compile.stdlib.classpath">
+        <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
     </path>
 
-    <path id="stdlib.test.classpath">
-        <path refid="compiler.classpath"/>
+    <path id="compile.stdlib.tests.classpath">
+        <path refid="libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+    </path>
+
+    <path id="run.stdlib.tests.classpath">
+        <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
         <pathelement location="${stdlib.test.output}"/>
     </path>
 
-    <path id="stdlibtest.test.classpath">
-        <path refid="compiler.classpath"/>
+    <path id="compile.stdlibtest.tests.classpath">
+        <path refid="libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+    </path>
+
+    <path id="run.stdlibtest.tests.classpath">
+        <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
         <pathelement location="${stdlibtest.test.output}"/>
@@ -57,7 +78,7 @@
 
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
-         classpathref="compiler.classpath"/>
+         classpathref="libs"/>
 
 	<target name="clean">
 		<delete dir="${output.dir}"/>
@@ -71,7 +92,7 @@
 	</target>
 
 	<target name="compile.compiler" depends="clean" description="compiles compiler source files">
-		<javac classpathref="compiler.classpath" srcdir="${compiler.src}"
+		<javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
 			destdir="${compiler.prod.output}" target="${target.jvm}"
 			debug="yes" debuglevel="lines,vars,source" />
 		<copy todir="${compiler.prod.output}">
@@ -82,7 +103,7 @@
 	</target>
 
 	<target name="compile.tests.compiler" depends="compile.compiler" >
-		<groovyc classpathref="compiler.test.classpath" srcdir="${compiler.tests}"
+		<groovyc classpathref="compile.compiler.tests.classpath" srcdir="${compiler.tests}"
 			destdir="${compiler.test.output}">
             <javac />
 		</groovyc >
@@ -90,19 +111,19 @@
 
     <!-- STDLIB -->
     <target name="compile.stdlib" depends="compile.compiler" description="compiles stdlib">
-        <groovyc classpathref="stdlib.classpath" srcdir="${stdlib.src}"
+        <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}"
             destdir="${stdlib.prod.output}">
         </groovyc >
     </target>
 
-    <target name="compile.tests.stdlib"  depends="compile.stdlib">
-        <groovyc classpathref="stdlib.test.classpath" srcdir="${stdlib.tests}" fork="yes"
+    <target name="compile.tests.stdlib"  depends="compile.stdlib,compile.tests.compiler">
+        <groovyc classpathref="compile.compiler.tests.classpath" srcdir="${stdlib.tests}" fork="yes"
             destdir="${stdlib.test.output}" verbose="true">
         </groovyc >
     </target>
 
     <target name="compile.tests.stdlibtest"  depends="compile.stdlib,compile.tests.stdlib,compile.tests.compiler">
-        <groovyc classpathref="stdlibtest.test.classpath" srcdir="${stdlibtest.tests}" fork="yes"
+        <groovyc classpathref="compile.stdlibtest.tests.classpath" srcdir="${stdlibtest.tests}" fork="yes"
             destdir="${stdlibtest.test.output}" verbose="true">
             <javac sourcepath="${stdlibtest.tests}"/>
         </groovyc >
@@ -111,7 +132,7 @@
     <target  name="run.tests.compiler" depends="compile.tests.compiler" description="Runs unit tests for compiler">
         <junit printsummary="yes">
             <classpath>
-                <path refid="compiler.test.classpath" />
+                <path refid="run.compiler.tests.classpath" />
             </classpath>
 
             <batchtest>
@@ -125,7 +146,7 @@
     <target  name="run.tests.stdlib" depends="compile.tests.stdlib" description="Runs unit tests for StdLib">
         <junit printsummary="yes">
             <classpath>
-                <path refid="stdlib.test.classpath" />
+                <path refid="run.stdlib.tests.classpath" />
             </classpath>
 
             <batchtest>
@@ -139,7 +160,7 @@
     <target  name="run.tests.stdlibtest" depends="compile.tests.stdlibtest" description="Runs unit tests for StdLibTest">
         <junit printsummary="yes">
             <classpath>
-                <path refid="stdlibtest.test.classpath" />
+                <path refid="run.stdlibtest.tests.classpath" />
             </classpath>
 
             <batchtest>
