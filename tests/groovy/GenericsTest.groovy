@@ -147,4 +147,16 @@ class GenericsTest extends GroovyShellTestCase {
     """)
     assertEquals "0", res
   }
+
+  void testFlatten() {
+    def res = shell.evaluate("""
+    @Typed
+    def testFlatten () {
+      def l = [[0,1,2], [3,4]]
+      l.flatten().asList().map{it.byteValue()}
+    }
+    testFlatten()
+    """)
+    assertEquals([0, 1, 2, 3, 4], res)
+  }
 }

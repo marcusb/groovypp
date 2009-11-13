@@ -32,7 +32,7 @@ public class ClassNodeCache {
     static final Map<ClassNode, List<MethodNode>> dgmMethods = new HashMap<ClassNode, List<MethodNode>>();
 
     static {
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex"));
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten"));
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
         initDgm("groovy.util.Mappers");
