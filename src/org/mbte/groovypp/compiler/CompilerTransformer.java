@@ -136,7 +136,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             }
         } else {
             FastArray ms = (FastArray) o;
-            if (ms == null) return null;
+            if (ms == null) return candidates;
             for (int i = 0; i != ms.size(); ++i) {
                 MethodNode mn = (MethodNode) ms.get(i);
                 if (mn.isStatic()) {
@@ -174,6 +174,15 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 ClassExpression expression = (ClassExpression) member;
                 final ClassNode category = expression.getType();
                 candidates = findCategoryMethod(category, methodName, type, args, candidates);
+            }
+        }
+
+        if (candidates == null) {
+            final CompileUnit compileUnit = classNode.getCompileUnit();
+            for (ModuleNode moduleNode : compileUnit.getModules()) {
+                for (ClassNode category : moduleNode.getClasses()) {
+                    candidates = findCategoryMethod(category, methodName, type, args, candidates);
+                }
             }
         }
 

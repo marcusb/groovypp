@@ -25,6 +25,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : object,
                 EMPTY_ARGS, compiler);
+        setType(getter.getType());
     }
 
     protected void compile(MethodVisitor mv) {

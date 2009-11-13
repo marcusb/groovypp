@@ -353,7 +353,6 @@ class WorkerThread extends Thread {
 
 @Category(Lock)
 public class ConcurrentLockCategory {
-
   /**
    * Execute given calculation under lock and returns calculated value
    */

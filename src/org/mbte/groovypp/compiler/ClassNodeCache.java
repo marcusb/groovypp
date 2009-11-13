@@ -51,9 +51,14 @@ public class ClassNodeCache {
     }
 
     static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {
-        final ModuleNode moduleNode = classNode.isArray() ? classNode.getComponentType().getModule() : classNode.getModule();
+        final ModuleNode moduleNode;
+        if (classNode.isArray())
+            return getClassNodeInfo(classNode.getComponentType());
+        else
+            moduleNode = classNode.getModule();
+
         if (moduleNode != null) {
-            final CompileUnit compileUnit = classNode.isArray() ? classNode.getComponentType().getCompileUnit() : classNode.getCompileUnit();
+            final CompileUnit compileUnit = classNode.getCompileUnit();
             final SoftReference<CompileUnitInfo> ref = compiledClassesCache.get(compileUnit);
             CompileUnitInfo cui;
             if (ref == null || (cui = ref.get()) == null) {
