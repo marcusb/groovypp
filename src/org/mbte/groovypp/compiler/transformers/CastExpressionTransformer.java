@@ -1,8 +1,12 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
@@ -155,7 +159,16 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 final Expression init = compiler.transform(me.getValueExpression());
 
-                objType.addField(keyName, ACC_PRIVATE, init.getType(), init);
+                final FieldNode fieldNode = objType.addField(keyName, ACC_PRIVATE, init.getType(), null);
+
+                final ClassNode objType1 = objType;
+                objType.getObjectInitializerStatements().add(new BytecodeSequence(new BytecodeInstruction(){
+                    public void visit(MethodVisitor mv) {
+                        mv.visitVarInsn(ALOAD, 0);
+                        ((BytecodeExpr)init).visit(mv);
+                        mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(objType1), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
+                    }
+                }));
             }
 
             for (MapEntryExpression me : methods) {

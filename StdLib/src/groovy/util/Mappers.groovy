@@ -1,6 +1,7 @@
 package groovy.util
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
+import java.util.concurrent.Executor
 
 @Typed
 public class Mappers extends DefaultGroovyMethodsSupport {
@@ -90,5 +91,9 @@ public class Mappers extends DefaultGroovyMethodsSupport {
 
     static <T> Iterator<T> flatten(Iterable<Iterable<T>> self) {
       flatMap(self, {it})
+    }
+
+    static <T,R> Iterator<R> mapConcurrently (Iterator<T> self, Executor executor, Function1<T,R> op) {
+
     }
 }

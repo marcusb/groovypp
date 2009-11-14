@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler
 public class FiltersTest extends GroovyShellTestCase {
   void testSimple() {
     assertTrue shell.evaluate("""
-        @Typed
+        @Typed(debug=true)
         class C extends GroovyTestCase {
           def test() {
             assertEquals([0,3], (0..5).filter{it % 3 == 0})

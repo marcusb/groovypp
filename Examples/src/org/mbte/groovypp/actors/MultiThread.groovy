@@ -1,11 +1,11 @@
+@Typed
+package org.mbte.groovypp.actors
+
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executor
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import groovy.util.concurrent.ReadWriteLockable
-
-@Typed
-package org.mbte.groovypp.actors
 
 class MultiThread {
 

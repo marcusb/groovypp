@@ -69,11 +69,11 @@ abstract class Iterations {
         }
     }
 
-  public static <T> List<T> asList(Iterator<T> self) {
-      List<T> result = new ArrayList<T>();
-      while (self.hasNext()) {
-          result.add(self.next());
-      }
-      return result;
-  }
+    static <T> List<T> asList(Iterator<T> self) {
+        def result = []
+        while (self) {
+            result << self.next()
+        }
+        return result;
+    }
 }

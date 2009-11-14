@@ -10,33 +10,31 @@ class Filters extends DefaultGroovyMethodsSupport {
 
   private def Filters() {}
 
+  @Typed(debug = true)
   static <T> Iterator<T> filter(final Iterator<T> self, final Function1<T, Boolean> condition) {
       [
-              nextElem : (T)null,
+              nextElem :   (T)null,
               nextChecked: false,
-              nextFound: false,
+              nextFound:   false,
 
               checkNext: { ->
                   if (!nextChecked) {
                       nextChecked = true
-                  }
 
-                  nextFound = self.hasNext()
-                  if (nextFound) {
-                    nextElem = self.next()
-                  }
-                  while (nextFound && !condition.apply(nextElem)) {
-                    nextFound = self.hasNext()
-                    if (nextFound) {
-                      nextElem = self.next()
-                    }
+                      nextFound = self.hasNext()
+                      if (nextFound) {
+                        nextElem = self.next()
+                      }
+                      while (nextFound && !condition.apply(nextElem)) {
+                        nextFound = self.hasNext()
+                        if (nextFound) {
+                          nextElem = self.next()
+                        }
+                      }
                   }
               },
 
-              hasNext : {
-                checkNext()
-                nextFound
-              },
+              hasNext : { -> checkNext(); nextFound },
 
               next : { ->
                   checkNext()
@@ -49,9 +47,7 @@ class Filters extends DefaultGroovyMethodsSupport {
                   res
               },
 
-              remove : { ->
-                  throw new UnsupportedOperationException("remove () is unsupported by the iterator")
-              }
+              remove : { -> throw new UnsupportedOperationException("remove () is unsupported by the iterator") }
       ]
   }
 

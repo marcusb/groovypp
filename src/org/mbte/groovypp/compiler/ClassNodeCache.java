@@ -52,10 +52,10 @@ public class ClassNodeCache {
 
     static ClassNodeInfo getClassNodeInfo(ClassNode classNode) {
         final ModuleNode moduleNode;
-        if (classNode.isArray())
-            return getClassNodeInfo(classNode.getComponentType());
-        else
-            moduleNode = classNode.getModule();
+        ClassNode cn = classNode;
+        while (cn.isArray())
+            cn = cn.getComponentType();
+        moduleNode = cn.getModule();
 
         if (moduleNode != null) {
             final CompileUnit compileUnit = classNode.getCompileUnit();
