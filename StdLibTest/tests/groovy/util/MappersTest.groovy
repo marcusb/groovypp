@@ -1,5 +1,8 @@
 package groovy.util
 
+import com.sun.corba.se.spi.orbutil.threadpool.ThreadPool
+import java.util.concurrent.Executors
+
 @Typed
 class MappersTest extends GroovyShellTestCase {
     void testPrimitive () {
@@ -32,7 +35,6 @@ class MappersTest extends GroovyShellTestCase {
         assertEquals (["0", "1", "2"], res )
     }
 
-    @Typed
     void testProduct () {
         (0..<10).iterator().product{
             println (-10 + it + 10) // to make sure it is integer
@@ -44,7 +46,6 @@ class MappersTest extends GroovyShellTestCase {
         }
     }
 
-    @Typed
     void testZip () {
       def range = 0..2
       def zipped = range.iterator().zip(range.map {it + 1}.iterator())
@@ -53,15 +54,21 @@ class MappersTest extends GroovyShellTestCase {
       assertEquals((List<Pair>) [[0, 1], [1, 2], [2, 3]], list)
     }
 
-    @Typed(debug=true)
     void testFlatMap () {
       def l = [[0,1,2], [3,4]]
       assertEquals(["0", "1", "2", "3", "4"], l.flatMap{it.toString()}.asList())
     }
 
-    @Typed
     void testFlatten () {
       def l = [[0,1,2], [3,4]]
       assertEquals([0, 1, 2, 3, 4], l.flatten().asList())
+    }
+
+    void testMapConcurrently () {
+        def res = (0..100000).iterator ().mapConcurrently (Executors.newFixedThreadPool(10), 50) {
+            println "${Thread.currentThread().id} $it"
+            it + 1
+        }.toList ()
+        assertEquals ((1..100001), res)
     }
 }

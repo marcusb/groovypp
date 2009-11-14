@@ -2,6 +2,13 @@ package groovy.util
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorCompletionService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.FutureTask
+import java.util.concurrent.Future
 
 @Typed
 public class Mappers extends DefaultGroovyMethodsSupport {
@@ -93,7 +100,41 @@ public class Mappers extends DefaultGroovyMethodsSupport {
       flatMap(self, {it})
     }
 
-    static <T,R> Iterator<R> mapConcurrently (Iterator<T> self, Executor executor, Function1<T,R> op) {
+    static <T,R> Iterator<R> mapConcurrently (Iterator<T> self, Executor executor = null, int lookAhead = 0, Function1<T,R> op) {
+        int processors = Runtime.runtime.availableProcessors()
+        if (lookAhead < processors)
+            lookAhead = processors
 
+        def ownExecutor = false
+        if (!executor) {
+            executor = Executors.newFixedThreadPool (lookAhead)
+            ownExecutor = true
+        }
+
+        [   pending   : 0,
+            waiting   : [] as LinkedList<Future<R>>,
+
+            testCompleted : { ->
+                while (self && pending < lookAhead) {
+                    def elem = self.next ()
+                    pending++
+
+                    def task = new FutureTask<R>({-> op[elem] })
+                    waiting << task
+                    executor.execute task
+                }
+            },
+
+            next : { ->
+                def res = waiting.removeFirst ().get ()
+                pending--
+                testCompleted ()
+                res
+            },
+
+            hasNext : { -> testCompleted (); pending > 0 },
+
+            remove : { -> throw new UnsupportedOperationException ("remove () is unsupported by iterator") },
+        ]
     }
 }

@@ -10,7 +10,6 @@ class Filters extends DefaultGroovyMethodsSupport {
 
   private def Filters() {}
 
-  @Typed(debug = true)
   static <T> Iterator<T> filter(final Iterator<T> self, final Function1<T, Boolean> condition) {
       [
               nextElem :   (T)null,

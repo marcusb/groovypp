@@ -107,7 +107,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
 
         List<MapEntryExpression> methods = new LinkedList<MapEntryExpression>();
-        List<MapEntryExpression> fields = new LinkedList<MapEntryExpression>();
+        final List<MapEntryExpression> fields = new LinkedList<MapEntryExpression>();
 
         for (int i = 0; i != list.size(); ++i) {
             final MapEntryExpression me = (MapEntryExpression) list.get(i);
@@ -159,16 +159,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 final Expression init = compiler.transform(me.getValueExpression());
 
-                final FieldNode fieldNode = objType.addField(keyName, ACC_PRIVATE, init.getType(), null);
+                me.setValueExpression(init);
 
-                final ClassNode objType1 = objType;
-                objType.getObjectInitializerStatements().add(new BytecodeSequence(new BytecodeInstruction(){
-                    public void visit(MethodVisitor mv) {
-                        mv.visitVarInsn(ALOAD, 0);
-                        ((BytecodeExpr)init).visit(mv);
-                        mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(objType1), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
-                    }
-                }));
+                objType.addField(keyName, 0, init.getType(), null);
             }
 
             for (MapEntryExpression me : methods) {
@@ -179,6 +172,16 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             return new BytecodeExpr(exp, objType) {
                 protected void compile(MethodVisitor mv) {
                     ClosureUtil.instantiateClass(getType(), compiler, mv);
+
+                    for (MapEntryExpression me : fields) {
+                        final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
+
+                        final FieldNode fieldNode = getType().getDeclaredField(keyName);
+
+                        mv.visitInsn(DUP);
+                        ((BytecodeExpr)me.getValueExpression()).visit(mv);
+                        mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(getType()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
+                    }
                 }
             };
         }
