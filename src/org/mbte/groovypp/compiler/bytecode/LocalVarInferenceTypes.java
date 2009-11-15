@@ -15,6 +15,9 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
     private boolean visited;
 
     public void add(VariableExpression ve, ClassNode type) {
+        if (ve.getAccessedVariable() == null)
+            return;
+
         if (defVars == null)
             defVars = new IdentityHashMap<Variable, ClassNode>();
 
@@ -30,6 +33,9 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
     }
 
     public void addWeak(VariableExpression ve, ClassNode type) {
+        if (ve.getAccessedVariable() == null)
+            return;
+
         final ClassNode oldType = defVars.get(ve.getAccessedVariable());
         if (oldType == null) {
             defVars.put(ve.getAccessedVariable(), type);

@@ -101,19 +101,13 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     }
 
     static <T,R> Iterator<R> mapConcurrently (Iterator<T> self,
-                 Executor executor = null,
+                 Executor executor,
+                 boolean ordered,
                  int maxConcurrentTasks = 0,
-                 boolean ordered = true,
                  Function1<T,R> op) {
         int processors = Runtime.runtime.availableProcessors()
         if (maxConcurrentTasks < processors)
-            maxConcurrentTasks = processors
-
-        def ownExecutor = false
-        if (!executor) {
-            executor = Executors.newFixedThreadPool (maxConcurrentTasks)
-            ownExecutor = true
-        }
+            maxConcurrentTasks = 2*processors
 
         if (ordered) {
             [   pending   : 0,
@@ -141,10 +135,10 @@ public class Mappers extends DefaultGroovyMethodsSupport {
         }
         else {
             [   pending   : new AtomicInteger (),
-                waiting   : new LinkedBlockingQueue<R> (maxConcurrentTasks),
+                waiting   : new LinkedBlockingQueue<R> (),
 
                 testPending : { ->
-                    while (self && pending.get () < maxConcurrentTasks) {
+                    while (self && waiting.size() + pending.get () < maxConcurrentTasks) {
                         pending.incrementAndGet ()
                         def call = op.curry(self.next())
                         executor.execute { -> waiting << call.apply (); pending.decrementAndGet () }

@@ -2,6 +2,7 @@ package groovy.util
 
 import com.sun.corba.se.spi.orbutil.threadpool.ThreadPool
 import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 @Typed
 class MappersTest extends GroovyShellTestCase {
@@ -65,10 +66,18 @@ class MappersTest extends GroovyShellTestCase {
     }
 
     void testMapConcurrently () {
-        def res = (0..100000).iterator ().mapConcurrently (Executors.newFixedThreadPool(10), 50) {
-            println "${Thread.currentThread().id} $it"
+        ExecutorService pool = Executors.newFixedThreadPool(10)
+        def res = (0..100000).iterator ().mapConcurrently (pool, true, 50) {
+//            println "1st pass ${Thread.currentThread().id} $it"
             it + 1
         }.toList ()
+        assertEquals ((1..100001), res)
+
+        res = (0..100000).iterator ().mapConcurrently (pool, false, 50) {
+//            println "2nd pass ${Thread.currentThread().id} $it"
+            it + 1
+        }.toArray ()
+        res.sort()
         assertEquals ((1..100001), res)
     }
 }

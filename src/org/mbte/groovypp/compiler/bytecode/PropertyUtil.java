@@ -46,9 +46,16 @@ public class PropertyUtil {
     }
 
     public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler) {
-        final String getterName = "get" + Verifier.capitalize(name);
+        final FieldNode field = compiler.findField(type, name);
+
+        String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null)
+        if (mn != null && (field == null || !field.isPublic()))
+            return mn;
+
+        getterName = "is" + Verifier.capitalize(name);
+        mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+        if (mn != null && mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (field == null || !field.isPublic()))
             return mn;
 
         final PropertyNode pnode = compiler.findProperty(type, name);
@@ -56,7 +63,6 @@ public class PropertyUtil {
             return pnode;
         }
 
-        final FieldNode field = compiler.findField(type, name);
         if (field != null)
             return field;
 

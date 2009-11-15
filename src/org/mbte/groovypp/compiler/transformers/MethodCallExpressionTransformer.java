@@ -15,18 +15,6 @@ import java.util.ArrayList;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression> {
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
-        Expression args = compiler.transform(exp.getArguments());
-        exp.setArguments(args);
-
-        if (exp.isSpreadSafe()) {
-            compiler.addError("Spread operator is not supported by static compiler", exp);
-            return null;
-        }
-
-        if (exp.isSafe()) {
-            return transformSafe(exp, compiler);
-        }
-
         Object method = exp.getMethod();
         String methodName;
         if (!(method instanceof ConstantExpression) || !(((ConstantExpression) method).getValue() instanceof String)) {
@@ -38,6 +26,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
         } else {
             methodName = (String) ((ConstantExpression) method).getValue();
+        }
+
+        Expression args = compiler.transform(exp.getArguments());
+        exp.setArguments(args);
+
+        if (exp.isSpreadSafe()) {
+            compiler.addError("Spread operator is not supported by static compiler", exp);
+            return null;
+        }
+
+        if (exp.isSafe()) {
+            return transformSafe(exp, compiler);
         }
 
         BytecodeExpr object;
