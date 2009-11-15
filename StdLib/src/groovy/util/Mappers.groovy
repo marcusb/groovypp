@@ -100,41 +100,67 @@ public class Mappers extends DefaultGroovyMethodsSupport {
       flatMap(self, {it})
     }
 
-    static <T,R> Iterator<R> mapConcurrently (Iterator<T> self, Executor executor = null, int lookAhead = 0, Function1<T,R> op) {
+    static <T,R> Iterator<R> mapConcurrently (Iterator<T> self,
+                 Executor executor = null,
+                 int maxConcurrentTasks = 0,
+                 boolean ordered = true,
+                 Function1<T,R> op) {
         int processors = Runtime.runtime.availableProcessors()
-        if (lookAhead < processors)
-            lookAhead = processors
+        if (maxConcurrentTasks < processors)
+            maxConcurrentTasks = processors
 
         def ownExecutor = false
         if (!executor) {
-            executor = Executors.newFixedThreadPool (lookAhead)
+            executor = Executors.newFixedThreadPool (maxConcurrentTasks)
             ownExecutor = true
         }
 
-        [   pending   : 0,
-            waiting   : [] as LinkedList<Future<R>>,
+        if (ordered) {
+            [   pending   : 0,
+                waiting   : new LinkedList<FutureTask<R>> (),
 
-            testCompleted : { ->
-                while (self && pending < lookAhead) {
-                    def elem = self.next ()
-                    pending++
+                testPending : { ->
+                    while (self && pending < maxConcurrentTasks) {
+                        pending++
+                        waiting << op.future (self.next())
+                        executor.execute waiting.last
+                    }
+                },
 
-                    def task = new FutureTask<R>({-> op[elem] })
-                    waiting << task
-                    executor.execute task
-                }
-            },
+                next : { ->
+                    def res = waiting.removeFirst ().get ()
+                    pending--
+                    testPending ()
+                    res
+                },
 
-            next : { ->
-                def res = waiting.removeFirst ().get ()
-                pending--
-                testCompleted ()
-                res
-            },
+                hasNext : { -> testPending (); pending > 0 },
 
-            hasNext : { -> testCompleted (); pending > 0 },
+                remove : { -> throw new UnsupportedOperationException ("remove () is unsupported by the iterator") },
+            ]
+        }
+        else {
+            [   pending   : new AtomicInteger (),
+                waiting   : new LinkedBlockingQueue<R> (maxConcurrentTasks),
 
-            remove : { -> throw new UnsupportedOperationException ("remove () is unsupported by iterator") },
-        ]
+                testPending : { ->
+                    while (self && pending.get () < maxConcurrentTasks) {
+                        pending.incrementAndGet ()
+                        def call = op.curry(self.next())
+                        executor.execute { -> waiting << call.apply (); pending.decrementAndGet () }
+                    }
+                },
+
+                next : { ->
+                    def res = waiting.take ()
+                    testPending ()
+                    res
+                },
+
+                hasNext : { -> testPending (); !waiting.empty || pending.get() > 0 },
+
+                remove : { -> throw new UnsupportedOperationException ("remove () is unsupported by the iterator") },
+            ]
+        }
     }
 }

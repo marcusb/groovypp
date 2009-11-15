@@ -1,5 +1,7 @@
 package groovy.lang
 
+import java.util.concurrent.FutureTask
+
 @Trait
 abstract class Function1<T,R> {
 
@@ -15,5 +17,13 @@ abstract class Function1<T,R> {
 
     R getAt (T arg) {
         apply(arg)
+    }
+
+    Function0<R> curry (T arg) {
+        { -> apply(arg) }
+    }
+
+    FutureTask<R> future (T arg) {
+        [ { -> apply(arg) } ]
     }
 }
