@@ -316,7 +316,7 @@ public class ClassNodeCache {
     }
 
     private static void initDgm(final Class klazz) {
-        initDgm(klazz, Collections.EMPTY_LIST);
+        initDgm(klazz, Collections.<String>emptyList());
     }
 
     private static void initDgm(final Class klazz, List<String> ignore) {
