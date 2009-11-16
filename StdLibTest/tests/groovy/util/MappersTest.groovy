@@ -35,15 +35,8 @@ class MappersTest extends GroovyShellTestCase {
         assertEquals (["0", "1", "2"], res )
     }
 
-    void testProduct () {
-        (0..<10).iterator().product{
-            println (-10 + it + 10) // to make sure it is integer
-            (0..it).iterator ()
-        }.each {
-            Pair<Pair,Pair> p = [it, it]
-            println "${p.first.first} ${p.second.second}"
-            println "${it.first} ${it.second} ${it.first + it.second}"
-        }
+  void testProduct () {
+        assertEquals((List<Pair>)[[0,2], [0,3], [1,2], [1,3]], (0..1).product(2..3).asList())
     }
 
     void testZip () {
