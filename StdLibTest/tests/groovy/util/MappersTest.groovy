@@ -1,8 +1,7 @@
 package groovy.util
 
-import com.sun.corba.se.spi.orbutil.threadpool.ThreadPool
-import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @Typed
 class MappersTest extends GroovyShellTestCase {
