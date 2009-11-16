@@ -35,9 +35,10 @@ public class ClassNodeCache {
         initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten"));
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
-        initDgm("groovy.util.Mappers");
+        initDgm("groovy.util.Conversions");
         initDgm("groovy.util.Filters");
         initDgm("groovy.util.Iterations");
+        initDgm("groovy.util.Mappers");
         initDgm(Arrays.class);
         initDgm(Collections.class);
     }

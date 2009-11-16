@@ -49,31 +49,4 @@ abstract class Iterations {
     static <T> T each(T self, Closure closure) {
         return DefaultGroovyMethods.each(self, closure)
     }
-
-    static <T> Iterator<T> iterator(T[] self) {
-        return Arrays.asList(self).iterator();
-    }
-
-    static <T> T[] toArray(Iterator<T> self) {
-        ArrayList<T> list = new ArrayList<T>();
-        while (self.hasNext())
-            list.add(self.next());
-        return (T[]) list.toArray();
-    }
-
-    static <T> T[] toArray(Iterable<T> self) {
-        if (self instanceof Collection) {
-            return (T[]) ((Collection<T>) self).toArray();
-        } else {
-            return toArray(self.iterator());
-        }
-    }
-
-    static <T> List<T> asList(Iterator<T> self) {
-        def result = []
-        while (self) {
-            result << self.next()
-        }
-        return result;
-    }
 }
