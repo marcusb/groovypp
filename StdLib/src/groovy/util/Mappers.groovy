@@ -82,14 +82,21 @@ public class Mappers extends DefaultGroovyMethodsSupport {
   /**
    * Obtains the Cartesian product of two @link{Iterable} objects. Note that @link{Iterable#getIterator()} is called
    * multiple times for the second argument.
-   * @param self first iterator.
-   * @param other second iterator
+   * @param self first Iterable.
+   * @param other second Iterable.
    * @return Iterator to Cartesian product.
    */
   static <T1,T2> Iterator<Pair<T1,T2>> product (Iterable<T1> self, Iterable<T2> other) {
     self.iterator().product { other.iterator() }
   }
 
+  /**
+   * Group the elements of the input collection according to the grouping function.
+   * @param self input collection.
+   * @param op grouping function.
+   * @return @link{java.util.Map} associating keys to lists of elements in the original collection,
+   * matching that key.
+   */
   static <T, K> Map<K, List<T>> groupBy(Collection<T> self, Function1<T, K> op) {
     def answer = (Map<K, List<T>>) [:]
     for (T element: self) {
