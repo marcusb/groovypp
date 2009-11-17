@@ -22,7 +22,11 @@
     <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.module.name}" />
     <property name="stdlibtest.prod.output" location="${output.dir}/production/${stdlibtest.module.name}" />
     <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
-
+	<property name="test.reports" location="${output.dir}/test-reports"/>
+	<property name="compiler.test.reports" location="${test.reports}/${compiler.module.name}"/>
+	<property name="stdlib.test.reports" location="${test.reports}/${stdlib.module.name}"/>
+	<property name="stdlibtest.test.reports" location="${test.reports}/${stdlibtest.module.name}"/>
+	
 	<property name="jar.name" location="${app.name}.jar"/>
 	<property name="target.jvm" value="5" />
 
@@ -89,6 +93,9 @@
         <mkdir dir="${stdlib.test.output}"/>
         <mkdir dir="${stdlibtest.prod.output}"/>
         <mkdir dir="${stdlibtest.test.output}"/>
+		<mkdir dir="${compiler.test.reports}"/>
+		<mkdir dir="${stdlib.test.reports}"/>
+		<mkdir dir="${stdlibtest.test.reports}"/>
 	</target>
 
 	<target name="compile.compiler" depends="clean" description="compiles compiler source files">
@@ -135,12 +142,20 @@
                 <path refid="run.compiler.tests.classpath" />
             </classpath>
 
-            <batchtest>
+            <batchtest todir="${compiler.test.reports}">
                 <fileset dir="${compiler.test.output}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
+        	<formatter type="xml"/>
         </junit>
+    	
+    	<junitreport todir="${compiler.test.reports}">
+    		<fileset dir="${compiler.test.reports}">
+    			<include name="TEST-*.xml"/>
+    		</fileset>
+    		<report todir="${compiler.test.reports}"/>
+    	</junitreport>
     </target>
 
     <target  name="run.tests.stdlib" depends="compile.tests.stdlib" description="Runs unit tests for StdLib">
@@ -149,13 +164,21 @@
                 <path refid="run.stdlib.tests.classpath" />
             </classpath>
 
-            <batchtest>
+            <batchtest todir="${stdlib.test.reports}">
                 <fileset dir="${stdlib.test.output}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
+        	<formatter type="xml"/>
         </junit>
-    </target>
+
+    	<junitreport todir="${stdlib.test.reports}">
+    		<fileset dir="${stdlib.test.reports}">
+    			<include name="TEST-*.xml"/>
+    		</fileset>
+    		<report todir="${stdlib.test.reports}"/>
+    	</junitreport>
+</target>
 
     <target  name="run.tests.stdlibtest" depends="compile.tests.stdlibtest" description="Runs unit tests for StdLibTest">
         <junit printsummary="yes">
@@ -163,13 +186,21 @@
                 <path refid="run.stdlibtest.tests.classpath" />
             </classpath>
 
-            <batchtest>
+            <batchtest todir="${stdlibtest.test.reports}">
                 <fileset dir="${stdlibtest.test.output}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
+        	<formatter type="xml"/>
         </junit>
-    </target>
+
+    	<junitreport todir="${stdlibtest.test.reports}">
+    		<fileset dir="${stdlibtest.test.reports}">
+    			<include name="TEST-*.xml"/>
+    		</fileset>
+    		<report todir="${stdlibtest.test.reports}"/>
+    	</junitreport>
+</target>
 
     <target name="testAll" depends="run.tests.compiler, run.tests.stdlib, run.tests.stdlibtest"/>
 
