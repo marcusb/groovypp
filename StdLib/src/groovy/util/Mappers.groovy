@@ -80,7 +80,7 @@ public class Mappers extends DefaultGroovyMethodsSupport {
   }
 
   /**
-   * Obtains the Cartesian product of two @link{Iterable} objects. Note that @link{Iterable#getIterator()} is called
+   * Obtains the Cartesian product of two @link{Iterable} objects. Note that @link{Iterable#iterator()} is called
    * multiple times for the second argument.
    * @param self first Iterable.
    * @param other second Iterable.
@@ -111,6 +111,12 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     answer
   }
 
+  /**
+   * Flattens the results of applying the mapping function to each element of input iterator.
+   * @param self input iterator of iterators.
+   * @param op mapping function.
+   * @return mapped and flattened iterator.
+   */
   static <T, R> Iterator<R> flatMap(Iterator<Iterator<T>> self, Function1<T, R> op) {
     [
             curr: (Iterator<T>) null,
@@ -122,14 +128,30 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     ]
   }
 
+  /**
+   * Flattens the results of applying the mapping function to each element of input @link{Iterable} object.
+   * @param self input Iterable, e.g. List<List>.
+   * @param op mapping function.
+   * @return mapped and flattened iterator.
+   */
   static <T, R> Iterator<R> flatMap(Iterable<Iterable<T>> self, Function1<T, R> op) {
     flatMap(self.iterator().map {it.iterator()}, op)
   }
 
+  /**
+   * Flattens the input iterator.
+   * @param self input iterator of iterators.
+   * @return flattened iterator.
+   */
   static <T> Iterator<T> flatten(Iterator<Iterator<T>> self) {
     flatMap(self, {it})
   }
 
+  /**
+   * Flattens the input @link{Iterable}.
+   * @param self input Iterable, e.g. List<List>.
+   * @return flattened iterator.
+   */
   static <T> Iterator<T> flatten(Iterable<Iterable<T>> self) {
     flatMap(self, {it})
   }
