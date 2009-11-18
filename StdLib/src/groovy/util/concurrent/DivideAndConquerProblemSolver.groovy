@@ -13,14 +13,14 @@ class DivideAndConquerProblemSolver {
     workers = (1..nWorkers).map{ new Worker(it - 1) }.asList ()
 
     // Prevent work stealing happening immediately, distribute the work.
-    def jobs = [new Job(problem, null)]
-    def atomics = []
+    List<Job> jobs = [new Job(problem, null)]
+    List<Job> atomics = []
     while (jobs.size() > 0 && jobs.size() < nWorkers) {
       jobs = removeAtomic(jobs, atomics)
-      jobs = jobs.flatMap{ job -> job.problem.sub().map{ new Job(it, job) } }
+      jobs = jobs.map{ job -> job.problem.sub().map{ new Job(it, job) } }.flatten().asList()
     }
-    for (int i = 0; i < jobs.size(); ++i) workers[i % nWorkers].jobs << jobs[i]
-    for (int i = 0; i < atomics.size(); ++i) workers[i % nWorkers].jobs << atomics[i]
+    for (int i = 0; i < jobs.size(); ++i) workers[i % nWorkers].jobs.addFirst(jobs[i])
+    for (int i = 0; i < atomics.size(); ++i) workers[i % nWorkers].jobs.addFirst(atomics[i])
 
     workers.map {
       def t = new Thread(it)
@@ -65,7 +65,7 @@ class DivideAndConquerProblemSolver {
 
     int num
 
-    def jobs = new LinkedBlockingDeque<Job>()
+    LinkedBlockingDeque<Job> jobs = new LinkedBlockingDeque<Job>()
 
     void run() {
       Job job = null
