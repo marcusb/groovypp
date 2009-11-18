@@ -69,8 +69,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 mv.visitVarInsn(ALOAD, 0);
                                 ClassNode curThis = compiler.methodNode.getDeclaringClass();
                                 while (curThis != thisTypeFinal) {
-                                    ClassNode next = curThis.getField("$owner").getType();
-                                    mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));
+                                    ClassNode next = curThis.getField("this$0").getType();
+                                    mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
                                     curThis = next;
                                 }
                             }
@@ -84,7 +84,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
 
-                    FieldNode ownerField = thisType.getField("$owner");
+                    FieldNode ownerField = thisType.getField("this$0");
                     thisType = ownerField == null ? null : ownerField.getType();
                 }
 

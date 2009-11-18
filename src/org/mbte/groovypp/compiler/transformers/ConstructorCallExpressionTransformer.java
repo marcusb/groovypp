@@ -21,7 +21,7 @@ import java.util.List;
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
     private static final ClassNode[] MAP_ARGS = new ClassNode[]{TypeUtil.LINKED_HASH_MAP_TYPE};
 
-    public Expression transform(ConstructorCallExpression exp, CompilerTransformer compiler) {
+    public Expression transform(ConstructorCallExpression exp, final CompilerTransformer compiler) {
 
         if (exp.isSuperCall() || exp.isThisCall())
             return transformSpecial (exp, compiler);
@@ -146,11 +146,17 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     mv.visitTypeInsn(NEW, classInternalName);
                     mv.visitInsn(DUP);
 
+                    int first = 0;
+                    if ((getType().getModifiers() & ACC_STATIC) == 0 && getType().redirect() instanceof InnerClassNode) {
+                        mv.visitVarInsn(ALOAD, 0);
+                        first = 1;
+                    }
+
                     ArgumentListExpression bargs = (ArgumentListExpression) newArgs;
                     for (int i = 0; i != bargs.getExpressions().size(); ++i) {
                         BytecodeExpr be = (BytecodeExpr) bargs.getExpressions().get(i);
                         be.visit(mv);
-                        final ClassNode paramType = constructor1.getParameters()[i].getType();
+                        final ClassNode paramType = constructor1.getParameters()[i+first].getType();
                         final ClassNode type = be.getType();
                         box(type, mv);
                         be.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);

@@ -47,7 +47,7 @@ public class ClassNodeCache {
         try {
             initDgm(Class.forName(klazz));
         } catch (ClassNotFoundException e) { //
-            System.err.println("failed to load " + klazz);
+//            System.err.println("failed to load " + klazz);
         }
     }
 

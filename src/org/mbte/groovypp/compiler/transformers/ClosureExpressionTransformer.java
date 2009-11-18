@@ -32,7 +32,7 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
         newType.setDoCallMethod(_doCallMethod);
 
         if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
-            newType.addField("$owner", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+            newType.addField("this$0", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
 
         if (addDefault) {
             ClosureUtil.createDependentMethod(newType, _doCallMethod);

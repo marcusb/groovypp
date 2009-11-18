@@ -2,6 +2,9 @@ package groovy.util.concurrent
 
 import java.util.concurrent.locks.ReentrantLock
 
+/**
+ * 
+ */
 @Trait
 abstract class Lockable {
     final ReentrantLock lock = [:]

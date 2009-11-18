@@ -228,6 +228,13 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     public MethodNode findConstructor(ClassNode type, ClassNode[] args) {
         FastArray methods = ClassNodeCache.getConstructors(type);
 
+        if (type.redirect() instanceof InnerClassNode && (type.getModifiers() & ACC_STATIC) == 0) {
+            ClassNode newArgs [] = new ClassNode[args.length+1];
+            newArgs [0] = classNode;
+            System.arraycopy(args, 0, newArgs, 1, args.length);
+            args = newArgs;
+        }
+
         final Object res = MethodSelection.chooseMethod("<init>", methods, type, args);
         if (res instanceof MethodNode)
             return (MethodNode) res;

@@ -4,7 +4,6 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.AccessibilityCheck;
-import org.mbte.groovypp.compiler.ClosureMethodNode;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -46,8 +45,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
-                if (compiler.methodNode instanceof ClosureMethodNode) {
-                    return inCaseOfClosure(exp, compiler, propName);
+                if ((compiler.classNode instanceof InnerClassNode) && !compiler.classNode.isStaticClass()) {
+                    return inCaseOfInner(exp, compiler, propName);
                 } else {
                     if (compiler.methodNode.isStatic()) {
                         Parameter[] pp = compiler.methodNode.getParameters();
@@ -115,10 +114,10 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         return true;
     }
 
-    private Expression inCaseOfClosure(final PropertyExpression exp, final CompilerTransformer compiler, String propName) {
+    private Expression inCaseOfInner(final PropertyExpression exp, final CompilerTransformer compiler, String propName) {
         BytecodeExpr object;
 
-        ClassNode thisType = compiler.methodNode.getDeclaringClass();
+        ClassNode thisType = compiler.classNode;
         while (thisType != null) {
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
             if (prop != null) {
@@ -129,8 +128,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         mv.visitVarInsn(ALOAD, 0);
                         ClassNode curThis = compiler.methodNode.getDeclaringClass();
                         while (curThis != thisTypeFinal) {
-                            ClassNode next = curThis.getField("$owner").getType();
-                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "$owner", BytecodeHelper.getTypeDescription(next));
+                            ClassNode next = curThis.getField("this$0").getType();
+                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
                             curThis = next;
                         }
                     }
@@ -139,7 +138,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
             }
 
-            FieldNode ownerField = thisType.getField("$owner");
+            FieldNode ownerField = thisType.getField("this$0");
             thisType = ownerField == null ? null : ownerField.getType();
         }
 

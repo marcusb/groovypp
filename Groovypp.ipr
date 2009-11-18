@@ -1556,7 +1556,7 @@
   </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectKey">
-    <option name="state" value="svn://svn.bindows.net/groovycompiler/Groovypp.ipr" />
+    <option name="state" value="svn+ssh://alex@svn.bindows.net/srv/svn/groovycompiler/Groovypp.ipr" />
   </component>
   <component name="ProjectModuleManager">
     <modules>

@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -36,6 +37,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 }
                 if (ann.getClassNode().getNameWithoutPackage().equals("Typed")) {
                     typed = true;
+                    ann.getClassNode().setRedirect(TypeUtil.TYPED);
                 }
             }
 
@@ -63,7 +65,9 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
             InnerClassNode innerClassNode = new InnerClassNode(classNode, fullName, ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, ClassHelper.OBJECT_TYPE, new ClassNode[]{classNode}, null);
             AnnotationNode typedAnn = new AnnotationNode(TypeUtil.TYPED);
-//            typedAnn.addMember("debug", ConstantExpression.TRUE);
+            final Expression member = classNode.getAnnotations(TypeUtil.TYPED).get(0).getMember("debug");
+            if (member != null && member instanceof ConstantExpression && ((ConstantExpression)member).getValue().equals(Boolean.TRUE))
+                typedAnn.addMember("debug", ConstantExpression.TRUE);
             innerClassNode.addAnnotation(typedAnn);
 
             innerClassNode.setGenericsTypes(classNode.getGenericsTypes());

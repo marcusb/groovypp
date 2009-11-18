@@ -30,8 +30,6 @@ import java.util.List;
 public class CompileASTTransform implements ASTTransformation, Opcodes {
     private static final ClassNode COMPILE_TYPE = ClassHelper.make(Typed.class);
 
-    private OpenVerifier verifier = new OpenVerifier();
-
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         if (!(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
             throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
@@ -42,12 +40,12 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         LinkedList toProcess = new LinkedList();
         final ClassNode classNode;
 
-        verifier = new OpenVerifier();
+        OpenVerifier verifier = new OpenVerifier();
         if (parent instanceof ConstructorNode) {
             TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
             TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
 
-            classNode = ((ConstructorNode)parent).getDeclaringClass();
+            classNode = parent.getDeclaringClass();
             if (methodPolicy != TypePolicy.DYNAMIC) {
                 toProcess.addLast(parent);
                 toProcess.addLast(methodPolicy);
@@ -74,7 +72,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
                     verifier.visitClass(classNode);
 
-                    allMethods(source, toProcess, classNode, classPolicy);
+                    allMethods(source, toProcess, classNode, classPolicy, true);
                 } else {
                     if (parent instanceof PackageNode) {
                         TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
@@ -83,7 +81,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
                             verifier.visitClass(node);
 
-                            allMethods(source, toProcess, node, classPolicy);
+                            allMethods(source, toProcess, node, classPolicy, false);
                         }
                     } else {
                         int line = parent.getLineNumber();
@@ -133,7 +131,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         return;
     }
 
-    private void allMethods(SourceUnit source, LinkedList toProcess, ClassNode classNode, TypePolicy classPolicy) {
+    private void allMethods(SourceUnit source, LinkedList toProcess, ClassNode classNode, TypePolicy classPolicy, boolean inners) {
         for (MethodNode mn : classNode.getMethods()) {
             if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                 TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
@@ -150,6 +148,19 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 if (methodPolicy != TypePolicy.DYNAMIC) {
                     toProcess.addLast(mn);
                     toProcess.addLast(methodPolicy);
+                }
+            }
+        }
+
+        if (inners) {
+            for (ClassNode node : source.getAST().getClasses()) {
+                if (node instanceof InnerClassNode && classNode.equals(node.getOuterClass())) {
+                    TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
+
+                    OpenVerifier verifier = new OpenVerifier();
+                    verifier.visitClass(node);
+
+                    allMethods(source, toProcess, node, innerClassPolicy, inners);
                 }
             }
         }

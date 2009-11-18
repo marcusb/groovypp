@@ -246,7 +246,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         objType.setModule(compiler.classNode.getModule());
 
         if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
-            objType.addField("$owner", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+            objType.addField("this$0", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
 
         return objType;
     }

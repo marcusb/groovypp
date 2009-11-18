@@ -107,10 +107,10 @@ class ClosureExtractor extends ClassCodeExpressionTransformer implements Opcodes
         methodNode.getDeclaringClass().addMethod(_doCallMethod);
         newType.setDoCallMethod(_doCallMethod);
         if (currentClosureMethod != null)
-            newType.addField("$owner", Opcodes.ACC_PUBLIC, currentClosureMethod.getParameters()[0].getType(), null);
+            newType.addField("this$0", Opcodes.ACC_PUBLIC, currentClosureMethod.getParameters()[0].getType(), null);
         else
             if (!methodNode.isStatic() || classNode.getName().endsWith("$TraitImpl"))
-                newType.addField("$owner", Opcodes.ACC_PUBLIC, !methodNode.isStatic() ? classNode : methodNode.getParameters()[0].getType(), null);
+                newType.addField("this$0", Opcodes.ACC_PUBLIC, !methodNode.isStatic() ? classNode : methodNode.getParameters()[0].getType(), null);
 
 //        toProcess.add(_doCallMethod);
 //        toProcess.add(policy);

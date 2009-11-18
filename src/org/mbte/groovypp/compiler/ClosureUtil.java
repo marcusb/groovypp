@@ -4,10 +4,8 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -354,7 +352,7 @@ public class ClosureUtil {
                     Opcodes.ACC_PUBLIC,
                     constrParams,
                     ClassNode.EMPTY_ARRAY,
-                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit}, new VariableScope()));
+                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, new NullReturnStatement(ClassHelper.VOID_TYPE)}, new VariableScope()));
         newType.addConstructor(cn);
     }
 
@@ -385,12 +383,12 @@ public class ClosureUtil {
         final Parameter constrParams [] = new Parameter[fields.size()];
 
         int k = 0;
-        FieldNode ownerField = newType.getField("$owner");
+        FieldNode ownerField = newType.getField("this$0");
         if (ownerField != null)
-            constrParams [k++] = new Parameter(ownerField.getType(), "$owner");
+            constrParams [k++] = new Parameter(ownerField.getType(), "this$0");
         for (int i = 0; i != fields.size(); ++i) {
             final FieldNode fieldNode = fields.get(i);
-            if (!fieldNode.getName().equals("$owner"))
+            if (!fieldNode.getName().equals("this$0"))
                 constrParams [k++] = new Parameter(fieldNode.getType(), fieldNode.getName());
         }
         return constrParams;
@@ -408,7 +406,7 @@ public class ClosureUtil {
         for (int i = 0; i != constrParams.length; i++) {
             final String name = constrParams[i].getName();
 
-            if ("$owner".equals(name)) {
+            if ("this$0".equals(name)) {
                 mv.visitVarInsn(Opcodes.ALOAD,0);
             }
             else {
