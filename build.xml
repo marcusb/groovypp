@@ -139,7 +139,7 @@
     <target  name="run.tests.compiler" depends="compile.tests.compiler" description="Runs unit tests for compiler">
         <junit printsummary="yes" fork="yes" forkmode="perBatch">
             <classpath>
-                <path refid="run.compiler.tests.classpath" />
+                <path refid="run.stdlibtest.tests.classpath" />
             </classpath>
 
             <batchtest todir="${compiler.test.reports}">
@@ -161,7 +161,7 @@
     <target  name="run.tests.stdlib" depends="compile.tests.stdlib" description="Runs unit tests for StdLib">
         <junit printsummary="yes" fork="yes" forkmode="perBatch">
             <classpath>
-                <path refid="run.stdlib.tests.classpath" />
+                <path refid="run.stdlibtest.tests.classpath" />
             </classpath>
 
             <batchtest todir="${stdlib.test.reports}">
