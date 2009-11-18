@@ -23,12 +23,11 @@ public class FiltersTest extends GroovyShellTestCase {
         @Typed
         class C extends GroovyTestCase {
           class Job {
-            List<Job> children = [new Job()]
-            def foo() {null}
+            List<String> children = [""]
           }
           void test() {
             def job = new Job()
-            assertFalse(job.children.any {it.foo()})
+            assertFalse(job.children.any {it.toLowerCase()})
           }
         }
         new C().test()
