@@ -1,18 +1,16 @@
-/*
 package groovy.util.concurrent
 
 import java.util.concurrent.LinkedBlockingDeque
 
-*/
 /**
  * @author ven
- *//*
+ */
 
 @Typed
 class DivideAndConquerProblemSolver {
 
   def DivideAndConquerProblemSolver(SelfRecurringProblem problem, int nWorkers) {
-    workers = (1..nWorkers).map{ new Worker(it - 1) }
+    workers = (1..nWorkers).map{ new Worker(it - 1) }.asList ()
 
     // Prevent work stealing happening immediately, distribute the work.
     def jobs = [new Job(problem, null)]
@@ -93,6 +91,3 @@ class DivideAndConquerProblemSolver {
 
   List<Worker> workers
 }
-
-
-*/

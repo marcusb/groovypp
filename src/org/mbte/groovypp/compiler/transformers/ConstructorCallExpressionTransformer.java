@@ -140,6 +140,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         if (constructor != null) {
             final MethodNode constructor1 = constructor;
+            final ClassNode compilerClass = compiler.classNode;
             return new BytecodeExpr(exp, exp.getType()) {
                 protected void compile(MethodVisitor mv) {
                     final String classInternalName = BytecodeHelper.getClassInternalName(getType());
@@ -149,6 +150,11 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     int first = 0;
                     if ((getType().getModifiers() & ACC_STATIC) == 0 && getType().redirect() instanceof InnerClassNode) {
                         mv.visitVarInsn(ALOAD, 0);
+                        for (ClassNode tp = compilerClass ; tp != getType().getOuterClass(); ) {
+                            final ClassNode outerTp = tp.getOuterClass();
+                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
+                            tp = outerTp;
+                        }
                         first = 1;
                     }
 

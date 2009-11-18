@@ -93,7 +93,7 @@ public class PropertyUtil {
 
     private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value) {
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError("Can't resolve property " + propName, exp);
+            compiler.addError("Can't find property " + propName + " of class " + object.getType().getName(), exp);
             return null;
         } else
             return createDynamicCall(exp, propName, object, value);

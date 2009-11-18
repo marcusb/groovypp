@@ -230,7 +230,14 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
         if (type.redirect() instanceof InnerClassNode && (type.getModifiers() & ACC_STATIC) == 0) {
             ClassNode newArgs [] = new ClassNode[args.length+1];
-            newArgs [0] = classNode;
+
+            for (ClassNode tp = classNode ; tp != null && tp != type.getOuterClass(); ) {
+                final ClassNode outerTp = tp.getOuterClass();
+                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
+                tp = outerTp;
+            }
+
+            newArgs [0] = type.getOuterClass();
             System.arraycopy(args, 0, newArgs, 1, args.length);
             args = newArgs;
         }

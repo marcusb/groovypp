@@ -1,11 +1,7 @@
 package org.mbte.groovypp.compiler;
 
 import groovy.lang.TypePolicy;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.*;
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import static org.codehaus.groovy.ast.ClassHelper.short_TYPE;
 import org.codehaus.groovy.ast.expr.*;
@@ -130,7 +126,12 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     @Override
     public void visitBlockStatement(BlockStatement block) {
         compileStack.pushVariableScope(block.getVariableScope());
-        super.visitBlockStatement(block);
+        for (Statement statement : block.getStatements() ) {
+            if (statement instanceof BytecodeSequence)
+                visitBytecodeSequence((BytecodeSequence) statement);
+            else
+                statement.visit(this);
+        }
         compileStack.pop();
     }
 
