@@ -27,7 +27,7 @@ public class FiltersTest extends GroovyShellTestCase {
           }
           void test() {
             def job = new Job()
-            assertFalse(job.children.any {it.toLowerCase()})
+            assertFalse(job.children.any {it.toLowerCase().size() > 0})
           }
         }
         new C().test()
