@@ -1,10 +1,13 @@
+/*
 package groovy.util.concurrent
 
 import java.util.concurrent.LinkedBlockingDeque
 
+*/
 /**
  * @author ven
- */
+ *//*
+
 
 @Typed
 class DivideAndConquerProblemSolver {
@@ -52,7 +55,7 @@ class DivideAndConquerProblemSolver {
       this.result = result
       if (parent) {
         assert parent.children
-        if (!parent.children.any{it.result == null}) {
+        if (!parent.children.any{Job job -> job.result == null}) {
           parent.setResult(problem.combine(parent.children.map{it.result}))
           parent.children = null
         }
@@ -91,3 +94,4 @@ class DivideAndConquerProblemSolver {
 
   List<Worker> workers
 }
+*/

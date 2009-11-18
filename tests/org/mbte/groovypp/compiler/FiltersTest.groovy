@@ -17,4 +17,21 @@ public class FiltersTest extends GroovyShellTestCase {
         new C().test()
         """)
   }
+
+  void testInner() {
+    shell.evaluate("""
+        @Typed
+        class C extends GroovyTestCase {
+          class Job {
+            List<Job> children = [new Job()]
+            def foo() {null}
+          }
+          void test() {
+            def job = new Job()
+            assertFalse(job.children.any {it.foo()})
+          }
+        }
+        new C().test()
+        """)
+  }
 }
