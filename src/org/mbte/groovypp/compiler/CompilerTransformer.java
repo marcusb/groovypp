@@ -416,75 +416,11 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             return be;
 
         if (type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE)) {
-            if (ClassHelper.isPrimitiveType(be.getType())) {
-                return new BytecodeExpr(be, type) {
-                    protected void compile(MethodVisitor mv) {
-                        ClassNode btype = be.getType();
-                        if (btype == ClassHelper.long_TYPE) {
-                            be.visit(mv);
-                            mv.visitInsn(L2I);
-                        } else if (btype == ClassHelper.float_TYPE) {
-                            mv.visitInsn(ICONST_0);
-                            be.visit(mv);
-                            mv.visitInsn(FCONST_0);
-                            mv.visitInsn(FCMPG);
-                            final Label falseL = new Label();
-                            mv.visitJumpInsn(IFEQ, falseL);
-                            mv.visitInsn(POP);
-                            mv.visitInsn(ICONST_1);
-                            mv.visitLabel(falseL);
-                        } else if (btype == ClassHelper.double_TYPE) {
-                            mv.visitInsn(ICONST_0);
-                            be.visit(mv);
-                            mv.visitInsn(DCONST_0);
-                            mv.visitInsn(DCMPG);
-                            final Label falseL = new Label();
-                            mv.visitJumpInsn(IFEQ, falseL);
-                            mv.visitInsn(POP);
-                            mv.visitInsn(ICONST_1);
-                            mv.visitLabel(falseL);
-                        } else {
-                            be.visit(mv);
-                        }
+            return castToBoolean(be, type);
+        }
 
-                        if (type.equals(ClassHelper.Boolean_TYPE))
-                            box(ClassHelper.boolean_TYPE, mv);
-                    }
-                };
-            }
-            else {
-                MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(be, be.getType()) {
-                protected void compile(MethodVisitor mv) {
-                }        }, "asBoolean", ArgumentListExpression.EMPTY_ARGUMENTS);
-                safeCall.setSourcePosition(be);
-
-                final BytecodeExpr call = (BytecodeExpr) transform(safeCall);
-
-                if (!call.getType().equals(ClassHelper.boolean_TYPE))
-                    addError("asBoolean should return 'boolean'", be);
-
-                return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
-                    protected void compile(MethodVisitor mv) {
-                        be.visit(mv);
-                        mv.visitInsn(DUP);
-                        Label nullLabel = new Label(), endLabel = new Label ();
-
-                        mv.visitJumpInsn(IFNULL, nullLabel);
-
-                        call.visit(mv);
-                        mv.visitJumpInsn(GOTO, endLabel);
-
-                        mv.visitLabel(nullLabel);
-                        mv.visitInsn(POP);
-                        mv.visitInsn(ICONST_0);
-
-                        mv.visitLabel(endLabel);
-
-                        if (type.equals(ClassHelper.Boolean_TYPE))
-                            box(ClassHelper.boolean_TYPE, mv);
-                    }
-                };
-            }
+        if (type.equals(ClassHelper.STRING_TYPE)) {
+            return castToString(be, type);
         }
 
         if (TypeUtil.isAssignableFrom(type, be.getType())) {
@@ -500,6 +436,111 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
         addError("Can not convert " + be.getType().getName() + " to " + type.getName(), be);
         return null;
+    }
+
+    private BytecodeExpr castToBoolean(final BytecodeExpr be, final ClassNode type) {
+        if (ClassHelper.isPrimitiveType(be.getType())) {
+            return new BytecodeExpr(be, type) {
+                protected void compile(MethodVisitor mv) {
+                    ClassNode btype = be.getType();
+                    if (btype == ClassHelper.long_TYPE) {
+                        be.visit(mv);
+                        mv.visitInsn(L2I);
+                    } else if (btype == ClassHelper.float_TYPE) {
+                        mv.visitInsn(ICONST_0);
+                        be.visit(mv);
+                        mv.visitInsn(FCONST_0);
+                        mv.visitInsn(FCMPG);
+                        final Label falseL = new Label();
+                        mv.visitJumpInsn(IFEQ, falseL);
+                        mv.visitInsn(POP);
+                        mv.visitInsn(ICONST_1);
+                        mv.visitLabel(falseL);
+                    } else if (btype == ClassHelper.double_TYPE) {
+                        mv.visitInsn(ICONST_0);
+                        be.visit(mv);
+                        mv.visitInsn(DCONST_0);
+                        mv.visitInsn(DCMPG);
+                        final Label falseL = new Label();
+                        mv.visitJumpInsn(IFEQ, falseL);
+                        mv.visitInsn(POP);
+                        mv.visitInsn(ICONST_1);
+                        mv.visitLabel(falseL);
+                    } else {
+                        be.visit(mv);
+                    }
+
+                    if (type.equals(ClassHelper.Boolean_TYPE))
+                        box(ClassHelper.boolean_TYPE, mv);
+                }
+            };
+        }
+        else {
+            MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(be, be.getType()) {
+            protected void compile(MethodVisitor mv) {
+            }        }, "asBoolean", ArgumentListExpression.EMPTY_ARGUMENTS);
+            safeCall.setSourcePosition(be);
+
+            final BytecodeExpr call = (BytecodeExpr) transform(safeCall);
+
+            if (!call.getType().equals(ClassHelper.boolean_TYPE))
+                addError("asBoolean should return 'boolean'", be);
+
+            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    be.visit(mv);
+                    mv.visitInsn(DUP);
+                    Label nullLabel = new Label(), endLabel = new Label ();
+
+                    mv.visitJumpInsn(IFNULL, nullLabel);
+
+                    call.visit(mv);
+                    mv.visitJumpInsn(GOTO, endLabel);
+
+                    mv.visitLabel(nullLabel);
+                    mv.visitInsn(POP);
+                    mv.visitInsn(ICONST_0);
+
+                    mv.visitLabel(endLabel);
+
+                    if (type.equals(ClassHelper.Boolean_TYPE))
+                        box(ClassHelper.boolean_TYPE, mv);
+                }
+            };
+        }
+    }
+
+    private BytecodeExpr castToString(final BytecodeExpr be, final ClassNode type) {
+        MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(be, TypeUtil.wrapSafely(be.getType())) {
+        protected void compile(MethodVisitor mv) {
+            if (ClassHelper.isPrimitiveType(be.getType()))
+                box(be.getType(), mv);
+        }        }, "toString", ArgumentListExpression.EMPTY_ARGUMENTS);
+        safeCall.setSourcePosition(be);
+
+        final BytecodeExpr call = (BytecodeExpr) transform(safeCall);
+
+        if (!call.getType().equals(ClassHelper.STRING_TYPE))
+            addError("asBoolean should return 'java.lang.String'", be);
+
+        return new BytecodeExpr(be, ClassHelper.STRING_TYPE) {
+            protected void compile(MethodVisitor mv) {
+                be.visit(mv);
+                mv.visitInsn(DUP);
+                Label nullLabel = new Label(), endLabel = new Label ();
+
+                mv.visitJumpInsn(IFNULL, nullLabel);
+
+                call.visit(mv);
+                mv.visitJumpInsn(GOTO, endLabel);
+
+                mv.visitLabel(nullLabel);
+                mv.visitInsn(POP);
+                mv.visitLdcInsn("null");
+
+                mv.visitLabel(endLabel);
+            }
+        };
     }
 
     public boolean samePackage(FieldNode fieldNode) {

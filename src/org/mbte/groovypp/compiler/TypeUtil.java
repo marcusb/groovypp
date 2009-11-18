@@ -50,8 +50,11 @@ public class TypeUtil {
         if (classToTransformFrom == null) return true;
         if (classToTransformFrom == TypeUtil.NULL_TYPE) return true;
 
-        if (classToTransformTo.equals(classToTransformFrom) ||
-            classToTransformTo.equals(OBJECT_TYPE))
+        if (classToTransformTo.equals(classToTransformFrom)||
+            classToTransformTo.equals(OBJECT_TYPE) ||
+            classToTransformTo.equals(boolean_TYPE) ||
+            classToTransformTo.equals(Boolean_TYPE) ||
+            classToTransformTo.equals(STRING_TYPE))
             return true;
 
         classToTransformTo = TypeUtil.wrapSafely(classToTransformTo);
