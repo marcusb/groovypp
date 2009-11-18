@@ -141,7 +141,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 MethodNode mn = (MethodNode) ms.get(i);
                 if (mn.isStatic()) {
                     final Parameter[] parameters = mn.getParameters();
-                    if (parameters.length > 0 && objectType.isDerivedFrom(parameters[0].getType())) {
+                    if (parameters.length > 0 && (objectType.isDerivedFrom(parameters[0].getType()) || objectType.implementsInterface(parameters[0].getType()))) {
                         if (candidates == null)
                             candidates = createDGM(mn);
                         else if (candidates instanceof FastArray) {
@@ -231,9 +231,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         if (type.redirect() instanceof InnerClassNode && (type.getModifiers() & ACC_STATIC) == 0) {
             ClassNode newArgs [] = new ClassNode[args.length+1];
 
-            for (ClassNode tp = classNode ; tp != null && tp != type.getOuterClass(); ) {
+            for (ClassNode tp = classNode ; tp != null && !tp.equals(type.redirect().getOuterClass()); ) {
                 final ClassNode outerTp = tp.getOuterClass();
-                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
+
                 tp = outerTp;
             }
 
