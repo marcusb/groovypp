@@ -81,7 +81,8 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
     public abstract Expression transform(T exp, CompilerTransformer compiler);
 
     public BytecodeExpr transformLogical(T exp, CompilerTransformer compiler, final Label label, final boolean onTrue) {
-        final BytecodeExpr be = (BytecodeExpr) transform(exp, compiler);
+        final BytecodeExpr be;
+        be = (BytecodeExpr) transform(exp, compiler);
         final ClassNode type = be.getType();
 
         if (type == ClassHelper.VOID_TYPE) {

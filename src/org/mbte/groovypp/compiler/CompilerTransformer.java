@@ -12,7 +12,6 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
@@ -63,20 +62,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         nestedLevel++;
         try {
             Expression result = transformExpression(exp, this);
-            if (nestedLevel == 1) {
-                if (!pendingClosures.isEmpty()) {
-                    for (CompiledClosureBytecodeExpr pendingClosure : pendingClosures) {
-                        ClosureClassNode type = (ClosureClassNode) pendingClosure.getType();
-                        ClosureMethodNode doCallMethod = type.getDoCallMethod();
-                        Statement code = doCallMethod.getCode();
-                        if (!(code instanceof BytecodeSequence)) {
-                            ClosureUtil.improveClosureType(type, ClassHelper.CLOSURE_TYPE);
-                            StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
-                        }
-                    }
-                    pendingClosures.clear();
-                }
-            }
+            processPendingClosures();
             return result;
         }
         catch (Throwable e) {
@@ -89,14 +75,37 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
     }
 
+    private void processPendingClosures() {
+        if (nestedLevel == 1) {
+            if (!pendingClosures.isEmpty()) {
+                for (CompiledClosureBytecodeExpr pendingClosure : pendingClosures) {
+                    ClosureClassNode type = (ClosureClassNode) pendingClosure.getType();
+                    ClosureMethodNode doCallMethod = type.getDoCallMethod();
+                    Statement code = doCallMethod.getCode();
+                    if (!(code instanceof BytecodeSequence)) {
+                        ClosureUtil.improveClosureType(type, ClassHelper.CLOSURE_TYPE);
+                        StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
+                    }
+                }
+                pendingClosures.clear();
+            }
+        }
+    }
+
     public BytecodeExpr transformLogical(Expression exp, Label label, boolean onTrue) {
+        nestedLevel++;
         try {
-            return ExprTransformer.transformLogicalExpression(exp, this, label, onTrue);
+            final BytecodeExpr result = ExprTransformer.transformLogicalExpression(exp, this, label, onTrue);
+            processPendingClosures();
+            return result;
         }
         catch (Throwable e) {
             e.printStackTrace();
             addError(e.getMessage(), exp);
             return null;
+        }
+        finally {
+            nestedLevel--;
         }
     }
 

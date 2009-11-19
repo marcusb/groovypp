@@ -34,6 +34,8 @@ public class FiltersTest extends GroovyShellTestCase {
         }
     }
   }
+
+    "" // dummy return
         """)
   }
 }
