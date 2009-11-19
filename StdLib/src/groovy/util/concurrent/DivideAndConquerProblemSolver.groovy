@@ -1,12 +1,10 @@
-/*
 package groovy.util.concurrent
 
 import java.util.concurrent.LinkedBlockingDeque
 
-*/
 /**
- * @author ven
- *//*
+* @author ven
+*/
 
 @Typed
 class DivideAndConquerProblemSolver {
@@ -97,4 +95,3 @@ class DivideAndConquerProblemSolver {
 
   List<Worker> workers
 }
-*/
