@@ -21,16 +21,19 @@ public class FiltersTest extends GroovyShellTestCase {
   void testInner() {
     shell.evaluate("""
         @Typed
-        class C extends GroovyTestCase {
-          class Job {
-            List<String> children = [""]
-          }
-          void test() {
-            def job = new Job()
-            assertFalse(job.children.any {it.toLowerCase().size() > 0})
-          }
+        class Job {
+    List<Job> children
+    Job parent
+    Object result = null
+
+
+    def setResult(Object result) {
+      this.result = result
+        if (!parent.children.any{it.result == null}) {
+
         }
-        new C().test()
+    }
+  }
         """)
   }
 }
