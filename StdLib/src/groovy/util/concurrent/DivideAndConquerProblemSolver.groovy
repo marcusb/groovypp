@@ -8,7 +8,6 @@ import java.util.concurrent.LinkedBlockingDeque
  * @author ven
  *//*
 
-
 @Typed
 class DivideAndConquerProblemSolver {
 
@@ -55,7 +54,7 @@ class DivideAndConquerProblemSolver {
       this.result = result
       if (parent) {
         assert parent.children
-        if (!parent.children.any{Job job -> job.result == null}) {
+        if (!parent.children.any{it.result == null}) {
           parent.setResult(problem.combine(parent.children.map{it.result}))
           parent.children = null
         }
@@ -84,7 +83,11 @@ class DivideAndConquerProblemSolver {
         }
         if (!job) break
         if (job.problem.complex()) {
-          job.problem.sub().each{ jobs.addFirst(new Job(it, job)) }
+          job.problem.sub().each{
+            def child = new Job(it, job)
+            jobs.addFirst(child)
+            job.children << child
+          }
         } else {
           job.setResult(job.problem.solve());
         }

@@ -8,5 +8,5 @@ interface SelfRecurringProblem {
   boolean complex()
   List<SelfRecurringProblem> sub()
   Object solve()
-  Object combine(List subResults)
+  Object combine(Collection subResults)
 }
