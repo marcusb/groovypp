@@ -11,12 +11,13 @@ class DivideAndConquerTest extends GroovyShellTestCase {
     }
   }
 
-  def createTree(int height, int depth) {
-    def children = (0 .. (int) (Math.random() * depth / height)).map { createTree(height+1, depth) }
+  Node createTree(int height, int depth) {
+    def nChildren = ((int) (Math.random() * depth / height)) - 1
+    def children = nChildren < 0 ? Collections.emptyList() : (0 .. nChildren).map { createTree(height+1, depth) }
     new Node(children)
   }
 
-  def testTreeCreate() {
+  void testTreeCreate() {
     assertNotNull createTree(1, 5)
   }
 
@@ -29,8 +30,9 @@ class DivideAndConquerTest extends GroovyShellTestCase {
     ]
   }
 
-  def testSolve() {
-    def problem = calcHeightProblem(createTree(1, 5))
+  void testSolve() {
+    def node = createTree(1, 5)
+    def problem = calcHeightProblem(node)
     int height = new DivideAndConquerProblemSolver(problem, 3).solve()
     assertTrue(height > 0)
   }

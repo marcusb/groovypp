@@ -43,18 +43,18 @@ class DivideAndConquerProblemSolver {
   class Job {
     SelfRecurringProblem problem
     Job parent
-    List<Job> children
+    List<Job> children = new ArrayList<Job>()
     Object result = null
 
-    def Job(SelfRecurringProblem problem, Job parent) {
+    Job(SelfRecurringProblem problem, Job parent) {
       this.problem = problem
       this.parent = parent
     }
 
-    def setResult(Object result) {
+    void setResult(Object result) {
       this.result = result
       if (parent) {
-        assert parent.children
+        assert parent.children.size() > 0
         if (!parent.children.any{it.result == null}) {
           parent.setResult(problem.combine(parent.children.map{it.result}))
           parent.children = null
