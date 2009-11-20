@@ -326,7 +326,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     return foundMethod;
                 }
                 else {
-                    if (oarg.equals(TypeUtil.TMAP)) {
+                    if (oarg.implementsInterface(TypeUtil.TMAP)) {
                         foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
 
                         if (foundMethod != null) {
@@ -343,7 +343,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             if (p.length == argTypes.length) {
                                 ClassNode argType = p[i].getType();
 
-                                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
                                 GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
                                 if (methodTypeVars != null && methodTypeVars.length > 0) {
                                     ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
@@ -363,12 +362,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                             formals.toArray(new ClassNode[formals.size()]),
                                             instantiateds.toArray(new ClassNode[instantiateds.size()]));
                                     argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
-                                }
-                                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
-                                if (one == null || doCall == null) {
-                                    foundMethod = null;
-                                } else {
-                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
                                 }
                             }
                         }

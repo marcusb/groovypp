@@ -194,13 +194,18 @@ m ()
             float f
 
             String toString () { "[i: \$i, f: \$f]" }
+
+            boolean testSameI(U other) {
+               i == other.i
+            }
         }
 
         @Typed
         def test () {
             List<U> l = []
             def map = [:]
-            U a = [:]
+            U a = [i:12]
+            a.testSameI ([f:3])
             def b = (U) [:]
             l << [i:0, f:12]
             l << [i:0] << a << b
