@@ -5,7 +5,6 @@ import java.util.concurrent.LinkedBlockingDeque
 /**
 * @author ven
 */
-
 @Typed
 class DivideAndConquerProblemSolver {
 
@@ -13,7 +12,8 @@ class DivideAndConquerProblemSolver {
     workers = (1..nWorkers).map{ new Worker(it - 1) }.asList ()
 
     // Prevent work stealing happening immediately, distribute the work.
-    List<Job> jobs = [new Job(problem, null)]
+    root = new Job(problem, null)
+    List<Job> jobs = [root]
     List<Job> atomics = []
     while (jobs.size() > 0 && jobs.size() < nWorkers) {
       jobs = removeAtomic(jobs, atomics)
@@ -21,12 +21,15 @@ class DivideAndConquerProblemSolver {
     }
     for (int i = 0; i < jobs.size(); ++i) workers[i % nWorkers].jobs.addFirst(jobs[i])
     for (int i = 0; i < atomics.size(); ++i) workers[i % nWorkers].jobs.addFirst(atomics[i])
+  }
 
+  def solve() {
     workers.map {
       def t = new Thread(it)
       t.start()
       t
     }.each { it.join() }
+    root.result
   }
 
   List<Job> removeAtomic(List<Job> jobs, List atomics) {
@@ -94,4 +97,5 @@ class DivideAndConquerProblemSolver {
   }
 
   List<Worker> workers
+  Job root
 }
