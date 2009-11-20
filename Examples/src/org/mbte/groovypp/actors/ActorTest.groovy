@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.Callable
+import groovy.util.concurrent.Lockable
 
 public class ActorTest extends GroovyTestCase {
   void testActor() {
@@ -48,6 +49,30 @@ public class ActorTest extends GroovyTestCase {
       printer.send(new PrintMessage(value: "$index $it"))
     }
   }
+}
+
+@Trait
+abstract class AbstractActor extends Lockable {
+    final LinkedBlockingQueue<ActorMessage> queue = [:]
+
+    static class ActorMessage<R> {
+        AbstractActor sender
+        def payload
+        Function1<R,?> continuation
+    }
+
+    void post (def message, Function0 continuation = null) {
+        queue << [sender: Thread.currentThread ().currentActor, payload:message, continuation:continuation]
+    }
+
+    public <R,F> F send (def message, Function1<R,F> continuation) {
+        CountDownLatch wait = [1]
+        post (message) { R result ->
+            wait.countDown()
+        }
+        wait.await()
+        continuation [res]
+    }
 }
 
 abstract class AsyncJob {
@@ -180,6 +205,10 @@ abstract class Reaction extends HashMap {
   }
 }
 
+@Trait
+abstract class Continuation extends Function0 {
+}
+
 class Execution {
   final CountDownLatch sync = new CountDownLatch(1)
   final AtomicInteger count = new AtomicInteger(1)
@@ -211,18 +240,14 @@ class Execution {
   }
 }
 
-interface Continuation {
-  def action(Object data)
-}
-
 interface AsyncHandler {
   Object handleMessage(AsyncMessage msg)
 }
 
 class AsyncMessage {
-  Actor sender
-  Actor receiver
-  Continuation whenDone
+    Actor sender
+    Actor receiver
+    Function0 whenDone
 }
 
 final class SqureMessage extends AsyncMessage {
@@ -347,22 +372,6 @@ class WorkerThread extends Thread {
           job.execution.decrement()
         currentJob = null
       }
-    }
-  }
-}
-
-@Category(Lock)
-public class ConcurrentLockCategory {
-  /**
-   * Execute given calculation under lock and returns calculated value
-   */
-  public <V> V withLock(Callable<V> action) {
-    try {
-      lock()
-      action.call()
-    }
-    finally {
-      unlock()
     }
   }
 }

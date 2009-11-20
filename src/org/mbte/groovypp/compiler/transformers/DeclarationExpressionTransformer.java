@@ -62,6 +62,10 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                 right = compiler.cast(right, ve.getType());
                 return new Static(exp, ve, right, compiler);
             } else {
+                if (right instanceof MapExpressionTransformer.UntransformedMapExpr) {
+                    right = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)right).exp, compiler);
+                }
+
                 // let's try local type inference
                 compiler.getLocalVarInferenceTypes().add(ve, TypeUtil.wrapSafely(right.getType()));
                 return new Dynamic(exp, right, compiler, ve);

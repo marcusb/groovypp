@@ -16,7 +16,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private static final ArgumentListExpression EMPTY_ARGS = new ArgumentListExpression();
 
     public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
-        super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS));
+        super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS, compiler));
         this.methodNode = methodNode;
         this.object = object;
         this.needsObjectIfStatic = needsObjectIfStatic;

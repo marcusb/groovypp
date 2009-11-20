@@ -17,6 +17,7 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
+import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
 import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -423,6 +424,23 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     public BytecodeExpr cast(final BytecodeExpr be, final ClassNode type) {
         if (TypeUtil.isDirectlyAssignableFrom(type, be.getType()))
             return be;
+
+        if (be instanceof MapExpressionTransformer.UntransformedMapExpr) {
+            if (TypeUtil.isDirectlyAssignableFrom(type, TypeUtil.LINKED_HASH_MAP_TYPE)
+                || type.implementsInterface(ClassHelper.MAP_TYPE)
+                || type.equals(ClassHelper.MAP_TYPE)
+                || type.equals(ClassHelper.boolean_TYPE)
+                || type.equals(ClassHelper.Boolean_TYPE)
+                || type.equals(ClassHelper.STRING_TYPE)
+                    ) {
+                return cast(new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)be).exp,this), type);
+            }
+            else {
+                final CastExpression exp = new CastExpression(type, ((MapExpressionTransformer.UntransformedMapExpr)be).exp);
+                exp.setSourcePosition(be);
+                return (BytecodeExpr) transform(exp);
+            }
+        }
 
         if (type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE)) {
             return castToBoolean(be, type);

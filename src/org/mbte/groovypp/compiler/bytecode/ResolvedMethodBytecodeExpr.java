@@ -20,7 +20,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final ArgumentListExpression bargs;
 
     public ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
-        super(parent, getReturnType(methodNode, object, bargs));
+        super(parent, getReturnType(methodNode, object, bargs, compiler));
         this.methodNode = methodNode;
         this.object = object;
         this.methodName = methodNode.getName();
@@ -129,19 +129,20 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs) {
-        if (methodNode instanceof ClassNodeCache.DGM) {
-            ClassNodeCache.DGM dgm = (ClassNodeCache.DGM) methodNode;
-            methodNode = dgm.original;
-            ArgumentListExpression newBargs = new ArgumentListExpression();
-            newBargs.getExpressions().add(object);
-            newBargs.getExpressions().addAll(bargs.getExpressions());
-            bargs = newBargs;
-            object = null;
-        }
+    public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
         ClassNode returnType = methodNode.getReturnType();
         if (returnType.equals(ClassHelper.VOID_TYPE))
             return ClassHelper.VOID_TYPE;
+
+        boolean removeFirstArgAtTheEnd = false;
+        if (methodNode instanceof ClassNodeCache.DGM) {
+            ClassNodeCache.DGM dgm = (ClassNodeCache.DGM) methodNode;
+            methodNode = dgm.original;
+            bargs.getExpressions().add(0, object);
+            object = null;
+            removeFirstArgAtTheEnd = true;
+        }
+
         GenericsType[] typeVars = methodNode.getGenericsTypes();
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
@@ -164,7 +165,21 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             }
             ClassNode[] bindings = TypeUnification.inferTypeArguments(typeVars, paramTypes, argTypes);
             returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
+
+            for (int i = 0; i < length; i++) {
+                ClassNode paramType = TypeUtil.getSubstitutedType(paramTypes[i], methodNode, bindings);
+                if (object != null) {
+                    paramType = TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(), object.getType());
+                }
+                bargs.getExpressions().set(i, compiler.cast((BytecodeExpr) bargs.getExpressions().get(i), paramType));
+            }
+
         }
+
+        if (removeFirstArgAtTheEnd) {
+            bargs.getExpressions().remove(0);
+        }
+
         return object != null ? TypeUtil.getSubstitutedType(returnType,
                 methodNode.getDeclaringClass(), object.getType()) : returnType;
     }

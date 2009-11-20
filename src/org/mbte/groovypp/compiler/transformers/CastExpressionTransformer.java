@@ -24,7 +24,7 @@ import java.util.*;
  * e) primitive types goes via boxing and Number
  */
 public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
-    public BytecodeExpr transform(final CastExpression exp, CompilerTransformer compiler) {
+    public BytecodeExpr transform(CastExpression exp, CompilerTransformer compiler) {
 
         if (exp.getExpression() instanceof ListExpression) {
             ListExpression listExpression = (ListExpression) exp.getExpression();
@@ -61,6 +61,10 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
              && !exp.getType().equals(ClassHelper.MAP_TYPE)
              && !TypeUtil.isAssignableFrom(exp.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
                 return buildClassFromMap (mapExpression, exp.getType(), compiler);
+            }
+            else {
+                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) exp.getExpression(), compiler);
+                return standardCast(exp, compiler, inner);
             }
         }
 

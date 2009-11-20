@@ -185,4 +185,31 @@ m ()
       assertEquals (res[true], ["1", "2", "4"])
       assertEquals (res[false],[3, 0])
     }
+
+
+    void testMapSyntax() {
+      def res = shell.evaluate ("""
+        @Typed class U {
+            int i
+            float f
+
+            String toString () { "[i: \$i, f: \$f]" }
+        }
+
+        @Typed
+        def test () {
+            List<U> l = []
+            def map = [:]
+            U a = [:]
+            def b = (U) [:]
+            l << [i:0, f:12]
+            l << [i:0] << a << b
+//            l.addAll ( [[i:1, f:12], [i:2, f:13]] )
+            l
+        }
+
+        test ()
+      """)
+        println res
+    }
 }

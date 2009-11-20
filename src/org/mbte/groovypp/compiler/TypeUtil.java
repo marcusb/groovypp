@@ -21,7 +21,6 @@ public class TypeUtil {
     public static final ClassNode EX_LINKED_HASH_MAP_TYPE = make(LinkedHashMapEx.class);
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
-    public static final ClassNode TCLOSURE = make(TypedClosure.class);
     public static final ClassNode RANGE_TYPE = make(Range.class);
     public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
@@ -37,11 +36,20 @@ public class TypeUtil {
     public static final ClassNode LINKED_LIST_TYPE = make(LinkedList.class);
     public static final ClassNode LINKED_HASH_SET_TYPE = make(LinkedHashSet.class);
     public static final ClassNode MATCHER = make(Matcher.class);
+    public static final ClassNode TMAP = make(TypedMap.class);
+    public static final ClassNode TLIST = make(TypedList.class);
+    public static final ClassNode TCLOSURE = make(TypedClosure.class);
 
     public static class Null {
     }
 
     public static interface TypedClosure {
+    }
+
+    public static interface TypedMap {
+    }
+
+    public static interface TypedList {
     }
 
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
@@ -77,6 +85,12 @@ public class TypeUtil {
         } else if (classToTransformTo.isArray() && classToTransformFrom.isArray()) {
             return isAssignableFrom(classToTransformTo.getComponentType(), classToTransformFrom.getComponentType());
         }
+
+        if (classToTransformFrom.implementsInterface(TMAP))
+            return TypeUtil.isDirectlyAssignableFrom(classToTransformTo, TypeUtil.LINKED_HASH_MAP_TYPE);
+
+        if (classToTransformTo.implementsInterface(TLIST))
+            return TypeUtil.isDirectlyAssignableFrom(classToTransformTo, TypeUtil.ARRAY_LIST_TYPE);
 
         return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);
     }
