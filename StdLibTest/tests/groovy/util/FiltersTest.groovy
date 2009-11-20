@@ -1,4 +1,4 @@
-package org.mbte.groovypp.compiler
+package groovy.util
 
 public class FiltersTest extends GroovyShellTestCase {
   void testSimple() {
