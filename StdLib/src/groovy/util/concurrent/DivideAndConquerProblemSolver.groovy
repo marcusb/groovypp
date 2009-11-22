@@ -1,7 +1,5 @@
 package groovy.util.concurrent
 
-import java.util.concurrent.LinkedBlockingDeque
-
 /**
 * @author ven
 */
@@ -56,6 +54,7 @@ class DivideAndConquerProblemSolver {
       if (parent) {
         assert parent.children.size() > 0
         if (!parent.children.any{it.result == null}) {
+          assert parent != this
           parent.setResult(problem.combine(parent.children.map{it.result}))
           parent.children = null
         }
@@ -64,11 +63,34 @@ class DivideAndConquerProblemSolver {
   }
 
   class Worker implements Runnable{
-    def Worker(int num) { this.num = num }
+    Worker(int num) { this.num = num }
 
     int num
 
-    LinkedBlockingDeque<Job> jobs = new LinkedBlockingDeque<Job>()
+    // TODO(ven): maybe can do non locking?
+    class JobList extends Lockable {
+      LinkedList<Job> list = new LinkedList<Job>()
+
+      def void addFirst(Job e) {
+        withLock {
+          list.addFirst e
+        }
+      }
+
+      Job removeFirst() {
+        withLock {
+          list.removeFirst()
+        }
+      }
+
+      Job removeLast() {
+        withLock {
+          list.removeFirst()
+        }
+      }
+    }
+
+    JobList jobs = new JobList()
 
     void run() {
       Job job = null
