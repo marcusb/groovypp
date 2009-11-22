@@ -1,11 +1,8 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.util.FastArray;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -26,16 +23,47 @@ import java.util.*;
 public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     public BytecodeExpr transform(CastExpression exp, CompilerTransformer compiler) {
 
+        if (exp.getExpression() instanceof ListExpressionTransformer.UntransformedListExpr) {
+            final CastExpression newExp = new CastExpression(exp.getType(), ((ListExpressionTransformer.UntransformedListExpr) exp.getExpression()).exp);
+            newExp.setSourcePosition(exp);
+            exp = newExp;
+        }
+
+        if (exp.getExpression() instanceof MapExpressionTransformer.UntransformedMapExpr) {
+            final CastExpression newExp = new CastExpression(exp.getType(), ((MapExpressionTransformer.UntransformedMapExpr) exp.getExpression()).exp);
+            newExp.setSourcePosition(exp);
+            exp = newExp;
+        }
+
+        if (exp.getType().equals(ClassHelper.boolean_TYPE) || exp.getType().equals(ClassHelper.Boolean_TYPE)) {
+            if (exp.getExpression() instanceof ListExpression) {
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)exp.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), exp.getType());
+            }
+            if (exp.getExpression() instanceof MapExpression) {
+                return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)exp.getExpression(), compiler), exp.getType());
+            }
+            return compiler.castToBoolean((BytecodeExpr)compiler.transform(exp.getExpression()), exp.getType());
+        }
+
+        if (exp.getType().equals(ClassHelper.STRING_TYPE)) {
+            if (exp.getExpression() instanceof ListExpression) {
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)exp.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), exp.getType());
+            }
+            return compiler.castToString((BytecodeExpr)compiler.transform(exp.getExpression()), exp.getType());
+        }
+
         if (exp.getExpression() instanceof ListExpression) {
             ListExpression listExpression = (ListExpression) exp.getExpression();
 
             if (exp.getType().isArray()) {
                 ClassNode componentType = exp.getType().getComponentType();
                 improveListTypes(listExpression, componentType);
-                return listToArray(exp, compiler);
+                final ArrayExpression array = new ArrayExpression(componentType, listExpression.getExpressions(), null);
+                array.setSourcePosition(listExpression);
+                return (BytecodeExpr) compiler.transform(array);
             }
 
-            if(exp.getType().implementsInterface(TypeUtil.COLLECTION_TYPE)) {
+            if(exp.getType().implementsInterface(TypeUtil.ITERABLE) || exp.getType().equals(TypeUtil.ITERABLE)) {
                 ClassNode componentType = compiler.getCollectionType(exp.getType());
                 improveListTypes(listExpression, componentType);
                 final List list = listExpression.getExpressions();
@@ -44,13 +72,25 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 }
 
                 ClassNode collType = calcResultCollectionType(exp, componentType, compiler);
-                return new ListExpressionTransformer.ResolvedListExpression(listExpression, collType);
+                return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
             }
 
             if (!TypeUtil.isDirectlyAssignableFrom(exp.getType(), TypeUtil.ARRAY_LIST_TYPE)) {
                 final ConstructorCallExpression constr = new ConstructorCallExpression(exp.getType(), new ArgumentListExpression(listExpression.getExpressions()));
                 constr.setSourcePosition(exp);
                 return (BytecodeExpr) compiler.transform(constr);
+            }
+            else {
+                // Assignable from ArrayList but not Iterable
+                ClassNode componentType = ClassHelper.OBJECT_TYPE;
+                improveListTypes(listExpression, componentType);
+                final List list = listExpression.getExpressions();
+                for (int i = 0; i != list.size(); ++i) {
+                    list.set(i, compiler.transform((Expression) list.get(i)));
+                }
+
+                ClassNode collType = TypeUtil.ARRAY_LIST_TYPE;
+                return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
             }
         }
 
@@ -315,7 +355,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     private ClassNode calcResultCollectionType(CastExpression exp, ClassNode componentType, CompilerTransformer compiler) {
         ClassNode collType = exp.getType();
         if ((collType.getModifiers() & ACC_ABSTRACT) != 0) {
-            if (collType.equals(ClassHelper.LIST_TYPE)) {
+            if (collType.equals(ClassHelper.LIST_TYPE) || collType.equals(TypeUtil.COLLECTION_TYPE)) {
                 if (collType.getGenericsTypes() != null) {
                     collType = ClassHelper.make ("java.util.ArrayList");
                     collType.setRedirect(TypeUtil.ARRAY_LIST_TYPE);
@@ -327,8 +367,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             else {
                 if (collType.equals(TypeUtil.SET_TYPE)) {
                     if (collType.getGenericsTypes() != null) {
-                        collType = ClassHelper.make ("java.util.LinkedHashMap");
-                        collType.setRedirect(TypeUtil.LINKED_HASH_MAP_TYPE);
+                        collType = ClassHelper.make ("java.util.LinkedHashSet");
+                        collType.setRedirect(TypeUtil.LINKED_HASH_SET_TYPE);
                         collType.setGenericsTypes(new GenericsType[]{new GenericsType(componentType)});
                     }
                     else
@@ -363,10 +403,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
         return collType;
-    }
-
-    private BytecodeExpr listToArray(CastExpression exp, CompilerTransformer compiler) {
-        return standardCast(exp, compiler, (BytecodeExpr) compiler.transform(exp.getExpression()));
     }
 
     private BytecodeExpr standardCast(final CastExpression exp, CompilerTransformer compiler, final BytecodeExpr expr) {
@@ -432,9 +468,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         int count = list.size();
         for (int i = 0; i != count; ++i) {
             Expression el = list.get(i);
-            CastExpression castExpression = new CastExpression(componentType, el);
-            castExpression.setSourcePosition(el);
-            list.set(i, castExpression);
+            if (!(el instanceof BytecodeSpreadExpr) && !(el instanceof SpreadExpression)) {
+                CastExpression castExpression = new CastExpression(componentType, el);
+                castExpression.setSourcePosition(el);
+                list.set(i, castExpression);
+            }
         }
     }
 

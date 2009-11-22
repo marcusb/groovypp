@@ -10,6 +10,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
@@ -29,6 +30,8 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
         if (ve.isDynamicTyped()) {
+            if (right instanceof ListExpressionTransformer.UntransformedListExpr)
+                right = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)right).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
             vtype = TypeUtil.wrapSafely(right.getType());
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {

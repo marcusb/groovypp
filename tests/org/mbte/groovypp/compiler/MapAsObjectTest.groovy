@@ -13,12 +13,12 @@ public class MapAsObjectTest extends GroovyShellTestCase {
                 }
             }
 
-            @Typed(debug=true)
+            @Typed
             static <T,R> Iterator<R> map (Iterator<T> self, Function1<T,R> op) {
                 [next: { op [ self.next() ] }, hasNext: { self.hasNext() }, remove: { self.remove() } ]
             }
 
-            @Typed(debug=true)
+            @Typed
             def u () {
                 def res = []
 
@@ -40,7 +40,7 @@ public class MapAsObjectTest extends GroovyShellTestCase {
 
     void testTree () {
         shell.evaluate """
-@Typed(debug=true)
+@Typed
 class TreeNode
 {
     TreeNode left, right;

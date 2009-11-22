@@ -15,9 +15,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
-import org.mbte.groovypp.compiler.transformers.CastExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
-import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
 import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -422,50 +420,60 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public BytecodeExpr cast(final BytecodeExpr be, final ClassNode type) {
-        if (TypeUtil.isDirectlyAssignableFrom(type, be.getType()))
-            return be;
 
-        if (be instanceof MapExpressionTransformer.UntransformedMapExpr) {
-            if (TypeUtil.isDirectlyAssignableFrom(type, TypeUtil.LINKED_HASH_MAP_TYPE)
-                || type.implementsInterface(ClassHelper.MAP_TYPE)
-                || type.equals(ClassHelper.MAP_TYPE)
-                || type.equals(ClassHelper.boolean_TYPE)
-                || type.equals(ClassHelper.Boolean_TYPE)
-                || type.equals(ClassHelper.STRING_TYPE)
-                    ) {
-                return cast(new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)be).exp,this), type);
-            }
-            else {
-                final CastExpression exp = new CastExpression(type, ((MapExpressionTransformer.UntransformedMapExpr)be).exp);
-                exp.setSourcePosition(be);
-                return (BytecodeExpr) transform(exp);
-            }
-        }
+        final CastExpression newExp = new CastExpression(type, be);
+        newExp.setSourcePosition(be);
+        return (BytecodeExpr) transform(newExp);
 
-        if (type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE)) {
-            return castToBoolean(be, type);
-        }
-
-        if (type.equals(ClassHelper.STRING_TYPE)) {
-            return castToString(be, type);
-        }
-
-        if (TypeUtil.isAssignableFrom(type, be.getType())) {
-            return new CastExpressionTransformer.Cast(type, be);
-        }
-
-        if (be.getType().implementsInterface(TypeUtil.TCLOSURE)) {
-            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
-            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) be.getType(), this, type);
-            ClosureUtil.makeOneMethodClass(be.getType(), type, one, doCall);
-            return new CastExpressionTransformer.Cast(type, be);
-        }
-
-        addError("Can not convert " + be.getType().getName() + " to " + type.getName(), be);
-        return null;
+//        if (TypeUtil.isDirectlyAssignableFrom(type, be.getType()))
+//            return be;
+//
+//        boolean booleanOrString = type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE) || type.equals(ClassHelper.STRING_TYPE);
+//
+//        if (be instanceof MapExpressionTransformer.UntransformedMapExpr) {
+//            if (TypeUtil.isDirectlyAssignableFrom(type, TypeUtil.LINKED_HASH_MAP_TYPE)
+//                || type.implementsInterface(ClassHelper.MAP_TYPE)
+//                || type.equals(ClassHelper.MAP_TYPE)
+//                || booleanOrString) {
+//                return cast(new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)be).exp,this), type);
+//            }
+//            else {
+//                final CastExpression exp = new CastExpression(type, ((MapExpressionTransformer.UntransformedMapExpr)be).exp);
+//                exp.setSourcePosition(be);
+//                return (BytecodeExpr) transform(exp);
+//            }
+//        }
+//
+//        if (be instanceof ListExpressionTransformer.UntransformedListExpr) {
+//            final CastExpression exp = new CastExpression(type, be);
+//            exp.setSourcePosition(be);
+//            return (BytecodeExpr) transform(exp);
+//        }
+//
+//        if (type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE)) {
+//            return castToBoolean(be, type);
+//        }
+//
+//        if (type.equals(ClassHelper.STRING_TYPE)) {
+//            return castToString(be, type);
+//        }
+//
+//        if (TypeUtil.isAssignableFrom(type, be.getType())) {
+//            return new CastExpressionTransformer.Cast(type, be);
+//        }
+//
+//        if (be.getType().implementsInterface(TypeUtil.TCLOSURE)) {
+//            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
+//            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) be.getType(), this, type);
+//            ClosureUtil.makeOneMethodClass(be.getType(), type, one, doCall);
+//            return new CastExpressionTransformer.Cast(type, be);
+//        }
+//
+//        addError("Can not cast " + be.getType().getName() + " to " + type.getName(), be);
+//        return null;
     }
 
-    private BytecodeExpr castToBoolean(final BytecodeExpr be, final ClassNode type) {
+    public BytecodeExpr castToBoolean(final BytecodeExpr be, final ClassNode type) {
         if (ClassHelper.isPrimitiveType(be.getType())) {
             return new BytecodeExpr(be, type) {
                 protected void compile(MethodVisitor mv) {
@@ -511,9 +519,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             final BytecodeExpr call = (BytecodeExpr) transform(safeCall);
 
             if (!call.getType().equals(ClassHelper.boolean_TYPE))
-                addError("asBoolean should return 'boolean'", be);
+                addError("method asBoolean () should return 'boolean'", be);
 
-            return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
+            return new BytecodeExpr(be, type) {
                 protected void compile(MethodVisitor mv) {
                     be.visit(mv);
                     mv.visitInsn(DUP);
@@ -537,22 +545,24 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
     }
 
-    private BytecodeExpr castToString(final BytecodeExpr be, final ClassNode type) {
+    public BytecodeExpr castToString(final BytecodeExpr be, final ClassNode type) {
+        if (be.getType().equals(TypeUtil.NULL_TYPE))
+            return be;
+        
         MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(be, TypeUtil.wrapSafely(be.getType())) {
         protected void compile(MethodVisitor mv) {
-            if (ClassHelper.isPrimitiveType(be.getType()))
-                box(be.getType(), mv);
         }        }, "toString", ArgumentListExpression.EMPTY_ARGUMENTS);
         safeCall.setSourcePosition(be);
 
         final BytecodeExpr call = (BytecodeExpr) transform(safeCall);
 
         if (!call.getType().equals(ClassHelper.STRING_TYPE))
-            addError("asBoolean should return 'java.lang.String'", be);
+            addError("method toString () should return 'java.lang.String'", be);
 
         return new BytecodeExpr(be, ClassHelper.STRING_TYPE) {
             protected void compile(MethodVisitor mv) {
                 be.visit(mv);
+                box(be.getType(), mv);
                 mv.visitInsn(DUP);
                 Label nullLabel = new Label(), endLabel = new Label ();
 
@@ -577,9 +587,20 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public ClassNode getCollectionType(ClassNode type) {
-        MethodNode methodNode = findMethod(TypeUtil.COLLECTION_TYPE, "add", new ClassNode[]{ClassHelper.OBJECT_TYPE});
-        ClassNode paramType = methodNode.getParameters()[0].getType();
-        return TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(), type);
+        ClassNode substitutedType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE, type).getGenericsTypes()[0].getType();
+        while (substitutedType.equals(ClassHelper.OBJECT_TYPE) && !substitutedType.isGenericsPlaceHolder() && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+            GenericsType genericsType = substitutedType.getGenericsTypes()[0];
+            if (genericsType.isWildcard()) {
+                substitutedType = genericsType.getUpperBounds()[0];
+                if (substitutedType.equals(ClassHelper.OBJECT_TYPE) && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+                    genericsType = substitutedType.getGenericsTypes()[0];
+                }
+            }
+            else {
+                substitutedType = genericsType.getType();
+            }
+        }
+        return substitutedType;
     }
 
     public String getNextClosureName() {

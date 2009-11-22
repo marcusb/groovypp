@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch
 
 public class ExecutorTest extends GroovyTestCase {
 
-    @Compile(debug = true)
+    @Compile
     void testExecutor () {
         def es = Executors.newFixedThreadPool(10)
         def queue = new LinkedBlockingQueue ()
@@ -109,7 +109,7 @@ public class ExecutorTest extends GroovyTestCase {
     static private Object NONE = new Object ()
 }
 
-@Compile(debug=true)
+@Compile
 class PrimeRes {
     int value
     boolean prime

@@ -13,6 +13,7 @@ import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.bytecode.*;
+import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -454,7 +455,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             visitStatement(caseStatement);
 
             mv.visitVarInsn(ALOAD, switchVariableIndex);
-            final BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
+            BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
+            if (option instanceof ListExpressionTransformer.UntransformedListExpr)
+                option = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)option).exp, TypeUtil.ARRAY_LIST_TYPE, this);
             option.visit(mv);
             if (ClassHelper.isPrimitiveType(option.getType()))
                 option.box(option.getType(), mv);

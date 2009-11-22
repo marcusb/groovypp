@@ -52,7 +52,7 @@ class DivideAndConquerProblemSolver {
     }
 
     void setResult(Object result) {
-      this.result = result
+      this.@result = result
       if (parent) {
         assert parent.children.size() > 0
         if (!parent.children.any{it.result == null}) {

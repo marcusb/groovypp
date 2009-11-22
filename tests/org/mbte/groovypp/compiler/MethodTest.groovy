@@ -4,7 +4,7 @@ public class MethodTest extends GroovyShellTestCase {
 
   void testSubclass() {
     def res = shell.evaluate("""
-    @Typed(debug=true)
+    @Typed
   abstract class A {
       abstract define ()
 
@@ -154,7 +154,7 @@ class X {
 
     void testGetAt() {
       def res = shell.evaluate("""
-            @Typed(debug=true)
+            @Typed
             def u () {
                "null"?.chars?.getAt(0)
             }

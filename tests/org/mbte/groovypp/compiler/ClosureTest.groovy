@@ -56,7 +56,7 @@ public class ClosureTest extends GroovyShellTestCase {
            a.calc () + b.calc () + c.calc ()
         }
 
-        @Typed(debug=true)
+        @Typed
         def u (int add) {
             v ( {10}, {11+add}, {12} )
         }

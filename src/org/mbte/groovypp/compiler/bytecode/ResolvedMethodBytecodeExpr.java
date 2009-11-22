@@ -144,6 +144,20 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
 
         GenericsType[] typeVars = methodNode.getGenericsTypes();
+        if (!methodNode.isStatic()) {
+            final GenericsType[] classTypeVars = methodNode.getDeclaringClass().getGenericsTypes();
+            if (classTypeVars != null && classTypeVars.length > 0) {
+                if (typeVars == null || typeVars.length == 0) {
+                    typeVars = classTypeVars;
+                }
+                else {
+                    GenericsType newTypeVars [] = new GenericsType [typeVars.length + classTypeVars.length];
+                    System.arraycopy(typeVars, 0, newTypeVars, 0, typeVars.length);
+                    System.arraycopy(classTypeVars, 0, newTypeVars, typeVars.length, classTypeVars.length);
+                    typeVars = newTypeVars;
+                }
+            }
+        }
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
             List<Expression> exprs = bargs.getExpressions();
@@ -154,23 +168,30 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 length = Math.min(params.length, exprs.size());
             }
 
+            if (!methodNode.isStatic())
+                length++;
+
             ClassNode[] paramTypes = new ClassNode[length];
-            ClassNode[] argTypes = new ClassNode[length];
-            for (int i = 0; i < length; i++) {
-                paramTypes[i] = i > params.length - 1 ||
+            ClassNode[] argTypes   = new ClassNode[length];
+
+            int delta = 0;
+            if (!methodNode.isStatic()) {
+                paramTypes [length-1] = methodNode.getDeclaringClass();
+                argTypes [length-1] = object.getType();
+                delta = 1;
+            }
+            for (int i = 0; i < length-delta; i++) {
+                paramTypes[i] = i > params.length + delta - 1 ||
                             (i == params.length - 1 && params[i].getType().isArray() && !bargs.getExpression(i).getType().isArray()) ?
                         /* varargs case */ params[params.length - 1].getType().getComponentType() :
                         params[i].getType();
                 argTypes[i] = bargs.getExpression(i).getType();
             }
             ClassNode[] bindings = TypeUnification.inferTypeArguments(typeVars, paramTypes, argTypes);
-            returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
+            returnType = TypeUtil.getSubstitutedTypeIncludingInstance(returnType, methodNode, bindings);
 
-            for (int i = 0; i < length; i++) {
-                ClassNode paramType = TypeUtil.getSubstitutedType(paramTypes[i], methodNode, bindings);
-                if (object != null) {
-                    paramType = TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(), object.getType());
-                }
+            for (int i = 0; i < length-delta; i++) {
+                ClassNode paramType = TypeUtil.getSubstitutedTypeIncludingInstance(paramTypes[i], methodNode, bindings);
                 bargs.getExpressions().set(i, compiler.cast((BytecodeExpr) bargs.getExpressions().get(i), paramType));
             }
 

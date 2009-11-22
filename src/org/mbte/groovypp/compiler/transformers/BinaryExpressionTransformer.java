@@ -396,23 +396,31 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue, final int op) {
-        final BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
+        BytecodeExpr l = (BytecodeExpr) compiler.transform(be.getLeftExpression());
+        if (l instanceof ListExpressionTransformer.UntransformedListExpr)
+            l = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)l).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
         be.setLeftExpression(l);
-        final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
+
+        BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        if (r instanceof ListExpressionTransformer.UntransformedListExpr)
+            r = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)r).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
         be.setRightExpression(r);
+
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
+            final BytecodeExpr l1 = l;
+            final BytecodeExpr r1 = r;
             return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
                 public void compile(MethodVisitor mv) {
-                    l.visit(mv);
-                    box(l.getType(), mv);
-                    cast(TypeUtil.wrapSafely(l.getType()), TypeUtil.wrapSafely(mathType), mv);
+                    l1.visit(mv);
+                    box(l1.getType(), mv);
+                    cast(TypeUtil.wrapSafely(l1.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 
-                    r.visit(mv);
-                    box(r.getType(), mv);
-                    cast(TypeUtil.wrapSafely(r.getType()), TypeUtil.wrapSafely(mathType), mv);
+                    r1.visit(mv);
+                    box(r1.getType(), mv);
+                    cast(TypeUtil.wrapSafely(r1.getType()), TypeUtil.wrapSafely(mathType), mv);
                     if (ClassHelper.isPrimitiveType(mathType))
                         unbox(mathType, mv);
 

@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler
 public class FieldAnnotationTest extends GroovyShellTestCase {
     void testMe () {
         shell.evaluate("""
-@Typed(debug=true)
+@Typed
 def u () {
         def res = []
         [1,2,3,4].iterator().each {

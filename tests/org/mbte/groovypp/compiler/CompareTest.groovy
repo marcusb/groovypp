@@ -4,7 +4,7 @@ public class CompareTest extends GroovyShellTestCase {
 
     void testAndOr() {
       def res = shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u () {
            Iterator<Integer> s = null
            s != null && s.hasNext() || (s = [1,2].iterator ()).hasNext ()

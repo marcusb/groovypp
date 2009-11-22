@@ -73,7 +73,7 @@ test ()
     def res = shell.evaluate("""
 @Typed
 class A {
-    @Typed(debug=true)
+    @Typed
   static def doIt (int a = 0, int b = 5){
     a + b
   }
@@ -100,7 +100,7 @@ def v (Closure cl) {
   cl.call()
 }
 
-@Typed(debug=true)
+@Typed
 def u () {
    List s = [1, 2, 3, 4]
 

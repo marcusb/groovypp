@@ -13,18 +13,6 @@ import org.objectweb.asm.MethodVisitor;
 import java.util.List;
 
 public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
-//    public Expression transform(final MapExpression exp, CompilerTransformer compiler) {
-//        final List list = exp.getMapEntryExpressions();
-//        for (int i = 0; i != list.size(); ++i) {
-//            final MapEntryExpression me = (MapEntryExpression) list.get(i);
-//            MapEntryExpression nme = new MapEntryExpression(compiler.transform(me.getKeyExpression()), compiler.transform(me.getValueExpression()));
-//            nme.setSourcePosition(me);
-//            list.set(i, nme);
-//        }
-//
-//        return new TransformedMapExpr(exp);
-//    }
-
     public Expression transform(final MapExpression exp, final CompilerTransformer compiler) {
         ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC, ClassHelper.OBJECT_TYPE);
         newType.setInterfaces(new ClassNode[] {TypeUtil.TMAP});

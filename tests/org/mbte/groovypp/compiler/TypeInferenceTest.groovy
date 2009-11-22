@@ -46,7 +46,7 @@ new A().m ()
 
     void testArrayInference() {
       def res = shell.evaluate("""
-      @Typed(debug=true) class Foo {
+      @Typed class Foo {
         def <T> T getFirst(T[] ts) { ts[0] }
         def bar() {
            int[] arr = new int[1]
@@ -173,7 +173,7 @@ m ()
             answer
         }
 
-        @Typed(debug=true)
+        @Typed
         def test () {
             groupBy(["1", 3, "2", "4", 0]){
               it instanceof String
@@ -209,7 +209,43 @@ m ()
             def b = (U) [:]
             l << [i:0, f:12]
             l << [i:0] << a << b
-//            l.addAll ( [[i:1, f:12], [i:2, f:13]] )
+            l.addAll ( [[i:1, f:12], [i:2, f:13]] )
+            l
+        }
+
+        test ()
+      """)
+        println res
+    }
+
+    void testListSyntax() {
+      def res = shell.evaluate ("""
+        @Typed class U {
+            int i
+            float f
+
+            U (int i, float f) {
+               this.i = i
+               this.f = f
+            }
+
+            String toString () { "[i: \$i, f: \$f]" }
+
+            boolean testSameI(U other) {
+               i == other.i
+            }
+        }
+
+        @Typed
+        def test () {
+            List<U> l = []
+            def map = [:]
+            U a = [12, 10]
+            a.testSameI ([3,10])
+            def b = (U) [11,4]
+            l << [0, 12]
+            l << [0,11] << a << b
+//            l.addAll ( [[1, 12], [2, 13]] )
             l
         }
 

@@ -79,6 +79,7 @@ public class ArrayExpressionTransformer extends ExprTransformer<ArrayExpression>
                     mv.visitInsn(DUP);
                     pushConstant(i, mv);
                     BytecodeExpr elementExpression = (BytecodeExpr) compiler.transform(exp.getExpression(i));
+                    elementExpression = compiler.cast(elementExpression, elementType);
                     elementExpression.visit(mv);
                     box(elementExpression.getType(), mv);
                     unbox(elementType, mv);

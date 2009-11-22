@@ -97,7 +97,7 @@ public class Mappers extends DefaultGroovyMethodsSupport {
    * @return @link{java.util.Map} associating keys to lists of elements in the original collection,
    * matching that key.
    */
-  @Typed(debug=true)
+  @Typed
   static <T, K> Map<K, List<T>> groupBy(Collection<T> self, Function1<T, K> op) {
     def answer = (Map<K, List<T>>) [:]
     for (T element: self) {

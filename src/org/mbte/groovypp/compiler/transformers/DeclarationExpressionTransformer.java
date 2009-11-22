@@ -66,6 +66,10 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                     right = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)right).exp, compiler);
                 }
 
+                if (right instanceof ListExpressionTransformer.UntransformedListExpr) {
+                    right = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)right).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                }
+
                 // let's try local type inference
                 compiler.getLocalVarInferenceTypes().add(ve, TypeUtil.wrapSafely(right.getType()));
                 return new Dynamic(exp, right, compiler, ve);

@@ -76,7 +76,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             }
         }
 
-        final Expression newArgs = compiler.transform(exp.getArguments());
+        final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
         constructor = compiler.findConstructor(exp.getType(), argTypes);
@@ -139,6 +139,13 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         }
 
         if (constructor != null) {
+            int first = 0;
+            if ((exp.getType().getModifiers() & ACC_STATIC) == 0 && exp.getType().redirect() instanceof InnerClassNode) {
+                first = 1;
+            }
+            for (int i = 0; i != newArgs.getExpressions().size(); ++i)
+                newArgs.getExpressions().set(i, compiler.cast((BytecodeExpr) newArgs.getExpressions().get(i), constructor.getParameters()[i+first].getType()));
+            
             final MethodNode constructor1 = constructor;
             final ClassNode compilerClass = compiler.classNode;
             return new BytecodeExpr(exp, exp.getType()) {

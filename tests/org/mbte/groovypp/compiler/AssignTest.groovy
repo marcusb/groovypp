@@ -107,7 +107,7 @@ new A().u ().a
 
   void testAssignPropertyOp() {
     def res = shell.evaluate("""
-@Typed(debug=true)
+@Typed
 class A {
   int a
 
@@ -130,7 +130,7 @@ new A().u ().a
 
   void testAssignField() {
     def res = shell.evaluate("""
-@Typed(debug=true)
+@Typed
 class A {
   protected int a
   protected int b

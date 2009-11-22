@@ -91,6 +91,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                if (object instanceof ListExpressionTransformer.UntransformedListExpr)
+                    object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
                 type = TypeUtil.wrapSafely(object.getType());
 
                 foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
@@ -367,6 +369,50 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         }
                         argTypes[i] = oarg;
                         return foundMethod;
+                    }
+                    else {
+                        if (oarg.implementsInterface(TypeUtil.TLIST)) {
+                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+
+                            if (foundMethod != null) {
+                                Parameter p[] = foundMethod.getParameters();
+                                if (p.length == argTypes.length) {
+                                    return foundMethod;
+                                }
+                            }
+
+                            argTypes[i] = null;
+                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+                            if (foundMethod != null) {
+                                Parameter p[] = foundMethod.getParameters();
+                                if (p.length == argTypes.length) {
+                                    ClassNode argType = p[i].getType();
+
+                                    GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
+                                    if (methodTypeVars != null && methodTypeVars.length > 0) {
+                                        ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+                                        ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+
+                                        if (!foundMethod.isStatic()) {
+                                            formals.add(foundMethod.getDeclaringClass());
+                                            instantiateds.add(type);
+                                        }
+
+                                        for (int j = 0; j != i; j++) {
+                                            formals.add(foundMethod.getParameters()[j].getType());
+                                            instantiateds.add(argTypes[j]);
+                                        }
+
+                                        ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+                                                formals.toArray(new ClassNode[formals.size()]),
+                                                instantiateds.toArray(new ClassNode[instantiateds.size()]));
+                                        argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
+                                    }
+                                }
+                            }
+                            argTypes[i] = oarg;
+                            return foundMethod;
+                        }
                     }
                 }
             }

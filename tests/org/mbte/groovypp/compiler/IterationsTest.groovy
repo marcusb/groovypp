@@ -56,7 +56,7 @@ abstract class Function1<T,R> {
 }
 
 @Trait
-@Typed(debug=true)
+@Typed
 abstract class Function2<T1,T2,R> {
     abstract def apply (T1 param1, T2 param2)
 
