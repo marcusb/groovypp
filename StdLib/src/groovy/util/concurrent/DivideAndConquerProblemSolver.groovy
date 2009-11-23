@@ -85,7 +85,7 @@ class DivideAndConquerProblemSolver {
 
       Job removeLast() {
         withLock {
-          list.removeFirst()
+          list.removeLast()
         }
       }
     }
