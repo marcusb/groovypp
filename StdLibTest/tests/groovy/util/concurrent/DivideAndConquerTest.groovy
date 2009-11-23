@@ -30,10 +30,15 @@ class DivideAndConquerTest extends GroovyShellTestCase {
     ]
   }
 
+  int height(Node node) {
+    if (node.children.isEmpty()) return 1;
+    return 1 + node.children.map{ height(it) }.foldLeft(0) { int curr, int max -> Math.max(curr, max) }
+  }
+
   void testSolve() {
     def node = createTree(1, 15)
     def problem = calcHeightProblem(node)
-    int height = new DivideAndConquerProblemSolver(problem, 3).solve()
-    assertTrue(height > 0)
+    int h = new DivideAndConquerProblemSolver(problem, 3).solve()
+    assertEquals(height(node), h)
   }
 }
