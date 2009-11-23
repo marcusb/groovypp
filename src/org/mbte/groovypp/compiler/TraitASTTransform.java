@@ -1,14 +1,16 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.ASTHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.objectweb.asm.Opcodes;
@@ -16,6 +18,7 @@ import org.objectweb.asm.Opcodes;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
+
 
 /**
  * Handles generation of code for the @Trait annotation
@@ -101,6 +104,23 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
                 setter.addAnnotation(value);
 
+                if (fieldNode.hasInitialExpression()) {
+                    final Expression initial = fieldNode.getInitialValueExpression();
+                    fieldNode.setInitialValueExpression(null);
+
+                    final MethodNode initMethod = innerClassNode.addMethod("__init_" + fieldNode.getName(), ACC_PUBLIC | ACC_STATIC, ClassHelper.VOID_TYPE, new Parameter[]{new Parameter(classNode, "$self")}, ClassNode.EMPTY_ARRAY, new BlockStatement());
+
+                    final PropertyExpression prop = new PropertyExpression(new VariableExpression("$self"), fieldNode.getName());
+                    prop.setSourcePosition(fieldNode);
+                    final CastExpression cast = new CastExpression(fieldNode.getType(), initial);
+                    cast.setSourcePosition(initial);
+                    final BinaryExpression assign = new BinaryExpression(prop, Token.newSymbol(Types.ASSIGN, -1, -1), cast);
+                    assign.setSourcePosition(initial);
+                    final ExpressionStatement assignExpr = new ExpressionStatement(assign);
+                    assignExpr.setSourcePosition(initial);
+                    ((BlockStatement)initMethod.getCode()).addStatement(assignExpr);
+                }
+
                 innerClassNode.addField(fieldNode);
             }
 
@@ -126,7 +146,12 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
                 Parameter[] parameters = methodNode.getParameters();
 
-                MethodNode newMethod = innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC, methodNode.getReturnType(), parameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
+                Parameter[] newParameters = new Parameter[parameters.length + 1];
+                final Parameter self = new Parameter(classNode, "$self");
+                newParameters[0] = self;
+                System.arraycopy(parameters, 0, newParameters, 1, parameters.length);
+
+                MethodNode newMethod = innerClassNode.addMethod(methodNode.getName(), ACC_PUBLIC, methodNode.getReturnType(), newParameters, ClassNode.EMPTY_ARRAY, methodNode.getCode());
                 ArrayList<GenericsType> gt = new ArrayList<GenericsType>();
                 if (classNode.getGenericsTypes() != null)
                     for (int i = 0; i < classNode.getGenericsTypes().length; i++) {
@@ -145,6 +170,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 AnnotationNode annotationNode = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
                 annotationNode.addMember("value", new ClassExpression(innerClassNode));
                 methodNode.addAnnotation(annotationNode);
+
                 methodNode.setCode(null);
             }
         }

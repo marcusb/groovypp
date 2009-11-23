@@ -1,10 +1,9 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import static org.codehaus.groovy.ast.ClassHelper.*;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * Handles generation of code for the @Trait annotation
@@ -47,17 +47,10 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     }
 
     private void staticifyImplementationMethods(ClassNode classNode, final SourceUnit source) {
-        for (MethodNode methodNode : classNode.getMethods()) {
+        for (final MethodNode methodNode : classNode.getMethods()) {
             if (methodNode.isStatic() || methodNode.isSynthetic())
                 continue;
 
-            Parameter[] parameters = methodNode.getParameters();
-            Parameter[] newParameters = new Parameter[parameters.length + 1];
-            final Parameter self = new Parameter(classNode.getInterfaces()[0], "$self");
-            newParameters[0] = self;
-            System.arraycopy(parameters, 0, newParameters, 1, parameters.length);
-
-            methodNode.setParameters(newParameters);
             methodNode.setModifiers(methodNode.getModifiers() | Opcodes.ACC_STATIC);
             methodNode.getVariableScope().setInStaticContext(true);
 
@@ -68,7 +61,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
 
                 public Expression transform(Expression exp) {
                     if (exp instanceof VariableExpression && "this".equals(((VariableExpression) exp).getName()))
-                        return new VariableExpression(self);
+                        return new VariableExpression(methodNode.getParameters()[0]);
                     else
                         return super.transform(exp);
                 }
@@ -110,8 +103,12 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
 
                         final String fieldName = (String) ((ConstantExpression) field).getValue();
                         FieldNode klazzField = classNode.getField(fieldName);
-                        if (klazzField == null)
+                        if (klazzField == null) {
                             klazzField = classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
+                            final MethodNode initMethod = klazz.getType().getMethod("__init_" + fieldName, new Parameter[]{new Parameter(method.getDeclaringClass(), "$self")});
+                            if (initMethod != null)
+                                classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
+                        }
 
                         classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, method.getParameters(), ClassNode.EMPTY_ARRAY,
                                 new BytecodeSequence(new BytecodeInstruction() {

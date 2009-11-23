@@ -41,8 +41,8 @@ class DivideAndConquerProblemSolver {
   class Job {
     SelfRecurringProblem problem
     Job parent
-    List<Job> children = new ArrayList<Job>()
-    Object result = null
+    List<Job> children = []
+    Object result
 
     Job(SelfRecurringProblem problem, Job parent) {
       this.problem = problem
@@ -55,7 +55,7 @@ class DivideAndConquerProblemSolver {
         assert parent.children.size() > 0
         if (!parent.children.any{it.result == null}) {
           assert parent != this
-          parent.setResult(problem.combine(parent.children.map{it.result}))
+          parent.result = problem.combine(parent.children.map{it.result})
           parent.children = null
         }
       }
@@ -69,7 +69,7 @@ class DivideAndConquerProblemSolver {
 
     // TODO(ven): maybe can do non locking?
     class JobList extends Lockable {
-      LinkedList<Job> list = new LinkedList<Job>()
+      LinkedList<Job> list = []
 
       def void addFirst(Job e) {
         withLock {
@@ -90,7 +90,7 @@ class DivideAndConquerProblemSolver {
       }
     }
 
-    JobList jobs = new JobList()
+    JobList jobs = []
 
     void run() {
       Job job = null
@@ -112,7 +112,7 @@ class DivideAndConquerProblemSolver {
             job.children << child
           }
         } else {
-          job.setResult(job.problem.solve());
+          job.result = job.problem.solve()
         }
       }
     }
