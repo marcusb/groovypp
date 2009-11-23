@@ -47,14 +47,15 @@ class DivideAndConquerProblemSolver {
     Job(SelfRecurringProblem problem, Job parent) {
       this.problem = problem
       this.parent = parent
+      if (parent) parent.children << this
     }
 
     void setResult(Object result) {
       this.@result = result
+      assert parent != this
       if (parent) {
-        assert parent.children.size() > 0
+        assert parent.children && !parent.children.isEmpty()
         if (!parent.children.any{it.result == null}) {
-          assert parent != this
           parent.result = problem.combine(parent.children.map{it.result})
           parent.children = null
         }
@@ -79,13 +80,21 @@ class DivideAndConquerProblemSolver {
 
       Job removeFirst() {
         withLock {
-          list.removeFirst()
+          if (!list.isEmpty()) {
+            return list.removeFirst()
+          } else {
+            return null
+          }
         }
       }
 
       Job removeLast() {
         withLock {
-          list.removeLast()
+          if (!list.isEmpty()) {
+            return list.removeLast()
+          } else {
+            return null
+          }
         }
       }
     }
@@ -109,7 +118,6 @@ class DivideAndConquerProblemSolver {
           job.problem.sub().each{
             def child = new Job(it, job)
             jobs.addFirst(child)
-            job.children << child
           }
         } else {
           job.result = job.problem.solve()

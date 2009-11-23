@@ -26,12 +26,12 @@ class DivideAndConquerTest extends GroovyShellTestCase {
        complex : { node.children.size() > 0 },
        sub     : { node.children.map { calcHeightProblem(it) } },
        solve   : { 1 },  // only called for leaves.
-       combine : {results -> results.foldLeft(0){ int curr, int max -> Math.max(curr, max) } }
+       combine : { results -> results.foldLeft(0){ int curr, int max -> Math.max(curr, max) } + 1 }
     ]
   }
 
   void testSolve() {
-    def node = createTree(1, 5)
+    def node = createTree(1, 15)
     def problem = calcHeightProblem(node)
     int height = new DivideAndConquerProblemSolver(problem, 3).solve()
     assertTrue(height > 0)
