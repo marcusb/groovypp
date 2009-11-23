@@ -198,4 +198,17 @@ new A().u ().a
     }
   }
 
+  // Setter should have 'void' return type, whereas here we have 'Object'.
+  // Shouldn't crash.
+  void testNotASetter() {
+    assertNotNull(shell.evaluate("""
+      @Typed class C {
+         Object result
+         def setResult(Object result) {
+           this.result = result
+         }
+      }
+      new C()
+    """))
+  }
 }

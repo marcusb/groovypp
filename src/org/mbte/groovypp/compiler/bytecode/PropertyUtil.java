@@ -80,7 +80,7 @@ public class PropertyUtil {
     public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler) {
         final String getterName = "set" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, new ClassNode[]{arg});
-        if (mn != null)
+        if (mn != null && mn.getReturnType() == ClassHelper.VOID_TYPE)
             return mn;
 
         final PropertyNode pnode = type.getProperty(name);
