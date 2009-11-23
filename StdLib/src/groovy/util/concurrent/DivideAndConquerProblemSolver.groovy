@@ -1,5 +1,7 @@
 package groovy.util.concurrent
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 /**
 * @author ven
 */
@@ -41,7 +43,7 @@ class DivideAndConquerProblemSolver {
   class Job {
     SelfRecurringProblem problem
     Job parent
-    List<Job> children = []
+    ConcurrentLinkedQueue<Job> children = []
     Object result
 
     Job(SelfRecurringProblem problem, Job parent) {
@@ -54,11 +56,15 @@ class DivideAndConquerProblemSolver {
       this.@result = result
       assert parent != this
       if (parent) {
-        assert parent.children && !parent.children.isEmpty()
-        if (!parent.children.any{it.result == null}) {
-          parent.result = problem.combine(parent.children.map{it.result})
-          parent.children = null
+        def children = parent.children
+        if (children != null) {  // combine code might run several times, but it's idempotent.
+          assert !children.isEmpty()
+          if (!children.any{it.result == null}) {
+            parent.result = problem.combine(children.map{it.result})
+            parent.children = null
+          }
         }
+
       }
     }
   }
