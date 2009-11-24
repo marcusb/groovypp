@@ -6,7 +6,6 @@ import java.util.concurrent.locks.ReentrantLock
  * 
  */
 @Trait
-@Typed(debug=true)
 abstract class Lockable {
     final ReentrantLock lock = []
 
