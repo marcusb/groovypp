@@ -521,7 +521,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public void visitSynchronizedStatement(SynchronizedStatement sync) {
         visitStatement(sync);
 
-        super.visitSynchronizedStatement(sync);
+        sync.setExpression(transform(sync.getExpression()));
 
         ((BytecodeExpr) sync.getExpression()).visit(mv);
         final int index = compileStack.defineTemporaryVariable("synchronized", ClassHelper.OBJECT_TYPE, true);
