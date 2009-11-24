@@ -56,15 +56,16 @@ class DivideAndConquerProblemSolver {
       this.@result = result
       assert parent != this
       if (parent) {
-        def children = parent.children
-        if (children != null) {  // combine code might run several times, but it's idempotent.
-          assert !children.isEmpty()
-          if (!children.any{it.result == null}) {
-            parent.result = problem.combine(children.map{it.result})
-            parent.children = null
+        synchronized (parent) {
+          def children = parent.children
+          if (children != null) {
+            assert !children.isEmpty()
+            if (!children.any{it.result == null}) {
+              parent.result = problem.combine(children.map{it.result})
+              parent.children = null
+            }
           }
         }
-
       }
     }
   }
