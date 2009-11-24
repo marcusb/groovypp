@@ -41,15 +41,15 @@ class DivideAndConquerProblemSolver {
   }
 
   class Job {
-    SelfRecurringProblem problem
-    Job parent
-    ConcurrentLinkedQueue<Job> children = []
-    Object result
+    final SelfRecurringProblem problem
+    final Job parent
+    volatile ConcurrentLinkedQueue<Job> children = []
+    volatile Object result
 
     Job(SelfRecurringProblem problem, Job parent) {
-      this.problem = problem
-      this.parent = parent
-      if (parent) parent.children << this
+      this.@problem = problem
+      this.@parent = parent
+      if (parent) parent.@children << this
     }
 
     void setResult(Object result) {
@@ -132,6 +132,6 @@ class DivideAndConquerProblemSolver {
     }
   }
 
-  List<Worker> workers
-  Job root
+  final List<Worker> workers
+  final Job root
 }
