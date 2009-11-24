@@ -25,6 +25,7 @@ abstract class Conversions {
   /**
    * Obtains all the elements from the input @link{Iterable} object and returns them in the array.
    */
+  @Typed(debug=true)  
   static <T> T[] toArray(Iterable<T> self) {
     if (self instanceof Collection) {
       return (T[]) ((Collection<T>) self).toArray();

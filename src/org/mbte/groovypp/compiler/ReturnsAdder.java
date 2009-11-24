@@ -1,8 +1,6 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -57,7 +55,7 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
         }
 
         if (statement instanceof EmptyStatement) {
-            return new NullReturnStatement(methodNode.getReturnType());
+            return ReturnStatement.RETURN_NULL_OR_VOID;
         }
 
         if (statement instanceof ExpressionStatement) {
@@ -119,11 +117,11 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
                 Statement last = addReturnsIfNeeded((Statement) list.get(idx), block.getVariableScope());
                 list.set(idx, last);
                 if (!statementReturns(last)) {
-                    list.add(new NullReturnStatement(methodNode.getReturnType()));
+                    list.add(ReturnStatement.RETURN_NULL_OR_VOID);
                 }
             }
             else {
-                NullReturnStatement ret = new NullReturnStatement(methodNode.getReturnType());
+                Statement ret = ReturnStatement.RETURN_NULL_OR_VOID;
                 ret.setSourcePosition(block);
                 return ret;
             }

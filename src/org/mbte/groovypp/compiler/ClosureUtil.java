@@ -352,7 +352,7 @@ public class ClosureUtil {
                     Opcodes.ACC_PUBLIC,
                     constrParams,
                     ClassNode.EMPTY_ARRAY,
-                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, new NullReturnStatement(ClassHelper.VOID_TYPE)}, new VariableScope()));
+                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, ReturnStatement.RETURN_NULL_OR_VOID}, new VariableScope()));
         newType.addConstructor(cn);
     }
 

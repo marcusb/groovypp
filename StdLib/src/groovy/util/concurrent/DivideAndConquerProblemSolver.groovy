@@ -52,6 +52,7 @@ class DivideAndConquerProblemSolver {
       if (parent) parent.@children << this
     }
 
+    @Typed(debug=true)  
     void setResult(Object result) {
       this.@result = result
       assert parent != this

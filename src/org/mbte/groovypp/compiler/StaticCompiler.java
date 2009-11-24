@@ -302,15 +302,15 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public void visitReturnStatement(ReturnStatement statement) {
         visitStatement(statement);
 
+        Expression returnExpression = statement.getExpression();
         if (!shouldImproveReturnType && !methodNode.getReturnType().equals(ClassHelper.VOID_TYPE)) {
-            CastExpression castExpression = new CastExpression(methodNode.getReturnType(), statement.getExpression());
-            castExpression.setSourcePosition(statement.getExpression());
-            statement.setExpression(castExpression);
+            CastExpression castExpression = new CastExpression(methodNode.getReturnType(), returnExpression);
+            castExpression.setSourcePosition(returnExpression);
+            returnExpression = castExpression;
         }
 
-        super.visitReturnStatement(statement);
+        final BytecodeExpr bytecodeExpr = (BytecodeExpr) transform(returnExpression);
 
-        final BytecodeExpr bytecodeExpr = (BytecodeExpr) statement.getExpression();
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
             if (resolvedMethodBytecodeExpr.getMethodNode() == methodNode) {
