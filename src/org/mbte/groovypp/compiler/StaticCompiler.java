@@ -259,6 +259,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitForLoop(ForStatement forLoop) {
+        visitStatement(forLoop);
         Parameter loopVar = forLoop.getVariable();
         if (loopVar == ForStatement.FOR_LOOP_DUMMY) {
             visitForLoopWithClosures(forLoop);
