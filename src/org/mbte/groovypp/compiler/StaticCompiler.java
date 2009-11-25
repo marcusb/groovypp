@@ -404,6 +404,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitWhileLoop(WhileStatement loop) {
+        visitStatement(loop);
         compileStack.pushLoop(loop.getStatementLabel());
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
