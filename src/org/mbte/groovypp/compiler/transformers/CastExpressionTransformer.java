@@ -23,6 +23,10 @@ import java.util.*;
 public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     public BytecodeExpr transform(CastExpression exp, CompilerTransformer compiler) {
 
+        if (exp.getExpression() instanceof TernaryExpression) {
+            return compiler.cast(exp.getExpression(), exp.getType());
+        }
+
         if (exp.getExpression() instanceof ListExpressionTransformer.UntransformedListExpr) {
             final CastExpression newExp = new CastExpression(exp.getType(), ((ListExpressionTransformer.UntransformedListExpr) exp.getExpression()).exp);
             newExp.setSourcePosition(exp);
@@ -134,6 +138,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         final List list = exp.getMapEntryExpressions();
 
+        Expression superArgs = null;
+
         for (int i = 0; i != list.size(); ++i) {
             final MapEntryExpression me = (MapEntryExpression) list.get(i);
 
@@ -159,6 +165,13 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             String keyName = (String) ((ConstantExpression)me.getKeyExpression()).getValue();
             Expression value = me.getValueExpression();
 
+            if (keyName.equals("super")) {
+                if (objType == null)
+                    objType = createNewType(type, compiler);
+                superArgs = value;
+                continue;
+            }
+
             final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler);
             if (prop != null) {
                 ClassNode propType = null;
@@ -175,10 +188,10 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 exp.getMapEntryExpressions().set(i, new MapEntryExpression(me.getKeyExpression(), cast));
             }
             else {
-                if (value instanceof ClosureExpression) {
-                    if (objType == null)
-                        objType = createNewType(type, compiler);
+                if (objType == null)
+                    objType = createNewType(type, compiler);
 
+                if (value instanceof ClosureExpression) {
                     ClosureExpression ce = (ClosureExpression) value;
 
                     methods.add (me);
@@ -186,17 +199,37 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     ClosureUtil.addFields(ce, objType, compiler);
                 }
                 else {
-                    if (objType == null)
-                        objType = createNewType(type, compiler);
-
                     fields.add(me);
                 }
             }
         }
 
         if (objType != null) {
-            Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
-            ClosureUtil.createClosureConstructor(objType, constrParams);
+            final Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
+
+            if (superArgs != null) {
+                if (superArgs instanceof ListExpression) {
+                    superArgs = new ArgumentListExpression(((ListExpression)superArgs).getExpressions());
+                }
+                else
+                    superArgs = new ArgumentListExpression(superArgs);
+            }
+            else
+                superArgs = new ArgumentListExpression();
+            superArgs = compiler.transform(superArgs);
+
+            final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler);
+
+            if (constructor == null) {
+                compiler.addError ("Can't find super constructor", objType);
+                return null;
+            }
+
+            final List<Expression> ll = ((ArgumentListExpression) superArgs).getExpressions();
+            for (int i = 0; i != ll.size(); ++i)
+                ll.set(i, compiler.cast(ll.get(i), constructor.getParameters()[i].getType()));
+
+            ClosureUtil.createClosureConstructor(objType, constrParams, superArgs);
 
             for (MapEntryExpression me : fields) {
                 final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
@@ -213,9 +246,10 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
             }
 
+            final Expression finalSA = superArgs;
             return new BytecodeExpr(exp, objType) {
                 protected void compile(MethodVisitor mv) {
-                    ClosureUtil.instantiateClass(getType(), compiler, mv);
+                    ClosureUtil.instantiateClass(getType(), compiler, constrParams, finalSA, mv);
 
                     for (MapEntryExpression me : fields) {
                         final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();

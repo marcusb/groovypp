@@ -295,7 +295,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             }
                             else {
                                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                                GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
+                                GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
                                 if (methodTypeVars != null && methodTypeVars.length > 0) {
                                     ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
                                     ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
@@ -313,7 +313,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
                                             formals.toArray(new ClassNode[formals.size()]),
                                             instantiateds.toArray(new ClassNode[instantiateds.size()]));
-                                    argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
+                                    argType = TypeUtil.getSubstitutedTypeIncludingInstance(argType, foundMethod, unified);
                                 }
                                 MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
                                 if (one == null || doCall == null) {

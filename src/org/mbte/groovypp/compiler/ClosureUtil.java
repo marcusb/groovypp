@@ -13,10 +13,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.MethodVisitor;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class ClosureUtil {
     private static final LinkedList<MethodNode> NONE = new LinkedList<MethodNode> ();
@@ -310,14 +307,34 @@ public class ClosureUtil {
         return _doCallMethodDef;
     }
 
-    public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams) {
+    public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams, Expression superArgs) {
 
         final ClassNode superClass = newType.getSuperClass();
 
-        ArgumentListExpression superCallArgs = new ArgumentListExpression();
-        if (superClass == ClassHelper.CLOSURE_TYPE) {
-            superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+        final Parameter[] finalConstrParams;
+        final ArgumentListExpression superCallArgs = new ArgumentListExpression();
+        if (superArgs != null) {
+            final ArgumentListExpression args = (ArgumentListExpression) superArgs;
+            if (args.getExpressions().size() > 0) {
+                Parameter [] newParams = new Parameter [constrParams.length + args.getExpressions().size()];
+                System.arraycopy(constrParams, 0, newParams, 0, constrParams.length);
+                for (int i = 0; i != args.getExpressions().size(); ++i) {
+                    final Parameter parameter = new Parameter(args.getExpressions().get(i).getType(), "$super$param$" + i);
+                    newParams [i+constrParams.length] = parameter;
+                    superCallArgs.addExpression(new VariableExpression(parameter));
+                }
+                finalConstrParams = newParams;
+            }
+            else
+                finalConstrParams = constrParams;
         }
+        else {
+            if (superClass == ClassHelper.CLOSURE_TYPE) {
+                superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+            }
+            finalConstrParams = constrParams;
+        }
+
         ConstructorCallExpression superCall = new ConstructorCallExpression(ClassNode.SUPER, superCallArgs);
 
         BytecodeSequence fieldInit = new BytecodeSequence(new BytecodeInstruction() {
@@ -350,7 +367,7 @@ public class ClosureUtil {
 
         ConstructorNode cn = new ConstructorNode(
                     Opcodes.ACC_PUBLIC,
-                    constrParams,
+                    finalConstrParams,
                     ClassNode.EMPTY_ARRAY,
                 new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, ReturnStatement.RETURN_NULL_OR_VOID}, new VariableScope()));
         newType.addConstructor(cn);
@@ -394,14 +411,14 @@ public class ClosureUtil {
         return constrParams;
     }
 
-    public static void instantiateClass(ClassNode type, CompilerTransformer compiler, MethodVisitor mv) {
+    public static void instantiateClass(ClassNode type, CompilerTransformer compiler, Parameter[] constrParams, Expression superArgs, MethodVisitor mv) {
         type.getModule().addClass(type);
 
         final String classInternalName = BytecodeHelper.getClassInternalName(type);
         mv.visitTypeInsn(Opcodes.NEW, classInternalName);
         mv.visitInsn(Opcodes.DUP);
 
-        final Parameter[] constrParams = type.getDeclaredConstructors().get(0).getParameters();
+        final ConstructorNode constructorNode = type.getDeclaredConstructors().get(0);
 
         for (int i = 0; i != constrParams.length; i++) {
             final String name = constrParams[i].getName();
@@ -424,6 +441,13 @@ public class ClosureUtil {
                 }
             }
         }
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constrParams));
+
+        if (superArgs != null) {
+            final List<Expression> list = ((ArgumentListExpression) superArgs).getExpressions();
+            for (int i = 0; i != list.size(); ++i)
+                ((BytecodeExpr)list.get(i)).visit(mv);
+        }
+
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constructorNode.getParameters()));
     }
 }

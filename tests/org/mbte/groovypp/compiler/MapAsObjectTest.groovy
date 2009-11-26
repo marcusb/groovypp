@@ -101,4 +101,33 @@ class TreeNode
 null
         """
     }
+
+    void testFuture () {
+        shell.evaluate """
+        import java.util.concurrent.*
+
+        @Trait
+        abstract class F<T,R> {
+            abstract R apply (T param)
+
+            FutureTask<R> future (T arg, Executor executor = null, F<FutureTask<R>,Object> continuation = null) {
+                FutureTask<R> res = [ 'super': { -> apply(arg) }, done: { continuation?.apply(this) } ]
+                executor?.execute(res)
+                res
+            }
+        }
+
+        @Typed(debug=true)
+        def u () {
+           def executor = Executors.newFixedThreadPool (10)
+           F<Integer,Integer> f = { int it -> it + 1 }
+           f.future (5, executor) {
+                println "done \${it.get() + 12}"
+                assert 18 == (it.get() + 12) 
+           }
+        }
+
+        u ()
+"""
+    }
 }

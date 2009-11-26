@@ -143,21 +143,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             removeFirstArgAtTheEnd = true;
         }
 
-        GenericsType[] typeVars = methodNode.getGenericsTypes();
-        if (!methodNode.isStatic()) {
-            final GenericsType[] classTypeVars = methodNode.getDeclaringClass().getGenericsTypes();
-            if (classTypeVars != null && classTypeVars.length > 0) {
-                if (typeVars == null || typeVars.length == 0) {
-                    typeVars = classTypeVars;
-                }
-                else {
-                    GenericsType newTypeVars [] = new GenericsType [typeVars.length + classTypeVars.length];
-                    System.arraycopy(typeVars, 0, newTypeVars, 0, typeVars.length);
-                    System.arraycopy(classTypeVars, 0, newTypeVars, typeVars.length, classTypeVars.length);
-                    typeVars = newTypeVars;
-                }
-            }
-        }
+        GenericsType[] typeVars = TypeUtil.getMethodTypeVars(methodNode);
         if (typeVars != null && typeVars.length > 0) {
             Parameter[] params = methodNode.getParameters();
             List<Expression> exprs = bargs.getExpressions();

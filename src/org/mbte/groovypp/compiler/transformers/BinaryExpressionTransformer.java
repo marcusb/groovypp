@@ -3,10 +3,7 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -282,7 +279,10 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression callMethod(BinaryExpression be, String method, CompilerTransformer compiler, BytecodeExpr l, BytecodeExpr r) {
-        final MethodCallExpression mce = new MethodCallExpression(l, method, new ArgumentListExpression(r));
+        ConstantExpression methodExpression = new ConstantExpression(method);
+        methodExpression.setLineNumber(be.getOperation().getStartLine());
+        methodExpression.setColumnNumber(be.getOperation().getStartColumn());
+        final MethodCallExpression mce = new MethodCallExpression(l, methodExpression, new ArgumentListExpression(r));
         mce.setSourcePosition(be);
         return compiler.transform(mce);
     }
@@ -295,7 +295,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             return null;
         }
 
-        return ((ResolvedLeftExpr) left).createAssign(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+        return ((ResolvedLeftExpr) left).createAssign(be, be.getRightExpression(), compiler);
     }
 
     private Expression evaluateMathOperationAssign(BinaryExpression be, Token method, CompilerTransformer compiler) {

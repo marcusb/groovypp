@@ -1,6 +1,7 @@
 package groovy.lang
 
 import java.util.concurrent.FutureTask
+import java.util.concurrent.Executor
 
 @Trait
 abstract class Function1<T,R> {

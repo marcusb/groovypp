@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.MethodVisitor;
@@ -32,11 +33,11 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         getter.visit(mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
         Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, right.getType(), compiler);
-        return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop);
+        return PropertyUtil.createSetProperty(parent, compiler, name, object, (BytecodeExpr) compiler.transform(right), prop);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {

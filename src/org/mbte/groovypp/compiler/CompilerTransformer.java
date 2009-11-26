@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
@@ -64,6 +65,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             processPendingClosures();
             return result;
         }
+        catch (MultipleCompilationErrorsException err) {
+            throw err;
+        }
         catch (Throwable e) {
             e.printStackTrace();
             addError(e.getMessage(), exp);
@@ -97,6 +101,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             final BytecodeExpr result = ExprTransformer.transformLogicalExpression(exp, this, label, onTrue);
             processPendingClosures();
             return result;
+        }
+        catch (MultipleCompilationErrorsException err) {
+            throw err;
         }
         catch (Throwable e) {
             e.printStackTrace();
@@ -419,11 +426,20 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
     }
 
-    public BytecodeExpr cast(final BytecodeExpr be, final ClassNode type) {
+    public BytecodeExpr cast(final Expression be, final ClassNode type) {
 
-        final CastExpression newExp = new CastExpression(type, be);
-        newExp.setSourcePosition(be);
-        return (BytecodeExpr) transform(newExp);
+        if (be instanceof TernaryExpression) {
+            TernaryExpression ternaryExpression = (TernaryExpression) be;
+            TernaryExpression cast = new TernaryExpression(ternaryExpression.getBooleanExpression(),
+                    cast(ternaryExpression.getTrueExpression(), type),
+                    cast(ternaryExpression.getFalseExpression(), type));
+            cast.setSourcePosition(be);
+            return (BytecodeExpr) transform(cast);
+        }
+        
+        final CastExpression cast = new CastExpression(type, be);
+        cast.setSourcePosition(be);
+        return (BytecodeExpr) transform(cast);
 
 //        if (TypeUtil.isDirectlyAssignableFrom(type, be.getType()))
 //            return be;

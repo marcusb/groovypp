@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.MethodVisitor;
@@ -32,7 +33,8 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
         }
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, final Expression right0, CompilerTransformer compiler) {
+        final BytecodeExpr right = (BytecodeExpr) compiler.transform(right0);
         return new BytecodeExpr(parent, ClassHelper.VOID_TYPE) {
             protected void compile(MethodVisitor mv) {
                 object.visit(mv);

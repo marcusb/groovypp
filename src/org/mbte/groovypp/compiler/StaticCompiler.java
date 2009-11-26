@@ -24,7 +24,6 @@ import java.util.List;
 
 public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private StaticMethodBytecode methodBytecode;
-    private int debug;
 
     // exception blocks list
     private List<Runnable> exceptionBlocks = new ArrayList<Runnable>();
@@ -37,7 +36,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName);
         this.methodBytecode = methodBytecode;
-        this.debug = debug;
         shouldImproveReturnType = methodNode.getName().equals("doCall");
 
         mv.visitLabel(startLabel);

@@ -5,12 +5,13 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.classgen.Verifier;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 
 public class PropertyUtil {
-    public static BytecodeExpr createGetProperty(PropertyExpression exp, CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
+    public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
         if (prop instanceof MethodNode)
             return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic, compiler);
 
@@ -19,6 +20,31 @@ public class PropertyUtil {
 
         if (prop instanceof FieldNode)
             return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null, compiler);
+
+        if (object == null && "this".equals(propName)) {
+            ClassNode cur = compiler.classNode;
+            while (cur != null) {
+                final FieldNode field = cur.getDeclaredField("this$0");
+                if (field == null)
+                    break;
+
+                cur = field.getType();
+                if (cur.equals(exp.getObjectExpression().getType())) {
+                    return new BytecodeExpr(exp,cur){
+                        protected void compile(MethodVisitor mv) {
+                            ClassNode cur = compiler.classNode;
+                            mv.visitVarInsn(ALOAD, 0);
+                            while (!cur.equals(exp.getObjectExpression().getType())) {
+                                final FieldNode field = cur.getDeclaredField("this$0");
+                                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(cur), "this$0", BytecodeHelper.getTypeDescription(field.getType()));
+                                cur = field.getType();
+                            }
+                        }
+                    };
+                }
+            }
+            return null;
+        }
 
         if (object.getType().isArray() && "length".equals(propName)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
