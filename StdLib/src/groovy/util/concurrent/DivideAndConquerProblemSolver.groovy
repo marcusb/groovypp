@@ -52,7 +52,6 @@ class DivideAndConquerProblemSolver {
       if (parent) parent.@children << this
     }
 
-    @Typed(debug=true)  
     void setResult(Object result) {
       this.@result = result
       assert parent != this
@@ -88,21 +87,13 @@ class DivideAndConquerProblemSolver {
 
       Job removeFirst() {
         withLock {
-          if (!list.isEmpty()) {
-            return list.removeFirst()
-          } else {
-            return null
-          }
+          list.isEmpty() ? null : list.removeFirst()
         }
       }
 
       Job removeLast() {
         withLock {
-          if (!list.isEmpty()) {
-            return list.removeLast()
-          } else {
-            return null
-          }
+          list.isEmpty() ? null : list.removeLast()
         }
       }
     }
@@ -123,9 +114,8 @@ class DivideAndConquerProblemSolver {
         }
         if (!job) break
         if (job.problem.complex()) {
-          job.problem.sub().each{
-            def child = new Job(it, job)
-            jobs.addFirst(child)
+          job.problem.sub().each {
+            jobs.addFirst(new Job(it, job))
           }
         } else {
           job.result = job.problem.solve()

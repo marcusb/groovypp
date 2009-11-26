@@ -1,6 +1,8 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -55,7 +57,9 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
         }
 
         if (statement instanceof EmptyStatement) {
-            return ReturnStatement.RETURN_NULL_OR_VOID;
+            ReturnStatement ret = new ReturnStatement(ConstantExpression.NULL);
+            ret.setSourcePosition(statement);
+            return ret;
         }
 
         if (statement instanceof ExpressionStatement) {
@@ -111,52 +115,44 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
         if (statement instanceof BlockStatement) {
             BlockStatement block = (BlockStatement) statement;
 
-            final List list = block.getStatements();
+            final List<Statement> list = block.getStatements();
             if (!list.isEmpty()) {
                 int idx = list.size() - 1;
-                Statement last = addReturnsIfNeeded((Statement) list.get(idx), block.getVariableScope());
-                list.set(idx, last);
-                if (!statementReturns(last)) {
-                    list.add(ReturnStatement.RETURN_NULL_OR_VOID);
-                }
+                list.set(idx, addReturnsIfNeeded(list.get(idx), block.getVariableScope()));
             }
             else {
-                Statement ret = ReturnStatement.RETURN_NULL_OR_VOID;
+                ReturnStatement ret = new ReturnStatement(ConstantExpression.NULL);
                 ret.setSourcePosition(block);
                 return ret;
             }
 
-            return new BlockStatement(filterStatements(list),block.getVariableScope());
+            return new BlockStatement(filterStatements(list), block.getVariableScope());
         }
 
         if (statement == null)
-          return new ReturnStatement(ConstantExpression.NULL);
+            return createSyntheticReturnStatement();
         else {
-            final List list = new ArrayList();
+            final List<Statement> list = new ArrayList<Statement>();
             list.add(statement);
-            list.add(new ReturnStatement(ConstantExpression.NULL));
+            list.add(createSyntheticReturnStatement());
             return new BlockStatement(list,new VariableScope(scope));
         }
     }
 
-    private boolean statementReturns(Statement last) {
-        return (
-                last instanceof ReturnStatement ||
-                last instanceof BlockStatement ||
-                last instanceof IfStatement ||
-                last instanceof ExpressionStatement ||
-                last instanceof EmptyStatement ||
-                last instanceof TryCatchStatement ||
-                last instanceof BytecodeSequence ||
-                last instanceof ThrowStatement ||
-                last instanceof SynchronizedStatement
-                );
+    // This creates a return statement which has its source position after the last statement in the method.
+    private ReturnStatement createSyntheticReturnStatement() {
+        ReturnStatement returnStatement = new ReturnStatement(ConstantExpression.NULL);
+        returnStatement.setLineNumber(methodNode.getLastLineNumber());
+        returnStatement.setColumnNumber(methodNode.getLastColumnNumber());
+        returnStatement.setLastLineNumber(methodNode.getLastLineNumber());
+        returnStatement.setLastColumnNumber(methodNode.getLastColumnNumber());
+        return returnStatement;
     }
 
-    protected List filterStatements(List list) {
-        List answer = new ArrayList(list.size());
-        for (Iterator iter = list.iterator(); iter.hasNext();) {
-            answer.add(filterStatement((Statement) iter.next()));
+    protected List<Statement> filterStatements(List<Statement> list) {
+        List<Statement> answer = new ArrayList<Statement>(list.size());
+        for (Iterator<Statement> iter = list.iterator(); iter.hasNext();) {
+            answer.add(filterStatement(iter.next()));
         }
         return answer;
     }

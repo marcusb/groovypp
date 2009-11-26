@@ -38,7 +38,7 @@ public class PerfTest extends GroovyShellTestCase {
       long start = System.currentTimeMillis()
       def nsum = res.normalMethod(i)
       long t1 = System.currentTimeMillis() - start
-      print "normel: $t1"
+      print "normal: $t1"
 
       Thread.sleep 0L
 
