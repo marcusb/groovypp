@@ -131,7 +131,7 @@ public class ClosureUtil {
                     }
 
                 improveClosureType(closureType, baseType);
-                StaticMethodBytecode.replaceMethodCode(compiler.su, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+                StaticMethodBytecode.replaceMethodCode(compiler.su, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, closureType.getName());
                 return method;
             }
         }
@@ -371,6 +371,26 @@ public class ClosureUtil {
                     ClassNode.EMPTY_ARRAY,
                 new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, ReturnStatement.RETURN_NULL_OR_VOID}, new VariableScope()));
         newType.addConstructor(cn);
+
+        if (newType.getOuterClass() != null && newType.getMethods("methodMissing").isEmpty()) {
+            newType.addMethod("methodMissing",
+                    Opcodes.ACC_PUBLIC,
+                    ClassHelper.OBJECT_TYPE,
+                    new Parameter[] {
+                            new Parameter(ClassHelper.STRING_TYPE, "name"),
+                            new Parameter(ClassHelper.OBJECT_TYPE, "args")},
+                    ClassNode.EMPTY_ARRAY,
+                    new BytecodeSequence(new BytecodeInstruction(){
+                        public void visit(MethodVisitor mv) {
+                                mv.visitVarInsn(Opcodes.ALOAD, 0);
+                                mv.visitFieldInsn(Opcodes.GETFIELD, BytecodeHelper.getClassInternalName(newType), "this$0", BytecodeHelper.getTypeDescription(newType.getOuterClass()));
+                                mv.visitVarInsn(Opcodes.ALOAD, 1);
+                                mv.visitVarInsn(Opcodes.ALOAD, 2);
+                                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;");
+                                mv.visitInsn(Opcodes.ARETURN);
+                        }
+                    }));
+        }
     }
 
     public static void addFields(ClosureExpression ce, ClassNode newType, CompilerTransformer compiler) {

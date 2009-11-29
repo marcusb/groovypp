@@ -30,4 +30,67 @@ public class MixedModeTest extends GroovyShellTestCase {
 """)
   }
 
+  void testConcurrently () {
+      shell.evaluate """
+        import java.util.concurrent.*
+        import java.util.concurrent.atomic.*
+        import groovy.xml.*
+
+        static <T,R> Iterator<R> mapConcurrently (Iterator<T> self, Executor executor, int maxConcurrentTasks, Function1<T,R> op) {
+          [
+              pending: new AtomicInteger(),
+              ready: new LinkedBlockingQueue<R>(),
+
+              scheduleIfNeeded: {->
+                while (self && ready.size() + pending.get() < maxConcurrentTasks) {
+                  pending.incrementAndGet()
+                  def nextElement = self.next()
+                  executor.execute {-> ready << op.apply(nextElement); pending.decrementAndGet() }
+                }
+              },
+
+              next: {->
+                def res = ready.take()
+                scheduleIfNeeded()
+                res
+              },
+
+              hasNext: {-> scheduleIfNeeded(); pending.get() > 0 || !ready.empty },
+
+              remove: {-> throw new UnsupportedOperationException("remove () is unsupported by the iterator") },
+          ]
+       }
+
+
+        @Typed(value=TypePolicy.MIXED,debug=true)
+        void u () {
+            new MarkupBuilder ().numbers {
+                def divisors = @Typed{ int n, Collection alreadyFound = [] ->
+                    if (n > 3)
+                        for(candidate in 2..<n)
+                           if (n % candidate == 0)
+                              return doCall (n / candidate, alreadyFound << candidate)
+
+                    alreadyFound << n
+                }
+
+                (2..1500).iterator ().mapConcurrently (Executors.newFixedThreadPool(10), 50) {
+                    [ it, divisors(it) ]
+                }.each { pair ->
+                    if (pair [1].size () == 1)
+                        number ([value: pair[0], prime:true ])
+                    else {
+                        number ([value: pair[0], prime:false]) {
+                          pair[1].each { div ->
+                            divisor([value: div])
+                          }
+                        }
+                    }
+                }
+            }
+        }
+
+        u ()
+      """
+  }
 }

@@ -2,6 +2,7 @@ package groovy.util
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import groovy.xml.MarkupBuilder
 
 @Typed
 class MappersTest extends GroovyShellTestCase {
@@ -71,5 +72,17 @@ class MappersTest extends GroovyShellTestCase {
         }.toArray ()
         res.sort()
         assertEquals ((1..100001), res)
+    }
+
+    @Typed(TypePolicy.MIXED)
+    void testConcurrentlyMixed () {
+        ExecutorService pool = Executors.newFixedThreadPool(10)
+        new MarkupBuilder ().root {
+            (0..10000).iterator ().mapConcurrently (pool, true, 50) {
+                it + 1
+            }.each {
+                number { it }
+            }
+        }
     }
 }

@@ -25,9 +25,13 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
                 to.visit(mv);
                 box(to.getType(), mv);
                 mv.visitLdcInsn(exp.isInclusive());
-                mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
-                if (intRange)
+                if (intRange) {
+                    mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
                     mv.visitTypeInsn(CHECKCAST, "groovy/lang/IntRange");
+                }
+                else {
+                    mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
+                }
             }
         };
     }

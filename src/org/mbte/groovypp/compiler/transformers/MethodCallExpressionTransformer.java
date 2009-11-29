@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -73,6 +74,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
                                     curThis = next;
                                 }
+                            }
+
+                            @Override
+                            public boolean isThis() {
+                                return thisTypeFinal.equals(compiler.classNode);
                             }
                         };
 
@@ -240,17 +246,33 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
     }
 
     private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
+        final List<Expression> args = ((ArgumentListExpression) exp.getArguments()).getExpressions();
+
+        for (int i = 0; i != args.size(); ++i) {
+            Expression arg = args.get(i);
+            if (arg instanceof CompiledClosureBytecodeExpr) {
+                compiler.processPendingClosure((CompiledClosureBytecodeExpr) arg);
+            }
+            if (arg instanceof ListExpressionTransformer.UntransformedListExpr) {
+                arg = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)arg).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                args.set(i, arg);
+            }
+            if (arg instanceof MapExpressionTransformer.UntransformedMapExpr) {
+                arg = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)arg).exp, compiler);
+                args.set(i, arg);
+            }
+        }
+
         final BytecodeExpr methodExpr = (BytecodeExpr) compiler.transform(exp.getMethod());
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+
         return new BytecodeExpr(exp, ClassHelper.OBJECT_TYPE) {
             protected void compile(MethodVisitor mv) {
-                mv.visitInsn(ACONST_NULL);
                 object.visit(mv);
                 box(object.getType(), mv);
 
                 methodExpr.visit(mv);
 
-                final List args = ((ArgumentListExpression) exp.getArguments()).getExpressions();
                 mv.visitLdcInsn(args.size());
                 mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
                 for (int j = 0; j != args.size(); ++j) {
@@ -259,7 +281,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     ((BytecodeExpr) args.get(j)).visit(mv);
                     mv.visitInsn(AASTORE);
                 }
-                mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "invokeMethodN", "(Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;");
             }
         };
     }

@@ -308,7 +308,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             returnExpression = castExpression;
         }
 
-        final BytecodeExpr bytecodeExpr = (BytecodeExpr) transform(returnExpression);
+        BytecodeExpr bytecodeExpr = (BytecodeExpr) transform(returnExpression);
+
+        if (bytecodeExpr instanceof ListExpressionTransformer.UntransformedListExpr) {
+            bytecodeExpr = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)bytecodeExpr).exp, TypeUtil.ARRAY_LIST_TYPE, this);
+        }
 
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
@@ -360,6 +364,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Parameter[] parameters = methodNode.getParameters();
 
         int varIndex = methodNode.isStatic() ? 0 : 1;
+        if (varIndex != 0) {
+            resolvedMethodBytecodeExpr.getObject().visit(mv);
+        }
         for (int i = 0; i != parameters.length; ++i) {
             BytecodeExpr be = (BytecodeExpr) resolvedMethodBytecodeExpr.getBargs().getExpressions().get(i);
             be.visit(mv);
