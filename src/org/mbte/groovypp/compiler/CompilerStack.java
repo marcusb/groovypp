@@ -23,25 +23,25 @@ public class CompilerStack implements Opcodes {
     // current label for break
     private Label breakLabel;
     // available variables on stack
-    private Map stackVariables = new HashMap();
+    private Map<String, Variable> stackVariables = new HashMap<String, Variable>();
     // index of the last variable on stack
     private int currentVariableIndex = 1;
     // index for the next variable on stack
     private int nextVariableIndex = 1;
     // currently temporary variables in use
-    private final LinkedList temporaryVariables = new LinkedList();
+    private final LinkedList<Variable> temporaryVariables = new LinkedList<Variable>();
     // overall used variables for a method/constructor
-    private final LinkedList usedVariables = new LinkedList();
+    private final LinkedList<Variable> usedVariables = new LinkedList<Variable>();
     // map containing named labels of parenting blocks
-    private Map superBlockNamedLabels = new HashMap();
+    private Map<String, Label> superBlockNamedLabels = new HashMap<String, Label>();
     // map containing named labels of current block
-    private Map currentBlockNamedLabels = new HashMap();
+    private Map<String, Label> currentBlockNamedLabels = new HashMap<String, Label>();
     // list containing runnables representing a finally block
     // such a block is created by synchronized or finally and
     // must be called for break/continue/return
     private LinkedList finallyBlocks = new LinkedList();
     // a list of blocks already visiting.
-    private final List visitedBlocks = new LinkedList();
+    private final List<Runnable> visitedBlocks = new LinkedList<Runnable>();
 
     private Label thisStartLabel, thisEndLabel;
 
@@ -49,17 +49,17 @@ public class CompilerStack implements Opcodes {
     private BytecodeHelper helper;
 
     // helper to handle different stack based variables
-    private final LinkedList stateStack = new LinkedList();
+    private final LinkedList<StateStackElement> stateStack = new LinkedList<StateStackElement>();
 
     // defines the first variable index useable after
     // all parameters of a method
     private int localVariableOffset;
     // this is used to store the goals for a "break foo" call
     // in a loop where foo is a label.
-	private final Map namedLoopBreakLabel = new HashMap();
+	private final Map<String, Label> namedLoopBreakLabel = new HashMap<String, Label>();
 	//this is used to store the goals for a "continue foo" call
     // in a loop where foo is a label.
-	private final Map namedLoopContinueLabel = new HashMap();
+	private final Map<String, Label> namedLoopContinueLabel = new HashMap<String, Label>();
     private String className;
 
     CompilerStack parent;
@@ -75,11 +75,11 @@ public class CompilerStack implements Opcodes {
         Label finallyLabel;
         final int lastVariableIndex;
         final int nextVariableIndex;
-        final Map stackVariables;
-        List temporaryVariables = new LinkedList();
+        final Map<String, Variable> stackVariables;
+        List<Variable> temporaryVariables = new LinkedList<Variable>();
         List usedVariables = new LinkedList();
-        final Map superBlockNamedLabels;
-        final Map currentBlockNamedLabels;
+        final Map<String, Label> superBlockNamedLabels;
+        final Map<String, Label> currentBlockNamedLabels;
         final LinkedList finallyBlocks;
 
         StateStackElement() {
@@ -98,7 +98,7 @@ public class CompilerStack implements Opcodes {
 
     protected void pushState() {
         stateStack.add(new StateStackElement());
-        stackVariables = new HashMap(stackVariables);
+        stackVariables = new HashMap<String, Variable>(stackVariables);
         finallyBlocks = new LinkedList(finallyBlocks);
     }
 
@@ -106,7 +106,7 @@ public class CompilerStack implements Opcodes {
         if (stateStack.size()==0) {
              throw new GroovyBugError("Tried to do a pop on the compiler stack without push.");
         }
-        StateStackElement element = (StateStackElement) stateStack.removeLast();
+        StateStackElement element = stateStack.removeLast();
         scope = element.scope;
         continueLabel = element.continueLabel;
         breakLabel = element.breakLabel;
@@ -125,7 +125,7 @@ public class CompilerStack implements Opcodes {
     }
 
     public void removeVar(int tempIndex) {
-        final Variable head = (Variable) temporaryVariables.removeFirst();
+        final Variable head = temporaryVariables.removeFirst();
         if (head.getIndex() != tempIndex)
             throw new GroovyBugError("CompileStack#removeVar: tried to remove a temporary variable in wrong order");
 
@@ -136,8 +136,8 @@ public class CompilerStack implements Opcodes {
     private void setEndLabels(){
         Label endLabel = new Label();
         mv.visitLabel(endLabel);
-        for (Iterator iter = stackVariables.values().iterator(); iter.hasNext();) {
-            Variable var = (Variable) iter.next();
+        for (Iterator<Variable> iter = stackVariables.values().iterator(); iter.hasNext();) {
+            Variable var = iter.next();
             var.setEndLabel(endLabel);
         }
         thisEndLabel = endLabel;
@@ -185,7 +185,7 @@ public class CompilerStack implements Opcodes {
     public Variable getVariable(String variableName, boolean mustExist) {
         if (variableName.equals("this")) return Variable.THIS_VARIABLE;
         if (variableName.equals("super")) return Variable.SUPER_VARIABLE;
-        Variable v = (Variable) stackVariables.get(variableName);
+        Variable v = stackVariables.get(variableName);
         if (v == null && mustExist) {
             throw new GroovyBugError("tried to get a variable with the name " + variableName + " as stack variable, but a variable with this name was not created");
         }
@@ -216,7 +216,7 @@ public class CompilerStack implements Opcodes {
         temporaryVariables.addFirst(answer); // TRICK: we add at the beginning so when we find for remove or get we always have the last one
         usedVariables.removeLast();
 
-        if (store) mv.visitVarInsn(ASTORE, currentVariableIndex);
+        if (store) doStore(node);
 
         return answer.getIndex();
     }
@@ -251,8 +251,8 @@ public class CompilerStack implements Opcodes {
                 mv.visitLocalVariable("this", className, null, thisStartLabel, thisEndLabel, 0);
             }
 
-            for (Iterator iterator = usedVariables.iterator(); iterator.hasNext();) {
-                Variable v = (Variable) iterator.next();
+            for (Iterator<Variable> iterator = usedVariables.iterator(); iterator.hasNext();) {
+                Variable v = iterator.next();
                 String type = BytecodeHelper.getTypeDescription(v.getType());
                 Label start = v.getStartLabel();
                 Label end = v.getEndLabel();
@@ -301,9 +301,9 @@ public class CompilerStack implements Opcodes {
     protected void pushVariableScope(VariableScope el) {
         pushState();
         scope = el;
-        superBlockNamedLabels = new HashMap(superBlockNamedLabels);
+        superBlockNamedLabels = new HashMap<String, Label>(superBlockNamedLabels);
         superBlockNamedLabels.putAll(currentBlockNamedLabels);
-        currentBlockNamedLabels = new HashMap();
+        currentBlockNamedLabels = new HashMap<String, Label>();
     }
 
     /**
@@ -345,7 +345,7 @@ public class CompilerStack implements Opcodes {
     protected Label getNamedBreakLabel(String name) {
     	Label label = getBreakLabel();
     	Label endLabel = null;
-        if (name!=null) endLabel = (Label) namedLoopBreakLabel.get(name);
+        if (name!=null) endLabel = namedLoopBreakLabel.get(name);
     	if (endLabel!=null) label = endLabel;
         return label;
     }
@@ -359,7 +359,7 @@ public class CompilerStack implements Opcodes {
     protected Label getNamedContinueLabel(String name) {
     	Label label = getLabel(name);
     	Label endLabel = null;
-        if (name!=null) endLabel = (Label) namedLoopContinueLabel.get(name);
+        if (name!=null) endLabel = namedLoopContinueLabel.get(name);
     	if (endLabel!=null) label = endLabel;
         return label;
     }
@@ -461,6 +461,13 @@ public class CompilerStack implements Opcodes {
                 mv.visitInsn(ACONST_NULL);
         }
 
+        doStore(type);
+
+        mv.visitLabel(startLabel);
+        return answer;
+    }
+
+    private void doStore(ClassNode type) {
         if (ClassHelper.isPrimitiveType(type)) {
             if (type == ClassHelper.long_TYPE)
                 mv.visitVarInsn(LSTORE, currentVariableIndex);
@@ -475,9 +482,6 @@ public class CompilerStack implements Opcodes {
         }
         else
             mv.visitVarInsn(ASTORE, currentVariableIndex);
-
-        mv.visitLabel(startLabel);
-        return answer;
     }
 
     /**
@@ -505,7 +509,7 @@ public class CompilerStack implements Opcodes {
      */
     public Label getLabel(String name) {
         if (name==null) return null;
-        Label l = (Label) superBlockNamedLabels.get(name);
+        Label l = superBlockNamedLabels.get(name);
         if (l==null) l = createLocalLabel(name);
         return l;
     }
@@ -514,7 +518,7 @@ public class CompilerStack implements Opcodes {
      * creates a new named label
      */
     public Label createLocalLabel(String name) {
-        Label l = (Label) currentBlockNamedLabels.get(name);
+        Label l = currentBlockNamedLabels.get(name);
         if (l==null) {
             l = new Label();
             currentBlockNamedLabels.put(name,l);
@@ -528,8 +532,8 @@ public class CompilerStack implements Opcodes {
         // in the list knows that label, then the defining state is the
         // current state.
         StateStackElement result = null;
-        for (ListIterator iter = stateStack.listIterator(stateStack.size()); iter.hasPrevious();) {
-            StateStackElement element = (StateStackElement) iter.previous();
+        for (ListIterator<StateStackElement> iter = stateStack.listIterator(stateStack.size()); iter.hasPrevious();) {
+            StateStackElement element = iter.previous();
             if (!element.currentBlockNamedLabels.values().contains(label)) {
                 if (isBreakLabel && element.breakLabel != label) {
                     result = element;

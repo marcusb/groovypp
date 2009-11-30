@@ -214,4 +214,20 @@ u()
     """)
     assertEquals([], res)
   }
+
+  void testIterateIntRange() {
+    def res = shell.evaluate("""
+      @Typed
+      def u() {
+        def ret = []
+        for(i in 1..<-1) {
+          ret << i
+          println i
+        }
+        ret
+      }
+      u()
+    """)
+    assertEquals([1, 0], res)
+  }
 }

@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler;
 
+import groovy.lang.EmptyRange;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -160,9 +161,15 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     private void visitForLoopWithCollection(ForStatement forLoop) {
-        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
-
         final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
+
+        if (forLoop.getCollectionExpression() instanceof RangeExpression &&
+                TypeUtil.equal(TypeUtil.RANGE_OF_INT_TYPE, collectionExpression.getType())) {
+            // This is the IntRange (or EmptyRange). Iterate with index.
+            visitForLoopWithIntRange(forLoop, collectionExpression);
+            return;
+        }
+        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
 
         ClassNode collectionType = TypeUtil.getSubstitutedType(TypeUtil.COLLECTION_TYPE, TypeUtil.COLLECTION_TYPE,
                 collectionExpression.getType());
@@ -186,7 +193,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         expr.visit(mv);
 
         final int iteratorIdx = compileStack.defineTemporaryVariable(
-                "iterator", ClassHelper.make(java.util.Iterator.class), true);
+                "iterator", ClassHelper.make(Iterator.class), true);
 
         mv.visitLabel(continueLabel);
         mv.visitVarInsn(ALOAD, iteratorIdx);
@@ -264,6 +271,73 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         } else {
             visitForLoopWithCollection(forLoop);
         }
+    }
+
+    private void visitForLoopWithIntRange(ForStatement forLoop, BytecodeExpr coll) {
+        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
+        forLoop.getVariable().setType(ClassHelper.int_TYPE);
+
+        Label breakLabel = compileStack.getBreakLabel();
+        Label continueLabel = compileStack.getContinueLabel();
+
+        coll.visit(mv);
+        mv.visitTypeInsn(INSTANCEOF, BytecodeHelper.getClassInternalName(EmptyRange.class));
+        mv.visitJumpInsn(IFNE, breakLabel);
+
+        ((BytecodeExpr) transform(new MethodCallExpression(coll, "getFrom", new ArgumentListExpression()))).visit(mv);
+        BytecodeExpr.unbox(ClassHelper.int_TYPE, mv);
+        ((BytecodeExpr) transform(new MethodCallExpression(coll, "getTo", new ArgumentListExpression()))).visit(mv);
+        BytecodeExpr.unbox(ClassHelper.int_TYPE, mv);
+
+        ((BytecodeExpr) transform(new MethodCallExpression(coll, "isReverse", new ArgumentListExpression()))).visit(mv);
+
+        mv.visitInsn(DUP);
+        int isReverse = compileStack.defineTemporaryVariable("$isReverse$", ClassHelper.boolean_TYPE, true);
+        Label lElse1 = new Label();
+        mv.visitJumpInsn(IFEQ, lElse1);
+        mv.visitInsn(SWAP);
+        mv.visitLabel(lElse1);
+        int otherEnd = compileStack.defineTemporaryVariable("$otherEnd$", ClassHelper.int_TYPE, true);
+        int thisEnd = compileStack.defineTemporaryVariable("$thisEnd$", ClassHelper.int_TYPE, true);
+        Variable it = compileStack.defineVariable(forLoop.getVariable(), false);
+
+        mv.visitLabel(continueLabel);
+
+        mv.visitVarInsn(ILOAD, otherEnd);
+        mv.visitVarInsn(ILOAD, thisEnd);
+
+        Label lElse2 = new Label(), lDone2 = new Label();
+        mv.visitVarInsn(ILOAD, isReverse);
+        mv.visitJumpInsn(IFNE, lElse2);
+        mv.visitJumpInsn(IF_ICMPLT, breakLabel);
+        mv.visitJumpInsn(GOTO, lDone2);
+        mv.visitLabel(lElse2);
+        mv.visitJumpInsn(IF_ICMPGT, breakLabel);
+        mv.visitLabel(lDone2);
+
+        mv.visitVarInsn(ILOAD, thisEnd);
+        mv.visitInsn(DUP);
+        mv.visitVarInsn(ISTORE, it.getIndex());
+
+        mv.visitInsn(ICONST_1);
+        mv.visitVarInsn(ILOAD, isReverse);
+
+        Label lElse3 = new Label(), lDone3 = new Label();
+        mv.visitJumpInsn(IFNE, lElse3);
+        mv.visitInsn(IADD);
+        mv.visitJumpInsn(GOTO, lDone3);
+        mv.visitLabel(lElse3);
+        mv.visitInsn(ISUB);
+        mv.visitLabel(lDone3);
+
+        mv.visitVarInsn(ISTORE, thisEnd);
+
+        forLoop.getLoopBlock().visit(this);
+
+        mv.visitJumpInsn(GOTO, continueLabel);
+
+        mv.visitLabel(breakLabel);
+        compileStack.pop();
     }
 
     @Override
