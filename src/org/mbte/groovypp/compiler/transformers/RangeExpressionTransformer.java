@@ -1,6 +1,8 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -18,20 +20,18 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
         final boolean intRange =
                    (from.getType() == ClassHelper.int_TYPE || from.getType().equals(ClassHelper.Integer_TYPE))
                 && (to.getType() == ClassHelper.int_TYPE || to.getType().equals(ClassHelper.Integer_TYPE));
-        return new BytecodeExpr(exp, intRange ? TypeUtil.INT_RANGE_TYPE : ClassHelper.RANGE_TYPE) {
+        ClassNode type = ClassHelper.RANGE_TYPE;
+        if (intRange) {
+            type = TypeUtil.withGenericTypes(type, new GenericsType[] {new GenericsType(ClassHelper.Integer_TYPE)});
+        }
+        return new BytecodeExpr(exp, type) {
             protected void compile(MethodVisitor mv) {
                 from.visit(mv);
                 box(from.getType(), mv);
                 to.visit(mv);
                 box(to.getType(), mv);
                 mv.visitLdcInsn(exp.isInclusive());
-                if (intRange) {
-                    mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
-                    mv.visitTypeInsn(CHECKCAST, "groovy/lang/IntRange");
-                }
-                else {
-                    mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
-                }
+                mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
             }
         };
     }

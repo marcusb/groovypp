@@ -24,7 +24,6 @@ public class TypeUtil {
     public static final ClassNode RANGE_TYPE = make(Range.class);
     public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
-    public static final ClassNode INT_RANGE_TYPE = make(IntRange.class);
     public static final ClassNode TYPED = make(Typed.class);
     public static final ClassNode TRAIT = make(Trait.class);
     public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);

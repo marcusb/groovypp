@@ -200,4 +200,18 @@ u()
     assertEquals(["true", "not true", "abc"], res)
   }
 
+  void testEmptyRange() {
+    def res = shell.evaluate("""
+      @Typed
+      def u() {
+        def ret = []
+        for(i in 0..<0) {
+          ret << i
+        }
+        ret
+      }
+      u()
+    """)
+    assertEquals([], res)
+  }
 }
