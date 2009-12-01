@@ -39,7 +39,7 @@ public class ClosureUtil {
             List<MethodNode> am = node.getAbstractMethods();
 
             if (am == null) {
-                am = (List<MethodNode>) Collections.EMPTY_LIST;
+                am = Collections.emptyList();
             }
 
             MethodNode one = null;
