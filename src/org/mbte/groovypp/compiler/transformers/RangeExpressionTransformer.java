@@ -20,10 +20,7 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
         final boolean intRange =
                    (from.getType() == ClassHelper.int_TYPE || from.getType().equals(ClassHelper.Integer_TYPE))
                 && (to.getType() == ClassHelper.int_TYPE || to.getType().equals(ClassHelper.Integer_TYPE));
-        ClassNode type = ClassHelper.RANGE_TYPE;
-        if (intRange) {
-            type = TypeUtil.withGenericTypes(type, new GenericsType[] {new GenericsType(ClassHelper.Integer_TYPE)});
-        }
+        ClassNode type = intRange ? TypeUtil.RANGE_OF_INTEGERS_TYPE : ClassHelper.RANGE_TYPE;
         return new BytecodeExpr(exp, type) {
             protected void compile(MethodVisitor mv) {
                 from.visit(mv);

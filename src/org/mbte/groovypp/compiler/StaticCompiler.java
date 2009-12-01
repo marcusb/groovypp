@@ -163,8 +163,12 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     private void visitForLoopWithCollection(ForStatement forLoop) {
         final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
 
+        if (collectionExpression.getType().isArray()) {
+            visitForLoopWithArray(forLoop, collectionExpression);
+            return;
+        }
         if (forLoop.getCollectionExpression() instanceof RangeExpression &&
-                TypeUtil.equal(TypeUtil.RANGE_OF_INT_TYPE, collectionExpression.getType())) {
+                TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())) {
             // This is the IntRange (or EmptyRange). Iterate with index.
             visitForLoopWithIntRange(forLoop, collectionExpression);
             return;
@@ -271,6 +275,55 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         } else {
             visitForLoopWithCollection(forLoop);
         }
+    }
+
+    private void visitForLoopWithArray(ForStatement forLoop, BytecodeExpr coll) {
+        compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
+        ClassNode type = coll.getType().getComponentType();
+        forLoop.getVariable().setType(type);
+
+        Label breakLabel = compileStack.getBreakLabel();
+        Label continueLabel = compileStack.getContinueLabel();
+
+        coll.visit(mv);
+        int array = compileStack.defineTemporaryVariable("$array$", ClassHelper.OBJECT_TYPE, true);
+        mv.visitInsn(ICONST_0);
+        int idx = compileStack.defineTemporaryVariable("$idx$", ClassHelper.int_TYPE, true);
+
+        mv.visitLabel(continueLabel);
+        mv.visitVarInsn(ILOAD, idx);
+        mv.visitVarInsn(ALOAD, array);
+        mv.visitInsn(ARRAYLENGTH);
+        mv.visitJumpInsn(IF_ICMPGE, breakLabel);
+
+        mv.visitVarInsn(ALOAD, array);
+        mv.visitVarInsn(ILOAD, idx);
+        if (ClassHelper.isPrimitiveType(type)) {
+                if (type == ClassHelper.long_TYPE)
+                    mv.visitInsn(LALOAD);
+                else
+                if (type == ClassHelper.float_TYPE)
+                    mv.visitInsn(FALOAD);
+                else
+                if (type == ClassHelper.double_TYPE)
+                    mv.visitInsn(DALOAD);
+                else
+                    mv.visitInsn(IALOAD);
+            }
+            else
+                mv.visitInsn(AALOAD);
+        compileStack.defineVariable(forLoop.getVariable(), true);
+        forLoop.getLoopBlock().visit(this);
+
+        mv.visitVarInsn(ILOAD, idx);
+        mv.visitInsn(ICONST_1);
+        mv.visitInsn(IADD);
+        mv.visitVarInsn(ISTORE, idx);
+
+        mv.visitJumpInsn(GOTO, continueLabel);
+
+        mv.visitLabel(breakLabel);
+        compileStack.pop();
     }
 
     private void visitForLoopWithIntRange(ForStatement forLoop, BytecodeExpr coll) {
