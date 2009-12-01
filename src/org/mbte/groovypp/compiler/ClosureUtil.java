@@ -43,8 +43,8 @@ public class ClosureUtil {
             }
 
             MethodNode one = null;
-            for (Iterator it = am.iterator(); it.hasNext();) {
-                MethodNode mn = (MethodNode) it.next();
+            for (Iterator<MethodNode> it = am.iterator(); it.hasNext();) {
+                MethodNode mn = it.next();
                 if (!likeGetter(mn) && !likeSetter(mn) && !traitMethod(mn)) {
                     if (one != null) {
                         info.isOneMethodAbstract = NONE;
@@ -387,8 +387,8 @@ public class ClosureUtil {
     }
 
     public static void addFields(ClosureExpression ce, ClassNode newType, CompilerTransformer compiler) {
-        for(Iterator it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
-            Variable astVar = (Variable) it.next();
+        for(Iterator<Variable> it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
+            Variable astVar = it.next();
             final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(astVar.getName(), false);
 
             ClassNode vtype;
