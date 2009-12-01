@@ -175,10 +175,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
 
-        ClassNode collectionType = TypeUtil.getSubstitutedType(TypeUtil.COLLECTION_TYPE, TypeUtil.COLLECTION_TYPE,
+        ClassNode iterableType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE,
                 collectionExpression.getType());
         ClassNode etype =  ClassHelper.OBJECT_TYPE;
-        GenericsType[] generics = collectionType.getGenericsTypes();
+        GenericsType[] generics = iterableType.getGenericsTypes();
         if (generics != null && generics.length == 1) {
             if (!TypeUtil.isSuper(generics[0])) {
                 etype = generics[0].getType();
