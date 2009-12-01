@@ -237,7 +237,7 @@ public class ClosureUtil {
                 actuals[actuals.length - 1] = doCall.getReturnType();
                 formals[formals.length - 1] = missed.getReturnType();
                 ClassNode[] unified = TypeUnification.inferTypeArguments(typeVars, formals, actuals);
-                if (totalInference(unified)) {
+                if (TypeUnification.totalInference(unified)) {
                     GenericsType[] genericTypes = new GenericsType[unified.length];
                     for (int i = 0; i < genericTypes.length; i++) {
                         genericTypes[i] = new GenericsType(unified[i]);
@@ -249,13 +249,6 @@ public class ClosureUtil {
             }
         }
         return returnType;
-    }
-
-    private static boolean totalInference(ClassNode[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i] == null) return false;
-        }
-        return true;
     }
 
     public static void improveClosureType(final ClassNode closureType, ClassNode baseType) {

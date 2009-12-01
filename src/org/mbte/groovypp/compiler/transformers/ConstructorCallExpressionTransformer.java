@@ -1,18 +1,16 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.*;
-import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
@@ -24,18 +22,19 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             return transformSpecial (exp, compiler);
 
         MethodNode constructor;
+        ClassNode type = exp.getType();
         if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
             MapExpression me = (MapExpression) ((TupleExpression)exp.getArguments()).getExpressions().get(0);
 
-            constructor = compiler.findConstructor(exp.getType(), MAP_ARGS);
+            constructor = compiler.findConstructor(type, MAP_ARGS);
             if (constructor == null) {
                 final ArrayList<BytecodeExpr> propSetters = new ArrayList<BytecodeExpr> ();
 
-                constructor = compiler.findConstructor(exp.getType(), ClassNode.EMPTY_ARRAY);
+                constructor = compiler.findConstructor(type, ClassNode.EMPTY_ARRAY);
                 if (constructor != null) {
                     for (MapEntryExpression mee : me.getMapEntryExpressions()) {
 
-                        BytecodeExpr obj = new BytecodeExpr(mee, exp.getType()) {
+                        BytecodeExpr obj = new BytecodeExpr(mee, type) {
                             protected void compile(MethodVisitor mv) {
                                 mv.visitInsn(DUP);
                             }
@@ -55,7 +54,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         );
                     }
 
-                    return new BytecodeExpr(exp, exp.getType()) {
+                    return new BytecodeExpr(exp, type) {
                         protected void compile(MethodVisitor mv) {
                             final String classInternalName = BytecodeHelper.getClassInternalName(getType());
                             mv.visitTypeInsn(NEW, classInternalName);
@@ -76,19 +75,37 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        constructor = findConstructorWithClosureCoercion(exp.getType(), argTypes, compiler);
+        constructor = findConstructorWithClosureCoercion(type, argTypes, compiler);
 
         if (constructor != null) {
+            // Improve type.
+            GenericsType[] generics = type.redirect().getGenericsTypes();
+            // We don't support inference if the method itself is parameterized.
+            if (generics != null && constructor.getGenericsTypes() == null) {
+                Parameter[] params = constructor.getParameters();
+                ClassNode[] paramTypes = new ClassNode[params.length];
+                for (int i = 0; i < paramTypes.length; i++) {
+                    paramTypes[i] = params[i].getType();
+                }
+                ClassNode[] unified = TypeUnification.inferTypeArguments(generics, paramTypes, argTypes);
+                if (TypeUnification.totalInference(unified)) {
+                    GenericsType[] genericTypes = new GenericsType[unified.length];
+                    for (int i = 0; i < genericTypes.length; i++) {
+                        genericTypes[i] = new GenericsType(unified[i]);
+                    }
+                    type = TypeUtil.withGenericTypes(type, genericTypes);
+                }
+            }
             int first = 0;
-            if ((exp.getType().getModifiers() & ACC_STATIC) == 0 && exp.getType().redirect() instanceof InnerClassNode) {
+            if ((type.getModifiers() & ACC_STATIC) == 0 && type.redirect() instanceof InnerClassNode) {
                 first = 1;
             }
             for (int i = 0; i != newArgs.getExpressions().size(); ++i)
-                newArgs.getExpressions().set(i, compiler.cast((BytecodeExpr) newArgs.getExpressions().get(i), constructor.getParameters()[i+first].getType()));
+                newArgs.getExpressions().set(i, compiler.cast(newArgs.getExpressions().get(i), constructor.getParameters()[i+first].getType()));
             
             final MethodNode constructor1 = constructor;
             final ClassNode compilerClass = compiler.classNode;
-            return new BytecodeExpr(exp, exp.getType()) {
+            return new BytecodeExpr(exp, type) {
                 protected void compile(MethodVisitor mv) {
                     final String classInternalName = BytecodeHelper.getClassInternalName(getType());
                     mv.visitTypeInsn(NEW, classInternalName);
@@ -112,8 +129,8 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         final ClassNode paramType = constructor1.getParameters()[i+first].getType();
                         final ClassNode type = be.getType();
                         box(type, mv);
-                        be.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
-                        be.unbox(paramType, mv);
+                        cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+                        unbox(paramType, mv);
                     }
 
                     mv.visitMethodInsn(INVOKESPECIAL, classInternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, constructor1.getParameters()));

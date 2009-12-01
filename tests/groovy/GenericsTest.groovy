@@ -159,4 +159,27 @@ class GenericsTest extends GroovyShellTestCase {
     """)
     assertEquals([0, 1, 2, 3, 4], res)
   }
+
+  void testNewInference() {
+    def res = shell.evaluate("""
+    @Typed
+    class Pair<T1,T2> {
+      T1 first
+      T2 second
+      Pair(T1 t1, T2 t2) {
+        this.first = t1
+        this.second = t2
+      }
+    }
+
+    @Typed
+    def u() {
+      def a = "Schwiitzi", b = ""
+      new Pair(a,b).first.toLowerCase()
+    }
+
+    u()
+    """)
+    assertEquals "schwiitzi", res
+  }
 }

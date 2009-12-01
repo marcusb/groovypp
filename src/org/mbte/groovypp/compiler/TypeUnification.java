@@ -2,14 +2,9 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.Expression;
+
 import static org.mbte.groovypp.compiler.TypeUnification.Constraint.*;
 import static org.mbte.groovypp.compiler.TypeUtil.*;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-
-import java.util.List;
 
 /**
  * @author ven
@@ -139,5 +134,12 @@ public class TypeUnification {
                 match(fType, iType, name, constraints, EQ);
             }
         }
+    }
+
+    public static boolean totalInference(ClassNode[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i] == null) return false;
+        }
+        return true;
     }
 }
