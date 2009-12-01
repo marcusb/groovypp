@@ -39,6 +39,7 @@ public class TypeUtil {
     public static final ClassNode TLIST = make(TypedList.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
     public static final ClassNode ITERABLE = make(Iterable.class);
+    public static final ClassNode ITERATOR = make(Iterator.class);
 
     public static GenericsType[] getMethodTypeVars(MethodNode methodNode) {
         GenericsType[] typeVars = methodNode.getGenericsTypes();

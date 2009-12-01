@@ -176,17 +176,28 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
 
         ClassNode etype =  ClassHelper.OBJECT_TYPE;
-        ClassNode iterableType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE,
-                collectionExpression.getType());
-        if (iterableType != null) {
+        if (TypeUtil.isDirectlyAssignableFrom(TypeUtil.ITERABLE, collectionExpression.getType())) {
+            ClassNode iterableType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE,
+                    collectionExpression.getType());
             GenericsType[] generics = iterableType.getGenericsTypes();
             if (generics != null && generics.length == 1) {
                 if (!TypeUtil.isSuper(generics[0])) {
                     etype = generics[0].getType();
-                    if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
+                }
+            }
+        } else {
+            if (TypeUtil.isDirectlyAssignableFrom(TypeUtil.ITERATOR, collectionExpression.getType())) {
+                ClassNode iteratorType = TypeUtil.getSubstitutedType(TypeUtil.ITERATOR, TypeUtil.ITERATOR,
+                        collectionExpression.getType());
+                GenericsType[] generics = iteratorType.getGenericsTypes();
+                if (generics != null && generics.length == 1) {
+                    if (!TypeUtil.isSuper(generics[0])) {
+                        etype = generics[0].getType();
+                    }
                 }
             }
         }
+        if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
 
         Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
 

@@ -43,4 +43,19 @@ class ForInTest extends GroovyShellTestCase {
     """)
     assertEquals([0,1,2], res)
   }
+
+  void testForIterator() {
+    def res = shell.evaluate("""
+      @Typed
+      public def foo() {
+        def res = []
+        def it = [0,1,2].iterator()
+        for (i in it) res << i.byteValue()
+        res
+      }
+      foo()
+    """)
+    assertEquals([0,1,2], res)
+  }
+
 }
