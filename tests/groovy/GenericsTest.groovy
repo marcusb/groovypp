@@ -160,7 +160,7 @@ class GenericsTest extends GroovyShellTestCase {
     assertEquals([0, 1, 2, 3, 4], res)
   }
 
-  void testNewInference() {
+  void testInferenceInNew() {
     def res = shell.evaluate("""
     @Typed
     class Pair<T1,T2> {
