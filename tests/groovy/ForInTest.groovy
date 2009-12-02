@@ -5,7 +5,7 @@ import static groovy.CompileTestSupport.shouldNotCompile
 
 class ForInTest extends GroovyShellTestCase {
 
-  void testForInString() {
+  void testForInList() {
     def res = shell.evaluate("""
       @Typed
       public def foo(List<String> l) {
@@ -56,6 +56,19 @@ class ForInTest extends GroovyShellTestCase {
       foo()
     """)
     assertEquals([0,1,2], res)
+  }
+
+  void testForReader() {
+    def res = shell.evaluate("""
+      @Typed
+      public def foo(Reader r) {
+        def res = []
+        for (str in r) res << str.toLowerCase()
+        res
+      }
+      foo(new StringReader("Schwiitzi\\nNati"))
+    """)
+    assertEquals(["schwiitzi", "nati"], res)
   }
 
 }

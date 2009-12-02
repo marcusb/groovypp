@@ -160,46 +160,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
     }
 
-    private void visitForLoopWithCollection(ForStatement forLoop) {
-        final BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
-
-        if (collectionExpression.getType().isArray()) {
-            visitForLoopWithArray(forLoop, collectionExpression);
-            return;
-        }
-        if (forLoop.getCollectionExpression() instanceof RangeExpression &&
-                TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())) {
-            // This is the IntRange (or EmptyRange). Iterate with index.
-            visitForLoopWithIntRange(forLoop, collectionExpression);
-            return;
-        }
+    private void visitForLoopWithIterator(ForStatement forLoop, BytecodeExpr collectionExpression) {
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
-
-        ClassNode etype =  ClassHelper.OBJECT_TYPE;
-        if (TypeUtil.isDirectlyAssignableFrom(TypeUtil.ITERABLE, collectionExpression.getType())) {
-            ClassNode iterableType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE,
-                    collectionExpression.getType());
-            GenericsType[] generics = iterableType.getGenericsTypes();
-            if (generics != null && generics.length == 1) {
-                if (!TypeUtil.isSuper(generics[0])) {
-                    etype = generics[0].getType();
-                }
-            }
-        } else {
-            if (TypeUtil.isDirectlyAssignableFrom(TypeUtil.ITERATOR, collectionExpression.getType())) {
-                ClassNode iteratorType = TypeUtil.getSubstitutedType(TypeUtil.ITERATOR, TypeUtil.ITERATOR,
-                        collectionExpression.getType());
-                GenericsType[] generics = iteratorType.getGenericsTypes();
-                if (generics != null && generics.length == 1) {
-                    if (!TypeUtil.isSuper(generics[0])) {
-                        etype = generics[0].getType();
-                    }
-                }
-            }
-        }
-        if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
-
-        Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
 
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
@@ -208,6 +170,18 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 collectionExpression, "iterator", new ArgumentListExpression());
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
         expr.visit(mv);
+
+        ClassNode etype =  ClassHelper.OBJECT_TYPE;
+        ClassNode iteratorType = expr.getType();
+        GenericsType[] generics = iteratorType.getGenericsTypes();
+        if (generics != null && generics.length == 1) {
+            if (!TypeUtil.isSuper(generics[0])) {
+                etype = generics[0].getType();
+            }
+        }
+        if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
+
+        Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
 
         final int iteratorIdx = compileStack.defineTemporaryVariable(
                 "iterator", ClassHelper.make(Iterator.class), true);
@@ -286,7 +260,16 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (loopVar == ForStatement.FOR_LOOP_DUMMY) {
             visitForLoopWithClosures(forLoop);
         } else {
-            visitForLoopWithCollection(forLoop);
+            BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
+            if (collectionExpression.getType().isArray()) {
+                visitForLoopWithArray(forLoop, collectionExpression);
+            } else if (forLoop.getCollectionExpression() instanceof RangeExpression &&
+                    TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())) {
+                // This is the IntRange (or EmptyRange). Iterate with index.
+                visitForLoopWithIntRange(forLoop, collectionExpression);
+            } else {
+                visitForLoopWithIterator(forLoop, collectionExpression);
+            }
         }
     }
 
