@@ -99,6 +99,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                 if (object instanceof ListExpressionTransformer.UntransformedListExpr)
                     object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                else if (object instanceof MapExpressionTransformer.UntransformedMapExpr)
+                    object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
                 type = TypeUtil.wrapSafely(object.getType());
 
                 foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);

@@ -122,10 +122,10 @@ u()
 
     void testMapKeyValue () {
         def res = []
-        ((Map<String,Integer>)[a:20, b:40]).each { String key, int value ->
-            res << key
-            res << value
+        [a:20, b:40].each { key, value ->
+            res << key.toUpperCase()
+            res << value + 1
         }
-        assertEquals (["a", 20, "b", 40], res)
+        assertEquals (["A", 21, "B", 41], res)
     }
 }

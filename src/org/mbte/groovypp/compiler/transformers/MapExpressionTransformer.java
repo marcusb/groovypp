@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
@@ -15,6 +16,7 @@ import java.util.List;
 public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
     public Expression transform(final MapExpression exp, final CompilerTransformer compiler) {
         ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC, ClassHelper.OBJECT_TYPE);
+        newType.setModule(compiler.classNode.getModule());
         newType.setInterfaces(new ClassNode[] {TypeUtil.TMAP});
         return new UntransformedMapExpr(exp, newType);
     }
@@ -34,30 +36,38 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
 
     public static class TransformedMapExpr extends BytecodeExpr {
         private final MapExpression exp;
-        private CompilerTransformer compiler;
 
         public TransformedMapExpr(MapExpression exp, CompilerTransformer compiler) {
             super(exp, TypeUtil.EX_LINKED_HASH_MAP_TYPE);
             this.exp = exp;
-            this.compiler = compiler;
 
-            final List list = exp.getMapEntryExpressions();
-            for (int i = 0; i != list.size(); ++i) {
-                final MapEntryExpression me = (MapEntryExpression) list.get(i);
-                MapEntryExpression nme = new MapEntryExpression(compiler.transform(me.getKeyExpression()), compiler.transform(me.getValueExpression()));
-                nme.setSourcePosition(me);
-                list.set(i, nme);
+            final List<MapEntryExpression> list = exp.getMapEntryExpressions();
+            if (list.size() > 0) {
+                ClassNode keyArg = TypeUtil.NULL_TYPE;
+                ClassNode valueArg = TypeUtil.NULL_TYPE;
+                for (int i = 0; i != list.size(); ++i) {
+                    final MapEntryExpression me = list.get(i);
+                    MapEntryExpression nme = new MapEntryExpression(compiler.transform(me.getKeyExpression()), compiler.transform(me.getValueExpression()));
+                    keyArg = TypeUtil.commonType(keyArg, nme.getKeyExpression().getType());
+                    valueArg = TypeUtil.commonType(valueArg, nme.getValueExpression().getType());
+                    nme.setSourcePosition(me);
+                    list.set(i, nme);
+                }
+                setType(TypeUtil.withGenericTypes(getType(), new GenericsType[] {
+                        new GenericsType(keyArg),
+                        new GenericsType(valueArg)
+                }));
             }
         }
 
         protected void compile(MethodVisitor mv) {
-            final List list = exp.getMapEntryExpressions();
+            final List<MapEntryExpression> list = exp.getMapEntryExpressions();
             mv.visitTypeInsn(NEW, "org/mbte/groovypp/runtime/LinkedHashMapEx");
             mv.visitInsn(DUP);
             mv.visitMethodInsn(INVOKESPECIAL,"org/mbte/groovypp/runtime/LinkedHashMapEx","<init>","()V");
             for (int i = 0; i != list.size(); ++i) {
                 mv.visitInsn(DUP);
-                final MapEntryExpression me = (MapEntryExpression) list.get(i);
+                final MapEntryExpression me = list.get(i);
                 final BytecodeExpr ke = (BytecodeExpr) me.getKeyExpression();
                 ke.visit(mv);
                 box(ke.getType(), mv);
