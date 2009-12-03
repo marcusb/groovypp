@@ -120,7 +120,7 @@ public class ClassNodeCache {
                 addMethods(nameMap, node.getMethods(), true);
             }
 
-            for (ClassNode cn : getSuperClasses(type)) {
+            for (ClassNode cn : getSuperClassesAndSelf(type)) {
                 addMethods(nameMap, cn.getMethods(), cn == type);
 
                 final List<MethodNode> list = dgmMethods.get(cn);
@@ -139,20 +139,37 @@ public class ClassNodeCache {
         return nameMap.get(methodName);
     }
 
-    protected static LinkedList<ClassNode> getSuperClasses(ClassNode classNode) {
-        LinkedList<ClassNode> superClasses = new LinkedList<ClassNode>();
-
+    private static List<ClassNode> getSuperClassesAndSelf(ClassNode classNode) {
         if (classNode.isInterface()) {
-            superClasses.addFirst(ClassHelper.OBJECT_TYPE);
+            return Arrays.asList(classNode, ClassHelper.OBJECT_TYPE);
         } else {
-            for (ClassNode c = classNode; c != null; c = c.getSuperClass()) {
-                superClasses.addFirst(c);
+            List<ClassNode> superClasses = new ArrayList<ClassNode>();
+            superClasses.add(classNode);
+            getSuperClasses(classNode, superClasses);
+            return superClasses;
+        }
+    }
+
+    private static void getSuperClasses(ClassNode classNode, List<ClassNode> superClasses) {
+        if (classNode.isArray()) {
+            ClassNode componentType = classNode.getComponentType();
+            if (!ClassHelper.isPrimitiveType(componentType)) {
+                ClassNode aSuper = componentType.getSuperClass();
+                if (aSuper != null) {
+                    ClassNode superArray = aSuper.makeArray();
+                    superClasses.add(superArray);
+                    getSuperClasses(superArray, superClasses);
+                    return;
+                }
             }
-            if (classNode.isArray() && !classNode.getComponentType().equals(ClassHelper.OBJECT_TYPE) && !ClassHelper.isPrimitiveType(classNode.getComponentType())) {
-                superClasses.addFirst(ClassHelper.OBJECT_TYPE.makeArray());
+            superClasses.add(ClassHelper.OBJECT_TYPE);
+        } else {
+            ClassNode aSuper = classNode.getSuperClass();
+            if (aSuper != null) {
+                superClasses.add(aSuper);
+                getSuperClasses(aSuper, superClasses);
             }
         }
-        return superClasses;
     }
 
     static Object getFields(ClassNode type, String fieldName) {
@@ -193,9 +210,6 @@ public class ClassNodeCache {
     static void getAllInterfaces(ClassNode type, Set<ClassNode> res) {
         if (type == null)
             return;
-
-        if (type.isInterface())
-            res.add(type);
 
         ClassNode[] interfaces = type.getInterfaces();
         for (ClassNode anInterface : interfaces) {

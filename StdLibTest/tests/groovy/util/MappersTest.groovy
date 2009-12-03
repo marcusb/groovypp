@@ -19,13 +19,11 @@ class MappersTest extends GroovyShellTestCase {
       assertEquals (["0", "1", "2"], res )
     }
 
-//    void testArray () {
-//        def toTransform = (Integer[])[0, 1, 2]
-//        def res = toTransform.transform { int v ->
-//           v.toString ()
-//        }
-//        assertEquals (["0", "1", "2"], res )
-//    }
+    void testArray () {
+        def toTransform = (Integer[])[0, 1, 2]
+        def res = toTransform.map { int v -> v.toString() }
+        assertEquals (["0", "1", "2"], res )
+    }
 //
     void testIterator () {
         def iter = [0, 1, 2].iterator().map { it.toString() }
