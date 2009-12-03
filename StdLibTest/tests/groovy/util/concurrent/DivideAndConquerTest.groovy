@@ -12,9 +12,8 @@ class DivideAndConquerTest extends GroovyShellTestCase {
   }
 
   Node createTree(int height, int depth) {
-    def nChildren = ((int) (Math.random() * depth / height)) - 1
-    def children = nChildren < 0 ? Collections.emptyList() : (0 .. nChildren).map { createTree(height+1, depth) }
-    new Node(children)
+    def nChildren = ((int) (Math.random() * depth / height))
+    new Node((0..<nChildren).map { createTree(height + 1, depth) })
   }
 
   void testTreeCreate() {
