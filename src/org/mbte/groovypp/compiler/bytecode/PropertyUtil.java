@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 
@@ -119,7 +120,7 @@ public class PropertyUtil {
 
     private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value) {
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError("Can't find property " + propName + " of class " + object.getType().getName(), exp);
+            compiler.addError("Can't find property " + propName + " of class " + PresentationUtil.getText(object.getType()), exp);
             return null;
         } else
             return createDynamicCall(exp, propName, object, value);

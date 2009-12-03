@@ -12,6 +12,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 
@@ -111,7 +112,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
+                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
@@ -173,7 +174,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + vtype.getName(), exp);
+                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 

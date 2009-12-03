@@ -314,7 +314,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
     private ClassNode createNewType(ClassNode type, CompilerTransformer compiler) {
         ClassNode objType;
-        objType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL, ClassHelper.OBJECT_TYPE);
+        objType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         if (type.isInterface()) {
             objType.setInterfaces(new ClassNode [] {type} );
         }

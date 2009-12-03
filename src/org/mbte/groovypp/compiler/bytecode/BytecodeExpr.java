@@ -12,6 +12,7 @@ import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
@@ -41,11 +42,11 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             MethodNode getter = compiler.findMethod(getType(), "getAt", new ClassNode[]{index.getType()});
 
             if (getter == null) {
-                compiler.addError("Can't find method 'getAt' for type: " + getType().getName(), parent);
+                compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(getType()), parent);
                 return null;
             }
 
-            ClassNode ret = TypeUtil.getSubstitutedType(getter.getReturnType(), getter.getDeclaringClass(), getType());
+            //ClassNode ret = TypeUtil.getSubstitutedType(getter.getReturnType(), getter.getDeclaringClass(), getType());
             //MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType(), ret});
 
             return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, compiler);
@@ -69,7 +70,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
         final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
         if (methodNode == null) {
-            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
+            compiler.addError("Can't find method " + methodName + " for type " + PresentationUtil.getText(vtype), exp);
             return null;
         }
 
@@ -108,7 +109,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
         final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
         if (methodNode == null) {
-            compiler.addError("Can't find method " + methodName + " for type " + vtype.getName(), exp);
+            compiler.addError("Can't find method " + methodName + " for type " + PresentationUtil.getText(vtype), exp);
             return null;
         }
 

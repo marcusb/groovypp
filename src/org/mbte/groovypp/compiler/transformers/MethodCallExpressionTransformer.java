@@ -208,7 +208,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private String getMethodDescr(ClassNode type, String methodName, ClassNode[] argTypes) {
         StringBuilder sb = new StringBuilder();
-        getPresentableText(type, sb);
+        sb.append(PresentationUtil.getText(type));
         sb.append(".");
         sb.append(methodName);
         sb.append("(");
@@ -216,35 +216,12 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             if (i != 0)
                 sb.append(", ");
             if (argTypes[i] != null)
-                sb.append(argTypes[i].getName());
+                sb.append(PresentationUtil.getText(argTypes[i]));
             else
                 sb.append("null");
         }
         sb.append(")");
         return sb.toString();
-    }
-
-    private void getPresentableText(ClassNode type, StringBuilder builder) {
-        builder.append(type.getName());
-        GenericsType[] generics = type.getGenericsTypes();
-        if (generics != null && generics.length > 0) {
-            builder.append("<");
-            for (int i = 0; i < generics.length; i++) {
-                if (i > 0) builder.append(",");
-                if (generics[i].isWildcard()) {
-                    if (TypeUtil.isExtends(generics[i])) {
-                        builder.append("? extends ");
-                    } else if (TypeUtil.isSuper(generics[i])) {
-                        builder.append("? super ");
-                    } else {
-                        builder.append("?");
-                        continue;
-                    }
-                }
-                getPresentableText(generics[i].getType(), builder);
-            }
-            builder.append(">");
-        }
     }
 
     private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
