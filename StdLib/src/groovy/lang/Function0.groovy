@@ -6,14 +6,10 @@ import java.util.concurrent.FutureTask
 @Trait
 abstract class Function0<R> implements Callable<R> {
 
-    abstract R apply ()
-
-    R call () {
-        apply()
-    }
+    abstract R call ()
 
     public <R1> Function0<R1> andThen (Function1<R,R1> g) {
-        { -> g.apply(apply()) }
+        { -> g.call(call()) }
     }
 
     FutureTask<R> future () {

@@ -31,41 +31,41 @@ public class IterationsTest extends GroovyShellTestCase {
         def res = shell.evaluate("""
 @Trait
 abstract class Function0<R> {
-    abstract def apply ()
+    abstract def call ()
 
     public <R1> Function0<R1> addThen (Function1<R,R1> g) {
-        { -> g.apply(apply()) }
+        { -> g.call(call()) }
     }
 }
 
 @Trait
 abstract class Function1<T,R> {
-    abstract def apply (T param)
+    abstract def call (T param)
 
     public <R1> Function1<T,R1> addThen (Function1<R,R1> g) {
-        { arg -> g.apply(apply(arg)) }
+        { arg -> g.call(call(arg)) }
     }
 
     public <T1> Function1<T1,R> composeWith (Function1<T1,T> g) {
-        { arg -> apply(g.apply(arg)) }
+        { arg -> call(g.call(arg)) }
     }
 
     R getAt (T arg) {
-        apply(arg)
+        call(arg)
     }
 }
 
 @Trait
 @Typed
 abstract class Function2<T1,T2,R> {
-    abstract def apply (T1 param1, T2 param2)
+    abstract def call (T1 param1, T2 param2)
 
     public <R1> Function2<T1,T2,R1> addThen (Function1<R,R1> g) {
-        { arg1, arg2 -> g.apply(apply(arg1, arg2)) }
+        { arg1, arg2 -> g.call(call(arg1, arg2)) }
     }
 
     Function1<T2,R> curry (T1 arg1) {
-        { arg2 -> apply(arg1, arg2) }
+        { arg2 -> call(arg1, arg2) }
     }
 
     Function1<T2,R> getAt (T1 arg1) {

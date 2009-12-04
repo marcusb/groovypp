@@ -101,7 +101,7 @@ public class Mappers extends DefaultGroovyMethodsSupport {
   static <T, K> Map<K, List<T>> groupBy(Collection<T> self, Function1<T, K> op) {
     def answer = (Map<K, List<T>>) [:]
     for (T element: self) {
-      def value = op.apply(element)
+      def value = op.call(element)
       def list = answer.get(value)
       if (list == null) {
         list = new LinkedList<T>()
@@ -124,7 +124,7 @@ public class Mappers extends DefaultGroovyMethodsSupport {
             hasNext: {
               (curr != null && curr.hasNext()) || (self.hasNext() && (curr = self.next()).hasNext())
             },
-            next: { op.apply(curr.next()) },
+            next: { op.call(curr.next()) },
             remove: { throw new UnsupportedOperationException("remove() is not supported") }
     ]
   }
@@ -198,7 +198,7 @@ public class Mappers extends DefaultGroovyMethodsSupport {
             while (self && ready.size() + pending.get() < maxConcurrentTasks) {
               pending.incrementAndGet()
               def nextElement = self.next()
-              executor.execute {-> ready << op.apply(nextElement); pending.decrementAndGet() }
+              executor.execute {-> ready << op.call(nextElement); pending.decrementAndGet() }
             }
           },
 

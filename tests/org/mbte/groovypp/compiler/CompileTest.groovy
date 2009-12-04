@@ -229,4 +229,20 @@ u()
     """)
     assertEquals([1, 0], res)
   }
+
+  void testDirectFunctionCall() {
+    def fact = shell.evaluate("""
+      @Typed
+      def u(int n) {
+        Function1<Integer, Integer> f = {
+          i -> if (i < 2) 1
+               else i * call(i-1)
+        }
+        f(n)
+      }
+      u(5)
+    """)
+    assertEquals(120, fact)
+  }
+
 }

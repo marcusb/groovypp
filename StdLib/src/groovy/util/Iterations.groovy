@@ -15,7 +15,7 @@ abstract class Iterations {
    * @return computed aggregated value.
    */
   static <T, R> R foldLeft(Iterator<T> self, R init, Function2<T, R, R> op) {
-    self.hasNext() ? foldLeft(self, op.apply(self.next(), init), op) : init
+    self.hasNext() ? foldLeft(self, op.call(self.next(), init), op) : init
   }
 
   /**
@@ -38,7 +38,7 @@ abstract class Iterations {
    * @return computed aggregated value.
    */
   static <T, R> R foldRight(Iterator<T> self, R init, Function2<T, R, R> op) {
-    self.hasNext() ? op.apply(self.next(), foldRight(self, init, op)) : init
+    self.hasNext() ? op.call(self.next(), foldRight(self, init, op)) : init
   }
 
   /**
@@ -59,7 +59,7 @@ abstract class Iterations {
    * @param op function to be applied.
    */
   static <T> void each(Iterator<T> self, Function1<T, Object> op) {
-    while (self.hasNext()) op.apply(self.next())
+    while (self.hasNext()) op.call(self.next())
   }
 
   /**
@@ -98,7 +98,7 @@ abstract class Iterations {
     def it = self.entrySet().iterator()
     while (it.hasNext()) {
       def el = it.next()
-      op.apply(el.key, el.value)
+      op.call(el.key, el.value)
     }
   }
 

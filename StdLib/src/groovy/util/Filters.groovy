@@ -30,7 +30,7 @@ class Filters extends DefaultGroovyMethodsSupport {
                       if (nextFound) {
                         nextElem = self.next()
                       }
-                      while (nextFound && !condition.apply(nextElem)) {
+                      while (nextFound && !condition.call(nextElem)) {
                         nextFound = self.hasNext()
                         if (nextFound) {
                           nextElem = self.next()
@@ -75,7 +75,7 @@ class Filters extends DefaultGroovyMethodsSupport {
   static <T> T find(Iterator<T> self, Function1<T, Boolean> condition) {
     while (self.hasNext()) {
       T el = self.next()
-      if (condition.apply(el))
+      if (condition.call(el))
         return el
     }
     null
@@ -109,7 +109,7 @@ class Filters extends DefaultGroovyMethodsSupport {
    */
   static <K, V> Map.Entry<K, V> find(Map<K, V> self, Function2<K, V, Boolean> condition) {
     for (Map.Entry<K, V> entry: self.entrySet()) {
-      if (condition.apply(entry.getKey(), entry.getValue()))
+      if (condition.call(entry.getKey(), entry.getValue()))
         return entry
     }
     null
@@ -124,7 +124,7 @@ class Filters extends DefaultGroovyMethodsSupport {
   static <T> Collection<T> findAll(Iterator<T> self, Collection<T> answer, Function1<T, Boolean> condition) {
     while (self.hasNext()) {
       T value = self.next()
-      if (condition.apply(value)) {
+      if (condition.call(value)) {
         answer.add(value)
       }
     }
@@ -140,7 +140,7 @@ class Filters extends DefaultGroovyMethodsSupport {
   static <K, V> Map<K, V> findAll(Map<K, V> self, Function2<K, V, Boolean> condition) {
     Map<K, V> map = createSimilarMap(self)
     for (Map.Entry<K, V> entry: self.entrySet()) {
-      if (condition.apply(entry.getKey(), entry.getValue()))
+      if (condition.call(entry.getKey(), entry.getValue()))
         map.put(entry.getKey(), entry.getValue())
     }
     return map
@@ -175,7 +175,7 @@ class Filters extends DefaultGroovyMethodsSupport {
   static <T> boolean any(Iterator<T> self, Function1<T, Boolean> condition) {
     while (self.hasNext()) {
       T value = self.next()
-      if (condition.apply(value)) {
+      if (condition.call(value)) {
         return true
       }
     }
@@ -190,7 +190,7 @@ class Filters extends DefaultGroovyMethodsSupport {
    */
   static <K, V> boolean any(Map<K, V> self, Function2<K, V, Boolean> condition) {
     for (Map.Entry<K, V> entry : self.entrySet()) {
-      if (condition.apply(entry.getKey(), entry.getValue())) {
+      if (condition.call(entry.getKey(), entry.getValue())) {
         return true
       }
     }

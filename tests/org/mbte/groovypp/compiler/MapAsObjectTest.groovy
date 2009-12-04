@@ -6,10 +6,10 @@ public class MapAsObjectTest extends GroovyShellTestCase {
         def res = shell.evaluate ("""
             @Trait
             abstract class Function1<T,R> {
-                abstract R apply (T param)
+                abstract R call (T param)
 
                 R getAt (T arg) {
-                    apply(arg)
+                    call(arg)
                 }
             }
 
@@ -108,10 +108,10 @@ null
 
         @Trait
         abstract class F<T,R> {
-            abstract R apply (T param)
+            abstract R call (T param)
 
             FutureTask<R> future (T arg, Executor executor = null, F<FutureTask<R>,Object> continuation = null) {
-                FutureTask<R> res = [ 'super': { -> apply(arg) }, done: { continuation?.apply(this) } ]
+                FutureTask<R> res = [ 'super': { -> call(arg) }, done: { continuation?.call(this) } ]
                 executor?.execute(res)
                 res
             }

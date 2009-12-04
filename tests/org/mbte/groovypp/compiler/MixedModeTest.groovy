@@ -84,7 +84,7 @@ public class MixedModeTest extends GroovyShellTestCase {
                 while (self && ready.size() + pending.get() < maxConcurrentTasks) {
                   pending.incrementAndGet()
                   def nextElement = self.next()
-                  executor.execute {-> ready << op.apply(nextElement); pending.decrementAndGet() }
+                  executor.execute {-> ready << op.call(nextElement); pending.decrementAndGet() }
                 }
               },
 
@@ -148,7 +148,7 @@ public class MixedModeTest extends GroovyShellTestCase {
                   while (self && ready.size() + pending.get() < maxConcurrentTasks) {
                     pending.incrementAndGet()
                     def nextElement = self.next()
-                    executor.execute {-> ready << op.apply(nextElement); pending.decrementAndGet() }
+                    executor.execute {-> ready << op(nextElement); pending.decrementAndGet() }
                   }
                 },
 
