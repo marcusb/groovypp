@@ -65,22 +65,25 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                     if (foundMethod != null) {
                         final ClassNode thisTypeFinal = thisType;
-                        object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
-                            protected void compile(MethodVisitor mv) {
-                                mv.visitVarInsn(ALOAD, 0);
-                                ClassNode curThis = compiler.methodNode.getDeclaringClass();
-                                while (curThis != thisTypeFinal) {
-                                    ClassNode next = curThis.getField("this$0").getType();
-                                    mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
-                                    curThis = next;
+                        if (foundMethod.isStatic())
+                            object = null;
+                        else
+                            object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
+                                protected void compile(MethodVisitor mv) {
+                                    mv.visitVarInsn(ALOAD, 0);
+                                    ClassNode curThis = compiler.methodNode.getDeclaringClass();
+                                    while (curThis != thisTypeFinal) {
+                                        ClassNode next = curThis.getField("this$0").getType();
+                                        mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
+                                        curThis = next;
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public boolean isThis() {
-                                return thisTypeFinal.equals(compiler.classNode);
-                            }
-                        };
+                                @Override
+                                public boolean isThis() {
+                                    return thisTypeFinal.equals(compiler.classNode);
+                                }
+                            };
 
                         if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
                                 foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
