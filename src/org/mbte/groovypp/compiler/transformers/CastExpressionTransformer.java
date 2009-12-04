@@ -271,13 +271,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     }
 
     private void closureToMethod(ClassNode type, CompilerTransformer compiler, ClassNode objType, String keyName, ClosureExpression ce) {
-        boolean addDefault = false;
         if (ce.getParameters() != null && ce.getParameters().length == 0) {
-            addDefault = true;
             final VariableScope scope = ce.getVariableScope();
             ce = new ClosureExpression(new Parameter[1], ce.getCode());
             ce.setVariableScope(scope);
-            ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it");
+            ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it", new ConstantExpression(null));
         }
 
         final ClosureMethodNode _doCallMethod = new ClosureMethodNode(
@@ -288,27 +286,25 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 ce.getCode());
         objType.addMethod(_doCallMethod);
 
-        ClosureMethodNode defMethod = null;
-        if (addDefault) {
-            defMethod = ClosureUtil.createDependentMethod(objType, _doCallMethod);
-        }
+        _doCallMethod.createDependentMethods(objType);
 
         Object methods = ClassNodeCache.getMethods(type, keyName);
         if (methods != null) {
             if (methods instanceof MethodNode) {
                 MethodNode baseMethod = (MethodNode) methods;
-                checkOveride (_doCallMethod, defMethod, baseMethod, type);
+                _doCallMethod.checkOveride(baseMethod, type);
             }
             else {
                 FastArray methodsArr = (FastArray) methods;
                 int methodCount = methodsArr.size();
                 for (int j = 0; j != methodCount; ++j) {
                     MethodNode baseMethod = (MethodNode) methodsArr.get(j);
-                    checkOveride (_doCallMethod, defMethod, baseMethod, type);
+                    _doCallMethod.checkOveride(baseMethod, type);
                 }
             }
         }
 
+        ClassNodeCache.clearCache (_doCallMethod.getDeclaringClass());
         StaticMethodBytecode.replaceMethodCode(compiler.su, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
     }
 
@@ -327,63 +323,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             objType.addField("this$0", ACC_PRIVATE|ACC_FINAL|ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
 
         return objType;
-    }
-
-    private void checkOveride(ClosureMethodNode callMethod, ClosureMethodNode defMethod, MethodNode baseMethod, ClassNode baseType) {
-        class Mutation {
-            final Parameter p;
-            final ClassNode t;
-
-            public Mutation(ClassNode t, Parameter p) {
-                this.t = t;
-                this.p = p;
-            }
-
-            void mutate () {
-                p.setType(t);
-            }
-        }
-
-        List<Mutation> mutations = null;
-
-        Parameter[] baseMethodParameters = baseMethod.getParameters();
-        Parameter[] closureParameters = callMethod.getParameters();
-
-        boolean match = true;
-        if (closureParameters.length == baseMethodParameters.length) {
-            for (int i = 0; i < closureParameters.length; i++) {
-                Parameter closureParameter = closureParameters[i];
-                Parameter missingMethodParameter = baseMethodParameters[i];
-
-                ClassNode parameterType = missingMethodParameter.getType();
-                parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
-                if (!TypeUtil.isAssignableFrom(parameterType, closureParameter.getType())) {
-                    if (TypeUtil.isAssignableFrom(closureParameter.getType(), parameterType)) {
-                        if (mutations == null)
-                            mutations = new LinkedList<Mutation>();
-                        mutations.add(new Mutation(parameterType, closureParameter));
-                        continue;
-                    }
-                    match = false;
-                    break;
-                }
-            }
-
-            if (match) {
-                if (mutations != null)
-                    for (Mutation mutation : mutations) {
-                        mutation.mutate();
-                    }
-                ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
-                callMethod.setReturnType(returnType);
-                return;
-            }
-        }
-
-        if (defMethod != null && baseMethodParameters.length == 0) {
-            ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
-            callMethod.setReturnType(returnType);
-        }
     }
 
     private ClassNode calcResultCollectionType(CastExpression exp, ClassNode componentType, CompilerTransformer compiler) {

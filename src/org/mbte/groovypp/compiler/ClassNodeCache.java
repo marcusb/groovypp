@@ -13,7 +13,6 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 
 public class ClassNodeCache {
-
     public static class ClassNodeInfo {
         Map<String, Object> methods;
         Map<String, Object> fields;
@@ -103,6 +102,26 @@ public class ClassNodeCache {
                 }
         }
         return list;
+    }
+
+    public static void clearCache(ClassNode classNode) {
+        final ModuleNode moduleNode;
+        ClassNode cn = classNode;
+        while (cn.isArray())
+            cn = cn.getComponentType();
+        moduleNode = cn.getModule();
+
+        if (moduleNode != null) {
+            final CompileUnit compileUnit = classNode.getCompileUnit();
+            final SoftReference<CompileUnitInfo> ref = compiledClassesCache.get(compileUnit);
+            CompileUnitInfo cui;
+            if (ref == null || (cui = ref.get()) == null) {
+                cui = new CompileUnitInfo();
+                compiledClassesCache.put(compileUnit, new SoftReference<CompileUnitInfo>(cui));
+            }
+
+            cui.remove(classNode);
+        }
     }
 
     public static synchronized Object getMethods(ClassNode type, String methodName) {

@@ -71,9 +71,8 @@ test ()
 
   void testClass() {
     def res = shell.evaluate("""
-@Typed
+@Typed(debug=true)
 class A {
-    @Typed
   static def doIt (int a = 0, int b = 5){
     a + b
   }

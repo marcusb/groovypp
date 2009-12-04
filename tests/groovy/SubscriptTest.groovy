@@ -33,6 +33,7 @@ class SubscriptTest extends GroovyShellTestCase {
               assert sub == ['d', 'c', 'b']
 
               sub = list[1..-3]
+              println sub
               assert sub == ['b', 'c']
             }
 

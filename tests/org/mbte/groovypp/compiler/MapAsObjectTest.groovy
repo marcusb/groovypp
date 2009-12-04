@@ -22,7 +22,7 @@ public class MapAsObjectTest extends GroovyShellTestCase {
             def u () {
                 def res = []
 
-                def newIt = map([1,2,3,4].iterator ()) {
+                def newIt = [1,2,3,4].iterator ().map {
                     it + 10
                 }
 

@@ -43,7 +43,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
         BytecodeExpr object;
         ClassNode type;
-        MethodNode foundMethod;
+        MethodNode foundMethod = null;
         final ClassNode[] argTypes = compiler.exprToTypeArray(args);
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
@@ -103,7 +103,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
                 type = TypeUtil.wrapSafely(object.getType());
 
-                foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+                if (type.isDerivedFrom(ClassHelper.CLOSURE_TYPE) && methodName.equals("call"))
+                    foundMethod = findMethodWithClosureCoercion(type, "doCall", argTypes, compiler);
+
+                if (foundMethod == null)
+                    foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
 
                 if (foundMethod == null) {
                     if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
@@ -257,7 +261,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 for (int j = 0; j != args.size(); ++j) {
                     mv.visitInsn(DUP);
                     mv.visitLdcInsn(j);
-                    ((BytecodeExpr) args.get(j)).visit(mv);
+                    BytecodeExpr arg = (BytecodeExpr) args.get(j);
+                    arg.visit(mv);
+                    box(arg.getType(), mv);
                     mv.visitInsn(AASTORE);
                 }
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "invokeMethod", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;");

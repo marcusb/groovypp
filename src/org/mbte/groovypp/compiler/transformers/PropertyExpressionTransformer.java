@@ -37,12 +37,21 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         final ClassNode type;
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
-            object = null;
-            type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
-
-            Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
-            if (!checkAccessible(prop, exp, type, compiler)) return null;
-            return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
+            Object prop = PropertyUtil.resolveGetProperty(ClassHelper.CLASS_Type, propName, compiler);
+            if (prop != null) {
+                type = ClassHelper.CLASS_Type;
+                prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                if (!checkAccessible(prop, exp, type, compiler)) return null;
+                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
+            }
+            else {
+                type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
+                prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                if (!checkAccessible(prop, exp, type, compiler)) return null;
+                object = null;
+                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
+            }
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
                 if ((compiler.classNode instanceof InnerClassNode) && !compiler.classNode.isStaticClass()) {

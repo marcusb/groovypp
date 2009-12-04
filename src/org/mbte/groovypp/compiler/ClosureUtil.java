@@ -256,48 +256,9 @@ public class ClosureUtil {
             closureType.setInterfaces(new ClassNode[]{baseType});
             closureType.setSuperClass(ClassHelper.OBJECT_TYPE);
         } else {
-            closureType.setInterfaces(ClassNode.EMPTY_ARRAY);
+            closureType.setInterfaces(baseType.equals(ClassHelper.CLOSURE_TYPE) ? new ClassNode[] {ClassHelper.GENERATED_CLOSURE_Type} : ClassNode.EMPTY_ARRAY);
             closureType.setSuperClass(baseType);
         }
-    }
-
-    public static ClosureMethodNode createDependentMethod(final ClassNode newType, final ClosureMethodNode _doCallMethod) {
-        ClosureMethodNode _doCallMethodDef = new ClosureMethodNode.Dependent(
-                _doCallMethod,
-                _doCallMethod.getName(),
-                Opcodes.ACC_PUBLIC,
-                ClassHelper.OBJECT_TYPE,
-                Parameter.EMPTY_ARRAY,
-                new BytecodeSequence(new BytecodeInstruction(){
-                    public void visit(MethodVisitor mv) {
-                        mv.visitVarInsn(Opcodes.ALOAD, 0);
-                        final ClassNode type = _doCallMethod.getParameters()[0].getType();
-                        if (ClassHelper.isPrimitiveType(type)) {
-                            if (type == ClassHelper.long_TYPE) {
-                                mv.visitInsn(Opcodes.LCONST_0);
-                            } else if (type == ClassHelper.double_TYPE) {
-                                mv.visitInsn(Opcodes.DCONST_0);
-                            } else if (type == ClassHelper.float_TYPE) {
-                                mv.visitInsn(Opcodes.FCONST_0);
-                            } else {
-                                mv.visitInsn(Opcodes.ICONST_0);
-                            }
-                        } else {
-                            mv.visitInsn(Opcodes.ACONST_NULL);
-                        }
-                        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, BytecodeHelper.getClassInternalName(newType), _doCallMethod.getName(), BytecodeHelper.getMethodDescriptor(_doCallMethod.getReturnType(),_doCallMethod.getParameters()));
-                        BytecodeExpr.doReturn (mv, _doCallMethod.getReturnType());
-                    }
-                })){
-
-            @Override
-            public ClassNode getReturnType() {
-                return _doCallMethod.getReturnType();
-            }
-        };
-
-        newType.addMethod(_doCallMethodDef);
-        return _doCallMethodDef;
     }
 
     public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams, Expression superArgs) {
@@ -323,6 +284,7 @@ public class ClosureUtil {
         }
         else {
             if (superClass == ClassHelper.CLOSURE_TYPE) {
+                superCallArgs.addExpression(new VariableExpression(constrParams[0]));
                 superCallArgs.addExpression(new VariableExpression(constrParams[0]));
             }
             finalConstrParams = constrParams;

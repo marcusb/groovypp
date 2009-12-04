@@ -79,7 +79,7 @@ class MappersTest extends GroovyShellTestCase {
             (0..10000).iterator ().mapConcurrently (pool, true, 50) {
                 it + 1
             }.each {
-                number { it }
+                number([value:it])
             }
         }
     }

@@ -10,6 +10,8 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.mbte.groovypp.compiler.bytecode.BytecodeImproverMethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.List;
+
 public class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;
     final SourceUnit su;
@@ -58,6 +60,19 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
             methodNode.setCode(new MyBytecodeSequence(methodBytecode));
             if (methodBytecode.compiler.shouldImproveReturnType && !TypeUtil.NULL_TYPE.equals(methodBytecode.compiler.calculatedReturnType))
                 methodNode.setReturnType(methodBytecode.compiler.calculatedReturnType);
+        }
+
+        if (methodNode instanceof ClosureMethodNode) {
+            ClosureMethodNode closureMethodNode = (ClosureMethodNode) methodNode;
+            List<ClosureMethodNode.Dependent> dependentMethods = closureMethodNode.getDependentMethods();
+            if (dependentMethods != null)
+                for (ClosureMethodNode.Dependent dependent : dependentMethods) {
+                    final Statement mCode = dependent.getCode();
+                    if (!(mCode instanceof BytecodeSequence)) {
+                        final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(dependent, source, mCode, compileStack, debug, policy, baseClosureName);
+                        dependent.setCode(new MyBytecodeSequence(methodBytecode));
+                    }
+                }
         }
     }
 
