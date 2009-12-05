@@ -37,7 +37,7 @@ public class MixedModeTest extends GroovyShellTestCase {
           import groovy.xml.*
 
 
-          @Typed(value=TypePolicy.MIXED,debug=true)
+          @Typed(TypePolicy.MIXED)
           void u () {
               new MarkupBuilder ().numbers {
                   def divisors = { int n, Collection alreadyFound = [] ->
@@ -101,7 +101,7 @@ public class MixedModeTest extends GroovyShellTestCase {
        }
 
 
-        @Typed(value=TypePolicy.MIXED,debug=true)
+        @Typed(value=TypePolicy.MIXED)
         void u () {
             new MarkupBuilder ().numbers {
                 def divisors = { int n, Collection alreadyFound = [] ->
@@ -165,7 +165,7 @@ public class MixedModeTest extends GroovyShellTestCase {
          }
 
 
-          @Typed(value=TypePolicy.MIXED,debug=true)
+          @Typed(value=TypePolicy.MIXED)
           void u () {
               new MarkupBuilder ().numbers {
                   Integer.metaClass.getDivisors = { Collection alreadyFound = [] ->

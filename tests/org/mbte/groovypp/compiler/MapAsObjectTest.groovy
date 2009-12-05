@@ -117,7 +117,7 @@ null
             }
         }
 
-        @Typed(debug=true)
+        @Typed
         def u () {
            def executor = Executors.newFixedThreadPool (10)
            F<Integer,Integer> f = { int it -> it + 1 }
