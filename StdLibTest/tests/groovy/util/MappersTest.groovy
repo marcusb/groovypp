@@ -24,6 +24,10 @@ class MappersTest extends GroovyShellTestCase {
         def res = toTransform.map { int v -> v.toString() }
         assertEquals (["0", "1", "2"], res )
     }
+
+    void testUnaryNegate () {
+        assertEquals (["0", "-1", "-2"], [0,1,2].map { (-it).toString() } )
+    }
 //
     void testIterator () {
         def iter = [0, 1, 2].iterator().map { it.toString() }

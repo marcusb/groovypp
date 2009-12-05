@@ -21,15 +21,11 @@ class BinaryTreesGroovy {
 		def longLivedTree = TreeNode.bottomUpTree(0,maxDepth)
 
 		for (int depth=minDepth; depth<=maxDepth; depth+=2){
-			int iterations = 1 << (maxDepth - depth + minDepth)
-			check = 0
+		    int iterations = 1 << (maxDepth - depth + minDepth)
+		    check = (1..iterations).foldLeft(0) {i, int sum ->
+              sum + TreeNode.bottomUpTree(i,depth).itemCheck() + TreeNode.bottomUpTree(-i,depth).itemCheck()}
 
-            int i = 1
-			while (i <= iterations){
-				check = check + TreeNode.bottomUpTree(i,depth).itemCheck() + TreeNode.bottomUpTree(-i,depth).itemCheck()
-                i++
-			}
-			println("${iterations*2}\t trees of depth $depth\t check: $check")
+            println("${iterations*2}\t trees of depth $depth\t check: $check")
 		}
 		println("long lived tree of depth $maxDepth\t check: ${longLivedTree.itemCheck()}")
 

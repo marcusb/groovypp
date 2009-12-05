@@ -19,7 +19,7 @@ public class UnaryMinusExpressionTransformer extends ExprTransformer<UnaryMinusE
                 protected void compile(MethodVisitor mv) {
                     inner.visit(mv);
                     if (!ClassHelper.isPrimitiveType(inner.getType()))
-                        unbox(inner.getType(), mv);
+                        unbox(getType(), mv);
 
                     mv.visitInsn(F2D);
                     mv.visitInsn(DNEG);
@@ -41,7 +41,7 @@ public class UnaryMinusExpressionTransformer extends ExprTransformer<UnaryMinusE
                     protected void compile(MethodVisitor mv) {
                         inner.visit(mv);
                         if (!ClassHelper.isPrimitiveType(inner.getType()))
-                            unbox(inner.getType(), mv);
+                            unbox(getType(), mv);
 
                         if (type == ClassHelper.int_TYPE || type == ClassHelper.short_TYPE || type == ClassHelper.byte_TYPE)
                             mv.visitInsn(INEG);
