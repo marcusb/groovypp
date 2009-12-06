@@ -51,8 +51,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
             if (foundMethod == null || !foundMethod.isStatic()) {
                 // Try methods from java.lang.Class
-                type = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
-                foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+                ClassNode clazz = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
+                foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler);
                 if (foundMethod == null) {
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
                 }
