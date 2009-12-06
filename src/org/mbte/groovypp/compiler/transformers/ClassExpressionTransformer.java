@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -25,7 +26,7 @@ public class ClassExpressionTransformer extends ExprTransformer<ClassExpression>
         private final ClassNode type;
 
         public ClassExpr(Expression exp, ClassNode type) {
-            super(exp, ClassHelper.CLASS_Type);
+            super(exp, TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type));
             this.type = type;
         }
 

@@ -21,7 +21,7 @@ public class TypeUtil {
     public static final ClassNode EX_LINKED_HASH_MAP_TYPE = make(LinkedHashMapEx.class);
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
-    public static final ClassNode RANGE_OF_INTEGERS_TYPE = TypeUtil.withGenericTypes(ClassHelper.RANGE_TYPE, new GenericsType[] {new GenericsType(ClassHelper.Integer_TYPE)});
+    public static final ClassNode RANGE_OF_INTEGERS_TYPE = TypeUtil.withGenericTypes(ClassHelper.RANGE_TYPE, ClassHelper.Integer_TYPE);
     public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
     public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
     public static final ClassNode TYPED = make(Typed.class);
@@ -475,6 +475,14 @@ public class TypeUtil {
         newBase.setRedirect(baseType);
         newBase.setGenericsTypes(genericTypes);
         return newBase;
+    }
+
+    public static ClassNode withGenericTypes(ClassNode baseType, ClassNode... typeArgs) {
+        GenericsType[] genericsTypes = new GenericsType[typeArgs.length];
+        for (int i = 0; i < genericsTypes.length; i++) {
+            genericsTypes[i] = new GenericsType(typeArgs[i]);
+        }
+        return withGenericTypes(baseType, genericsTypes);
     }
 
     public static ClassNode wrapSafely(ClassNode type) {

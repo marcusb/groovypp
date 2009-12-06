@@ -53,10 +53,7 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                     nme.setSourcePosition(me);
                     list.set(i, nme);
                 }
-                setType(TypeUtil.withGenericTypes(getType(), new GenericsType[] {
-                        new GenericsType(keyArg),
-                        new GenericsType(valueArg)
-                }));
+                setType(TypeUtil.withGenericTypes(getType(), keyArg, valueArg));
             }
         }
 

@@ -50,7 +50,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
             foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
             if (foundMethod == null || !foundMethod.isStatic()) {
-                return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
+                // Try methods from java.lang.Class
+                type = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
+                foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+                if (foundMethod == null) {
+                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
+                }
+                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                return createCall(exp, compiler, args, object, foundMethod);
             }
             if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
                     foundMethod.getDeclaringClass(), compiler.classNode, type)) {

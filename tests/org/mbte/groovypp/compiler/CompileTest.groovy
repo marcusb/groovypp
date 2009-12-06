@@ -244,5 +244,14 @@ u()
     """)
     assertEquals(120, fact)
   }
+  void testClassExpression() {
+    shell.evaluate("""
+    @Typed
+    class C {
+      static def foo() {C.class.getClassLoader()}
+    }
+    C.foo()
+    """)
+  }
 
 }

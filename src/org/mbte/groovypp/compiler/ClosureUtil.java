@@ -238,11 +238,7 @@ public class ClosureUtil {
                 formals[formals.length - 1] = missed.getReturnType();
                 ClassNode[] unified = TypeUnification.inferTypeArguments(typeVars, formals, actuals);
                 if (TypeUnification.totalInference(unified)) {
-                    GenericsType[] genericTypes = new GenericsType[unified.length];
-                    for (int i = 0; i < genericTypes.length; i++) {
-                        genericTypes[i] = new GenericsType(unified[i]);
-                    }
-                    ClassNode newBase = TypeUtil.withGenericTypes(baseType, genericTypes);
+                    ClassNode newBase = TypeUtil.withGenericTypes(baseType, unified);
                     improveClosureType(closureType, newBase);
                     returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, newBase);
                 }

@@ -89,11 +89,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                 }
                 ClassNode[] unified = TypeUnification.inferTypeArguments(generics, paramTypes, argTypes);
                 if (TypeUnification.totalInference(unified)) {
-                    GenericsType[] genericTypes = new GenericsType[unified.length];
-                    for (int i = 0; i < genericTypes.length; i++) {
-                        genericTypes[i] = new GenericsType(unified[i]);
-                    }
-                    type = TypeUtil.withGenericTypes(type, genericTypes);
+                    type = TypeUtil.withGenericTypes(type, unified);
                 }
             }
             int first = 0;
