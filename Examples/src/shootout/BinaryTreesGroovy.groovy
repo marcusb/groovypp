@@ -22,7 +22,7 @@ class BinaryTreesGroovy {
 
 		for (int depth=minDepth; depth<=maxDepth; depth+=2){
 		    int iterations = 1 << (maxDepth - depth + minDepth)
-		    check = (1..iterations).foldLeft(0) {i, int sum ->
+		    check = (1..iterations).foldLeft(0) {i, sum ->
               sum + TreeNode.bottomUpTree(i,depth).itemCheck() + TreeNode.bottomUpTree(-i,depth).itemCheck()}
 
             println("${iterations*2}\t trees of depth $depth\t check: $check")
