@@ -121,7 +121,7 @@
     </target>
 
     <target  name="test" depends="compile.tests.stdlibtest, compile.tests.stdlib, compile.tests.compiler" description="Runs unit tests for StdLibTest">
-        <junit printsummary="yes" fork="yes" forkmode="perBatch">
+        <junit printsummary="yes" fork="yes" forkmode="perBatch" haltonfailure="true">
             <classpath>
                 <path refid="tests.classpath" />
             </classpath>
