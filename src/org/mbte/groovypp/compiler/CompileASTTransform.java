@@ -52,47 +52,44 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             }
 
             verifier.visitClass(classNode);
-        } else
-            if (parent instanceof MethodNode) {
-                TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
-                TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
+        } else if (parent instanceof MethodNode) {
+            TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
+            TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
 
-                final MethodNode mn = (MethodNode) parent;
-                classNode = mn.getDeclaringClass();
-                if (methodPolicy != TypePolicy.DYNAMIC) {
-                    toProcess.addLast(mn);
-                    toProcess.addLast(methodPolicy);
-                }
-
-                verifier.visitClass(classNode);
-            } else {
-                if (parent instanceof ClassNode) {
-                    classNode = (ClassNode) parent;
-                    TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
-
-                    verifier.visitClass(classNode);
-
-                    allMethods(source, toProcess, classNode, classPolicy, true);
-                } else {
-                    if (parent instanceof PackageNode) {
-                        TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
-                        for (ClassNode node : source.getAST().getClasses()) {
-                            TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
-
-                            verifier.visitClass(node);
-
-                            allMethods(source, toProcess, node, classPolicy, false);
-                        }
-                    } else {
-                        int line = parent.getLineNumber();
-                        int col = parent.getColumnNumber();
-                        source.getErrorCollector().addError(
-                                new SyntaxErrorMessage(new SyntaxException("@Typed applicable only to classes or methods or package declaration" + '\n', line, col), source), true
-                        );
-                        return;
-                    }
-                }
+            final MethodNode mn = (MethodNode) parent;
+            classNode = mn.getDeclaringClass();
+            if (methodPolicy != TypePolicy.DYNAMIC) {
+                toProcess.addLast(mn);
+                toProcess.addLast(methodPolicy);
             }
+
+            verifier.visitClass(classNode);
+        } else if (parent instanceof ClassNode) {
+            classNode = (ClassNode) parent;
+            TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
+
+            addMetaClassField(classNode);
+            verifier.visitClass(classNode);
+
+            allMethods(source, toProcess, classNode, classPolicy, true);
+        } else if (parent instanceof PackageNode) {
+            TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
+            for (ClassNode node : source.getAST().getClasses()) {
+                TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
+
+                addMetaClassField(node);
+                verifier.visitClass(node);
+
+                allMethods(source, toProcess, node, classPolicy, false);
+            }
+        } else {
+            int line = parent.getLineNumber();
+            int col = parent.getColumnNumber();
+            source.getErrorCollector().addError(
+                    new SyntaxErrorMessage(new SyntaxException("@Typed applicable only to classes or methods or package declaration" + '\n', line, col), source), true
+            );
+            return;
+        }
 
         final Expression member = ((AnnotationNode) nodes[0]).getMember("debug");
         boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression) member).getValue().equals(Boolean.TRUE);
@@ -106,7 +103,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             boolean localDebug = debug;
             if (!anns.isEmpty()) {
                 final AnnotationNode ann = anns.get(0);
-                final Expression localMember = ((AnnotationNode) ann).getMember("debug");
+                final Expression localMember = ann.getMember("debug");
                 localDebug = localMember != null && localMember instanceof ConstantExpression && ((ConstantExpression) localMember).getValue().equals(Boolean.TRUE);
             }
 
@@ -121,6 +118,15 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         }
 
         return;
+    }
+
+    private void addMetaClassField(ClassNode node) {
+        if (node.isInterface()) return;
+        FieldNode meta = node.getDeclaredField("metaClass");
+        // Add 'metaClass' field to prevent from verifier injection with unwanted initialization.
+        if (meta == null) {
+            node.addField("metaClass", ACC_PRIVATE | ACC_TRANSIENT | ACC_SYNTHETIC, ClassHelper.METACLASS_TYPE, null);
+        }
     }
 
     private void allMethods(SourceUnit source, LinkedList toProcess, ClassNode classNode, TypePolicy classPolicy, boolean inners) {
@@ -150,6 +156,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                     TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
 
                     OpenVerifier verifier = new OpenVerifier();
+                    addMetaClassField(node);
                     verifier.visitClass(node);
 
                     allMethods(source, toProcess, node, innerClassPolicy, inners);
