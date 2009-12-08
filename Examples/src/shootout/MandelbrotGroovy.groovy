@@ -36,8 +36,7 @@ class MandelbrotGroovy
 
     private static final void Compute(final int N, final byte[][] output, final int[] bytes_per_line)
     {
-      System.in.read()
-      final double inverse_N = 2.0 / N;
+        final double inverse_N = 2.0 / N;
         final AtomicInteger current_line = new AtomicInteger(0);
 
         final Thread[] pool = new Thread[Runtime.getRuntime().availableProcessors()];
