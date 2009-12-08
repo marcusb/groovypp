@@ -54,16 +54,16 @@ class MandelbrotGroovy
                         int byte_count = 0;
                         int byte_accumulate = 0;
 
-                        def Civ = (double)y * inverse_N - 1.0d;
+                        double Civ = (double)y * inverse_N - 1.0d;
                         for (int x = 0; x < N; x++)
                         {
-                            def Crv = (double)x * inverse_N - 1.5d;
+                            double Crv = (double)x * inverse_N - 1.5d;
 
-                            def Zrv = Crv;
-                            def Ziv = Civ;
+                            double Zrv = Crv;
+                            double Ziv = Civ;
 
-                            def Trv = Crv * Crv;
-                            def Tiv = Civ * Civ;
+                            double Trv = Crv * Crv;
+                            double Tiv = Civ * Civ;
 
                             int j = 49;
                             while (true)
