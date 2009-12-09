@@ -592,8 +592,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 mv.visitJumpInsn(GOTO, endLabel);
 
                 mv.visitLabel(nullLabel);
-                mv.visitInsn(POP);
-                mv.visitLdcInsn("null");
+                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(ClassHelper.STRING_TYPE));
 
                 mv.visitLabel(endLabel);
             }

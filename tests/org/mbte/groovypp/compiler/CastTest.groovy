@@ -79,4 +79,19 @@ m()
         """)
     assertEquals([1L, 3], res)
   }
+
+  void testCastNullToString() {
+    shell.evaluate("""
+    @Typed(debug = true)
+    class C {
+      static def foo() {
+         def reader = new StringReader("")
+         String line
+         while ((line = reader.readLine()) != null) {
+         }
+      }
+    }
+    C.foo()
+    """)
+  }
 }
