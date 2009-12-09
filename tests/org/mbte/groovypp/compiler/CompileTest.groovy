@@ -1,5 +1,7 @@
 package org.mbte.groovypp.compiler
 
+import static groovy.CompileTestSupport.shouldCompile
+
 public class CompileTest extends GroovyShellTestCase {
 
   void testProp() {
@@ -243,6 +245,15 @@ u()
       u(5)
     """)
     assertEquals(120, fact)
+  }
+  void testThreadCreate() {
+    shouldCompile("""
+      @Typed
+      class C {
+        static def foo() {new Thread([run: {}])}
+      }
+      C.foo()
+    """)
   }
   void testClassExpression() {
     shell.evaluate("""

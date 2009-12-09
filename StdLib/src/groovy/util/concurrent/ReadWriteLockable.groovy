@@ -4,7 +4,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 
 @Trait
 abstract class ReadWriteLockable {
-    final ReentrantReadWriteLock lock = [:]
+    final ReentrantReadWriteLock lock = new ReentrantReadWriteLock()
 
     public <R> R withReadLock (Function0<R> op) {
         lock.readLock().lock ()

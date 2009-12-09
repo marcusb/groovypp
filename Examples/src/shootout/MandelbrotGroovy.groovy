@@ -42,7 +42,7 @@ class MandelbrotGroovy
         final Thread[] pool = new Thread[Runtime.getRuntime().availableProcessors()];
         for (int i = 0; i < pool.length; i++)
         {
-            pool[i] = new Thread((Runnable)[
+            pool[i] = new Thread([
                 "run": {
                     int y;
                     while ((y = current_line.getAndIncrement()) < N)
