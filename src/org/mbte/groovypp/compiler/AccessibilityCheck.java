@@ -12,11 +12,10 @@ public class AccessibilityCheck {
                                        ClassNode placeClass,
                                        ClassNode accessType) {
         if (accessType != null && !isAccessible(accessType.getModifiers(), accessType.getOuterClass(), placeClass, null)) return false;
+        if (declaringClass == null) return true;
         if ((modifiers & Opcodes.ACC_PRIVATE) != 0) {
-            if (declaringClass == null) return true;
             return getToplevelClass(declaringClass).equals(getToplevelClass(placeClass));
         } else if ((modifiers & Opcodes.ACC_PROTECTED) != 0) {
-            if (declaringClass == null) return true;
             if (samePackage(declaringClass, placeClass)) return true;
             while (placeClass != null) {
                 if (placeClass.isDerivedFrom(declaringClass)) {
