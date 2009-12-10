@@ -45,7 +45,7 @@ class MandelbrotGroovy
         for (i in 0..<pool.length)
         {
             pool[i] = [
-                "run": {
+                run: {
                     int y
                     while ((y = current_line.getAndIncrement()) < N)
                     {
