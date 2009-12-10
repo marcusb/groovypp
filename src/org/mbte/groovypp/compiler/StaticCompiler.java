@@ -262,7 +262,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             if (collectionExpression.getType().isArray()) {
                 visitForLoopWithArray(forLoop, collectionExpression);
             } else if (forLoop.getCollectionExpression() instanceof RangeExpression &&
-                    TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())) {
+                    TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())
+                    && (forLoop.getVariable().isDynamicTyped() ||
+                        forLoop.getVariable().getType().equals(ClassHelper.int_TYPE))) {
                 // This is the IntRange (or EmptyRange). Iterate with index.
                 visitForLoopWithIntRange(forLoop, collectionExpression);
             } else {

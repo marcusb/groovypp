@@ -30,6 +30,19 @@ class ForInTest extends GroovyShellTestCase {
     assertEquals([0,1,2], res)
   }
 
+   void testForInIntRangeTypeSpecified() {
+    def res = shell.evaluate("""
+      @Typed
+      public def foo() {
+        def res = []
+        for (Integer i in 0..2) res << i.byteValue()
+        res
+      }
+      foo()
+    """)
+    assertEquals([0,1,2], res)
+  }
+
   void testForInIntArray() {
     def res = shell.evaluate("""
       @Typed
