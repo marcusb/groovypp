@@ -251,7 +251,7 @@ u()
     shouldCompile("""
       @Typed
       class C {
-        static def foo() {new Thread([run: {}])}
+        static def foo() {Thread t = [run: {}]}
       }
       C.foo()
     """)
