@@ -5,27 +5,27 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.Register;
 import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     private final VariableExpression ve;
-    private final Variable var;
+    private final Register var;
 
     public ResolvedVarBytecodeExpr(ClassNode type, VariableExpression ve, CompilerTransformer compiler) {
         super(ve, type);
         this.ve = ve;
-        var = compiler.compileStack.getVariable(ve.getName(), true);
+        var = compiler.compileStack.getRegister(ve.getName(), true);
     }
 
     protected void compile(MethodVisitor mv) {
-        load(var, mv);
+        load(getType(), var.getIndex(), mv);
     }
 
     public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
@@ -34,7 +34,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             right = compiler.transform(right);
             if (right instanceof ListExpressionTransformer.UntransformedListExpr)
                 right = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)right).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
-            vtype = TypeUtil.wrapSafely(right.getType());
+            vtype = right.getType();
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {
             vtype = ve.getType();
@@ -48,8 +48,8 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
                 finalRight.visit(mv);
                 if (ClassHelper.isPrimitiveType(finalRight.getType()) && !ClassHelper.isPrimitiveType(vtype))
                     box(finalRight.getType(), mv);
-                storeVar(var, mv);
-                load(var, mv);
+                store(vtype, var.getIndex(), mv);
+                 load(vtype, var.getIndex(), mv);
             }
         };
     }
@@ -61,7 +61,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        final Register var = compiler.compileStack.getRegister(ve.getName(), false);
 
         if (var != null && var.getType().equals(ClassHelper.int_TYPE)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
@@ -87,7 +87,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
                     if (getType() != primType)
                         box(primType, mv);
                     dup(getType(), mv);
-                    store(var, mv);
+                    store(getType(), var.getIndex(), mv);
                 }
             };
         }
@@ -116,13 +116,13 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             protected void compile(MethodVisitor mv) {
                 nextCall.visit(mv);
                 dup(getType(), mv);
-                store(var, mv);
+                store(var.getType(), var.getIndex(), mv);
             }
         };
     }
 
     public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(ve.getName(), false);
+        final Register var = compiler.compileStack.getRegister(ve.getName(), false);
         if (var != null && var.getType().equals(ClassHelper.int_TYPE)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
                 protected void compile(MethodVisitor mv) {
@@ -147,7 +147,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
                     incOrDecPrimitive(primType, type, mv);
                     if (getType() != primType)
                         box(primType, mv);
-                    store(var, mv);
+                    store(getType(), var.getIndex(), mv);
                 }
             };
         }
@@ -176,7 +176,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         return new BytecodeExpr(exp, vtype) {
             protected void compile(MethodVisitor mv) {
                 nextCall.visit(mv);
-                store(var, mv);
+                store(getType(), var.getIndex(), mv);
             }
         };
     }

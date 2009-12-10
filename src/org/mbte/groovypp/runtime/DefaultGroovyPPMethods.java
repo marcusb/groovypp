@@ -56,6 +56,38 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
         return value;
     }
 
+    public static Class getClass(byte value) {
+        return Byte.TYPE;
+    }
+
+    public static Class getClass(short value) {
+        return Short.TYPE;
+    }
+
+    public static Class getClass(int value) {
+        return Integer.TYPE;
+    }
+
+    public static Class getClass(char value) {
+        return Character.TYPE;
+    }
+
+    public static Class getClass(long value) {
+        return Long.TYPE;
+    }
+
+    public static Class getClass(float value) {
+        return Float.TYPE;
+    }
+
+    public static Class getClass(double value) {
+        return Double.TYPE;
+    }
+
+    public static Class getClass(boolean value) {
+        return Boolean.TYPE;
+    }
+
     public static String[] gstringArrayToStringArray(GString[] data) {
         if (data == null)
             return null;

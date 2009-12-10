@@ -71,7 +71,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                 }
 
                 // let's try local type inference
-                compiler.getLocalVarInferenceTypes().add(ve, TypeUtil.wrapSafely(right.getType()));
+                compiler.getLocalVarInferenceTypes().add(ve, right.getType());
                 return new Dynamic(exp, right, compiler, ve);
             }
         }
@@ -114,7 +114,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         private final VariableExpression ve;
 
         public Dynamic(DeclarationExpression exp, BytecodeExpr right, CompilerTransformer compiler, VariableExpression ve) {
-            super(exp, TypeUtil.wrapSafely(right.getType()));
+            super(exp, right.getType());
             this.right = right;
             this.compiler = compiler;
             this.ve = ve;
@@ -122,9 +122,8 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
 
         protected void compile(MethodVisitor mv) {
             right.visit(mv);
-            box(right.getType(), mv);
-            dup(TypeUtil.wrapSafely(right.getType()), mv);
-            compiler.compileStack.defineVariable(ve, true);
+            dup(right.getType(), mv);
+            compiler.compileStack.defineTypeInferenceVariable(ve, right.getType());
         }
     }
 }

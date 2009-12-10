@@ -38,8 +38,8 @@ private static class TreeNode
 {
     MetaClass getMetaClass () {}
     
-    TreeNode left, right;
-    int item;
+    private TreeNode left, right;
+    private int item;
 
     static TreeNode bottomUpTree(int item, int depth){
         if (depth>0){
@@ -50,11 +50,11 @@ private static class TreeNode
             ]
         }
         else {
-            [item : item];
+            [item : item]
         }
     }
 
     final int itemCheck(){
-        this.@item + (this.@left ? this.@left.itemCheck() - this.@right.itemCheck() : 0);
+        item + (left ? left.itemCheck() - right.itemCheck() : 0)
     }
 }

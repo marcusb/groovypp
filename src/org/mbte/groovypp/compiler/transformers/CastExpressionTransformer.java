@@ -205,7 +205,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
 
         if (objType != null) {
-            final Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType);
+            final Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType, compiler);
 
             if (superArgs != null) {
                 if (superArgs instanceof ListExpression) {

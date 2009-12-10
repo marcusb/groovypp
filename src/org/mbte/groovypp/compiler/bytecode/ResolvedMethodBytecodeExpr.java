@@ -215,11 +215,14 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         final String classInternalName;
         final String methodDescriptor;
         if (methodNode instanceof ClassNodeCache.DGM) {
+            MethodNode dgm = ((ClassNodeCache.DGM) methodNode).original;
+
             op = INVOKESTATIC;
 
             if (object != null) {
                 object.visit(mv);
-                box(object.getType(), mv);
+                if (ClassHelper.isPrimitiveType(object.getType()) && !ClassHelper.isPrimitiveType(dgm.getParameters()[0].getType()))
+                    box(object.getType(), mv);
             }
 
             classInternalName = ((ClassNodeCache.DGM) methodNode).callClassInternalName;

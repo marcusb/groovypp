@@ -347,7 +347,7 @@ public class ClosureUtil {
     public static void addFields(ClosureExpression ce, ClassNode newType, CompilerTransformer compiler) {
         for(Iterator<Variable> it = ce.getVariableScope().getReferencedLocalVariablesIterator(); it.hasNext(); ) {
             Variable astVar = it.next();
-            final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(astVar.getName(), false);
+            final Register var = compiler.compileStack.getRegister(astVar.getName(), false);
 
             ClassNode vtype;
             if (var != null) {
@@ -365,7 +365,7 @@ public class ClosureUtil {
         }
     }
 
-    public static Parameter[] createClosureConstructorParams(ClassNode newType) {
+    public static Parameter[] createClosureConstructorParams(ClassNode newType, CompilerTransformer compiler) {
         List<FieldNode> fields = newType.getFields();
 
         final Parameter constrParams [] = new Parameter[fields.size()];
@@ -398,11 +398,11 @@ public class ClosureUtil {
                 mv.visitVarInsn(Opcodes.ALOAD,0);
             }
             else {
-                final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(name, false);
+                final Register var = compiler.compileStack.getRegister(name, false);
                 if (var != null) {
-                    BytecodeExpr.loadVar(var, mv);
-                    BytecodeExpr.unbox(var.getType(), mv);
-                    if (!constrParams[i].getType().equals(var.getType())) {
+                    FieldNode field = type.getDeclaredField(name);
+                    BytecodeExpr.load(field.getType(), var.getIndex(), mv);
+                    if (!constrParams[i].getType().equals(var.getType()) && !ClassHelper.isPrimitiveType(field.getType())) {
                         BytecodeExpr.checkCast(constrParams[i].getType(), mv);
                     }
                 }

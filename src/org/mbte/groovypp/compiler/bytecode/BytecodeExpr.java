@@ -7,13 +7,13 @@ import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.classgen.BytecodeExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.ClassGeneratorException;
-import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
+import org.mbte.groovypp.compiler.Register;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -422,14 +422,11 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public static void load(Variable v, MethodVisitor mv) {
+    public static void load(Register v, MethodVisitor mv) {
         load(v.getType(), v.getIndex(), mv);
     }
 
-    public void store(Variable v, boolean markStart, MethodVisitor mv) {
-        ClassNode type = v.getType();
-        int idx = v.getIndex();
-
+    public static void store(ClassNode type, int idx, MethodVisitor mv) {
         if (type == double_TYPE) {
             mv.visitVarInsn(Opcodes.DSTORE, idx);
         } else if (type == float_TYPE) {
@@ -446,10 +443,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         } else {
             mv.visitVarInsn(Opcodes.ASTORE, idx);
         }
-    }
-
-    public void store(Variable v, MethodVisitor mv) {
-        store(v, false, mv);
     }
 
     /**
@@ -531,16 +524,9 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
      * @param variable
      * @param mv
      */
-    public static void loadVar(Variable variable, MethodVisitor mv) {
-        int index = variable.getIndex();
+    public static void loadVar(Register variable, MethodVisitor mv) {
         load(variable, mv);
         box(variable.getType(), mv);
-    }
-
-    public void storeVar(Variable variable, MethodVisitor mv) {
-        String type = variable.getTypeName();
-        int index = variable.getIndex();
-        store(variable, false, mv);
     }
 
     public void putField(FieldNode fld, MethodVisitor mv) {

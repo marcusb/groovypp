@@ -44,22 +44,24 @@ class OptionalReturnTest extends GroovyShellTestCase {
          shell.evaluate  """
 
           @Typed
-          def foo2() {
+          boolean foo2() {
               def x = 'cheese'
               x == 'cheese'
           }
 
           @Typed
-          def foo3() {
+          boolean foo3() {
               def x = 'cheese'
               x == 'edam'
           }
 
-          @Typed
+          @Typed(debug=true)
           def u() {
               def value = foo2()
+              assert value.class.name == 'boolean'
               assert value
               value = foo3()
+              assert value.class.name == 'boolean'
               assert value == false
           }
 

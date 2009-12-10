@@ -246,6 +246,7 @@ u()
     """)
     assertEquals(120, fact)
   }
+
   void testThreadCreate() {
     shouldCompile("""
       @Typed

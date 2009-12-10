@@ -10,7 +10,6 @@ import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.Variable;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.compiler.bytecode.*;
@@ -165,7 +164,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
-        BytecodeHelper helper = new BytecodeHelper(mv);
         MethodCallExpression iterator = new MethodCallExpression(
                 collectionExpression, "iterator", new ArgumentListExpression());
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
@@ -181,7 +179,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         }
         if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
 
-        Variable variable = compileStack.defineVariable(forLoop.getVariable(), false);
+        Register variable = compileStack.defineVariable(forLoop.getVariable(), false);
 
         final int iteratorIdx = compileStack.defineTemporaryVariable(
                 "iterator", ClassHelper.make(Iterator.class), true);
@@ -194,7 +192,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitVarInsn(ALOAD, iteratorIdx);
         mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;");
         BytecodeExpr.cast(ClassHelper.OBJECT_TYPE, etype, mv);
-        helper.storeVar(variable);
+        BytecodeExpr.store(etype, variable.getIndex(), mv);
 
         forLoop.getLoopBlock().visit(this);
 
@@ -348,7 +346,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitLabel(lElse1);
         int otherEnd = compileStack.defineTemporaryVariable("$otherEnd$", ClassHelper.int_TYPE, true);
         int thisEnd = compileStack.defineTemporaryVariable("$thisEnd$", ClassHelper.int_TYPE, true);
-        Variable it = compileStack.defineVariable(forLoop.getVariable(), false);
+        Register it = compileStack.defineVariable(forLoop.getVariable(), false);
 
         mv.visitLabel(continueLabel);
 
@@ -562,7 +560,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         // switch does not have a continue label. use its parent's for continue
         Label breakLabel = compileStack.pushSwitch();
 
-        int switchVariableIndex = compileStack.defineTemporaryVariable("switch", true);
+        int switchVariableIndex = compileStack.defineTemporaryVariable("switch", DYNAMIC_TYPE, true);
 
         List caseStatements = statement.getCaseStatements();
         int caseCount = caseStatements.size();
@@ -715,7 +713,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Statement tryStatement = statement.getTryStatement();
         final Statement finallyStatement = statement.getFinallyStatement();
 
-        int anyExceptionIndex = compileStack.defineTemporaryVariable("exception", false);
+        int anyExceptionIndex = compileStack.defineTemporaryVariable("exception", DYNAMIC_TYPE, false);
         if (!finallyStatement.isEmpty()) {
             compileStack.pushFinallyBlock(
                     new Runnable() {

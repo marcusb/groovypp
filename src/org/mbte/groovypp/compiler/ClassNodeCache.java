@@ -183,7 +183,13 @@ public class ClassNodeCache {
             }
             superClasses.add(ClassHelper.OBJECT_TYPE);
         } else {
-            ClassNode aSuper = classNode.getSuperClass();
+            ClassNode aSuper;
+            if (ClassHelper.isPrimitiveType(classNode)) {
+                aSuper = ClassHelper.getWrapper(classNode);
+            }
+            else {
+                aSuper = classNode.getSuperClass();
+            }
             if (aSuper != null) {
                 superClasses.add(aSuper);
                 getSuperClasses(aSuper, superClasses);
@@ -236,7 +242,10 @@ public class ClassNodeCache {
             getAllInterfaces(anInterface, res);
         }
 
-        getAllInterfaces(type.getSuperClass(), res);
+        if (ClassHelper.isPrimitiveType(type))
+            getAllInterfaces(ClassHelper.getWrapper(type), res);
+        else
+            getAllInterfaces(type.getSuperClass(), res);
     }
 
     static Set<ClassNode> getAllInterfaces(ClassNode type) {
@@ -273,7 +282,7 @@ public class ClassNodeCache {
                         if (isNonRealMethod(method)) {
                             return method;
                         }
-                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC, matchC)) {
+                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC, matchC) && !ClassHelper.isPrimitiveType(matchC)) {
                         return method;
                     }
                 }
@@ -305,7 +314,7 @@ public class ClassNodeCache {
                         if (isNonRealMethod(method)) {
                             list.set(found, method);
                         }
-                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC, matchC)) {
+                    } else if (!TypeUtil.isDirectlyAssignableFrom(methodC, matchC) && !ClassHelper.isPrimitiveType(matchC)) {
                         list.set(found, method);
                     }
                 }

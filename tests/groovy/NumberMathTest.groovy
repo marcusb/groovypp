@@ -192,7 +192,7 @@ class NumberMathTest extends GroovyShellTestCase {
           def u() {
             long d = 100L
             d /= 33L
-            assert d.class == Long.class
+            assert d.class == long.class
           }
 
           u()

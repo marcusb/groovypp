@@ -6,9 +6,9 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.Register;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
@@ -39,7 +39,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
             }
         }
 
-        final org.codehaus.groovy.classgen.Variable var = compiler.compileStack.getVariable(exp.getName(), false);
+        final Register var = compiler.compileStack.getRegister(exp.getName(), false);
 
         if (var == null) {
             if (exp.isClosureSharedVariable()) {

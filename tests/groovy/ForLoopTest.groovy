@@ -65,6 +65,7 @@ class ForLoopTest extends GroovyShellTestCase {
           def x = 0
 
           for (Integer i in 0..9) {
+              println i.getClass ().name
               assert i.getClass() == Integer
               x = x + i
           }

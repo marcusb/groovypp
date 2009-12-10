@@ -111,7 +111,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
                 else if (object instanceof MapExpressionTransformer.UntransformedMapExpr)
                     object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
-                type = TypeUtil.wrapSafely(object.getType());
+                type = object.getType();
 
                 if (type.isDerivedFrom(ClassHelper.CLOSURE_TYPE) && methodName.equals("call"))
                     foundMethod = findMethodWithClosureCoercion(type, "doCall", argTypes, compiler);

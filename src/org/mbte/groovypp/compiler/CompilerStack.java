@@ -1,12 +1,8 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.classgen.Variable;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -23,15 +19,15 @@ public class CompilerStack implements Opcodes {
     // current label for break
     private Label breakLabel;
     // available variables on stack
-    private Map<String, Variable> stackVariables = new HashMap<String, Variable>();
+    private Map<String, Register> stackVariables = new HashMap<String, Register>();
     // index of the last variable on stack
     private int currentVariableIndex = 1;
     // index for the next variable on stack
     private int nextVariableIndex = 1;
     // currently temporary variables in use
-    private final LinkedList<Variable> temporaryVariables = new LinkedList<Variable>();
+    private final LinkedList<Register> temporaryVariables = new LinkedList<Register>();
     // overall used variables for a method/constructor
-    private final LinkedList<Variable> usedVariables = new LinkedList<Variable>();
+    private final LinkedList<Register> usedVariables = new LinkedList<Register>();
     // map containing named labels of parenting blocks
     private Map<String, Label> superBlockNamedLabels = new HashMap<String, Label>();
     // map containing named labels of current block
@@ -63,6 +59,11 @@ public class CompilerStack implements Opcodes {
     private String className;
 
     CompilerStack parent;
+    public static final ClassNode inferenced_TYPE = ClassHelper.make("TYPE INFERENCE");
+
+    static {
+        inferenced_TYPE.setRedirect(ClassHelper.OBJECT_TYPE);
+    }
 
     public CompilerStack(CompilerStack compileStack) {
         parent = compileStack;
@@ -75,8 +76,8 @@ public class CompilerStack implements Opcodes {
         Label finallyLabel;
         final int lastVariableIndex;
         final int nextVariableIndex;
-        final Map<String, Variable> stackVariables;
-        List<Variable> temporaryVariables = new LinkedList<Variable>();
+        final Map<String, Register> stackVariables;
+        List<Register> temporaryVariables = new LinkedList<Register>();
         List usedVariables = new LinkedList();
         final Map<String, Label> superBlockNamedLabels;
         final Map<String, Label> currentBlockNamedLabels;
@@ -98,7 +99,7 @@ public class CompilerStack implements Opcodes {
 
     protected void pushState() {
         stateStack.add(new StateStackElement());
-        stackVariables = new HashMap<String, Variable>(stackVariables);
+        stackVariables = new HashMap<String, Register>(stackVariables);
         finallyBlocks = new LinkedList(finallyBlocks);
     }
 
@@ -125,7 +126,7 @@ public class CompilerStack implements Opcodes {
     }
 
     public void removeVar(int tempIndex) {
-        final Variable head = temporaryVariables.removeFirst();
+        final Register head = temporaryVariables.removeFirst();
         if (head.getIndex() != tempIndex)
             throw new GroovyBugError("CompileStack#removeVar: tried to remove a temporary variable in wrong order");
 
@@ -136,8 +137,8 @@ public class CompilerStack implements Opcodes {
     private void setEndLabels(){
         Label endLabel = new Label();
         mv.visitLabel(endLabel);
-        for (Iterator<Variable> iter = stackVariables.values().iterator(); iter.hasNext();) {
-            Variable var = iter.next();
+        for (Iterator<Register> iter = stackVariables.values().iterator(); iter.hasNext();) {
+            Register var = iter.next();
             var.setEndLabel(endLabel);
         }
         thisEndLabel = endLabel;
@@ -150,21 +151,6 @@ public class CompilerStack implements Opcodes {
 
     public VariableScope getScope() {
         return scope;
-    }
-
-    /**
-     * creates a temporary variable.
-     *
-     * @param var defines type and name
-     * @param store defines if the toplevel argument of the stack should be stored
-     * @return the index used for this temporary variable
-     */
-    public int defineTemporaryVariable(org.codehaus.groovy.ast.Variable var, boolean store) {
-        return defineTemporaryVariable(var.getName(), var.getType(),store);
-    }
-
-    public Variable getVariable(String variableName ) {
-        return getVariable(variableName,true);
     }
 
     /**
@@ -182,25 +168,14 @@ public class CompilerStack implements Opcodes {
      * @param mustExist    throw exception if variable does not exist
      * @return the normal variable or null if not found (and <code>mustExist</code> not true)
      */
-    public Variable getVariable(String variableName, boolean mustExist) {
-        if (variableName.equals("this")) return Variable.THIS_VARIABLE;
-        if (variableName.equals("super")) return Variable.SUPER_VARIABLE;
-        Variable v = stackVariables.get(variableName);
+    public Register getRegister(String variableName, boolean mustExist) {
+        if (variableName.equals("this")) return Register.THIS_VARIABLE;
+        if (variableName.equals("super")) return Register.SUPER_VARIABLE;
+        Register v = stackVariables.get(variableName);
         if (v == null && mustExist) {
             throw new GroovyBugError("tried to get a variable with the name " + variableName + " as stack variable, but a variable with this name was not created");
         }
         return v;
-    }
-
-    /**
-     * creates a temporary variable.
-     *
-     * @param name defines type and name
-     * @param store defines if the toplevel argument of the stack should be stored
-     * @return the index used for this temporary variable
-     */
-    public int defineTemporaryVariable(String name,boolean store) {
-        return defineTemporaryVariable(name, ClassHelper.DYNAMIC_TYPE,store);
     }
 
     /**
@@ -212,7 +187,7 @@ public class CompilerStack implements Opcodes {
      * @return the index used for this temporary variable
      */
     public int defineTemporaryVariable(String name, ClassNode node, boolean store) {
-        Variable answer = defineVar(name,node,false);
+        Register answer = defineVar(name,node,false);
         temporaryVariables.addFirst(answer); // TRICK: we add at the beginning so when we find for remove or get we always have the last one
         usedVariables.removeLast();
 
@@ -251,8 +226,8 @@ public class CompilerStack implements Opcodes {
                 mv.visitLocalVariable("this", className, null, thisStartLabel, thisEndLabel, 0);
             }
 
-            for (Iterator<Variable> iterator = usedVariables.iterator(); iterator.hasNext();) {
-                Variable v = iterator.next();
+            for (Iterator<Register> iterator = usedVariables.iterator(); iterator.hasNext();) {
+                Register v = iterator.next();
                 String type = BytecodeHelper.getTypeDescription(v.getType());
                 Label start = v.getStartLabel();
                 Label end = v.getEndLabel();
@@ -382,15 +357,22 @@ public class CompilerStack implements Opcodes {
         pushState();
     }
 
-    private Variable defineVar(String name, ClassNode type, boolean methodParameterUsedInClosure) {
-        int prevCurrent = currentVariableIndex;
+    private Register defineVar(String name, ClassNode type, boolean methodParameterUsedInClosure) {
         makeNextVariableID(type);
         int index = currentVariableIndex;
         if (methodParameterUsedInClosure) {
             index = localVariableOffset++;
             type = TypeUtil.wrapSafely(type);
         }
-        Variable answer = new Variable(index, type, name, prevCurrent);
+        Register answer = new Register(index, type, name);
+        usedVariables.add(answer);
+        return answer;
+    }
+
+    private Register defineTypeInferenceVar(String name) {
+        makeNextVariableID(ClassHelper.long_TYPE); // we want to allocate 2 slots
+        int index = currentVariableIndex;
+        Register answer = new Register(index, inferenced_TYPE, name);
         usedVariables.add(answer);
         return answer;
     }
@@ -416,7 +398,7 @@ public class CompilerStack implements Opcodes {
         boolean hasHolder = false;
         for (int i = 0; i < paras.length; i++) {
             String name = paras[i].getName();
-            Variable answer;
+            Register answer;
             ClassNode type = paras[i].getType();
             answer = defineVar(name,type,false);
             answer.setStartLabel(startLabel);
@@ -429,16 +411,16 @@ public class CompilerStack implements Opcodes {
     }
 
     /**
-     * Defines a new Variable using an AST variable.
+     * Defines a new Register using an AST variable.
      * @param initFromStack if true the last element of the
      *                      stack will be used to initilize
      *                      the new variable. If false null
      *                      will be used.
      */
-    public Variable defineVariable(org.codehaus.groovy.ast.Variable v, boolean initFromStack) {
+    public Register defineVariable(Variable v, boolean initFromStack) {
         String name = v.getName();
         final ClassNode type = v.getType();
-        Variable answer = defineVar(name, type,false);
+        Register answer = defineVar(name, type, false);
         stackVariables.put(name, answer);
 
         Label startLabel  = new Label();
@@ -462,6 +444,20 @@ public class CompilerStack implements Opcodes {
         }
 
         doStore(type);
+
+        mv.visitLabel(startLabel);
+        return answer;
+    }
+
+    public Register defineTypeInferenceVariable(Variable v, ClassNode initType) {
+        String name = v.getName();
+        Register answer = defineTypeInferenceVar(name);
+        stackVariables.put(name, answer);
+
+        Label startLabel  = new Label();
+        answer.setStartLabel(startLabel);
+
+        doStore(initType);
 
         mv.visitLabel(startLabel);
         return answer;

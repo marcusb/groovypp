@@ -8,6 +8,7 @@
     <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
     <property name="stdlibtest.module.name" value="StdLibTest" />
+    <property name="examples.module.name" value="Examples" />
 
 
     <property name="compiler.src" location="src" />
@@ -15,6 +16,7 @@
     <property name="stdlib.src" location="${stdlib.module.name}/src" />
     <property name="stdlib.tests" location="${stdlib.module.name}/tests" />
     <property name="stdlibtest.tests" location="${stdlibtest.module.name}/tests" />
+    <property name="examples.src" location="${examples.module.name}/src" />
 
     <property name="compiler.prod.output" location="${output.dir}/production/${compiler.module.name}" />
     <property name="compiler.test.output" location="${output.dir}/test/${compiler.module.name}" />
@@ -22,6 +24,7 @@
     <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.module.name}" />
     <property name="stdlibtest.prod.output" location="${output.dir}/production/${stdlibtest.module.name}" />
     <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
+    <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
 	<property name="test.reports" location="${output.dir}/test-reports"/>
 
 	<property name="jar.name" location="${app.name}.jar"/>
@@ -57,6 +60,12 @@
         <pathelement location="${stdlib.prod.output}"/>
     </path>
 
+    <path id="compile.examples.classpath">
+        <path refid="libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+    </path>
+
     <path id="tests.classpath">
         <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
@@ -79,6 +88,7 @@
         <mkdir dir="${stdlib.test.output}"/>
         <mkdir dir="${stdlibtest.prod.output}"/>
         <mkdir dir="${stdlibtest.test.output}"/>
+        <mkdir dir="${examples.prod.output}"/>
 		<mkdir dir="${test.reports}"/>
 	</target>
 
@@ -117,6 +127,13 @@
         <groovyc classpathref="compile.stdlibtest.tests.classpath" srcdir="${stdlibtest.tests}" fork="yes"
             destdir="${stdlibtest.test.output}" verbose="true">
             <javac sourcepath="${stdlibtest.tests}"/>
+        </groovyc >
+    </target>
+
+    <target name="compile.examples"  depends="compile.stdlib">
+        <groovyc classpathref="compile.examples.classpath" srcdir="${examples.src}" fork="yes"
+            destdir="${examples.prod.output}" verbose="true">
+            <javac sourcepath="${examples.src}"/>
         </groovyc >
     </target>
 

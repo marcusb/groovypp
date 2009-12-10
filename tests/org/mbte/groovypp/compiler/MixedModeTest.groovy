@@ -6,7 +6,7 @@ public class MixedModeTest extends GroovyShellTestCase {
     def res = shell.evaluate("""
     import groovy.xml.*
 
-    @Typed(value=TypePolicy.MIXED)
+    @Typed(value=TypePolicy.MIXED,debug=true)
     class A {
         void m () {
             def writer = new StringWriter()

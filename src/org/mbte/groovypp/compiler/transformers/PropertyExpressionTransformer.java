@@ -87,7 +87,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 }
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                type = TypeUtil.wrapSafely(object.getType());
+                type = object.getType();
 
                 Object prop = null;
                 if (exp.isImplicitThis()) {

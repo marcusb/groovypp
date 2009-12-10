@@ -17,7 +17,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
 
         ClosureUtil.addFields(ce, newType, compiler);
 
-        constrParams = ClosureUtil.createClosureConstructorParams(newType);
+        constrParams = ClosureUtil.createClosureConstructorParams(newType, compiler);
 
         compiler.pendingClosures.add(this);
     }

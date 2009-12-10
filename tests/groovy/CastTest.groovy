@@ -70,19 +70,19 @@ class CastTest extends GroovyShellTestCase {
 
   void testPrimitiveCasting() {
     shell.evaluate("""
-        @Typed
+        @Typed(debug=true)
         def u() {
           def d = 1.23
           def i1 = (int)d
           def i2 = (Integer)d
-          assert i1.class.name == 'java.lang.Integer'
+          assert i1.class.name == 'int'
           assert i2.class.name == 'java.lang.Integer'
 
           def ch = (char) i1
-          assert ch.class.name == 'java.lang.Character'
+          assert ch.class.name == 'char'
 
           def dd = (double)d
-          assert dd.class.name == 'java.lang.Double'
+          assert dd.class.name == 'double'
         }
         u();
       """
