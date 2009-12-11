@@ -2,6 +2,10 @@ package groovy
 
 import static groovy.CompileTestSupport.shouldNotCompile
 import static groovy.CompileTestSupport.shouldCompile
+import org.codehaus.groovy.ast.GenericsType
+import java.lang.reflect.Type
+import java.lang.reflect.WildcardType
+
 class GenericsTest extends GroovyShellTestCase {
 
   void testSimpleParameterization() {
@@ -181,5 +185,25 @@ class GenericsTest extends GroovyShellTestCase {
     u()
     """)
     assertEquals "schwiitzi", res
+  }
+
+  void testWildcardInference() {
+    shouldCompile("""
+    import java.util.concurrent.Callable
+    import java.util.concurrent.ExecutorService
+    import java.util.concurrent.Executors
+    import java.util.concurrent.Future
+    @Typed
+    class C {
+      static ArrayList<Callable<Map<Integer, String>>> createFragmentTasks() {
+        return [[call: {[0:"0"]}]]
+      }
+      static def foo(ExecutorService pool) {
+        def tasks = createFragmentTasks()
+        return pool.invokeAll(tasks).get(0).get().get(0)
+      }
+    }
+    C.foo(Executors.newFixedThreadPool(10))
+    """)
   }
 }
