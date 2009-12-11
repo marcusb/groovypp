@@ -919,7 +919,14 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             } else {
                 if (expr != TypeUtil.NULL_TYPE) {
                     if (type.equals(STRING_TYPE)) {
+                        Label nullLabel = new Label(), doneLabel = new Label();
+                        mv.visitInsn(DUP);
+                        mv.visitJumpInsn(IFNULL, nullLabel);
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
+                        mv.visitJumpInsn(GOTO, doneLabel);
+                        mv.visitLabel(nullLabel);
+                        checkCast(type, mv);
+                        mv.visitLabel(doneLabel);
                     } else {
                         BytecodeExpr.checkCast(type, mv);
                     }

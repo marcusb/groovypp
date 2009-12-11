@@ -193,14 +193,14 @@ class GenericsTest extends GroovyShellTestCase {
     import java.util.concurrent.ExecutorService
     import java.util.concurrent.Executors
     import java.util.concurrent.Future
-    @Typed
+    @Typed(debug=true)
     class C {
       static ArrayList<Callable<Map<Integer, String>>> createFragmentTasks() {
-        return [[call: {[0:"0"]}]]
+        return [[call: {[:]}]]
       }
       static def foo(ExecutorService pool) {
         def tasks = createFragmentTasks()
-        return pool.invokeAll(tasks).get(0).get().get(0)
+        return pool.invokeAll(tasks)[0].get()[0]
       }
     }
     C.foo(Executors.newFixedThreadPool(10))
