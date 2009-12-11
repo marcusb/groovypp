@@ -188,22 +188,23 @@ class GenericsTest extends GroovyShellTestCase {
   }
 
   void testWildcardInference() {
-    shouldCompile("""
+    Object res = shell.evaluate("""
     import java.util.concurrent.Callable
     import java.util.concurrent.ExecutorService
     import java.util.concurrent.Executors
     import java.util.concurrent.Future
     @Typed(debug=true)
     class C {
-      static ArrayList<Callable<Map<Integer, String>>> createFragmentTasks() {
-        return [[call: {[:]}]]
+      static ArrayList<Callable<Map<String, String>>> createFragmentTasks() {
+        return [[call: {["a":"b"]}]]
       }
       static def foo(ExecutorService pool) {
         def tasks = createFragmentTasks()
-        return pool.invokeAll(tasks)[0].get()[0]
+        return pool.invokeAll(tasks)[0].get().get("a")
       }
     }
     C.foo(Executors.newFixedThreadPool(10))
     """)
+    assertEquals "b",res
   }
 }
