@@ -111,16 +111,18 @@ public class TypeUnification {
 
             if (isSuper(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
+                ClassNode bound = fTypearg.getLowerBound();
                 fType = iType.isGenericsPlaceHolder() ? fType :
-                        mapTypeFromSuper(iType.redirect(), iType.redirect(), fType);
+                        mapTypeFromSuper(iType.redirect(), iType.redirect(), bound);
                 if (fType == null) continue;
                 match(fType, iType, name, constraints, SUBTYPE);
             } else if (isExtends(fTypearg)) {
                 if (iTypearg.isWildcard()) continue;
+                ClassNode bound = fTypearg.getUpperBounds()[0];
                 iType = fType.isGenericsPlaceHolder() ? iType :
-                        mapTypeFromSuper(fType.redirect(), fType.redirect(), iType);
+                        mapTypeFromSuper(bound.redirect(), bound.redirect(), iType);
                 if (iType == null) continue;
-                match(fType, iType, name, constraints, SUPERTYPE);
+                match(bound, iType, name, constraints, SUPERTYPE);
             } else {
                 if (iTypearg.isWildcard()) continue;
                 // Since we allow unchecked variance in type parameter, allow it also here.
