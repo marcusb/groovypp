@@ -4,13 +4,13 @@ import java.util.Iterator;
 
 public class ArraysMethods {
     private static int normaliseIndex(int i, int size) {
-        int temp = i;
+        /*int temp = i;*/
         if (i < 0) {
             i += size;
         }
-        if (i < 0) {
+        /*if (i < 0) {
             throw new ArrayIndexOutOfBoundsException("Negative array index [" + temp + "] too large for array size " + size);
-        }
+        }*/
         return i;
     }
 
