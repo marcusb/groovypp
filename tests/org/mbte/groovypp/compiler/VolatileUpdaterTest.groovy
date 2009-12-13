@@ -1,6 +1,6 @@
 package org.mbte.groovypp.compiler
 
-public class VolatileUpdater extends GroovyShellTestCase {
+public class VolatileUpdaterTest extends GroovyShellTestCase {
     void testReference () {
         def res = shell.evaluate ("""
             @Typed class A<T> {
