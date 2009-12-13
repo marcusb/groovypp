@@ -7,6 +7,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -125,6 +126,25 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         if (foundMethod != null) {
                             ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
                             return createCall(exp, compiler, args, object, foundMethod);
+                        }
+                    }
+
+                    if (object instanceof ResolvedFieldBytecodeExpr) {
+                        ResolvedFieldBytecodeExpr obj = (ResolvedFieldBytecodeExpr) object;
+                        FieldNode fieldNode = obj.getFieldNode();
+                        if ((fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
+                            FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
+                            if (updater != null) {
+                                ClassNode [] newArgs = new ClassNode [argTypes.length+1];
+                                System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
+                                newArgs [0] = obj.getObject().getType();
+                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs);
+                                if (updaterMethod != null) {
+                                    ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
+                                    ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
+                                    return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+                                }
+                            }
                         }
                     }
 
@@ -290,6 +310,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         if (argTypes.length > 0) {
             for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
                 final ClassNode oarg = argTypes[i];
+                if (oarg == null)
+                    continue;
+                
                 if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
                     foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
 

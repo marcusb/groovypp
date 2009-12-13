@@ -12,6 +12,9 @@ import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.regex.Matcher;
 
 public class TypeUtil {
@@ -40,6 +43,9 @@ public class TypeUtil {
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
     public static final ClassNode ITERABLE = make(Iterable.class);
     public static final ClassNode ITERATOR = make(Iterator.class);
+    public static final ClassNode ATOMIC_REFERENCE_FIELD_UPDATER = make(AtomicReferenceFieldUpdater.class);
+    public static final ClassNode ATOMIC_INTEGER_FIELD_UPDATER = make(AtomicIntegerFieldUpdater.class);
+    public static final ClassNode ATOMIC_LONG_FIELD_UPDATER = make(AtomicLongFieldUpdater.class);
 
     public static GenericsType[] getMethodTypeVars(MethodNode methodNode) {
         GenericsType[] typeVars = methodNode.getGenericsTypes();

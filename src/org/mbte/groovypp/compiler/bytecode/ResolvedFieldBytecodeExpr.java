@@ -31,6 +31,14 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         checkFieldAccess(parent, fieldNode, compiler);
     }
 
+    public BytecodeExpr getObject() {
+        return object;
+    }
+
+    public FieldNode getFieldNode() {
+        return fieldNode;
+    }
+
     private void checkFieldAccess(ASTNode parent, FieldNode fieldNode, CompilerTransformer compiler) {
         if ((fieldNode.getModifiers() & ACC_PUBLIC) == 0) {
             if ((fieldNode.getModifiers() & ACC_PRIVATE) != 0) {
