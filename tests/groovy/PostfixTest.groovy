@@ -5,7 +5,7 @@ class PostfixTest extends GroovyShellTestCase {
   void testIntegerPostfix() {
     shell.evaluate """
 
-          @Typed(debug=true)
+          @Typed
           def u() {
             def x = 1
 

@@ -82,7 +82,7 @@ m()
 
   void testCastNullToString() {
     shell.evaluate("""
-    @Typed(debug = true)
+    @Typed
     class C {
       static def foo() {
          def reader = new StringReader("")

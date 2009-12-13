@@ -55,7 +55,7 @@ class OptionalReturnTest extends GroovyShellTestCase {
               x == 'edam'
           }
 
-          @Typed(debug=true)
+          @Typed
           def u() {
               def value = foo2()
               assert value.class.name == 'boolean'

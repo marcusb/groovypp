@@ -70,7 +70,7 @@ class CastTest extends GroovyShellTestCase {
 
   void testPrimitiveCasting() {
     shell.evaluate("""
-        @Typed(debug=true)
+        @Typed
         def u() {
           def d = 1.23
           def i1 = (int)d

@@ -128,7 +128,7 @@ public class CompareTest extends GroovyShellTestCase {
 
   void testClassTypes() {
     shell.evaluate("""
-      @Typed(debug=true)
+      @Typed
       def u () {
         assert (Float.TYPE == float)
         assert (Double.TYPE == double)

@@ -193,7 +193,7 @@ class GenericsTest extends GroovyShellTestCase {
     import java.util.concurrent.ExecutorService
     import java.util.concurrent.Executors
     import java.util.concurrent.Future
-    @Typed(debug=true)
+    @Typed
     class C {
       static ArrayList<Callable<Map<String, String>>> createFragmentTasks() {
         return [[call: {["a":"b"]}]]
