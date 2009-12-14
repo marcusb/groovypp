@@ -164,6 +164,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         if (argTypes.length > 0) {
             for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
                 final ClassNode oarg = argTypes[i];
+                if (oarg == null)
+                    continue;
+                
                 if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
                     foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
 
