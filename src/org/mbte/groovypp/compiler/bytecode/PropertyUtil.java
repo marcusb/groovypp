@@ -10,17 +10,30 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 public class PropertyUtil {
     public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
-        if (prop instanceof MethodNode)
-            return new ResolvedGetterBytecodeExpr(exp, (MethodNode) prop, object, needsObjectIfStatic, compiler);
+        if (prop instanceof MethodNode) {
+            MethodNode method = (MethodNode) prop;
+            if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
+                // Hack: clear 'private' for other class' access
+                method.setModifiers(method.getModifiers() & ~Opcodes.ACC_PRIVATE);
+            }
+            return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler);
+        }
 
         if (prop instanceof PropertyNode)
             return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null);
 
-        if (prop instanceof FieldNode)
-            return new ResolvedFieldBytecodeExpr(exp, (FieldNode) prop, object, null, compiler);
+        if (prop instanceof FieldNode) {
+            FieldNode field = (FieldNode) prop;
+            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
+                // Hack: clear 'private' for other class' access
+                field.setModifiers(field.getModifiers() & ~Opcodes.ACC_PRIVATE);
+            }
+            return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
+        }
 
         if (object == null && "this".equals(propName)) {
             ClassNode cur = compiler.classNode;
@@ -60,14 +73,26 @@ public class PropertyUtil {
     }
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
-        if (prop instanceof MethodNode)
+        if (prop instanceof MethodNode) {
+            MethodNode method = (MethodNode) prop;
+            if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
+                // Hack: clear 'private' for other class' access
+                method.setModifiers(method.getModifiers() & ~Opcodes.ACC_PRIVATE);
+            }
             return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
+        }
 
         if (prop instanceof PropertyNode)
             return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value);
 
-        if (prop instanceof FieldNode)
+        if (prop instanceof FieldNode) {
+            FieldNode field = (FieldNode) prop;
+            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
+                // Hack: clear 'private' for other class' access
+                field.setModifiers(field.getModifiers() & ~Opcodes.ACC_PRIVATE);
+            }
             return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value, compiler);
+        }
 
         return dynamicOrFail(parent, compiler, propName, object, value);
     }

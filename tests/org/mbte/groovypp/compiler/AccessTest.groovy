@@ -50,16 +50,20 @@ class AccessTest extends GroovyShellTestCase {
   }
 
   void testOuterPrivate() {
-    shouldCompile("""
+    def res = shell.evaluate("""
     @Typed class Outer {
-       private int i
+       private int i = 51
        class Inner {
          def foo() {
-           int j = i
+           i
          }
        }
+       def foo() {
+         new Inner().foo()
+       }
     }
-    0
+    new Outer().foo()
     """)
+    assertEquals 51, res
   }
 }
