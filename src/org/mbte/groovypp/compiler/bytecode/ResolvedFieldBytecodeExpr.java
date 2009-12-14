@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.mbte.groovypp.compiler.AccessibilityCheck;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -28,7 +29,10 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             compiler.addError("Can't modify final field " + formatFieldName(), parent);
         }
 
-        checkFieldAccess(parent, fieldNode, compiler);
+        if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
+                    compiler.classNode, object == null ? null : object.getType())) {
+          compiler.addError("Can't access field " + formatFieldName(), parent);
+        }
     }
 
     public BytecodeExpr getObject() {
@@ -37,29 +41,6 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
 
     public FieldNode getFieldNode() {
         return fieldNode;
-    }
-
-    private void checkFieldAccess(ASTNode parent, FieldNode fieldNode, CompilerTransformer compiler) {
-        if ((fieldNode.getModifiers() & ACC_PUBLIC) == 0) {
-            if ((fieldNode.getModifiers() & ACC_PRIVATE) != 0) {
-                if (!compiler.classNode.equals(fieldNode.getDeclaringClass())) {
-                    compiler.addError("Can't access private field " + formatFieldName(), parent);
-                }
-            }
-
-            if ((fieldNode.getModifiers() & ACC_PROTECTED) != 0) {
-                if (!compiler.classNode.isDerivedFrom(fieldNode.getDeclaringClass())
-                        && !compiler.samePackage(fieldNode)) {
-                    compiler.addError("Can't access protected field " + formatFieldName(), parent);
-                }
-            }
-
-            if ((fieldNode.getModifiers() & (ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE)) == 0) {
-                if (!compiler.samePackage(fieldNode)) {
-                    compiler.addError("Can't access package scoped field " + formatFieldName(), parent);
-                }
-            }
-        }
     }
 
     private String formatFieldName() {
@@ -79,7 +60,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             if (fieldNode.isStatic()) {
                 pop(object.getType(), mv);
             } else {
-                object.box(object.getType(), mv);
+                box(object.getType(), mv);
             }
         }
 
@@ -110,7 +91,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         };
         final BinaryExpression op = new BinaryExpression(opLeft, method, right);
         op.setSourcePosition(parent);
-        final BytecodeExpr transformedOp = compiler.cast((BytecodeExpr) compiler.transform(op), getType());
+        final BytecodeExpr transformedOp = compiler.cast(compiler.transform(op), getType());
         return new BytecodeExpr(parent, getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
@@ -119,7 +100,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
                     if (fieldNode.isStatic()) {
                         pop(object.getType(), mv);
                     } else {
-                        object.box(object.getType(), mv);
+                        box(object.getType(), mv);
                         mv.visitInsn(DUP);
                     }
                 }

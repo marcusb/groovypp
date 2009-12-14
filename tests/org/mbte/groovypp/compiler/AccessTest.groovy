@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler
 
+import static groovy.CompileTestSupport.shouldCompile
 import static groovy.CompileTestSupport.shouldNotCompile
 /**
  * @author ven
@@ -46,6 +47,19 @@ class AccessTest extends GroovyShellTestCase {
       }
       u()
      """
-   }
+  }
 
+  void testOuterPrivate() {
+    shouldCompile("""
+    @Typed class Outer {
+       private int i
+       class Inner {
+         def foo() {
+           int j = i
+         }
+       }
+    }
+    0
+    """)
+  }
 }
