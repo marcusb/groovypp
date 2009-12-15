@@ -24,6 +24,24 @@ class AccessTest extends GroovyShellTestCase {
     """
   }
 
+  void testInaccessibleSameFileField() {
+    shouldNotCompile """
+      @Typed
+      class C { private static int i }
+      @Typed
+      class D { private static int j = C.i }
+    """
+  }
+
+  void testInaccessibleSameFileMethod() {
+    shouldNotCompile """
+      @Typed
+      class C { private static int f() {0} }
+      @Typed
+      class D { private static int j = C.f() }
+    """
+  }
+
   void testInaccessibleClone() {
     shouldNotCompile """
       @Typed
