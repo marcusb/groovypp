@@ -74,7 +74,7 @@ public class PropertyUtil {
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
         if (prop instanceof MethodNode) {
-            return ResolvedMethodBytecodeExpr.create(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
+            return new ResolvedMethodBytecodeExpr.Setter(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
         }
 
         if (prop instanceof PropertyNode)

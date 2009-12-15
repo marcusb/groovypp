@@ -253,6 +253,14 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters());
         }
 
+        loadParams(mv, op == INVOKESTATIC);
+        mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
+
+        if (!methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
+            cast(TypeUtil.wrapSafely(methodNode.getReturnType()), TypeUtil.wrapSafely(getType()), mv);
+    }
+
+    protected void loadParams(MethodVisitor mv, boolean isStstic) {
         Parameter[] parameters = methodNode.getParameters();
         for (int i = 0; i != parameters.length; ++i) {
             BytecodeExpr be = (BytecodeExpr) bargs.getExpressions().get(i);
@@ -260,13 +268,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             final ClassNode paramType = parameters[i].getType();
             final ClassNode type = be.getType();
             box(type, mv);
-//            cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
             unbox(paramType, mv);
         }
-        mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
-
-        if (!methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
-            cast(TypeUtil.wrapSafely(methodNode.getReturnType()), TypeUtil.wrapSafely(getType()), mv);
     }
 
     public MethodNode getMethodNode() {
@@ -279,6 +282,22 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
 
     public BytecodeExpr getObject() {
         return object;
+    }
+
+    public static class Setter extends ResolvedMethodBytecodeExpr {
+        public Setter(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
+            super(parent, methodNode, object, bargs, compiler);
+            setType(bargs.getExpressions().get(0).getType());
+        }
+
+        @Override
+        protected void loadParams(MethodVisitor mv, boolean isStatic) {
+            super.loadParams(mv, isStatic);
+            if (isStatic)
+                dup(getType(), mv);
+            else
+                dup_x1(getType(), mv);
+        }
     }
 
     public static ResolvedMethodBytecodeExpr create(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
