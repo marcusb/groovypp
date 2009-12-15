@@ -177,7 +177,7 @@
              comment="The Groovy Booster binary distribution.">
 
             <zipfileset dir="install" prefix=""/>
-            <zipfileset file="${jar.name}" prefix="booster/lib"/>
+            <zipfileset file="${jar.name}" prefix="lib"/>
             <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlib.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
