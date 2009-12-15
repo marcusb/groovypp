@@ -79,7 +79,7 @@ public class PropertyUtil {
                 // Hack: clear 'private' for other class' access
                 method.setModifiers(method.getModifiers() & ~Opcodes.ACC_PRIVATE);
             }
-            return new ResolvedMethodBytecodeExpr(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
+            return new ResolvedMethodBytecodeExpr.Setter(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
         }
 
         if (prop instanceof PropertyNode)

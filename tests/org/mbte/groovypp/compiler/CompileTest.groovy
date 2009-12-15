@@ -267,7 +267,7 @@ u()
     """)
   }
 
-  void testSetter() {
+  void testStaticSetter() {
     def res = shell.evaluate("""
       @Typed
       class C {
