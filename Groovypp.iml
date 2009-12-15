@@ -24,17 +24,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../GroovyDev/lib/test/junit-4.5.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
   <component name="copyright">
     <Base>

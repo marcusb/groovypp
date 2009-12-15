@@ -31,7 +31,7 @@
 	<property name="target.jvm" value="5" />
 
 	<path id="libs">
-		<fileset dir="lib" includes="*.jar"/>
+		<fileset dir="install/lib" includes="*.jar"/>
 	</path>
 
     <path id="compile.compiler.classpath">
