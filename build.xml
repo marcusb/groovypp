@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project name="Groovy Compiler" default="make.jar">
+<project name="Groovy Compiler" default="make.install">
 
 	<property name="app.name" value="groovypp" />
 
@@ -165,12 +165,27 @@
     	</junitreport>
     </target>
 
-    <target name="make.jar" depends="test" description="Build application jar file">
+    <target name="make.jar" depends="clean,compile.examples,test" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
         </jar>
     </target>
+
+    <target name="make.install" depends="make.jar" description="Build installation">
+        <zip destfile="groovy-booster.zip"
+             comment="The Groovy Booster binary distribution.">
+
+            <zipfileset dir="install" prefix=""/>
+            <zipfileset file="${jar.name}" prefix="booster/lib"/>
+            <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
+            <zipfileset dir="${stdlib.tests}" prefix="booster/tests"/>
+            <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
+            <zipfileset dir="${examples.src}" prefix="booster/examples"/>
+
+        </zip>
+    </target>
+
 
     <target name="all"
         depends="clean, make.jar" description="Build application, run tests &amp; create jar file" />

@@ -55,32 +55,32 @@ class ThreadRingGroovy {
 
     public void connectNodes(int n, Node[] nodes) {
         nodes[n] = nodes[0];
-        for (int i=0; i<n; i++) {
+        for (i in 0..<n) {
             nodes[i].connect(nodes[i+1]);
         }
     }
 
     private static class TokenMessage {
-        private int nodeId;
-        private volatile int value;
-        private boolean isStop;
+        int nodeId;
+        volatile int value;
+        boolean isStop;
 
         public TokenMessage(int nodeId, int value) {
-            this.nodeId = nodeId;
-            this.value = value;
+            this.nodeId = nodeId
+            this.value = value
         }
 
         public TokenMessage(int nodeId, int value, boolean isStop) {
-            this.nodeId = nodeId;
-            this.value = value;
-            this.isStop = isStop;
+            this.nodeId = nodeId
+            this.value = value
+            this.isStop = isStop
         }
     }
 
     private class Node implements Runnable {
         private int nodeId;
         private Node nextNode;
-        private BlockingQueue<TokenMessage> queue = new LinkedBlockingQueue<TokenMessage>();
+        private LinkedBlockingQueue<TokenMessage> queue = []
         private boolean isActive = false;
         private int counter;
 
