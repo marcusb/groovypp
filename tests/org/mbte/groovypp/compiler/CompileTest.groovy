@@ -256,6 +256,7 @@ u()
       C.foo()
     """)
   }
+
   void testClassExpression() {
     shell.evaluate("""
     @Typed
@@ -266,4 +267,21 @@ u()
     """)
   }
 
+  void testSetter() {
+    def res = shell.evaluate("""
+      @Typed
+      class C {
+        static int f
+        static void setF(int p) {f = p}
+        static int getF() {f}
+       }
+       @Typed class D {
+         def foo() {
+          C.f = 7
+         }
+       }
+      new D().foo()
+      """)
+    assertEquals 7, res
+  }
 }
