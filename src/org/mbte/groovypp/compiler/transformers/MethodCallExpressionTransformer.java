@@ -163,7 +163,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private Expression createCall(MethodCallExpression exp, CompilerTransformer compiler, Expression args, BytecodeExpr object, MethodNode foundMethod) {
         if (!foundMethod.isStatic() && foundMethod.getReturnType().equals(ClassHelper.VOID_TYPE)) {
-            final ResolvedMethodBytecodeExpr call = new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
+            final ResolvedMethodBytecodeExpr call = ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
             return new BytecodeExpr(object, TypeUtil.NULL_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     call.visit(mv);
@@ -172,7 +172,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             };
         }
         else
-            return new ResolvedMethodBytecodeExpr(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
+            return ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
     }
 
     private Expression transformSafe(MethodCallExpression exp, CompilerTransformer compiler) {

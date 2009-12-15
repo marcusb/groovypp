@@ -27,7 +27,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         this.array = array;
         this.index = index;
         this.getter = getter;
-        this.getterExpr = new ResolvedMethodBytecodeExpr(parent, getter, array, new ArgumentListExpression(index), compiler);
+        this.getterExpr = ResolvedMethodBytecodeExpr.create(parent, getter, array, new ArgumentListExpression(index), compiler);
         setType(getterExpr.getType());
         this.setter = compiler.findMethod(array.getType(), "putAt", new ClassNode[]{index.getType(), getType()});
     }
@@ -39,7 +39,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
         if (!checkSetter(parent, compiler)) return null;
 
-        return new ResolvedMethodBytecodeExpr(parent, setter, array, new ArgumentListExpression(index, compiler.transform(right)), compiler);
+        return ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, compiler.transform(right)), compiler);
     }
 
     private boolean checkSetter(ASTNode exp, CompilerTransformer compiler) {
@@ -65,7 +65,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        ResolvedMethodBytecodeExpr load  = new ResolvedMethodBytecodeExpr(parent, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
+        ResolvedMethodBytecodeExpr load  = ResolvedMethodBytecodeExpr.create(parent, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
 
         final BinaryExpression op = new BinaryExpression(load, method, right);
         op.setSourcePosition(parent);
@@ -77,7 +77,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        final ResolvedMethodBytecodeExpr store = new ResolvedMethodBytecodeExpr(parent, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
+        final ResolvedMethodBytecodeExpr store = ResolvedMethodBytecodeExpr.create(parent, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
 
         return new BytecodeExpr(parent, getType()) {
             @Override
@@ -146,7 +146,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        final ResolvedMethodBytecodeExpr load  = new ResolvedMethodBytecodeExpr(exp, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
+        final ResolvedMethodBytecodeExpr load  = ResolvedMethodBytecodeExpr.create(exp, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
 
         final BytecodeExpr result = new BytecodeExpr(this, TypeUtil.wrapSafely(incDec.getType())) {
             @Override
@@ -154,7 +154,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        final ResolvedMethodBytecodeExpr store = new ResolvedMethodBytecodeExpr(exp, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
+        final ResolvedMethodBytecodeExpr store = ResolvedMethodBytecodeExpr.create(exp, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
 
         return new BytecodeExpr(exp, getType()) {
             @Override
@@ -225,7 +225,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        final ResolvedMethodBytecodeExpr load  = new ResolvedMethodBytecodeExpr(exp, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
+        final ResolvedMethodBytecodeExpr load  = ResolvedMethodBytecodeExpr.create(exp, getter, loadArr, new ArgumentListExpression(loadIndex), compiler);
 
         final BytecodeExpr result = new BytecodeExpr(this, TypeUtil.wrapSafely(incDec.getType())) {
             @Override
@@ -233,7 +233,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        final ResolvedMethodBytecodeExpr store = new ResolvedMethodBytecodeExpr(exp, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
+        final ResolvedMethodBytecodeExpr store = ResolvedMethodBytecodeExpr.create(exp, setter, loadArr, new ArgumentListExpression(loadIndex, result), compiler);
 
         return new BytecodeExpr(exp, getType()) {
             @Override

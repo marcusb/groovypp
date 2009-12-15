@@ -21,7 +21,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         this.methodNode = methodNode;
         this.object = object;
         this.needsObjectIfStatic = needsObjectIfStatic;
-        getter = new ResolvedMethodBytecodeExpr(
+        getter = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : object,
@@ -50,7 +50,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
             }
         };
 
-        BytecodeExpr get = new ResolvedMethodBytecodeExpr(
+        BytecodeExpr get = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : fakeObject,

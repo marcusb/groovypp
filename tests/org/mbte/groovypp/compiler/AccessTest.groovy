@@ -49,13 +49,14 @@ class AccessTest extends GroovyShellTestCase {
      """
   }
 
-  void testOuterPrivate() {
+  void testOuterPrivateField() {
     def res = shell.evaluate("""
     @Typed class Outer {
-       private int i = 51
+       private int i
        class Inner {
          def foo() {
-           i
+           print i
+           i = 6
          }
        }
        def foo() {
@@ -64,6 +65,23 @@ class AccessTest extends GroovyShellTestCase {
     }
     new Outer().foo()
     """)
-    assertEquals 51, res
+    assertEquals 6, res
+  }
+  void testOuterPrivateMethod() {
+    def res = shell.evaluate("""
+    @Typed class Outer {
+       private int i() {7}
+       class Inner {
+         def foo() {
+           i()
+         }
+       }
+       def foo() {
+         new Inner().foo()
+       }
+    }
+    new Outer().foo()
+    """)
+    assertEquals 7, res
   }
 }

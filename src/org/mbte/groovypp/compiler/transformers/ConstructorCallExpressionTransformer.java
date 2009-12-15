@@ -144,7 +144,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         MethodNode constructor = compiler.findConstructor(exp.isSuperCall() ? compiler.classNode.getSuperClass() : compiler.classNode, argTypes);
         if (constructor != null) {
-            return new ResolvedMethodBytecodeExpr(exp, constructor,
+            return ResolvedMethodBytecodeExpr.create(exp, constructor,
                     exp.isSuperCall() ?
                         new VariableExpressionTransformer.Super(VariableExpression.SUPER_EXPRESSION, compiler)
                       : new VariableExpressionTransformer.This(VariableExpression.THIS_EXPRESSION, compiler), 

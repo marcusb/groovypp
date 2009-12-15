@@ -17,8 +17,8 @@ public class PropertyUtil {
         if (prop instanceof MethodNode) {
             MethodNode method = (MethodNode) prop;
             if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
-                // Hack: clear 'private' for other class' access
-                method.setModifiers(method.getModifiers() & ~Opcodes.ACC_PRIVATE);
+                MethodNode delegate = compiler.context.getMethodDelegate(method);
+                new ResolvedGetterBytecodeExpr(exp, delegate, object, needsObjectIfStatic, compiler);
             }
             return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler);
         }
@@ -29,8 +29,8 @@ public class PropertyUtil {
         if (prop instanceof FieldNode) {
             FieldNode field = (FieldNode) prop;
             if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
-                // Hack: clear 'private' for other class' access
-                field.setModifiers(field.getModifiers() & ~Opcodes.ACC_PRIVATE);
+                MethodNode getter = compiler.context.getFieldGetter(field);
+                return new ResolvedGetterBytecodeExpr(exp, getter, object, needsObjectIfStatic, compiler);
             }
             return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
         }
@@ -74,23 +74,14 @@ public class PropertyUtil {
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
         if (prop instanceof MethodNode) {
-            MethodNode method = (MethodNode) prop;
-            if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
-                // Hack: clear 'private' for other class' access
-                method.setModifiers(method.getModifiers() & ~Opcodes.ACC_PRIVATE);
-            }
-            return new ResolvedMethodBytecodeExpr.Setter(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
+            return ResolvedMethodBytecodeExpr.create(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
         }
 
         if (prop instanceof PropertyNode)
             return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value);
 
         if (prop instanceof FieldNode) {
-            FieldNode field = (FieldNode) prop;
-            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
-                // Hack: clear 'private' for other class' access
-                field.setModifiers(field.getModifiers() & ~Opcodes.ACC_PRIVATE);
-            }
+            // Only go here if the field is runtime-accessible.
             return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value, compiler);
         }
 
