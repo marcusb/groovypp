@@ -95,6 +95,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression) member).getValue().equals(Boolean.TRUE);
 
         final HashMap<String, Integer> usedNames = new HashMap<String, Integer>();
+        SourceUnitContext context = new SourceUnitContext();
         while (toProcess.size() > 0) {
             final MethodNode mn = (MethodNode) toProcess.removeFirst();
             final TypePolicy policy = (TypePolicy) toProcess.removeFirst();
@@ -113,10 +114,19 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             final Statement code = mn.getCode();
             if (!(code instanceof BytecodeSequence)) {
                 if (!mn.getName().equals("$doCall"))
-                    StaticMethodBytecode.replaceMethodCode(source, mn, new CompilerStack(null), localDebug ? 0 : -1, policy, mn.getDeclaringClass().getName() + "$" + (mn.getName().equals("<init>") ? "_init_" : mn.getName()));
+                    StaticMethodBytecode.replaceMethodCode(source, context, mn, new CompilerStack(null), localDebug ? 0 : -1, policy, mn.getDeclaringClass().getName() + "$" + (mn.getName().equals("<init>") ? "_init_" : mn.getName()));
             }
         }
 
+        for (MethodNode node : context.generatedFieldGetters.values()) {
+            StaticMethodBytecode.replaceMethodCode(source, context, node, new CompilerStack(null), -1, TypePolicy.STATIC, "Neverused");
+        }
+        for (MethodNode node : context.generatedFieldSetters.values()) {
+            StaticMethodBytecode.replaceMethodCode(source, context, node, new CompilerStack(null), -1, TypePolicy.STATIC, "Neverused");
+        }
+        for (MethodNode node : context.generatedMethodDelegates.values()) {
+            StaticMethodBytecode.replaceMethodCode(source, context, node, new CompilerStack(null), -1, TypePolicy.STATIC, "Neverused");
+        }
         return;
     }
 

@@ -19,7 +19,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
     private final TypePolicy policy;
     final StaticCompiler compiler;
 
-    public StaticMethodBytecode(MethodNode methodNode, SourceUnit su, Statement code, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+    public StaticMethodBytecode(MethodNode methodNode, SourceUnitContext context, SourceUnit su, Statement code, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         this.methodNode = methodNode;
         this.su = su;
         this.code = code;
@@ -37,6 +37,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
         mv = new BytecodeImproverMethodAdapter(mv);
         compiler = new StaticCompiler(
                 su,
+                context,
                 this,
                 mv,
                 compileStack,
@@ -50,13 +51,13 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
             System.out.println("------------");
     }
 
-    public static void replaceMethodCode(SourceUnit source, MethodNode methodNode, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+    public static void replaceMethodCode(SourceUnit source, SourceUnitContext context, MethodNode methodNode, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         if (methodNode instanceof ClosureMethodNode.Dependent)
             methodNode = ((ClosureMethodNode.Dependent)methodNode).getMaster();
         
         final Statement code = methodNode.getCode();
         if (!(code instanceof BytecodeSequence)) {
-            final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, source, code, compileStack, debug, policy, baseClosureName);
+            final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(methodNode, context, source, code, compileStack, debug, policy, baseClosureName);
             methodNode.setCode(new MyBytecodeSequence(methodBytecode));
             if (methodBytecode.compiler.shouldImproveReturnType && !TypeUtil.NULL_TYPE.equals(methodBytecode.compiler.calculatedReturnType))
                 methodNode.setReturnType(methodBytecode.compiler.calculatedReturnType);
@@ -69,7 +70,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
                 for (ClosureMethodNode.Dependent dependent : dependentMethods) {
                     final Statement mCode = dependent.getCode();
                     if (!(mCode instanceof BytecodeSequence)) {
-                        final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(dependent, source, mCode, compileStack, debug, policy, baseClosureName);
+                        final StaticMethodBytecode methodBytecode = new StaticMethodBytecode(dependent, context, source, mCode, compileStack, debug, policy, baseClosureName);
                         dependent.setCode(new MyBytecodeSequence(methodBytecode));
                     }
                 }

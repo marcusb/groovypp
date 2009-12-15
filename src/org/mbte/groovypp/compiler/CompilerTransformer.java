@@ -37,8 +37,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     LinkedList<CompiledClosureBytecodeExpr> pendingClosures = new LinkedList<CompiledClosureBytecodeExpr> ();
     private int nextClosureIndex = 1;
     private final String baseClosureName;
+    public SourceUnitContext context;
 
-    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName, SourceUnitContext context) {
         super(source, methodNode);
         this.classNode = classNode;
         this.mv = mv;
@@ -46,6 +47,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         this.policy = policy;
         this.baseClosureName = baseClosureName;
         this.compileStack = new CompilerStack(compileStack);
+        this.context = context;
     }
 
     public void addError(String msg, ASTNode expr) {
@@ -95,7 +97,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         Statement code = doCallMethod.getCode();
         if (!(code instanceof BytecodeSequence)) {
             ClosureUtil.improveClosureType(type, ClassHelper.CLOSURE_TYPE);
-            StaticMethodBytecode.replaceMethodCode(su, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
+            StaticMethodBytecode.replaceMethodCode(su, context, doCallMethod, compileStack, debug == -1 ? -1 : debug+1, policy, type.getName());
         }
     }
 
@@ -638,4 +640,5 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
         return true;
     }
+
 }

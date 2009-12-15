@@ -131,7 +131,7 @@ public class ClosureUtil {
                     }
 
                 improveClosureType(closureType, baseType);
-                StaticMethodBytecode.replaceMethodCode(compiler.su, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, closureType.getName());
+                StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, closureType.getName());
                 return method;
             }
         }

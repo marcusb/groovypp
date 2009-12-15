@@ -29,8 +29,8 @@ public class PropertyUtil {
         if (prop instanceof FieldNode) {
             FieldNode field = (FieldNode) prop;
             if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
-                // Hack: clear 'private' for other class' access
-                field.setModifiers(field.getModifiers() & ~Opcodes.ACC_PRIVATE);
+                MethodNode getter = compiler.context.getFieldGetter(field);
+                return new ResolvedMethodBytecodeExpr(exp, getter, object, new ArgumentListExpression(), compiler);
             }
             return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
         }

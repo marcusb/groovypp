@@ -33,8 +33,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     ClassNode calculatedReturnType = TypeUtil.NULL_TYPE;
     private Label startLabel = new Label ();
 
-    public StaticCompiler(SourceUnit su, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
-        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName);
+    public StaticCompiler(SourceUnit su, SourceUnitContext context, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+        super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName, context);
         this.methodBytecode = methodBytecode;
         shouldImproveReturnType = methodNode.getName().equals("doCall");
 

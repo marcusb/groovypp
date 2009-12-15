@@ -185,7 +185,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             ClassNode argType = p[i].getType();
                             if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
                                 ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
-                                StaticMethodBytecode.replaceMethodCode(compiler.su, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+                                StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
                             }
                             else {
                                 List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
