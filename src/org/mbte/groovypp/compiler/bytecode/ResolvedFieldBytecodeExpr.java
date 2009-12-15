@@ -17,21 +17,27 @@ import org.objectweb.asm.MethodVisitor;
 public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     private final FieldNode fieldNode;
     private final BytecodeExpr object;
+    private CompilerTransformer compiler;
+    private ASTNode parent;
     private final BytecodeExpr value;
 
     public ResolvedFieldBytecodeExpr(ASTNode parent, FieldNode fieldNode, BytecodeExpr object, BytecodeExpr value, CompilerTransformer compiler) {
         super(parent, getType(object, fieldNode));
+        this.parent = parent;
         this.fieldNode = fieldNode;
         this.object = object;
+        this.compiler = compiler;
         this.value = value != null ? compiler.cast(value, fieldNode.getType() ): null;
-
-        if (fieldNode.isFinal() && value != null && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
-            compiler.addError("Can't modify final field " + formatFieldName(), parent);
-        }
 
         if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
                     compiler.classNode, object == null ? null : object.getType())) {
           compiler.addError("Can't access field " + formatFieldName(), parent);
+        }
+    }
+
+    private void checkAssignment() {
+        if (fieldNode.isFinal() && value != null && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
+            compiler.addError("Can't modify final field " + formatFieldName(), parent);
         }
     }
 
@@ -80,10 +86,12 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
+        checkAssignment();
         return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, (BytecodeExpr) compiler.transform(right), compiler);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {
+        checkAssignment();
         final BytecodeExpr opLeft = new BytecodeExpr(this, getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
@@ -120,6 +128,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        checkAssignment();
         ClassNode vtype = getType();
 
         final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
@@ -200,6 +209,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
+        checkAssignment();
         ClassNode vtype = getType();
 
         final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
