@@ -13,26 +13,24 @@ public class AtomicsTest extends GroovyTestCase {
 
         abstract T                 getHead ()
         abstract FunctionalList<T> getTail ()
-        abstract boolean           isEmpty ()
 
         static class EmptyFunctionalList<T> extends FunctionalList<T> {
             EmptyFunctionalList () {}
 
             T                 getHead () { throw new UnsupportedOperationException() }
             FunctionalList<T> getTail () { throw new UnsupportedOperationException() }
-            boolean           isEmpty () { true }
 
             Iterator iterator () { [hasNext:{false}, next:{throw new UnsupportedOperationException()}, remove:{throw new UnsupportedOperationException()}] }
         }
 
-        static class Node<T> implements Iterable<T> {
+        static class Node<T> extends FunctionalList<T> implements Iterable<T> {
             T                 head
             FunctionalList<T> tail
 
             Iterator iterator () {
                 [
                         cur: (FunctionalList<T>)this,
-                        hasNext:{ !(cur.tail instanceof FunctionalList.EmptyFunctionalList) },
+                        hasNext:{ cur != FunctionalList.empty },
                         next:   { def that = cur; cur = cur.tail; that.head }, 
                         remove:{throw new UnsupportedOperationException()}
                 ]
@@ -66,7 +64,8 @@ public class AtomicsTest extends GroovyTestCase {
         for(i in 0..<n)
             println pool.take().get()
 
-        atom.get().iterator().toList().sort()
-        assertEquals (0..<n, atom.get())
+        def l = atom.get().iterator().toList()
+        l.sort()
+        assertEquals (0..<n, l)
     }
 }
