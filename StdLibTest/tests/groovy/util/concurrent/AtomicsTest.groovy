@@ -15,7 +15,7 @@ public class AtomicsTest extends GroovyTestCase {
         abstract FunctionalList<T> getTail ()
 
         static class EmptyFunctionalList<T> extends FunctionalList<T> {
-            EmptyFunctionalList () {}
+            private EmptyFunctionalList () {}
 
             T                 getHead () { throw new UnsupportedOperationException() }
             FunctionalList<T> getTail () { throw new UnsupportedOperationException() }

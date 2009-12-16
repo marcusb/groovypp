@@ -102,4 +102,22 @@ class AccessTest extends GroovyShellTestCase {
     """)
     assertEquals 7, res
   }
+
+  void testOuterPrivateConstructor() {
+    shell.evaluate("""
+    @Typed class Outer {
+       private Outer() {}
+       class Inner {
+         def foo() {
+           new Outer()
+         }
+       }
+       def foo() {
+         new Inner().foo()
+       }
+    }
+    new Outer().foo()
+    """)
+  }
+
 }

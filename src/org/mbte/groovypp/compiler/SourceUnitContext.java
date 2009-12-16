@@ -51,7 +51,7 @@ public class SourceUnitContext {
         MethodNode delegate = generatedMethodDelegates.get(method);
         if (delegate == null) {
             int num = syntheticAccessorNumber++;
-            String getterName = "delegate" + num;
+            String name = "delegate" + num;
             int modifiers = method.getModifiers() & Opcodes.ACC_STATIC;
 
             Expression[] exprs = new Expression[method.getParameters().length];
@@ -59,11 +59,33 @@ public class SourceUnitContext {
                 exprs[i] = new VariableExpression(method.getParameters()[i]);
             }
             Expression argList = new ArgumentListExpression(exprs);
-            delegate = new MethodNode(getterName, modifiers, method.getReturnType(), method.getParameters(), new ClassNode[0],
+            delegate = new MethodNode(name, modifiers, method.getReturnType(), method.getParameters(), new ClassNode[0],
                     new ReturnStatement(new MethodCallExpression(new VariableExpression("this", ClassHelper.DYNAMIC_TYPE),
                             method.getName(), argList)));
             generatedMethodDelegates.put(method, delegate);
             ClassNode clazz = method.getDeclaringClass();
+            delegate.setDeclaringClass(clazz);
+            clazz.addMethod(delegate);
+            ClassNodeCache.clearCache(clazz);
+        }
+        return delegate;
+    }
+    public MethodNode getConstructorDelegate(MethodNode constructor) {
+        MethodNode delegate = generatedMethodDelegates.get(constructor);
+        if (delegate == null) {
+            int num = syntheticAccessorNumber++;
+            String name = "delegate" + num;
+            int modifiers = Opcodes.ACC_STATIC;
+
+            Expression[] exprs = new Expression[constructor.getParameters().length];
+            for (int i = 0; i < exprs.length; i++) {
+                exprs[i] = new VariableExpression(constructor.getParameters()[i]);
+            }
+            Expression argList = new ArgumentListExpression(exprs);
+            delegate = new MethodNode(name, modifiers, constructor.getDeclaringClass(), constructor.getParameters(), new ClassNode[0],
+                    new ReturnStatement(new ConstructorCallExpression(constructor.getDeclaringClass(), argList)));
+            generatedMethodDelegates.put(constructor, delegate);
+            ClassNode clazz = constructor.getDeclaringClass();
             delegate.setDeclaringClass(clazz);
             clazz.addMethod(delegate);
             ClassNodeCache.clearCache(clazz);

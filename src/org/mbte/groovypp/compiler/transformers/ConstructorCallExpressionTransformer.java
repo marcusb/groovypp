@@ -9,6 +9,7 @@ import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,12 +73,20 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             }
         }
 
-        final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
+        final ArgumentListExpression newArgs = (ArgumentListExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
         constructor = findConstructorWithClosureCoercion(type, argTypes, compiler);
 
         if (constructor != null) {
+            if (!AccessibilityCheck.isAccessible(constructor.getModifiers(), constructor.getDeclaringClass(), compiler.classNode, null)) {
+              compiler.addError("Cannot access constructor", exp);
+              return null;
+            }
+            if ((constructor.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && constructor.getDeclaringClass() != compiler.classNode) {
+                MethodNode delegate = compiler.context.getConstructorDelegate(constructor);
+                return ResolvedMethodBytecodeExpr.create(exp, delegate, null, newArgs, compiler);
+            }
             // Improve type.
             GenericsType[] generics = type.redirect().getGenericsTypes();
             // We don't support inference if the method itself is parameterized.
@@ -134,7 +143,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             };
         }
 
-        compiler.addError("Can't find constructor", exp);
+        compiler.addError("Cannot find constructor", exp);
         return null;
     }
 
