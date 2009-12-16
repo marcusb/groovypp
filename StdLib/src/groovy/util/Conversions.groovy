@@ -44,4 +44,17 @@ abstract class Conversions {
     }
     return result;
   }
+    /**
+     * Constructs the list out of the input iterator.
+     */
+    static <T> List<T> asList(Iterable<T> self) {
+        if (self instanceof List)
+            self
+        else {
+            def result = []
+            for (el in self)
+                result << el
+            result
+        }
+    }
 }

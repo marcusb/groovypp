@@ -6,36 +6,39 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicBoolean
 
 public class Atomics {
-    static <S> S apply (AtomicReference<S> state, Function1<S,S> mutation) {
+    static <S> S apply (AtomicReference<S> self, Function1<S,S> mutation) {
         for (;;) {
-            def s = state.get()
+            def s = self.get()
             def newState = mutation(s)
-            if (state.compareAndSet(s, newState))
+            if (self.compareAndSet(s, newState))
                 return newState
         }
     }
 
-    static int apply (AtomicInteger state, Function1<Integer,Integer> mutation) {
+    static int apply (AtomicInteger self, Function1<Integer,Integer> mutation) {
         for (;;) {
-            def s = state.get()
-            if (state.compareAndSet(s, mutation(s)))
-                break
+            def s = self.get()
+            def newState = mutation(s)
+            if (self.compareAndSet(s, newState))
+                return newState
         }
     }
 
-    static void apply (AtomicLong state, Function1<Long,Long> mutation) {
+    static long apply (AtomicLong self, Function1<Long,Long> mutation) {
         for (;;) {
-            def s = state.get()
-            if (state.compareAndSet(s, mutation(s)))
-                break
+            def s = self.get()
+            def newState = mutation(s)
+            if (self.compareAndSet(s, newState))
+                return newState
         }
     }
 
-    static void apply (AtomicBoolean state, Function1<Boolean,Boolean> mutation) {
+    static boolean apply (AtomicBoolean self, Function1<Boolean,Boolean> mutation) {
         for (;;) {
-            def s = state.get()
-            if (state.compareAndSet(s, mutation(s)))
-                break
+            def s = self.get()
+            def newState = mutation(s)
+            if (self.compareAndSet(s, newState))
+                return newState
         }
     }
 

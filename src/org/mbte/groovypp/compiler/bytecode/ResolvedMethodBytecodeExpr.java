@@ -164,7 +164,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             int delta = 0;
             if (!methodNode.isStatic()) {
                 paramTypes [length-1] = methodNode.getDeclaringClass();
-                argTypes [length-1] = object.getType();
+                argTypes [length-1] = object != null ? object.getType() : null;
                 delta = 1;
             }
             for (int i = 0; i < length-delta; i++) {
