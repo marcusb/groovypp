@@ -6,15 +6,16 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicBoolean
 
 public class Atomics {
-    static <S> void apply (AtomicReference<S> state, Function1<S,S> mutation) {
+    static <S> S apply (AtomicReference<S> state, Function1<S,S> mutation) {
         for (;;) {
             def s = state.get()
-            if (state.compareAndSet(s, mutation(s)))
-                break
+            def newState = mutation(s)
+            if (state.compareAndSet(s, newState))
+                return newState
         }
     }
 
-    static void apply (AtomicInteger state, Function1<Integer,Integer> mutation) {
+    static int apply (AtomicInteger state, Function1<Integer,Integer> mutation) {
         for (;;) {
             def s = state.get()
             if (state.compareAndSet(s, mutation(s)))

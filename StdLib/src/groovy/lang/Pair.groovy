@@ -21,4 +21,8 @@ class Pair<T1, T2> {
   int hashCode() {
     31 * first?.hashCode () + second?.hashCode ()
   }
+
+  String toString() {
+      "first: $first, second: $second"
+  }
 }

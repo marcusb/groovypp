@@ -38,6 +38,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.Filters");
         initDgm("groovy.util.Iterations");
         initDgm("groovy.util.Mappers");
+        initDgm("groovy.util.concurrent.Atomics");
         initDgm(Arrays.class);
         initDgm(Collections.class);
     }
