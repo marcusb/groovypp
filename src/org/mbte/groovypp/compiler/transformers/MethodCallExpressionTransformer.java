@@ -14,6 +14,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallExpression> {
     public Expression transform(final MethodCallExpression exp, final CompilerTransformer compiler) {
@@ -301,166 +302,287 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         };
     }
 
-    private MethodNode findMethodVariatingArgs(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, int firstNonVariating) {
-        MethodNode foundMethod = compiler.findMethod(type, methodName, argTypes);
-        if (foundMethod != null) {
-            return foundMethod;
+    private static class Changed {
+        int index;
+        ClassNode original;
+        List<MethodNode> oneMethodAbstract;
+    }
+
+    private MethodNode findMethodVariatingArgs(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
+
+        MethodNode foundMethod = null;
+        List<Changed> changed  = null;
+
+        for (int i = 0; i < argTypes.length+1; ++i) {
+            foundMethod = compiler.findMethod(type, methodName, argTypes);
+            if (foundMethod != null) {
+                return foundMethodInference(type, foundMethod, changed, argTypes, compiler);
+            }
+
+            if (i == argTypes.length)
+                return null;
+
+            final ClassNode oarg = argTypes[i];
+            if (oarg == null)
+                continue;
+
+            if (oarg.implementsInterface(TypeUtil.TCLOSURE) ||
+                oarg.implementsInterface(TypeUtil.TLIST) ||
+                oarg.implementsInterface(TypeUtil.TMAP)) {
+
+                if (changed == null)
+                    changed = new ArrayList<Changed> ();
+
+                Changed change = new Changed();
+                change.index = i;
+                change.original = argTypes[i];
+                changed.add(change);
+                argTypes[i] = null;
+            }
         }
 
-        if (argTypes.length > 0) {
-            for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
-                final ClassNode oarg = argTypes[i];
-                if (oarg == null)
-                    continue;
-                
-                if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
-                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//        if (argTypes.length > 0) {
+//            for (int i=firstNonVariating+1; i < argTypes.length; ++i) {
+//                final ClassNode oarg = argTypes[i];
+//                if (oarg == null)
+//                    continue;
+//
+//                if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
+//                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//
+//                    if (foundMethod != null) {
+//                        Parameter p[] = foundMethod.getParameters();
+//                        if (p.length == argTypes.length) {
+//                            return foundMethod;
+//                        }
+//                    }
+//
+//                    argTypes[i] = null;
+//                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//                    if (foundMethod != null) {
+//                        Parameter p[] = foundMethod.getParameters();
+//                        if (p.length == argTypes.length) {
+//                            ClassNode argType = p[i].getType();
+//                            if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
+//                                ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
+//                                StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+//                            }
+//                            else {
+//                                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+//                                GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
+//                                if (methodTypeVars != null && methodTypeVars.length > 0) {
+//                                    ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+//                                    ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+//
+//                                    if (!foundMethod.isStatic()) {
+//                                        formals.add(foundMethod.getDeclaringClass());
+//                                        instantiateds.add(type);
+//                                    }
+//
+//                                    for (int j = 0; j != i; j++) {
+//                                        formals.add(foundMethod.getParameters()[j].getType());
+//                                        instantiateds.add(argTypes[j]);
+//                                    }
+//
+//                                    ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+//                                            formals.toArray(new ClassNode[formals.size()]),
+//                                            instantiateds.toArray(new ClassNode[instantiateds.size()]));
+//                                    argType = TypeUtil.getSubstitutedTypeIncludingInstance(argType, foundMethod, unified);
+//                                }
+//                                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
+//                                if (one == null || doCall == null) {
+//                                    foundMethod = null;
+//                                } else {
+//                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+//                                }
+//                            }
+//                        }
+//                    }
+//                    argTypes[i] = oarg;
+//                    return foundMethod;
+//                }
+//                else {
+//                    if (oarg.implementsInterface(TypeUtil.TMAP)) {
+//                        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//
+//                        if (foundMethod != null) {
+//                            Parameter p[] = foundMethod.getParameters();
+//                            if (p.length == argTypes.length) {
+//                                return foundMethod;
+//                            }
+//                        }
+//
+//                        argTypes[i] = null;
+//                        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//                        if (foundMethod != null) {
+//                            Parameter p[] = foundMethod.getParameters();
+//                            if (p.length == argTypes.length) {
+//                                ClassNode argType = p[i].getType();
+//
+//                                GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
+//                                if (methodTypeVars != null && methodTypeVars.length > 0) {
+//                                    ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+//                                    ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+//
+//                                    if (!foundMethod.isStatic()) {
+//                                        formals.add(foundMethod.getDeclaringClass());
+//                                        instantiateds.add(type);
+//                                    }
+//
+//                                    for (int j = 0; j != i; j++) {
+//                                        formals.add(foundMethod.getParameters()[j].getType());
+//                                        instantiateds.add(argTypes[j]);
+//                                    }
+//
+//                                    ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+//                                            formals.toArray(new ClassNode[formals.size()]),
+//                                            instantiateds.toArray(new ClassNode[instantiateds.size()]));
+//                                    argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
+//                                }
+//                            }
+//                        }
+//                        argTypes[i] = oarg;
+//                        return foundMethod;
+//                    }
+//                    else {
+//                        if (oarg.implementsInterface(TypeUtil.TLIST)) {
+//                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//
+//                            if (foundMethod != null) {
+//                                Parameter p[] = foundMethod.getParameters();
+//                                if (p.length == argTypes.length) {
+//                                    return foundMethod;
+//                                }
+//                            }
+//
+//                            argTypes[i] = null;
+//                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
+//                            if (foundMethod != null) {
+//                                Parameter p[] = foundMethod.getParameters();
+//                                if (p.length == argTypes.length) {
+//                                    ClassNode argType = p[i].getType();
+//
+//                                    GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
+//                                    if (methodTypeVars != null && methodTypeVars.length > 0) {
+//                                        ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+//                                        ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+//
+//                                        if (!foundMethod.isStatic()) {
+//                                            formals.add(foundMethod.getDeclaringClass());
+//                                            instantiateds.add(type);
+//                                        }
+//
+//                                        for (int j = 0; j != i; j++) {
+//                                            formals.add(foundMethod.getParameters()[j].getType());
+//                                            instantiateds.add(argTypes[j]);
+//                                        }
+//
+//                                        ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+//                                                formals.toArray(new ClassNode[formals.size()]),
+//                                                instantiateds.toArray(new ClassNode[instantiateds.size()]));
+//                                        argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
+//                                    }
+//                                }
+//                            }
+//                            argTypes[i] = oarg;
+//                            return foundMethod;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        return null;
+    }
 
-                    if (foundMethod != null) {
-                        Parameter p[] = foundMethod.getParameters();
-                        if (p.length == argTypes.length) {
-                            return foundMethod;
-                        }
-                    }
+    private MethodNode foundMethodInference(ClassNode type, MethodNode foundMethod, List<Changed> changed, ClassNode [] argTypes, CompilerTransformer compiler) {
+        if (changed == null)
+            return foundMethod;
 
-                    argTypes[i] = null;
-                    foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-                    if (foundMethod != null) {
-                        Parameter p[] = foundMethod.getParameters();
-                        if (p.length == argTypes.length) {
-                            ClassNode argType = p[i].getType();
-                            if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
-                                ClosureUtil.improveClosureType(oarg, ClassHelper.CLOSURE_TYPE);
-                                StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)oarg).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
-                            }
-                            else {
-                                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
-                                GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
-                                if (methodTypeVars != null && methodTypeVars.length > 0) {
-                                    ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
-                                    ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+        Parameter p[] = foundMethod.getParameters();
+        if (p.length != argTypes.length) {
+            return null;
+        }
 
-                                    if (!foundMethod.isStatic()) {
-                                        formals.add(foundMethod.getDeclaringClass());
-                                        instantiateds.add(type);
-                                    }
+        for (Iterator<Changed> it = changed.iterator(); it.hasNext(); ) {
+            Changed change = it.next();
 
-                                    for (int j = 0; j != i; j++) {
-                                        formals.add(foundMethod.getParameters()[j].getType());
-                                        instantiateds.add(argTypes[j]);
-                                    }
-                                    
-                                    ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
-                                            formals.toArray(new ClassNode[formals.size()]),
-                                            instantiateds.toArray(new ClassNode[instantiateds.size()]));
-                                    argType = TypeUtil.getSubstitutedTypeIncludingInstance(argType, foundMethod, unified);
-                                }
-                                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
-                                if (one == null || doCall == null) {
-                                    foundMethod = null;
-                                } else {
-                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
-                                }
-                            }
-                        }
-                    }
-                    argTypes[i] = oarg;
-                    return foundMethod;
+            if (!change.original.implementsInterface(TypeUtil.TCLOSURE)) {
+                it.remove();
+                // nothing special can be done for list & maps
+            }
+            else {
+                ClassNode argType = p[change.index].getType();
+                if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
+                    ClosureUtil.improveClosureType(change.original, ClassHelper.CLOSURE_TYPE);
+                    StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)change.original).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+                    argTypes [change.index] = change.original;
+                    it.remove();
                 }
                 else {
-                    if (oarg.implementsInterface(TypeUtil.TMAP)) {
-                        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-
-                        if (foundMethod != null) {
-                            Parameter p[] = foundMethod.getParameters();
-                            if (p.length == argTypes.length) {
-                                return foundMethod;
-                            }
-                        }
-
-                        argTypes[i] = null;
-                        foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-                        if (foundMethod != null) {
-                            Parameter p[] = foundMethod.getParameters();
-                            if (p.length == argTypes.length) {
-                                ClassNode argType = p[i].getType();
-
-                                GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
-                                if (methodTypeVars != null && methodTypeVars.length > 0) {
-                                    ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
-                                    ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
-
-                                    if (!foundMethod.isStatic()) {
-                                        formals.add(foundMethod.getDeclaringClass());
-                                        instantiateds.add(type);
-                                    }
-
-                                    for (int j = 0; j != i; j++) {
-                                        formals.add(foundMethod.getParameters()[j].getType());
-                                        instantiateds.add(argTypes[j]);
-                                    }
-
-                                    ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
-                                            formals.toArray(new ClassNode[formals.size()]),
-                                            instantiateds.toArray(new ClassNode[instantiateds.size()]));
-                                    argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
-                                }
-                            }
-                        }
-                        argTypes[i] = oarg;
-                        return foundMethod;
+                    List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                    if (one == null) {
+                        return null;
                     }
-                    else {
-                        if (oarg.implementsInterface(TypeUtil.TLIST)) {
-                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
 
-                            if (foundMethod != null) {
-                                Parameter p[] = foundMethod.getParameters();
-                                if (p.length == argTypes.length) {
-                                    return foundMethod;
-                                }
-                            }
+                    change.oneMethodAbstract = one;
+                    GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
+                    if (methodTypeVars == null || methodTypeVars.length == 0) {
+                        it.remove();
 
-                            argTypes[i] = null;
-                            foundMethod = findMethodVariatingArgs(type, methodName, argTypes, compiler, i);
-                            if (foundMethod != null) {
-                                Parameter p[] = foundMethod.getParameters();
-                                if (p.length == argTypes.length) {
-                                    ClassNode argType = p[i].getType();
-
-                                    GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
-                                    if (methodTypeVars != null && methodTypeVars.length > 0) {
-                                        ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
-                                        ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
-
-                                        if (!foundMethod.isStatic()) {
-                                            formals.add(foundMethod.getDeclaringClass());
-                                            instantiateds.add(type);
-                                        }
-
-                                        for (int j = 0; j != i; j++) {
-                                            formals.add(foundMethod.getParameters()[j].getType());
-                                            instantiateds.add(argTypes[j]);
-                                        }
-
-                                        ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
-                                                formals.toArray(new ClassNode[formals.size()]),
-                                                instantiateds.toArray(new ClassNode[instantiateds.size()]));
-                                        argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
-                                    }
-                                }
-                            }
-                            argTypes[i] = oarg;
-                            return foundMethod;
+                        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, compiler, argType);
+                        if (doCall == null) {
+                            return null;
+                        } else {
+                            ClosureUtil.makeOneMethodClass(change.original, argType, one, doCall);
                         }
                     }
                 }
             }
         }
-        return null;
+
+        if (changed.size() == 0) {
+            return foundMethod;
+        }
+
+        if (changed.size() > 1) {
+            // we don't know yet how to deal with this case
+            return null;
+        }
+
+        ClassNode argType = p[changed.get(0).index].getType();
+        GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
+        if (methodTypeVars != null && methodTypeVars.length > 0) {
+            ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
+            ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
+
+            if (!foundMethod.isStatic()) {
+                formals.add(foundMethod.getDeclaringClass());
+                instantiateds.add(type);
+            }
+
+            for (int j = 0; j != argTypes.length; j++) {
+                formals.add(p[j].getType());
+                instantiateds.add(argTypes[j]);
+            }
+
+            ClassNode[] unified = TypeUnification.inferTypeArguments(methodTypeVars,
+                    formals.toArray(new ClassNode[formals.size()]),
+                    instantiateds.toArray(new ClassNode[instantiateds.size()]));
+
+            argType = TypeUtil.getSubstitutedTypeIncludingInstance(argType, foundMethod, unified);
+        }
+
+        List<MethodNode> one = changed.get(0).oneMethodAbstract;
+        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) changed.get(0).original, compiler, argType);
+        if (doCall == null) {
+            return null;
+        } else {
+            ClosureUtil.makeOneMethodClass(changed.get(0).original, argType, one, doCall);
+            return foundMethod;
+        }
     }
 
     private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
-        return findMethodVariatingArgs(type, methodName, argTypes, compiler, -1);
+        return findMethodVariatingArgs(type, methodName, argTypes, compiler);
     }
 }
