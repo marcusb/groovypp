@@ -40,7 +40,7 @@ abstract static class FList<T> implements Iterable<T> {
     }
 
     /**
-     * Utility method allowing convinient syntax <code>flist ()</code> for accessing head of the list
+     * Utility method allowing convenient syntax <code>flist ()</code> for accessing head of the list
      */
     T call () { getHead() }
 

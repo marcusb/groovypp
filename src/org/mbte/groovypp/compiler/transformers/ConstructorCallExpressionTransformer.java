@@ -80,18 +80,26 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         if (constructor != null) {
             if (!AccessibilityCheck.isAccessible(constructor.getModifiers(), constructor.getDeclaringClass(), compiler.classNode, null)) {
-              compiler.addError("Cannot access constructor", exp);
-              return null;
+                compiler.addError("Cannot access constructor", exp);
+                return null;
             }
+
+            final Parameter[] params = constructor.getParameters();
+            int base = 0;
+            if ((type.getModifiers() & ACC_STATIC) == 0 && type.redirect() instanceof InnerClassNode) {
+                base = 1;
+            }
+            final ArgumentListExpression finalArgs = wrapArgumentsForVarargs(newArgs, params, base);
+
             if ((constructor.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && constructor.getDeclaringClass() != compiler.classNode) {
                 MethodNode delegate = compiler.context.getConstructorDelegate(constructor);
-                return ResolvedMethodBytecodeExpr.create(exp, delegate, null, newArgs, compiler);
+                return ResolvedMethodBytecodeExpr.create(exp, delegate, null, finalArgs, compiler);
             }
+
             // Improve type.
             GenericsType[] generics = type.redirect().getGenericsTypes();
             // We don't support inference if the method itself is parameterized.
             if (generics != null && constructor.getGenericsTypes() == null) {
-                Parameter[] params = constructor.getParameters();
                 ClassNode[] paramTypes = new ClassNode[params.length];
                 for (int i = 0; i < paramTypes.length; i++) {
                     paramTypes[i] = params[i].getType();
@@ -101,12 +109,8 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     type = TypeUtil.withGenericTypes(type, unified);
                 }
             }
-            int first = 0;
-            if ((type.getModifiers() & ACC_STATIC) == 0 && type.redirect() instanceof InnerClassNode) {
-                first = 1;
-            }
-            for (int i = 0; i != newArgs.getExpressions().size(); ++i)
-                newArgs.getExpressions().set(i, compiler.cast(newArgs.getExpressions().get(i), constructor.getParameters()[i+first].getType()));
+            for (int i = 0; i != finalArgs.getExpressions().size(); ++i)
+                finalArgs.getExpressions().set(i, compiler.cast(finalArgs.getExpressions().get(i), constructor.getParameters()[i+base].getType()));
             
             final MethodNode constructor1 = constructor;
             final ClassNode compilerClass = compiler.classNode;
@@ -127,9 +131,8 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         first = 1;
                     }
 
-                    ArgumentListExpression bargs = (ArgumentListExpression) newArgs;
-                    for (int i = 0; i != bargs.getExpressions().size(); ++i) {
-                        BytecodeExpr be = (BytecodeExpr) bargs.getExpressions().get(i);
+                    for (int i = 0; i != finalArgs.getExpressions().size(); ++i) {
+                        BytecodeExpr be = (BytecodeExpr) finalArgs.getExpressions().get(i);
                         be.visit(mv);
                         final ClassNode paramType = constructor1.getParameters()[i+first].getType();
                         final ClassNode type = be.getType();
@@ -145,6 +148,34 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         compiler.addError("Cannot find constructor", exp);
         return null;
+    }
+
+    // Insert array creation for varargs methods.
+    // Precondition: isApplcable.
+    private static ArgumentListExpression wrapArgumentsForVarargs(ArgumentListExpression args, Parameter[] params, int base) {
+        List<Expression> unwrapped = args.getExpressions();
+        List<Expression> wrapped = new ArrayList<Expression>();
+        int nparams = params.length - base;
+        for (int i = 0; i < nparams - 1; i++) {
+            wrapped.add(args.getExpression(i));
+        }
+        int diff = unwrapped.size() - nparams;
+        assert diff >= -1;
+        if (diff > 0) {
+            List<Expression> add = new ArrayList<Expression>(diff);
+            for (int i = 0; i < diff; i++) {
+                add.add(args.getExpression(nparams + i));
+            }
+            wrapped.add(new ArrayExpression(params[nparams - 1].getType(), add));
+        } else if (diff == 0) {
+            if (nparams > 0) {
+                wrapped.add(args.getExpression(nparams - 1));
+            }
+        } else if (diff == -1) {
+            wrapped.add(new ArrayExpression(params[nparams - 1].getType(), new ArrayList<Expression>()));
+        }
+        final ArgumentListExpression finalArgs = new ArgumentListExpression(wrapped);
+        return finalArgs;
     }
 
     private Expression transformSpecial(ConstructorCallExpression exp, CompilerTransformer compiler) {
