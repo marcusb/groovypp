@@ -394,13 +394,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     return new BytecodeExpr(exp, exp.getType()) {
                         protected void compile(MethodVisitor mv) {
                             if (exp.getType() == ClassHelper.double_TYPE) {
-                                mv.visitLdcInsn((double)0);
+                                mv.visitInsn(DCONST_0);
                             } else if (exp.getType() == ClassHelper.float_TYPE) {
-                                mv.visitLdcInsn((float)0);
-                                mv.visitInsn(FRETURN);
+                                mv.visitInsn(FCONST_0);
                             } else if (exp.getType() == ClassHelper.long_TYPE) {
-                                mv.visitLdcInsn(0L);
-                                mv.visitInsn(LRETURN);
+                                mv.visitInsn(LCONST_0);
                             } else
                                 mv.visitInsn(ICONST_0);
                             }

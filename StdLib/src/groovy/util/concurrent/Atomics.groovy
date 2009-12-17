@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Typed
 public class Atomics {
     static <S> S apply (AtomicReference<S> self, Function1<S,S> mutation) {
         for (;;) {
@@ -12,6 +13,15 @@ public class Atomics {
             def newState = mutation(s)
             if (self.compareAndSet(s, newState))
                 return newState
+        }
+    }
+
+    static <S,R> Pair<S,R> apply (AtomicReference<S> self, Function1<S,S> mutation, Function2<S,S,R> continuation) {
+        for (;;) {
+            def oldState = self.get()
+            def newState = mutation(oldState)
+            if (self.compareAndSet(oldState, newState))
+                return [newState, continuation(oldState, newState)]
         }
     }
 

@@ -8,22 +8,22 @@ import java.util.concurrent.ExecutorCompletionService
 public class AtomicsTest extends GroovyTestCase {
 
     void testAtom () {
-        AtomicReference<FList<Integer>> atom = [FList.emptyList]
+        AtomicReference<FList<Integer>> atom  = [FList.emptyList]
+        AtomicReference<FQueue<FList<Integer>>> queue = [FQueue.emptyQueue]
 
-        def pool = new ExecutorCompletionService<Pair<Integer,FList<Integer>>>(Executors.newFixedThreadPool(5))
+        def pool = new ExecutorCompletionService<FQueue<FList<Integer>>>(Executors.newFixedThreadPool(5))
         def n = 100
-        for(i in 0..<n)
+        for(i in 0..<n) {
             pool.submit {
-                def newState = atom.apply { state ->
-                    state.add i
-                }
-                (Pair)[i,newState]
+                def newState = atom.apply { state -> state + i }
+                queue.apply { q -> q.addLast(newState) }
             }
+        }
 
         for(i in 0..<n) {
-            def resList  = pool.take().get().second
+            pool.take().get()
+            def resList = queue.apply { q -> q.removeFirst() } { oldq, newq -> oldq.first }.second
             def reversed = resList.reverse ()
-            println resList.asList()
             println reversed.asList()
         }
 

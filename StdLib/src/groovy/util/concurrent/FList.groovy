@@ -20,12 +20,13 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Element last added to the list
      */
-    abstract T getHead ()
+    T        getHead () { throw new NoSuchElementException() }
+
 
     /**
      * Tail of the list
      */
-    abstract FList<T> getTail ()
+    FList<T> getTail () { throw new NoSuchElementException() }
 
     /**
      * Check is this list empty
@@ -35,12 +36,21 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Creates new list containing given element and then all element of this list
      */
-    FList<T> add (T element) {
+    final FList<T> plus (T element) {
         new Node<T>(element, this)
     }
 
     /**
-     * Utility method allowing convenient syntax <code>flist ()</code> for accessing head of the list
+     * Creates new list containing given element and then all element of this list
+     */
+    final FList<T> addAll (Iterable<T> elements) {
+        def res = this
+        for (el in elements)
+            res += el
+    }
+
+    /**
+     * Utility method allowing convinient syntax <code>flist ()</code> for accessing head of the list
      */
     T call () { getHead() }
 
@@ -48,7 +58,7 @@ abstract static class FList<T> implements Iterable<T> {
      * Create reversed copy of the list
      */
     final FList<T> reverse (FList<T> accumulated = FList.emptyList) {
-        !size ? accumulated : tail.reverse(accumulated.add(head))
+        !size ? accumulated : tail.reverse(accumulated + head)
     }
 
     /**
@@ -61,10 +71,13 @@ abstract static class FList<T> implements Iterable<T> {
     private static class EmptyList<T> extends FList<T> {
         EmptyList () { super(0) }
 
-        T        getHead () { throw new UnsupportedOperationException() }
-        FList<T> getTail () { throw new UnsupportedOperationException() }
-
-        Iterator iterator () { [hasNext:{false}, next:{throw new UnsupportedOperationException()}, remove:{throw new UnsupportedOperationException()}] }
+        Iterator iterator () {
+            [
+                hasNext:{false},
+                next:{throw new NoSuchElementException()},
+                remove:{throw new UnsupportedOperationException()}
+            ]
+        }
     }
 
     private static class Node<T> extends FList<T> {

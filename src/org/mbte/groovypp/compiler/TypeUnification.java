@@ -63,6 +63,7 @@ public class TypeUnification {
             for (int j = 0; j < Math.min(formals.length, instantiateds.length); ++j) {
                 ClassNode formal = formals[j];
                 ClassNode instantiated = instantiateds[j];
+                if (instantiated == null) continue;
                 while (formal.isArray()) {
                     if (!instantiated.isArray()) continue NextParam;
                     formal = formal.getComponentType();
