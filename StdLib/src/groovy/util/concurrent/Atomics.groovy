@@ -16,12 +16,12 @@ public class Atomics {
         }
     }
 
-    static <S,R> Pair<S,R> apply (AtomicReference<S> self, Function1<S,S> mutation, Function2<S,S,R> continuation) {
+    static <S,R> R apply (AtomicReference<S> self, Function1<S,R> mutator, Function1<R,S> extractor) {
         for (;;) {
             def oldState = self.get()
-            def newState = mutation(oldState)
-            if (self.compareAndSet(oldState, newState))
-                return [newState, continuation(oldState, newState)]
+            def mutated = mutator(oldState)
+            if (self.compareAndSet(oldState, extractor(mutated)))
+                return mutated
         }
     }
 

@@ -6,7 +6,7 @@ abstract class FQueue<T> {
 
     T getFirst () { throw new NoSuchElementException() }
 
-    FQueue<T> removeFirst() { throw new NoSuchElementException() }
+    Pair<T, FQueue<T>> removeFirst() { throw new NoSuchElementException() }
 
     abstract FQueue<T> addLast (T element)
 
@@ -54,15 +54,15 @@ abstract class FQueue<T> {
 
         T getFirst () { head }
 
-        FQueue<T> removeFirst() {
+        Pair<T, FQueue<T>> removeFirst() {
             if (size == 1)
-                FQueue.emptyQueue
+                [head, FQueue.emptyQueue]
             else {
                 if(!output.empty)
-                    (NonEmptyQueue<T>)[output.head, output.tail, input]
+                    [head, (NonEmptyQueue<T>)[output.head, output.tail, input]]
                 else {
                     FList<T> newOut = input.reverse(FList.emptyList)
-                    (NonEmptyQueue<T>)[newOut.head, newOut.tail, FList.emptyList]
+                    [head, (NonEmptyQueue<T>)[newOut.head, newOut.tail, FList.emptyList]]
                 }
             }
         }

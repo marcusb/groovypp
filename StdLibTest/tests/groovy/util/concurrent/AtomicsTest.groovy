@@ -22,7 +22,7 @@ public class AtomicsTest extends GroovyTestCase {
 
         for(i in 0..<n) {
             pool.take().get()
-            def resList = queue.apply { q -> q.removeFirst() } { oldq, newq -> oldq.first }.second
+            def resList = queue.apply { q -> q.removeFirst() } { Pair<FList<Integer>, FQueue<FList<Integer>>> p -> p.second }.first
             def reversed = resList.reverse ()
             println reversed.asList()
         }
