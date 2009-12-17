@@ -284,4 +284,17 @@ u()
       """)
     assertEquals 7, res
   }
+
+  void testVarargsList() {
+    shell.evaluate("""
+    @Typed
+    class C {
+      C(Pair... pairs) {}
+      static def bar() {
+        new C([0, 0], [1,1])
+       }
+    }
+    C.bar()
+    """)
+  }
 }

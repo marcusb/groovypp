@@ -12,6 +12,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
@@ -151,7 +152,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
     }
 
     // Insert array creation for varargs methods.
-    // Precondition: isApplcable.
+    // Precondition: isApplicable.
     private static ArgumentListExpression wrapArgumentsForVarargs(ArgumentListExpression args, Parameter[] params, int base) {
         List<Expression> unwrapped = args.getExpressions();
         List<Expression> wrapped = new ArrayList<Expression>();
@@ -166,16 +167,15 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             for (int i = 0; i < diff; i++) {
                 add.add(args.getExpression(nparams + i));
             }
-            wrapped.add(new ArrayExpression(params[nparams - 1].getType(), add));
+            wrapped.add(new ListExpression(add));
         } else if (diff == 0) {
             if (nparams > 0) {
                 wrapped.add(args.getExpression(nparams - 1));
             }
         } else if (diff == -1) {
-            wrapped.add(new ArrayExpression(params[nparams - 1].getType(), new ArrayList<Expression>()));
+            wrapped.add(new ListExpression(new ArrayList<Expression>()));
         }
-        final ArgumentListExpression finalArgs = new ArgumentListExpression(wrapped);
-        return finalArgs;
+        return new ArgumentListExpression(wrapped);
     }
 
     private Expression transformSpecial(ConstructorCallExpression exp, CompilerTransformer compiler) {

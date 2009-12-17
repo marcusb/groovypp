@@ -30,11 +30,10 @@
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
- **//*
+ **/
 
 package groovy.util.concurrent
 
-*/
 /**
  * A clean-room port of Rich Hickey's persistent hash trie implementation from
  * Clojure (http://clojure.org).  Originally presented as a mutable structure in
@@ -42,7 +41,7 @@ package groovy.util.concurrent
  *
  * @author Daniel Spiewak
  * @author Rich Hickey
- *//*
+ */
 
 @Typed
 class HashTrie<K,V> {
@@ -103,9 +102,7 @@ class HashTrie<K,V> {
       } else if (this.hash == hash) {
         return new CollisionNode(hash, [this.key, this.value], [key, value])
       } else {
-        return */
-/*new BitmappedNode()*//*
- this
+        return /*new BitmappedNode()*/ this
       }
     }
 
@@ -126,9 +123,10 @@ class HashTrie<K,V> {
     int size() { bucket.length }
 
     V getAt(K key) {
-      if (key.hashCode() == hash) {
-        return bucket.find(it.first.equals(key))?.second
-      }
+      /*if (key.hashCode() == hash) {
+        def p = bucket.find({ it.first.equals(key) })
+        return p?.second
+      }*/
       null
     }
 
@@ -141,4 +139,3 @@ class HashTrie<K,V> {
     }
   }
 }
-*/
