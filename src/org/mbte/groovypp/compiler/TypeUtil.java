@@ -309,7 +309,7 @@ public class TypeUtil {
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
             return createArrayType(arrayCount, binding != null ? binding : toSubstitute);
         }
-        if (typeVariables.length != typeArgs.length) return toSubstitute;
+        if (typeVariables.length != typeArgs.length) return createArrayType(arrayCount, toSubstitute);
         return createArrayType(arrayCount, getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs));
     }
 

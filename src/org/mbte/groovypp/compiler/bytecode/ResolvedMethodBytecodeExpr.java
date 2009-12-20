@@ -131,10 +131,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     }
 
     public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
+        final BytecodeExpr objectCopy = object;
         ClassNode returnType = methodNode.getReturnType();
-        if (returnType.equals(ClassHelper.VOID_TYPE))
-            return ClassHelper.VOID_TYPE;
-
+        
         boolean removeFirstArgAtTheEnd = false;
         if (methodNode instanceof ClassNodeCache.DGM) {
             ClassNodeCache.DGM dgm = (ClassNodeCache.DGM) methodNode;
@@ -175,11 +174,15 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 argTypes[i] = bargs.getExpression(i).getType();
             }
             ClassNode[] bindings = TypeUnification.inferTypeArguments(typeVars, paramTypes, argTypes);
-            returnType = TypeUtil.getSubstitutedTypeIncludingInstance(returnType, methodNode, bindings);
+            returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
 
             for (int i = 0; i < length-delta; i++) {
-                ClassNode paramType = TypeUtil.getSubstitutedTypeIncludingInstance(paramTypes[i], methodNode, bindings);
-                bargs.getExpressions().set(i, compiler.cast((BytecodeExpr) bargs.getExpressions().get(i), paramType));
+                ClassNode paramType = TypeUtil.getSubstitutedType(paramTypes[i], methodNode, bindings);
+                if (objectCopy != null) {
+                    paramType = TypeUtil.getSubstitutedType(paramType, methodNode.getDeclaringClass(),
+                            objectCopy.getType());
+                }
+                bargs.getExpressions().set(i, compiler.cast(bargs.getExpressions().get(i), paramType));
             }
 
         }
@@ -188,8 +191,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             bargs.getExpressions().remove(0);
         }
 
-        return object != null ? TypeUtil.getSubstitutedType(returnType,
-                methodNode.getDeclaringClass(), object.getType()) : returnType;
+        return objectCopy != null ? TypeUtil.getSubstitutedType(returnType, methodNode.getDeclaringClass(), objectCopy.getType()) : returnType;
     }
 
     private void tryImproveClosureType(MethodNode methodNode, ArgumentListExpression bargs) {

@@ -26,7 +26,7 @@ public class Agent<T>  {
                                     def qq = queue
                                     def pp = qq.removeFirst ()
                                     if (queue.compareAndSet(qq, pp.second)) {
-                                        Function1<T,T> m = pp.first
+                                        def m = pp.first
                                         ref = m(ref)
                                         n++
                                         break
