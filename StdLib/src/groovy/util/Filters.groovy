@@ -1,6 +1,9 @@
 package groovy.util
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
+import org.codehaus.groovy.runtime.InvokerHelper
 
 /**
  * Utility methods for filtering.
@@ -99,6 +102,40 @@ class Filters extends DefaultGroovyMethodsSupport {
    */
   static <T> T find(T[] self, Function1<T, Boolean> condition) {
     find(Arrays.asList(self), condition)
+  }
+
+  // String-related stuff copied from DGM.
+  public static String find(String self, String regex) {
+      return find(self, Pattern.compile(regex));
+  }
+
+  public static String find(String self, Pattern pattern) {
+    Matcher matcher = pattern.matcher(self);
+    if (matcher.find()) {
+      return matcher.group(0);
+    }
+    return null;
+  }
+
+  public static String find(String self, String regex, Closure closure) {
+      return find(self, Pattern.compile(regex), closure);
+  }
+
+  public static String find(String self, Pattern pattern, Closure closure) {
+      Matcher matcher = pattern.matcher(self);
+      if (matcher.find()) {
+          if (matcher.hasGroup()) {
+              int count = matcher.groupCount();
+              List groups = new ArrayList(count);
+              for (int i = 0; i <= count; i++) {
+                  groups.add(matcher.group(i));
+              }
+              return InvokerHelper.toString(closure.call(groups));
+          } else {
+              return InvokerHelper.toString(closure.call(matcher.group(0)));
+          }
+      }
+      return null;
   }
 
   /**
