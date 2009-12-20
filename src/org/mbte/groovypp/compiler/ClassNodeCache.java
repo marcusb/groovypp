@@ -31,7 +31,6 @@ public class ClassNodeCache {
     static final Map<ClassNode, List<MethodNode>> dgmMethods = new HashMap<ClassNode, List<MethodNode>>();
 
     static {
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any"));
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
         initDgm("groovy.util.Conversions");
@@ -41,6 +40,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.concurrent.Atomics");
         initDgm(Arrays.class);
         initDgm(Collections.class);
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any"));
     }
 
     private static void initDgm(String klazz) {

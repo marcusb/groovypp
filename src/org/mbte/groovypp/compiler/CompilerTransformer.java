@@ -153,7 +153,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             MethodNode mn = (MethodNode) o;
             if (mn.isStatic()) {
                 final Parameter[] parameters = mn.getParameters();
-                if (parameters.length > 0 && TypeUtil.isDirectlyAssignableFrom(objectType, parameters[0].getType())) {
+                if (parameters.length > 0 && TypeUtil.isDirectlyAssignableFrom(parameters[0].getType(), objectType)) {
                     candidates = createDGM(mn);
                 }
             }
@@ -165,7 +165,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 if (mn.isStatic()) {
                     final Parameter[] parameters = mn.getParameters();
                     if (parameters.length > 0) {
-                        if (TypeUtil.isDirectlyAssignableFrom(objectType, parameters[0].getType())) {
+                        if (TypeUtil.isDirectlyAssignableFrom(parameters[0].getType(), objectType)) {
                             if (candidates == null)
                                 candidates = createDGM(mn);
                             else if (candidates instanceof FastArray) {

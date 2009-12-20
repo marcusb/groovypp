@@ -125,12 +125,12 @@ public class TypeUtil {
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
         if(to.equals(ClassHelper.OBJECT_TYPE))
             return !ClassHelper.isPrimitiveType(from);
+        if (from == null) return true;
+        if (to.isArray() && from.isArray()) return isDirectlyAssignableFrom(to.getComponentType(), from.getComponentType());
 
-        return from == null
-                || from == TypeUtil.NULL_TYPE
+        return from == TypeUtil.NULL_TYPE
                 || (from.isDerivedFrom(to) && (!from.implementsInterface(TCLOSURE) || to.equals(ClassHelper.CLOSURE_TYPE)))
-                || to.isInterface() && implementsInterface(to, from)
-                || to.equals(TypeUtil.OBJECT_ARRAY) && from.isArray() && !ClassHelper.isPrimitiveType(from.getComponentType());
+                || to.isInterface() && implementsInterface(to, from);
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {

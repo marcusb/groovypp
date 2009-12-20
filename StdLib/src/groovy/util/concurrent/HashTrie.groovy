@@ -100,7 +100,7 @@ class HashTrie<K,V> {
       if (this.key == key) {
         if (this.value == value) return this else return new LeafNode(key, hash, value)
       } else if (this.hash == hash) {
-        return new CollisionNode(hash, [this.key, this.value], [key, value])
+        return new CollisionNode(hash, FList.emptyList + [this.key, this.value] + [key, value])
       } else {
         return /*new BitmappedNode()*/ this
       }
@@ -113,14 +113,14 @@ class HashTrie<K,V> {
 
   class CollisionNode extends SingleNode {
     int hash
-    Pair<K,V>[] bucket
+    FList<Pair<K,V>> bucket
 
-    def CollisionNode(int hash, Pair<K,V>... bucket) {
+    CollisionNode(int hash, FList<Pair<K,V>> bucket) {
       this.hash = hash;
       this.bucket = bucket
     }
 
-    int size() { bucket.length }
+    int size() { bucket.size }
 
     V getAt(K key) {
       if (key.hashCode() == hash) {
@@ -129,12 +129,29 @@ class HashTrie<K,V> {
       }
     }
 
+    private FList<Pair<K,V>> removeBinding(K key, FList<Pair<K,V>> bucket) {
+      if (bucket.isEmpty()) return bucket
+      if (bucket.getHead().first == key) return bucket.getTail()
+      def t = removeBinding(key, bucket.getTail())
+      if (t == bucket.getTail()) return bucket else return t + bucket.getHead()
+    }
+
     Node<K, V> update(int shift, K key, int hash, V value) {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      if (this.hash == hash) {
+        return new CollisionNode(hash, removeBinding(key, bucket) + [key, value]);
+      } else {
+        return /*new BitmappedNode()*/ this
+      }
     }
 
     Node<K, V> remove(K key, int hash) {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      if (hash != this.hash) return this
+      def b = removeBinding(key, bucket)
+      if (b == this) return this
+      if (b.size == 1) {
+        return new LeafNode(hash, b.getHead().first, b.getHead().second)
+      }
+      new CollisionNode(hash, b)
     }
   }
 }
