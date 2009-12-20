@@ -20,11 +20,11 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final String methodName;
     private final BytecodeExpr bargs;
 
-    public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs) {
+    public ResolvedPropertyBytecodeExpr(ASTNode parent, PropertyNode propertyNode, BytecodeExpr object, BytecodeExpr bargs, CompilerTransformer compiler) {
         super(parent, getType(object, propertyNode));
         this.propertyNode = propertyNode;
         this.object = object;
-        this.bargs = bargs;
+        this.bargs = bargs == null ? null : compiler.cast(bargs, getType());
 
         if (bargs != null) {
             methodName = "set" + Verifier.capitalize(propertyNode.getName());
@@ -83,7 +83,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, final Expression right, CompilerTransformer compiler) {
-        return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, (BytecodeExpr) compiler.transform(right));
+        return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, (BytecodeExpr) compiler.transform(right), compiler);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
@@ -105,8 +105,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 parent,
                 propertyNode,
                 dupObject,
-                null
-        );
+                null,
+                compiler);
 
         final BinaryExpression op = new BinaryExpression(get, method, right);
         op.setSourcePosition(parent);
@@ -116,8 +116,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 parent,
                 propertyNode,
                 fakeObject,
-                transformedOp
-        );
+                transformedOp,
+                compiler);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
@@ -143,8 +143,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 propertyNode,
                 fakeObject,
-                null
-        );
+                null,
+                compiler);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -188,8 +188,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 propertyNode,
                 dupObject,
-                incDec
-        );
+                incDec,
+                compiler);
 
         return new BytecodeExpr(exp, getType()) {
             protected void compile(MethodVisitor mv) {
@@ -221,8 +221,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 propertyNode,
                 fakeObject,
-                null
-        );
+                null,
+                compiler);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -274,8 +274,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 propertyNode,
                 dupObject,
-                incDec
-        );
+                incDec,
+                compiler);
 
         return new BytecodeExpr(exp, getType()) {
             protected void compile(MethodVisitor mv) {

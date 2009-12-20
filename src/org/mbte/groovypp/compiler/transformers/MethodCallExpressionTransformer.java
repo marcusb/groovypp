@@ -8,6 +8,7 @@ import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.ResolvedGetterBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -137,6 +138,23 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
                             if (updater != null) {
                                 ClassNode [] newArgs = new ClassNode [argTypes.length+1];
+                                System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
+                                newArgs [0] = obj.getObject().getType();
+                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs);
+                                if (updaterMethod != null) {
+                                    ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
+                                    ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
+                                    return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+                                }
+                            }
+                        }
+                    } else if (object instanceof ResolvedGetterBytecodeExpr.Accessor) {
+                        ResolvedGetterBytecodeExpr.Accessor obj = (ResolvedGetterBytecodeExpr.Accessor) object;
+                        FieldNode fieldNode = obj.getFieldNode();
+                        if ((fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
+                            FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
+                            if (updater != null) {
+                                ClassNode[] newArgs = new ClassNode [argTypes.length+1];
                                 System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
                                 newArgs [0] = obj.getObject().getType();
                                 MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs);

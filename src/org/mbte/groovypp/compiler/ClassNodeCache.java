@@ -38,6 +38,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.Iterations");
         initDgm("groovy.util.Mappers");
         initDgm("groovy.util.concurrent.Atomics");
+        initDgm("groovy.util.concurrent.CallLaterExecutors");
         initDgm(Arrays.class);
         initDgm(Collections.class);
         initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any", "find"));

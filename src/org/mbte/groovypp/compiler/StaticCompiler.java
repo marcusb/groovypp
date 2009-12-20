@@ -440,7 +440,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
             if (resolvedMethodBytecodeExpr.getMethodNode() == methodNode) {
-                if (methodNode.isStatic() || resolvedMethodBytecodeExpr.getObject().isThis()) {
+                if (methodNode.isStatic()
+                || resolvedMethodBytecodeExpr.getObject().isThis()
+                || methodNode.isPrivate()
+                || (methodNode.getModifiers() & ACC_FINAL) != 0) {
                     tailRecursive(resolvedMethodBytecodeExpr);
                     return;
                 }

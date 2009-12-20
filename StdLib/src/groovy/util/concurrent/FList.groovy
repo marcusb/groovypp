@@ -58,7 +58,7 @@ abstract static class FList<T> implements Iterable<T> {
      * Create reversed copy of the list
      */
     final FList<T> reverse (FList<T> accumulated = FList.emptyList) {
-        !size ? accumulated : tail.reverse(accumulated + head)
+        if(!size) { accumulated } else { tail.reverse(accumulated + head) }
     }
 
     /**
@@ -93,7 +93,7 @@ abstract static class FList<T> implements Iterable<T> {
         Iterator<T> iterator () {
             [
                 cur:     (FList<T>)this,
-                hasNext: { cur != FList.emptyList },
+                hasNext: { cur.size },
                 next:    { def that = cur; cur = cur.tail; that.head },
                 remove:  { throw new UnsupportedOperationException() }
             ]

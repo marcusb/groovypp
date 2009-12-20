@@ -24,13 +24,13 @@ public class PropertyUtil {
         }
 
         if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null);
+            return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null, compiler);
 
         if (prop instanceof FieldNode) {
             FieldNode field = (FieldNode) prop;
             if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
                 MethodNode getter = compiler.context.getFieldGetter(field);
-                return new ResolvedGetterBytecodeExpr(exp, getter, object, needsObjectIfStatic, compiler);
+                return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, needsObjectIfStatic, compiler);
             }
             return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
         }
@@ -78,7 +78,7 @@ public class PropertyUtil {
         }
 
         if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value);
+            return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value, compiler);
 
         if (prop instanceof FieldNode) {
             // Only go here if the field is runtime-accessible.

@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -11,6 +12,7 @@ import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final MethodNode methodNode;
+
     private final BytecodeExpr object;
     private final boolean needsObjectIfStatic;
     private final BytecodeExpr getter;
@@ -78,5 +80,22 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createPostfixOp(ASTNode parent, int type, CompilerTransformer compiler) {
         return null;
+    }
+
+    public BytecodeExpr getObject() {
+        return object;
+    }
+
+    public static class Accessor extends ResolvedGetterBytecodeExpr {
+        private FieldNode fieldNode;
+
+        public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
+            super(parent, methodNode, object, needsObjectIfStatic, compiler);
+            this.fieldNode = fieldNode;
+        }
+
+        public FieldNode getFieldNode() {
+            return fieldNode;
+        }
     }
 }
