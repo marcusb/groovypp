@@ -568,7 +568,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         ClassNode argType = p[changed.get(0).index].getType();
-        GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
+        if (!foundMethod.isStatic()) {
+            argType = TypeUtil.getSubstitutedType(argType, foundMethod.getDeclaringClass(), type);
+        }
+        GenericsType[] methodTypeVars = foundMethod.getGenericsTypes();
         if (methodTypeVars != null && methodTypeVars.length > 0) {
             ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
             ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
@@ -587,8 +590,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     formals.toArray(new ClassNode[formals.size()]),
                     instantiateds.toArray(new ClassNode[instantiateds.size()]));
 
-            argType = TypeUtil.getSubstitutedTypeIncludingInstance(argType, foundMethod, unified);
+            argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
         }
+        /*if (!foundMethod.isStatic()) {
+            argType = TypeUtil.getSubstitutedType(argType, foundMethod.getDeclaringClass(), type);
+        }*/
 
         List<MethodNode> one = changed.get(0).oneMethodAbstract;
         MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) changed.get(0).original, compiler, argType);

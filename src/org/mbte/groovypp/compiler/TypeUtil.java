@@ -280,17 +280,6 @@ public class TypeUtil {
         return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method));
     }
 
-    public static ClassNode getSubstitutedTypeIncludingInstance(ClassNode toSubstitute,
-                                               final MethodNode method,
-                                               final ClassNode[] methodTypeArgs) {
-        if (methodTypeArgs == null || methodTypeArgs.length == 0) return toSubstitute;
-        GenericsType[] genericsTypes = new GenericsType[methodTypeArgs.length];
-        for (int i = 0; i < genericsTypes.length; i++) {
-            genericsTypes[i] = methodTypeArgs[i] == null ? null : new GenericsType(methodTypeArgs[i]);
-        }
-        return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNamesIncludingInstance(method));
-    }
-
     private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
         if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         String[] typeVariables = getTypeParameterNames(accessClass);
@@ -339,36 +328,6 @@ public class TypeUtil {
         for (int i = 0; i < result.length; i++) {
             result[i] = generics[i].getName();
         }
-        return result;
-    }
-
-    private static String[] getTypeParameterNamesIncludingInstance(MethodNode methodNode) {
-        int length = 0;
-        GenericsType[] typeVars = methodNode.getGenericsTypes();
-        GenericsType[] classTypeVars = methodNode.getDeclaringClass().getGenericsTypes();
-
-        if (typeVars != null)
-            length += typeVars.length;
-
-        if (!methodNode.isStatic()) {
-            if (classTypeVars != null)
-                length += classTypeVars.length;
-        }
-
-        if (length == 0)
-            return new String [0];
-
-        String [] result = new String [length];
-
-        int i = 0, k = 0;
-        if (typeVars != null)
-            for (; i < typeVars.length; i++, k++) {
-                result[i] = typeVars[i].getName();
-            }
-        if (!methodNode.isStatic() && classTypeVars != null)
-            for (; i < classTypeVars.length; i++) {
-                result[i] = classTypeVars[i-k].getName();
-            }
         return result;
     }
 
