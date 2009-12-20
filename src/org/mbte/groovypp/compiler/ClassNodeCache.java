@@ -40,7 +40,7 @@ public class ClassNodeCache {
         initDgm("groovy.util.concurrent.Atomics");
         initDgm(Arrays.class);
         initDgm(Collections.class);
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any"));
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any", "find"));
     }
 
     private static void initDgm(String klazz) {
