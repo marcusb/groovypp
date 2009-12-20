@@ -10,10 +10,6 @@ class CallLaterPool extends ThreadPoolExecutor {
         ((DefaultThreadFactory)getThreadFactory()).pool = this
     }
 
-    protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-        callable instanceof RunnableFuture ? callable : new FutureTask<T>(callable);
-    }
-
     public <T> BindLater<T> callLater (CallLater<T> future) {
         execute future
         future
