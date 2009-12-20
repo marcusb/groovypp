@@ -18,6 +18,8 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
+
+import org.mbte.groovypp.compiler.types.TypesUtil;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -151,7 +153,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             MethodNode mn = (MethodNode) o;
             if (mn.isStatic()) {
                 final Parameter[] parameters = mn.getParameters();
-                if (parameters.length > 0 && objectType.isDerivedFrom(parameters[0].getType())) {
+                if (parameters.length > 0 && TypeUtil.isDirectlyAssignableFrom(objectType, parameters[0].getType())) {
                     candidates = createDGM(mn);
                 }
             }
@@ -162,16 +164,18 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                 MethodNode mn = (MethodNode) ms.get(i);
                 if (mn.isStatic()) {
                     final Parameter[] parameters = mn.getParameters();
-                    if (parameters.length > 0 && (objectType.isDerivedFrom(parameters[0].getType()) || objectType.implementsInterface(parameters[0].getType()))) {
-                        if (candidates == null)
-                            candidates = createDGM(mn);
-                        else if (candidates instanceof FastArray) {
-                            ((FastArray) candidates).add(createDGM(mn));
-                        } else {
-                            MethodNode _1st = (MethodNode) candidates;
-                            candidates = new FastArray(2);
-                            ((FastArray) candidates).add(_1st);
-                            ((FastArray) candidates).add(createDGM(mn));
+                    if (parameters.length > 0) {
+                        if (TypeUtil.isDirectlyAssignableFrom(objectType, parameters[0].getType())) {
+                            if (candidates == null)
+                                candidates = createDGM(mn);
+                            else if (candidates instanceof FastArray) {
+                                ((FastArray) candidates).add(createDGM(mn));
+                            } else {
+                                MethodNode _1st = (MethodNode) candidates;
+                                candidates = new FastArray(2);
+                                ((FastArray) candidates).add(_1st);
+                                ((FastArray) candidates).add(createDGM(mn));
+                            }
                         }
                     }
                 }

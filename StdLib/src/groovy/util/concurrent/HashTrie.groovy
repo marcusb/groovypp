@@ -123,11 +123,10 @@ class HashTrie<K,V> {
     int size() { bucket.length }
 
     V getAt(K key) {
-      /*if (key.hashCode() == hash) {
-        def p = bucket.find({ it.first.equals(key) })
+      if (key.hashCode() == hash) {
+        def p = bucket.find { it.first.equals(key) }
         return p?.second
-      }*/
-      null
+      }
     }
 
     Node<K, V> update(int shift, K key, int hash, V value) {
