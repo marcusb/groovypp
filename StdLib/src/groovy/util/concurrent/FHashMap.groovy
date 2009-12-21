@@ -228,7 +228,7 @@ class FHashMap<K,V> {
         } else if (node == EmptyNode.INSTANCE) {
           def adjustedBits = bits & ~mask
           if (!adjustedBits) return EmptyNode.INSTANCE
-          if (adjustedBits == (adjustedBits & -adjustedBits)) {
+          if (!(adjustedBits & (adjustedBits - 1))) {
             // Last one.
             for (j in 0..31) {
               if (adjustedBits == 1 << j) return table[j]
