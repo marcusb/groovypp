@@ -53,11 +53,19 @@ class FHashMap<K,V> {
   V getAt(K key) { root[key] }
 
   FHashMap<K,V> put(K key, V value) {
-    new FHashMap(root.update(0, key, key.hashCode(), value))
+    new FHashMap(root.update(0, key, shuffle(key.hashCode()), value))
   }
 
   FHashMap<K,V> remove(K key) {
-    new FHashMap(root.remove(key, key.hashCode()))
+    new FHashMap(root.remove(key, shuffle(key.hashCode())))
+  }
+
+  static int shuffle(int h) {
+    h += ~(h << 9)
+    h ^= (h >>> 14)
+    h += (h << 4)
+    h ^= (h >>> 10)
+    h
   }
 
   // TODO: interface
