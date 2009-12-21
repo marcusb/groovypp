@@ -297,4 +297,17 @@ u()
     C.bar()
     """)
   }
+
+  void testInnerConstructor() {
+    shell.evaluate("""
+    @Typed
+    class Outer {
+      class Inner {
+        def instance = new Inner()
+      }
+      static def bar() { new Inner().instance }
+    }
+    Outer.bar()
+    """)
+  }
 }
