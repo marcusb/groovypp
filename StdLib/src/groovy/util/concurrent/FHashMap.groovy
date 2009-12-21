@@ -228,6 +228,12 @@ class FHashMap<K,V> {
         } else if (node == EmptyNode.INSTANCE) {
           def adjustedBits = bits & ~mask
           if (!adjustedBits) return EmptyNode.INSTANCE
+          if (adjustedBits == (adjustedBits & -adjustedBits)) {
+            // Last one.
+            for (j in 0..31) {
+              if (adjustedBits == 1 << j) return table[j]
+            }
+          }
           def newTable = new Node[table.length]
           System.arraycopy table, 0, newTable, 0, table.length
           newTable[i] = null
@@ -273,13 +279,13 @@ class FHashMap<K,V> {
 
     Node remove(K key, int hash) {
       def i = (hash >>> shift) & 0x1f
-      def mask = 1 << i
       def node = table[i].remove(key, hash)
       if (node == table[i]) return this else {
         def newTable = new Node[32]
         System.arraycopy table, 0, newTable, 0, 32
         if (node == EmptyNode.INSTANCE) {
           newTable[i] = null
+          def mask = 1 << i
           return new BitmappedNode(shift, ~mask, newTable)
         } else {
           newTable[i] = node
