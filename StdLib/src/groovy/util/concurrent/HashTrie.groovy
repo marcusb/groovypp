@@ -45,9 +45,9 @@ package groovy.util.concurrent
 
 @Typed
 class HashTrie<K,V> {
-  Node<K,V> root
-  HashTrie() { root = new EmptyNode() }
-  HashTrie(Node<K,V> root) { this.@root = root }
+  Node root
+  HashTrie() { root = EmptyNode.INSTANCE }
+  HashTrie(Node root) { this.@root = root }
 
   int size() { root.size() }
   V getAt(K key) { root[key] }
@@ -61,21 +61,25 @@ class HashTrie<K,V> {
   }
 
   // TODO: interface
-  abstract class Node<K,V> {
+  abstract class Node {
     abstract int size()
-    abstract V getAt(K key)
-    abstract Node<K,V> update(int shift, K key, int hash, V value)
-    abstract Node<K,V> remove(K key, int hash)
+    abstract V getAt(K key, int hash)
+    abstract Node update(int shift, K key, int hash, V value)
+    abstract Node remove(K key, int hash)
   }
 
-  class EmptyNode extends Node<K, V> {
+  class EmptyNode extends Node {
+    private EmptyNode() {}
+
     int size() { 0 }
-    V getAt(K key) { null }
-    Node<K,V> update(int shift, K key, int hash, V value) { new LeafNode(key, hash, value) }
-    Node<K,V> remove(K key, int hash) { this }
+    V getAt(K key, int hash) { null }
+    Node update(int shift, K key, int hash, V value) { new LeafNode(key, hash, value) }
+    Node remove(K key, int hash) { this }
+
+    static EmptyNode INSTANCE = new EmptyNode()
   }
 
-  abstract class SingleNode extends Node<K,V> {
+  abstract class SingleNode extends Node {
     abstract int getHash()
   }
 
@@ -92,11 +96,11 @@ class HashTrie<K,V> {
 
     int size() { 1 }
 
-    V getAt(K key) {
+    V getAt(K key, int hash) {
       if (this.key == key) return value else return null
     }
 
-    Node<K, V> update(int shift, K key, int hash, V value) {
+    Node update(int shift, K key, int hash, V value) {
       if (this.key == key) {
         if (this.value == value) return this else return new LeafNode(key, hash, value)
       } else if (this.hash == hash) {
@@ -106,8 +110,8 @@ class HashTrie<K,V> {
       }
     }
 
-    Node<K, V> remove(K key, int hash) {
-      if (this.key == key) return new EmptyNode() else return this
+    Node remove(K key, int hash) {
+      if (this.key == key) return EmptyNode.INSTANCE else return this
     }
   }
 
@@ -122,8 +126,8 @@ class HashTrie<K,V> {
 
     int size() { bucket.size }
 
-    V getAt(K key) {
-      if (key.hashCode() == hash) {
+    V getAt(K key, int hash) {
+      if (hash == this.hash) {
         def p = bucket.find { it.first.equals(key) }
         return p?.second
       }
@@ -136,7 +140,7 @@ class HashTrie<K,V> {
       if (t == bucket.getTail()) return bucket else return t + bucket.getHead()
     }
 
-    Node<K, V> update(int shift, K key, int hash, V value) {
+    Node update(int shift, K key, int hash, V value) {
       if (this.hash == hash) {
         return new CollisionNode(hash, removeBinding(key, bucket) + [key, value]);
       } else {
@@ -144,7 +148,7 @@ class HashTrie<K,V> {
       }
     }
 
-    Node<K, V> remove(K key, int hash) {
+    Node remove(K key, int hash) {
       if (hash != this.hash) return this
       def b = removeBinding(key, bucket)
       if (b == this) return this
@@ -152,6 +156,81 @@ class HashTrie<K,V> {
         return new LeafNode(hash, b.getHead().first, b.getHead().second)
       }
       new CollisionNode(hash, b)
+    }
+  }
+
+  class BitmappedNode extends Node {
+    int shift
+    int bits
+    Node<K,V>[] table
+
+    def BitmappedNode(int shift, int bits, Node<K,V>[] table) {
+      this.shift = shift;
+      this.bits = bits;
+      this.table = table;
+    }
+
+    int size() {
+      table.filter {it != null}.foldLeft(0) {e, sum -> sum + e.size()}
+    }
+
+    V getAt(K key, int hash) {
+      def i = (hash >>> shift) & 0x1f
+      def mask = 1 << i
+      if (bits & mask) return table[i].getAt(key, hash)
+    }
+
+    Node update(int shift, K key, int hash, V value) {
+      def i = (hash >>> shift) & 0x1f
+      def mask = 1 << i
+      if (bits & mask) {
+        def node = table[i].update(shift + 5, key, hash, value)
+        if (node.equals(table[i])) return this else {
+          def newTable = new Node[table.length]
+          System.arraycopy table, 0, newTable, 0, table.length
+          newTable[i] = node
+          return new BitmappedNode(shift, bits, newTable)
+        }
+      } else {
+        def newTable = new Node[Math.max(table.length, i + 1)]
+        System.arraycopy table, 0, newTable, 0, table.length
+        newTable[i] = new LeafNode(hash, key, value)
+        def newBits = bits | mask
+        if (newBits == ~0) {
+          return /*new FullNode(shift, newTable)*/this
+        } else {
+          return new BitmappedNode(shift, newBits, newTable)
+        }
+      }
+    }
+
+    Node remove(K key, int hash) {
+      def i = (hash >>> shift) & 0x1f
+      def mask = 1 << i
+      if (bits & mask) {
+        def node = table[i].remove(key, hash)
+        if (node.equals(table[i])) {
+          return this
+        } else if (node == EmptyNode.INSTANCE) {
+          def adjustedBits = bits & ~mask
+          if (!adjustedBits) return EmptyNode.INSTANCE
+          def log = Math.log(adjustedBits) / Math.log(2)
+          def ilog = (int) log
+          if (log == (double)ilog) {
+            return table[ilog]
+          } else {
+            def newTable = new Node[table.length]
+            System.arraycopy table, 0, newTable, 0, table.length
+            newTable[i] = null
+            return new BitmappedNode(shift, adjustedBits, newTable)
+          }
+        } else {
+          def newTable = new Node[table.length]
+          System.arraycopy table, 0, newTable, 0, table.length
+          newTable[i] = node
+          return new BitmappedNode(shift, bits, newTable)
+        }
+      } else return this
     }
   }
 }

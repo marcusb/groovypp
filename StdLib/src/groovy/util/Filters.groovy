@@ -65,8 +65,12 @@ class Filters extends DefaultGroovyMethodsSupport {
    * @param condition filter predicate.
    * @returns list containing elements that satisfy the condition.
    */
-  static <T> List<T> filter(List<T> self, final Function1<T, Boolean> condition) {
-    self.iterator().filter(condition).asList()
+  static <T> Iterator<T> filter(List<T> self, final Function1<T, Boolean> condition) {
+    self.iterator().filter(condition)
+  }
+
+  static <T> Iterator<T> filter(T[] self, final Function1<T, Boolean> condition) {
+    filter(self.asList(), condition)
   }
 
   /**
