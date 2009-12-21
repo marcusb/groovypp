@@ -310,4 +310,22 @@ u()
     new Outer().bar()
     """)
   }
+
+  void testGetAt() {
+    def res = shell.evaluate("""
+    @Typed
+    class C {
+      def getAt(List l, int i) {l.get(i)}
+
+      static def foo() {
+        def list = Arrays.asList("a", "b")
+        def c = new C()
+        c[list, 0]
+      }
+    }
+
+    C.foo()
+    """)
+    assertEquals "a", res
+  }
 }
