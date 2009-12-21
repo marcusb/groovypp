@@ -211,4 +211,15 @@ class NumberMathTest extends GroovyShellTestCase {
           u()
         """
   }
+
+  void testIntegerBitwiseNegate() {
+    def res = shell.evaluate("""
+          @Typed
+          def u() {
+              ~0
+          }
+          u()
+        """)
+    assertEquals 0xffffffff, res
+  }
 }
