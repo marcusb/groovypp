@@ -44,20 +44,20 @@ package groovy.util.concurrent
  */
 
 @Typed
-class HashTrie<K,V> {
+class FHashMap<K,V> {
   Node root
-  HashTrie() { root = EmptyNode.INSTANCE }
-  HashTrie(Node root) { this.@root = root }
+  FHashMap() { root = EmptyNode.INSTANCE }
+  FHashMap(Node root) { this.@root = root }
 
   int size() { root.size() }
   V getAt(K key) { root[key] }
 
-  HashTrie<K,V> put(K key, V value) {
-    new HashTrie(root.update(0, key, key.hashCode(), value))
+  FHashMap<K,V> put(K key, V value) {
+    new FHashMap(root.update(0, key, key.hashCode(), value))
   }
 
-  HashTrie<K,V> remove(K key) {
-    new HashTrie(root.remove(key, key.hashCode()))
+  FHashMap<K,V> remove(K key) {
+    new FHashMap(root.remove(key, key.hashCode()))
   }
 
   // TODO: interface
