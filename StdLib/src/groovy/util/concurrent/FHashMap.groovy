@@ -50,7 +50,7 @@ class FHashMap<K,V> {
   FHashMap(Node root) { this.@root = root }
 
   int size() { root.size() }
-  V getAt(K key) { root.getAt(key, shuffle(key.hashCode())) }
+  V getAt(K key) { root[key, shuffle(key.hashCode())] }
 
   FHashMap<K,V> put(K key, V value) {
     new FHashMap(root.update(0, key, shuffle(key.hashCode()), value))
@@ -199,7 +199,7 @@ class FHashMap<K,V> {
     V getAt(K key, int hash) {
       def i = (hash >>> shift) & 0x1f
       def mask = 1 << i
-      if (bits & mask) return table[i].getAt(key, hash)
+      if (bits & mask) return table[i][key, hash]
     }
 
     Node update(int shift, K key, int hash, V value) {
