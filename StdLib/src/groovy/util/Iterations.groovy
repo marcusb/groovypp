@@ -29,6 +29,10 @@ abstract class Iterations {
     foldLeft(self.iterator(), init, op)
   }
 
+  static <T, R> R foldLeft(T[] self, R init, Function2<T, R, R> op) {
+    foldLeft(self.asList(), init, op)
+  }
+
   /**
    * Computes the aggregate of the given iterator applying the operation to the last iterator element first.
    * NB: this method is not tail-recursive.

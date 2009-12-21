@@ -176,7 +176,7 @@ class HashTrie<K,V> {
   class BitmappedNode extends Node {
     int shift
     int bits
-    Node<K,V>[] table
+    Node[] table
 
     def BitmappedNode(int shift, int bits, Node<K,V>[] table) {
       this.shift = shift;
@@ -199,7 +199,7 @@ class HashTrie<K,V> {
       def mask = 1 << i
       if (bits & mask) {
         def node = table[i].update(shift + 5, key, hash, value)
-        if (node.equals(table[i])) return this else {
+        if (node == table[i]) return this else {
           def newTable = new Node[table.length]
           System.arraycopy table, 0, newTable, 0, table.length
           newTable[i] = node
@@ -211,7 +211,7 @@ class HashTrie<K,V> {
         newTable[i] = new LeafNode(hash, key, value)
         def newBits = bits | mask
         if (newBits == ~0) {
-          return /*new FullNode(shift, newTable)*/this
+          return new FullNode(shift, newTable)
         } else {
           return new BitmappedNode(shift, newBits, newTable)
         }
@@ -223,7 +223,7 @@ class HashTrie<K,V> {
       def mask = 1 << i
       if (bits & mask) {
         def node = table[i].remove(key, hash)
-        if (node.equals(table[i])) {
+        if (node == table[i]) {
           return this
         } else if (node == EmptyNode.INSTANCE) {
           def adjustedBits = bits & ~mask
@@ -239,6 +239,53 @@ class HashTrie<K,V> {
           return new BitmappedNode(shift, bits, newTable)
         }
       } else return this
+    }
+  }
+
+  class FullNode extends Node {
+    int shift
+    Node[] table
+
+
+    def FullNode(int shift, Node[] table) {
+      this.shift = shift
+      this.table = table
+    }
+
+    int size() {
+      table.foldLeft(0) { e, sum -> sum + e.size() }
+    }
+
+    V getAt(K key, int hash) {
+      table[(hash >>> shift) & 0x1f].getAt(key, hash)
+    }
+
+    Node update(int shift, K key, int hash, V value) {
+      def i = (hash >>> shift) & 0x1f
+      def node = table[i].update(shift + 5, key, hash, value)
+      if (node == table[i]) return this else {
+        def newTable = new Node[32]
+        System.arraycopy table, 0, newTable, 0, 32
+        newTable[i] = node
+        return new FullNode(shift, newTable)
+      }
+    }
+
+    Node remove(K key, int hash) {
+      def i = (hash >>> shift) & 0x1f
+      def mask = 1 << i
+      def node = table[i].remove(key, hash)
+      if (node == table[i]) return this else {
+        def newTable = new Node[32]
+        System.arraycopy table, 0, newTable, 0, 32
+        if (node == EmptyNode.INSTANCE) {
+          newTable[i] = null
+          return new BitmappedNode(shift, ~mask, newTable)
+        } else {
+          newTable[i] = node
+          return new FullNode(shift, newTable)
+        }
+      }
     }
   }
 }
