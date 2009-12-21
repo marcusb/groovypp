@@ -543,8 +543,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     }
 
                     change.oneMethodAbstract = one;
-                    GenericsType[] methodTypeVars = TypeUtil.getMethodTypeVars(foundMethod);
-                    if (methodTypeVars == null || methodTypeVars.length == 0) {
+                    if (!TypeUtil.hasGenericsTypes(foundMethod)) {
                         it.remove();
 
                         MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, compiler, argType);
@@ -592,9 +591,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
             argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
         }
-        /*if (!foundMethod.isStatic()) {
-            argType = TypeUtil.getSubstitutedType(argType, foundMethod.getDeclaringClass(), type);
-        }*/
 
         List<MethodNode> one = changed.get(0).oneMethodAbstract;
         MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) changed.get(0).original, compiler, argType);

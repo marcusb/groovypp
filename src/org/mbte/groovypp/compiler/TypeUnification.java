@@ -53,6 +53,7 @@ public class TypeUnification {
     public static ClassNode[] inferTypeArguments(GenericsType[] typeVars,
                                                  ClassNode[] formals,
                                                  ClassNode[] instantiateds) {
+        if (typeVars == null || typeVars.length == 0) return new ClassNode[0];
         ClassNode[] result = new ClassNode[typeVars.length];
         NextVar:
         for (int i = 0; i < typeVars.length; i++) {

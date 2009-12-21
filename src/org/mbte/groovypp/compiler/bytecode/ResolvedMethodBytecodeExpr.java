@@ -143,8 +143,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             removeFirstArgAtTheEnd = true;
         }
 
-        GenericsType[] typeVars = TypeUtil.getMethodTypeVars(methodNode);
-        if (typeVars != null && typeVars.length > 0) {
+        if (TypeUtil.hasGenericsTypes(methodNode)) {
             Parameter[] params = methodNode.getParameters();
             List<Expression> exprs = bargs.getExpressions();
             int length;
@@ -173,7 +172,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                         params[i].getType();
                 argTypes[i] = bargs.getExpression(i).getType();
             }
-            ClassNode[] bindings = TypeUnification.inferTypeArguments(typeVars, paramTypes, argTypes);
+            ClassNode[] bindings = TypeUnification.inferTypeArguments(methodNode.getGenericsTypes(), paramTypes, argTypes);
             returnType = TypeUtil.getSubstitutedType(returnType, methodNode, bindings);
 
             for (int i = 0; i < length-delta; i++) {

@@ -47,23 +47,16 @@ public class TypeUtil {
     public static final ClassNode ATOMIC_INTEGER_FIELD_UPDATER = make(AtomicIntegerFieldUpdater.class);
     public static final ClassNode ATOMIC_LONG_FIELD_UPDATER = make(AtomicLongFieldUpdater.class);
 
-    public static GenericsType[] getMethodTypeVars(MethodNode methodNode) {
-        GenericsType[] typeVars = methodNode.getGenericsTypes();
-        if (!methodNode.isStatic()) {
-            final GenericsType[] classTypeVars = methodNode.getDeclaringClass().getGenericsTypes();
-            if (classTypeVars != null && classTypeVars.length > 0) {
-                if (typeVars == null || typeVars.length == 0) {
-                    typeVars = classTypeVars;
-                }
-                else {
-                    GenericsType newTypeVars [] = new GenericsType [typeVars.length + classTypeVars.length];
-                    System.arraycopy(typeVars, 0, newTypeVars, 0, typeVars.length);
-                    System.arraycopy(classTypeVars, 0, newTypeVars, typeVars.length, classTypeVars.length);
-                    typeVars = newTypeVars;
-                }
-            }
-        }
-        return typeVars;
+    public static boolean hasGenericsTypes(MethodNode methodNode) {
+        if (methodNode.getGenericsTypes() != null && methodNode.getGenericsTypes().length > 0) return true;
+        if (methodNode.isStatic()) return false;
+        ClassNode clazz = methodNode.getDeclaringClass();
+        do {
+            if (clazz.getGenericsTypes() != null && clazz.getGenericsTypes().length > 0) return true;
+            if (clazz.isStaticClass()) break;
+            clazz = clazz.getDeclaringClass();
+        } while (clazz != null);
+        return false;
     }
 
     public static class Null {
