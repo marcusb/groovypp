@@ -303,7 +303,7 @@ u()
     @Typed
     class Outer {
       class Inner {
-        def instance = new Inner()
+        static def instance = new Inner()
       }
       static def bar() { new Inner().instance }
     }
