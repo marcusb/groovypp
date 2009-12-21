@@ -81,6 +81,20 @@ class HashTrie<K,V> {
 
   abstract class SingleNode extends Node {
     abstract int getHash()
+    BitmappedNode bitmapped(int shift, int hash, K key, V value) {
+      def shift1 = getHash() >>> shift
+      def shift2 = hash >>> shift
+      def table = new Node[Math.max(shift1, shift2) + 1]
+      table[shift1] = this
+      def bits1 = 1 << shift1
+      def bits2 = 1 << shift2
+      if (shift1 == shift2) {
+        table[shift2] = table[shift2].update(shift + 5, key, hash, value)
+      } else {
+        table[shift2] = new LeafNode(hash, key, value)
+      }
+      return new BitmappedNode(shift, bits1 | bits2, table)
+    }
   }
 
   class LeafNode extends SingleNode {
@@ -106,7 +120,7 @@ class HashTrie<K,V> {
       } else if (this.hash == hash) {
         return new CollisionNode(hash, FList.emptyList + [this.key, this.value] + [key, value])
       } else {
-        return /*new BitmappedNode()*/ this
+        return bitmapped(shift, hash, key, value)
       }
     }
 
@@ -144,7 +158,7 @@ class HashTrie<K,V> {
       if (this.hash == hash) {
         return new CollisionNode(hash, removeBinding(key, bucket) + [key, value]);
       } else {
-        return /*new BitmappedNode()*/ this
+        return bitmapped(shift, hash, key, value)
       }
     }
 
@@ -214,16 +228,10 @@ class HashTrie<K,V> {
         } else if (node == EmptyNode.INSTANCE) {
           def adjustedBits = bits & ~mask
           if (!adjustedBits) return EmptyNode.INSTANCE
-          def log = Math.log(adjustedBits) / Math.log(2)
-          def ilog = (int) log
-          if (log == (double)ilog) {
-            return table[ilog]
-          } else {
-            def newTable = new Node[table.length]
-            System.arraycopy table, 0, newTable, 0, table.length
-            newTable[i] = null
-            return new BitmappedNode(shift, adjustedBits, newTable)
-          }
+          def newTable = new Node[table.length]
+          System.arraycopy table, 0, newTable, 0, table.length
+          newTable[i] = null
+          return new BitmappedNode(shift, adjustedBits, newTable)
         } else {
           def newTable = new Node[table.length]
           System.arraycopy table, 0, newTable, 0, table.length
