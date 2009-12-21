@@ -164,7 +164,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         assert diff >= -1;
         if (diff > 0) {
             List<Expression> add = new ArrayList<Expression>(diff);
-            for (int i = 0; i < diff; i++) {
+            for (int i = -1; i < diff; i++) {
                 add.add(args.getExpression(nparams + i));
             }
             wrapped.add(new ListExpression(add));

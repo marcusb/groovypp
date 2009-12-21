@@ -68,15 +68,17 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
 
             if(exp.getType().implementsInterface(TypeUtil.ITERABLE) || exp.getType().equals(TypeUtil.ITERABLE)) {
-                ClassNode componentType = compiler.getCollectionType(exp.getType());
-                improveListTypes(listExpression, componentType);
-                final List list = listExpression.getExpressions();
-                for (int i = 0; i != list.size(); ++i) {
-                    list.set(i, compiler.transform((Expression) list.get(i)));
-                }
+                if(compiler.findConstructor(exp.getType(), ClassNode.EMPTY_ARRAY) != null){
+                    ClassNode componentType = compiler.getCollectionType(exp.getType());
+                    improveListTypes(listExpression, componentType);
+                    final List list = listExpression.getExpressions();
+                    for (int i = 0; i != list.size(); ++i) {
+                        list.set(i, compiler.transform((Expression) list.get(i)));
+                    }
 
-                ClassNode collType = calcResultCollectionType(exp, componentType, compiler);
-                return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
+                    ClassNode collType = calcResultCollectionType(exp, componentType, compiler);
+                    return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
+                }
             }
 
             if (!TypeUtil.isDirectlyAssignableFrom(exp.getType(), TypeUtil.ARRAY_LIST_TYPE)) {

@@ -83,25 +83,41 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
     final BindLater<V> whenBound (Listener<V> listener) {
         for (;;) {
             def l = listeners
-            if(listeners.compareAndSet(l,listeners + listener))
+            if (l == null) {
+                // it mean done worked already
+                invokeListener(listener)
+                return this
+            }
+
+            if(listeners.compareAndSet(l,l + listener))
                 return this
         }
     }
 
-    protected final void done() {
-        for (el in listeners.reverse(FList.emptyList)) {
-            try {
-                if (el instanceof BlockingQueue) {
-                    ((BlockingQueue)el).put(this)
-                    continue
-                }
+    private void invokeListener (Listener<V> listener) {
+        try {
+            listener.onBound(this)
+        }
+        catch (Throwable t) {
+            t.printStackTrace(System.err)
+        }
+    }
 
-                if (el instanceof Listener) {
-                    ((Listener)el).onBound (this)
+    protected final void done() {
+        for (;;) {
+            def l = listeners
+            if (listeners.compareAndSet(l, null)) {
+                for (el in l.reverse(FList.emptyList)) {
+                    if (el instanceof BlockingQueue) {
+                        ((BlockingQueue)el).put(this)
+                        continue
+                    }
+
+                    if (el instanceof Listener) {
+                        invokeListener((Listener)el)
+                    }
                 }
-            }
-            catch (Throwable t){ //
-                t.printStackTrace()
+                return
             }
         }
     }

@@ -6,8 +6,6 @@ public class Agent<T>  {
 
     private volatile FQueue<Function1<T,T>> queue = FQueue.emptyQueue
 
-    private volatile int count
-
     T get () { ref }
 
     T apply (Function1<T,T> mutation) {
@@ -15,29 +13,24 @@ public class Agent<T>  {
             def q = queue
             def p = q.addLast(mutation)
             if (queue.compareAndSet(q, p)) {
-                if (!count.getAndIncrement()) {
+                if (p.size == 1) {
                     callLater(CallLaterExecutors.currentExecutor) {
-                        int n = 0
                         for (;;) {
-                            count.getAndIncrement()
-
-                            for(;;) {
-                                for (;;) {
-                                    def qq = queue
-                                    def pp = qq.removeFirst ()
-                                    if (queue.compareAndSet(qq, pp.second)) {
-                                        def m = pp.first
-                                        ref = m(ref)
-                                        n++
-                                        break
-                                    }
-                                }
-                                if (count.decrementAndGet() == 1)
-                                    break;
+                            def qq = queue
+                            if (!qq.size) {
+                                break
                             }
 
-                            if (!count.decrementAndGet())
-                                break;
+                            def pp = qq.removeFirst ()
+                            if (queue.compareAndSet(qq, pp.second)) {
+                                def m = pp.first
+                                try {
+                                    ref = m(ref)
+                                }
+                                catch (Throwable t) {
+                                    t.printStackTrace(System.err)
+                                }
+                            }
                         }
                     }
                 }

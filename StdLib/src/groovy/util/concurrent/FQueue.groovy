@@ -1,7 +1,7 @@
 package groovy.util.concurrent
 
 @Typed
-abstract class FQueue<T> {
+abstract class FQueue<T> implements Iterable<T> {
     final boolean isEmpty () { size == 0 }
 
     T getFirst () { throw new NoSuchElementException() }
@@ -31,6 +31,14 @@ abstract class FQueue<T> {
         NonEmptyQueue<T> addLast (T element)  { [element, FList.emptyList, FList.emptyList] }
 
         NonEmptyQueue<T> addFirst (T element) { [element, FList.emptyList, FList.emptyList] }
+
+        Iterator<T> iterator () {
+            [
+                    hasNext: { false },
+                    next:    { throw new UnsupportedOperationException() },
+                    remove:  { throw new UnsupportedOperationException() }
+            ]
+        }
     }
 
     private static class NonEmptyQueue<T> extends FQueue<T> {
@@ -65,6 +73,11 @@ abstract class FQueue<T> {
                     [head, (NonEmptyQueue<T>)[newOut.head, newOut.tail, FList.emptyList]]
                 }
             }
+        }
+
+        @Typed(debug=true)
+        Iterator<T> iterator () {
+            new CompositeIterator<T> (head.singleton().iterator(), output.iterator(), input.reverse(FList.emptyList).iterator())
         }
     }
 }

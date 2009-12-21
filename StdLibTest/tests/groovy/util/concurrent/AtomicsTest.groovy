@@ -6,27 +6,62 @@ import java.util.concurrent.CountDownLatch
 @Typed
 public class AtomicsTest extends GroovyTestCase {
 
+    private CallLaterPool pool
+
+    private final int n = 1000000
+
+    protected void setUp() {
+//        super.setUp();
+        pool = CallLaterExecutors.newFixedThreadPool(10)
+    }
+
+    protected void tearDown() {
+        pool.shutdown()
+//        super.tearDown();
+    }
+
     void testAtom () {
         AtomicReference<FList<Integer>> atom  = [FList.emptyList]
-        AtomicReference<FQueue<FList<Integer>>> queue = [FQueue.emptyQueue]
-        Agent printer = []
 
-        def pool = CallLaterExecutors.newFixedThreadPool(10)
-        def n = 1000
         CountDownLatch cdl = [n]
         for(i in 0..<n) {
             callLater(pool) {
-                def newState = atom.apply { state -> state + i }
-                queue.apply { q -> q.addLast(newState) }
-                (Pair)[i, newState]
+                atom.apply { state -> state + i }
+                i
             }.whenBound { future ->
-                def string = future.get().second.reverse().asList().toString()
-                printer.apply { println string; cdl.countDown() }
+                def value = future.get()
+                if (value % 1000 == 999)
+                    println value
+                cdl.countDown()
             }
         }
 
         cdl.await()
         def res = atom.get().asList()
+        res.sort()
+        assertEquals (0..<n, res)
+    }
+
+    void testQueue () {
+        AtomicReference<FQueue<Integer>> queue = [FQueue.emptyQueue]
+
+        CountDownLatch cdl = [n]
+        for(i in 0..<n) {
+            callLater(pool) {
+                queue.apply { q -> q.addLast(i) }
+                i
+            }.whenBound { future ->
+                def value = future.get()
+                if (value % 1000 == 999)
+                    println value
+                cdl.countDown()
+            }
+        }
+
+        cdl.await()
+        FQueue q = queue.get()
+        assertEquals n, q.size 
+        def res = q.asList ()
         res.sort()
         assertEquals (0..<n, res)
     }

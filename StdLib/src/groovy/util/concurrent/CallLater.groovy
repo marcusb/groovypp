@@ -14,6 +14,7 @@ abstract class CallLater<V> extends BindLater<V> implements Runnable, Future<V>,
             }
             catch (Throwable ex) {
                 setException(ex)
+                ex.printStackTrace System.err 
             }
         }
     }
