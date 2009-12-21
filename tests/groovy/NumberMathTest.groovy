@@ -220,6 +220,6 @@ class NumberMathTest extends GroovyShellTestCase {
           }
           u()
         """)
-    assertEquals 0xffffffff, res
+    assertEquals -1, res
   }
 }
