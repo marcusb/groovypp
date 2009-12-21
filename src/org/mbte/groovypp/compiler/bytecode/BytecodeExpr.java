@@ -14,6 +14,7 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.Register;
+import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -41,15 +42,18 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         else {
             MethodNode getter = compiler.findMethod(getType(), "getAt", new ClassNode[]{index.getType()});
 
-            if (getter == null) {
-                compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(getType()), parent);
-                return null;
+            if (getter != null) {
+                return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, compiler);
             }
 
-            //ClassNode ret = TypeUtil.getSubstitutedType(getter.getReturnType(), getter.getDeclaringClass(), getType());
-            //MethodNode setter = compiler.findMethod(getType(), "putAt", new ClassNode[]{index.getType(), ret});
+            if (index instanceof ListExpressionTransformer.UntransformedListExpr) {
+                MethodCallExpression mce = new MethodCallExpression(this, "getAt", new ArgumentListExpression(((ListExpressionTransformer.UntransformedListExpr)index).exp.getExpressions()));
+                mce.setSourcePosition(parent);
+                return (BytecodeExpr) compiler.transform(mce);
+            }
 
-            return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, compiler);
+            compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(getType()), parent);
+            return null;
         }
     }
 

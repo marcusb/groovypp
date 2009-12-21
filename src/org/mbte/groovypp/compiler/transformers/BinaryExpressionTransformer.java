@@ -310,17 +310,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
-        Expression right = bin.getRightExpression();
-        if (!(right instanceof ListExpression)) {
-            final BytecodeExpr arrExp = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
-            final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(right);
-            return arrExp.createIndexed(bin, indexExp, compiler);
-        }
-        else {
-            MethodCallExpression mce = new MethodCallExpression(bin.getLeftExpression(), "getAt", new ArgumentListExpression(((ListExpression) right).getExpressions()));
-            mce.setSourcePosition(bin);
-            return compiler.transform(mce);
-        }
+        final BytecodeExpr arrExp = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
+        final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
+        return arrExp.createIndexed(bin, indexExp, compiler);
     }
 
     private BytecodeExpr evaluateLogicalOr(final BinaryExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
