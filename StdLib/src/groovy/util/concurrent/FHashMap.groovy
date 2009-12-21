@@ -186,7 +186,7 @@ class FHashMap<K,V> {
     int bits
     Node[] table
 
-    def BitmappedNode(int shift, int bits, Node<K,V>[] table) {
+    def BitmappedNode(int shift, int bits, Node[] table) {
       this.shift = shift;
       this.bits = bits;
       this.table = table;
