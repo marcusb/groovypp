@@ -305,9 +305,9 @@ u()
       class Inner {
         static def instance = new Inner()
       }
-      static def bar() { new Inner().instance }
+      def bar() { new Inner().instance }
     }
-    Outer.bar()
+    new Outer().bar()
     """)
   }
 }

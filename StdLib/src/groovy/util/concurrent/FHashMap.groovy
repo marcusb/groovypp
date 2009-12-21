@@ -45,7 +45,7 @@ package groovy.util.concurrent
 
 @Typed
 class FHashMap<K,V> {
-  Node root
+  private Node root
   FHashMap() { root = EmptyNode.INSTANCE }
   FHashMap(Node root) { this.@root = root }
 
