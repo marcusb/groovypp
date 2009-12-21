@@ -69,14 +69,14 @@ class FHashMap<K,V> {
   }
 
   // TODO: interface
-  abstract class Node {
+  static abstract class Node {
     abstract int size()
     abstract V getAt(K key, int hash)
     abstract Node update(int shift, K key, int hash, V value)
     abstract Node remove(K key, int hash)
   }
 
-  class EmptyNode extends Node {
+  static class EmptyNode extends Node {
     private EmptyNode() {}
 
     int size() { 0 }
@@ -105,7 +105,7 @@ class FHashMap<K,V> {
     }
   }
 
-  class LeafNode extends SingleNode {
+  static class LeafNode extends SingleNode {
     int hash
     K key
     V value
@@ -137,7 +137,7 @@ class FHashMap<K,V> {
     }
   }
 
-  class CollisionNode extends SingleNode {
+  static class CollisionNode extends SingleNode {
     int hash
     FList<Pair<K,V>> bucket
 
@@ -181,7 +181,7 @@ class FHashMap<K,V> {
     }
   }
 
-  class BitmappedNode extends Node {
+  static class BitmappedNode extends Node {
     int shift
     int bits
     Node[] table
@@ -256,7 +256,7 @@ class FHashMap<K,V> {
     }
   }
 
-  class FullNode extends Node {
+  static class FullNode extends Node {
     int shift
     Node[] table
 
