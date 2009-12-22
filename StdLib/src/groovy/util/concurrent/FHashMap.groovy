@@ -70,7 +70,7 @@ abstract class FHashMap<K, V> {
 
     protected abstract FHashMap<K,V> remove(K key, int hash)
 
-    static final EmptyNode emptyMap = []
+    static final FHashMap emptyMap = new EmptyNode()
 
     private static int shuffle(int h) {
         h += ~(h << 9)
@@ -96,7 +96,7 @@ abstract class FHashMap<K, V> {
         int hash
 
         BitmappedNode bitmap(int shift, int hash, K key, V value) {
-            def shift1 = (getHash() >>> shift) & 0x1f
+            def shift1 = (this.hash >>> shift) & 0x1f
             def shift2 = (hash >>> shift) & 0x1f
             def table = new FHashMap<K,V>[Math.max(shift1, shift2) + 1]
             table[shift1] = this
