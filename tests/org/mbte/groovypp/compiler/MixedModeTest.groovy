@@ -56,9 +56,7 @@ public class MixedModeTest extends GroovyShellTestCase {
                         number ([value: pair.first, prime:true ])
                     else {
                         number ([value: pair.first, prime:false]) {
-                          pair.second.each { div ->
-                            divisor([value: div])
-                          }
+                          divisor([value: pair])
                         }
                     }
                   }

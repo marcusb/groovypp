@@ -439,7 +439,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
         }
 
-        if (!foundMethod.isStatic()) {
+        if (type != null) {
             argType = TypeUtil.getSubstitutedType(argType, foundMethod.getDeclaringClass(), type);
         }
 
