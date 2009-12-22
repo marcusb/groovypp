@@ -8,7 +8,7 @@ public class AtomicsTest extends GroovyTestCase {
 
     private CallLaterPool pool
 
-    private final int n = 1000000
+    private final int n = 10000
 
     protected void setUp() {
 //        super.setUp();
@@ -64,5 +64,24 @@ public class AtomicsTest extends GroovyTestCase {
         def res = q.asList ()
         res.sort()
         assertEquals (0..<n, res)
+    }
+
+    void testMap () {
+        AtomicReference<FHashMap<Integer,Integer>> map = new AtomicReference<FHashMap<Integer,Integer>>(new FHashMap<Integer,Integer>())
+
+        CountDownLatch cdl = [n]
+        for(i in 0..<n) {
+            callLater(pool) {
+                map.apply { m -> m.put(i,i) }
+                i
+            }.whenBound { future ->
+                def value = future.get()
+                if (value % 1000 == 999)
+                    println value
+                cdl.countDown()
+            }
+        }
+
+        cdl.await()
     }
 }

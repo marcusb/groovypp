@@ -253,4 +253,31 @@ m ()
       """)
         println res
     }
+
+    void testListMapping () {
+        shell.evaluate """
+          @Typed(debug=true)
+  static <T, R> Iterator<R> flatMap(Iterator<Iterator<T>> self, Function1<T, R> op) {
+    [
+            curr: (Iterator<T>) null,
+            hasNext: {
+              (curr != null && curr.hasNext()) || (self.hasNext() && (curr = self.next()).hasNext())
+            },
+            next: { op.call(curr.next()) },
+            remove: { throw new UnsupportedOperationException("remove() is not supported") }
+    ]
+  }
+
+          @Typed(debug=true)
+  static <T, R> Iterator<R> flatMap(Iterable<Iterable<T>> self, Function1<T, R> op) {
+    flatMap(self.iterator().map {it.iterator()}, op)
+  }
+          @Typed(debug=true)
+          def u () {
+              def l = [[0,1,2], [3,4]]
+              assert ["0", "1", "2", "3", "4"] == l.flatMap{it.toString()}.asList()
+          }
+          u ()
+        """
+    }
 }

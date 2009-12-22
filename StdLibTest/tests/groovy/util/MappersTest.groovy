@@ -50,6 +50,7 @@ class MappersTest extends GroovyShellTestCase {
       assertEquals((List<Pair>) [[0, 1], [1, 2], [2, 3]], list)
     }
 
+    @Typed(debug=true)
     void testFlatMap () {
       def l = [[0,1,2], [3,4]]
       assertEquals(["0", "1", "2", "3", "4"], l.flatMap{it.toString()}.asList())
