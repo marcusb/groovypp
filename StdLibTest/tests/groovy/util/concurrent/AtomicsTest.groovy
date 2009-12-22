@@ -83,5 +83,6 @@ public class AtomicsTest extends GroovyTestCase {
         }
 
         cdl.await()
+        assertEquals (n, map.get().size ())
     }
 }

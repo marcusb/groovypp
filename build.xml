@@ -139,6 +139,8 @@
 
     <target  name="test" depends="compile.tests.stdlibtest, compile.tests.stdlib, compile.tests.compiler" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch">
+            <jvmarg value="-Xmx512m"/>
+
             <classpath>
                 <path refid="tests.classpath" />
             </classpath>
