@@ -45,13 +45,10 @@ package groovy.util.concurrent
 
 @Typed
 abstract class FHashMap<K, V> {
-    abstract int size()
-
-    abstract V getAt(K key, int hash)
-
-    abstract FHashMap<K,V> update(int shift, K key, int hash, V value)
-
-    abstract FHashMap<K,V> remove(K key, int hash)
+    final int size() {
+      if (size < 0) size = size_()
+      size
+    }
 
     final V getAt(K key) { getAt(key, shuffle(key.hashCode())) }
 
@@ -62,6 +59,16 @@ abstract class FHashMap<K, V> {
     final FHashMap<K, V> remove(K key) {
         remove(key, shuffle(key.hashCode()))
     }
+
+    private int size = -1
+
+    protected abstract int size_()
+
+    protected abstract V getAt(K key, int hash)
+
+    protected abstract FHashMap<K,V> update(int shift, K key, int hash, V value)
+
+    protected abstract FHashMap<K,V> remove(K key, int hash)
 
     static final EmptyNode emptyMap = []
 
@@ -76,7 +83,7 @@ abstract class FHashMap<K, V> {
     private static class EmptyNode<K,V> extends FHashMap<K,V> {
         private EmptyNode() {}
 
-        int size() { 0 }
+        int size_() { 0 }
 
         V getAt(K key, int hash) { null }
 
@@ -88,7 +95,7 @@ abstract class FHashMap<K, V> {
     private static abstract class SingleNode<K,V> extends FHashMap<K,V> {
         int hash
 
-        BitmappedNode<K,V> bitmapped(int shift, int hash, K key, V value) {
+        BitmappedNode<K,V> bitmap(int shift, int hash, K key, V value) {
             def shift1 = (getHash() >>> shift) & 0x1f
             def shift2 = (hash >>> shift) & 0x1f
             def table = new FHashMap<K,V>[Math.max(shift1, shift2) + 1]
@@ -114,7 +121,7 @@ abstract class FHashMap<K, V> {
             this.value = value;
         }
 
-        int size() { 1 }
+        int size_() { 1 }
 
         V getAt(K key, int hash) {
             if (this.key == key) return value else return null
@@ -126,7 +133,7 @@ abstract class FHashMap<K, V> {
             } else if (this.hash == hash) {
                 return new CollisionNode(hash, FList.emptyList + [this.key, this.value] + [key, value])
             } else {
-                return bitmapped(shift, hash, key, value)
+                return bitmap(shift, hash, key, value)
             }
         }
 
@@ -143,7 +150,7 @@ abstract class FHashMap<K, V> {
             this.bucket = bucket
         }
 
-        int size() { bucket.size }
+        int size_() { bucket.size }
 
         V getAt(K key, int hash) {
             if (hash == this.hash) {
@@ -163,7 +170,7 @@ abstract class FHashMap<K, V> {
             if (this.hash == hash) {
                 return new CollisionNode(hash, removeBinding(key, bucket) + [key, value]);
             } else {
-                return bitmapped(shift, hash, key, value)
+                return bitmap(shift, hash, key, value)
             }
         }
 
@@ -189,7 +196,7 @@ abstract class FHashMap<K, V> {
             this.table = table;
         }
 
-        int size() {
+        int size_() {
             table.filter {it != null}.foldLeft(0) {e, sum -> sum + e.size()}
         }
 
@@ -262,7 +269,7 @@ abstract class FHashMap<K, V> {
             this.table = table
         }
 
-        int size() {
+        int size_() {
             table.foldLeft(0) {e, sum -> sum + e.size() }
         }
 
