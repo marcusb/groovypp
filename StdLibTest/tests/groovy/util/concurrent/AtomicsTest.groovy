@@ -67,7 +67,7 @@ public class AtomicsTest extends GroovyTestCase {
     }
 
     void testMap () {
-        AtomicReference<FHashMap<Integer,Integer>> map = new AtomicReference<FHashMap<Integer,Integer>>(new FHashMap<Integer,Integer>())
+        AtomicReference<FHashMap<Integer,Integer>> map = new AtomicReference<FHashMap<Integer,Integer>>(FHashMap.emptyMap)
 
         CountDownLatch cdl = [n]
         for(i in 0..<n) {

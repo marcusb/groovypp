@@ -2,39 +2,41 @@ package groovy
 
 class ThisAndSuperTest extends GroovyShellTestCase {
   void testOverwrittenSuperMethod() {
-    shell.evaluate """
-          @Typed
-          class TestForSuperHelper1 {
-            def foo(){1}
-            private bar(){"bar"}
-            def closureUsingPrivateMethod() {bar()}
-            def asType(Class c) {
-              if (c==Object[]) return [this] as Object[]
-              return super.asType(c)
-            }
-          }
+      shouldFail {
+          shell.evaluate """
+                @Typed
+                class TestForSuperHelper1 {
+                  def foo(){1}
+                  private bar(){"bar"}
+                  def closureUsingPrivateMethod() {bar()}
+                  def asType(Class c) {
+                    if (c==Object[]) return [this] as Object[]
+                    return super.asType(c)
+                  }
+                }
 
-          @Typed
-          class TestForSuperHelper2 extends TestForSuperHelper1 {
-            def foo(){2}
-            def callFooInSuper(){super.foo()}
-            def aClosureUsingSuper = {super.foo()}
-            def aClosureUsingThis = {this.foo()}
-            def bar(){"no bar"}
-            public aField = "I am a field"
-            //def closureFieldAccessUsingImplicitThis = {x-> aField=x}
-            //def closureFieldAccessUsingExplicitThis = {x-> this.aField=x}
-          }
+                @Typed
+                class TestForSuperHelper2 extends TestForSuperHelper1 {
+                  def foo(){2}
+                  def callFooInSuper(){super.foo()}
+                  def aClosureUsingSuper = {super.foo()}
+                  def aClosureUsingThis = {this.foo()}
+                  def bar(){"no bar"}
+                  public aField = "I am a field"
+                  //def closureFieldAccessUsingImplicitThis = {x-> aField=x}
+                  //def closureFieldAccessUsingExplicitThis = {x-> this.aField=x}
+                }
 
-          @Typed
-          def u() {
-            def helper = new TestForSuperHelper2()
-            assert helper.foo() == 2
-            println helper.callFooInSuper()
-		    assert helper.callFooInSuper() == 1
-          }
-          u()
-        """
+                @Typed
+                def u() {
+                  def helper = new TestForSuperHelper2()
+                  assert helper.foo() == 2
+                  println helper.callFooInSuper()
+                  assert helper.callFooInSuper() == 1
+                }
+                u()
+              """
+      }
   }
 }
 /*

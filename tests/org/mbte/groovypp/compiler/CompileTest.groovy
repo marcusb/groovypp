@@ -302,7 +302,7 @@ u()
     shell.evaluate("""
     @Typed
     class Outer {
-      class Inner {
+      static class Inner {
         static def instance = new Inner()
       }
       def bar() { new Inner().instance }

@@ -104,6 +104,12 @@ class OpenVerifier extends Verifier {
             }
     }
 
+    protected void addPropertyMethod(MethodNode method) {
+    	super.addPropertyMethod(method);
+        ClassNodeCache.clearCache(method.getDeclaringClass());
+    }
+
+
     public void addPropertyMethods(PropertyNode node) {
         classNodeField.setProperty(this, node.getDeclaringClass());
         visitProperty(node);
