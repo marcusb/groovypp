@@ -256,7 +256,7 @@ m ()
 
     void testListMapping () {
         shell.evaluate """
-          @Typed(debug=true)
+          @Typed
   static <T, R> Iterator<R> flatMap(Iterator<Iterator<T>> self, Function1<T, R> op) {
     [
             curr: (Iterator<T>) null,
@@ -268,11 +268,11 @@ m ()
     ]
   }
 
-          @Typed(debug=true)
+          @Typed
   static <T, R> Iterator<R> flatMap(Iterable<Iterable<T>> self, Function1<T, R> op) {
     flatMap(self.iterator().map {it.iterator()}, op)
   }
-          @Typed(debug=true)
+          @Typed
           def u () {
               def l = [[0,1,2], [3,4]]
               assert ["0", "1", "2", "3", "4"] == l.flatMap{it.toString()}.asList()
