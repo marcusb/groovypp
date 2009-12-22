@@ -50,14 +50,14 @@ abstract class FHashMap<K, V> {
       size
     }
 
-    final V getAt(K key) { getAt(key, shuffle(key.hashCode())) }
+    final V getAt(K key) { getAt(key, key.hashCode()) }
 
     final FHashMap<K, V> put(K key, V value) {
-        update(0, key, shuffle(key.hashCode()), value)
+        update(0, key, key.hashCode(), value)
     }
 
     final FHashMap<K, V> remove(K key) {
-        remove(key, shuffle(key.hashCode()))
+        remove(key, key.hashCode())
     }
 
     private int size = -1
@@ -71,14 +71,6 @@ abstract class FHashMap<K, V> {
     protected abstract FHashMap<K,V> remove(K key, int hash)
 
     static final FHashMap emptyMap = new EmptyNode()
-
-    private static int shuffle(int h) {
-        h += ~(h << 9)
-        h ^= (h >>> 14)
-        h += (h << 4)
-        h ^= (h >>> 10)
-        h
-    }
 
     private static class EmptyNode extends FHashMap<K,V> {
         private EmptyNode() {}
