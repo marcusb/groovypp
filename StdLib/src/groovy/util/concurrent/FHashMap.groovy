@@ -80,7 +80,7 @@ abstract class FHashMap<K, V> {
         h
     }
 
-    private static class EmptyNode<K,V> extends FHashMap<K,V> {
+    private static class EmptyNode extends FHashMap<K,V> {
         private EmptyNode() {}
 
         int size_() { 0 }
@@ -92,10 +92,10 @@ abstract class FHashMap<K, V> {
         FHashMap<K,V> remove(K key, int hash) { this }
     }
 
-    private static abstract class SingleNode<K,V> extends FHashMap<K,V> {
+    private static abstract class SingleNode extends FHashMap<K,V> {
         int hash
 
-        BitmappedNode<K,V> bitmap(int shift, int hash, K key, V value) {
+        BitmappedNode bitmap(int shift, int hash, K key, V value) {
             def shift1 = (getHash() >>> shift) & 0x1f
             def shift2 = (hash >>> shift) & 0x1f
             def table = new FHashMap<K,V>[Math.max(shift1, shift2) + 1]
@@ -105,13 +105,13 @@ abstract class FHashMap<K, V> {
             if (shift1 == shift2) {
                 table[shift2] = table[shift2].update(shift + 5, key, hash, value)
             } else {
-                table[shift2] = new LeafNode<K,V>(hash, key, value)
+                table[shift2] = new LeafNode(hash, key, value)
             }
-            return new BitmappedNode<K,V>(shift, bits1 | bits2, table)
+            return new BitmappedNode(shift, bits1 | bits2, table)
         }
     }
 
-    private static class LeafNode<K,V> extends SingleNode<K,V> {
+    private static class LeafNode extends SingleNode {
         K key
         V value
 
@@ -142,7 +142,7 @@ abstract class FHashMap<K, V> {
         }
     }
 
-    private static class CollisionNode<K,V> extends SingleNode<K,V> {
+    private static class CollisionNode extends SingleNode {
         FList<Pair<K, V>> bucket
 
         CollisionNode(int hash, FList<Pair<K, V>> bucket) {
@@ -179,13 +179,13 @@ abstract class FHashMap<K, V> {
             def b = removeBinding(key, bucket)
             if (b == this) return this
             if (b.size == 1) {
-                return new LeafNode<K,V>(hash, b.getHead().first, b.getHead().second)
+                return new LeafNode(hash, b.getHead().first, b.getHead().second)
             }
-            new CollisionNode<K,V>(hash, b)
+            new CollisionNode(hash, b)
         }
     }
 
-    private static class BitmappedNode<K,V> extends FHashMap<K,V> {
+    private static class BitmappedNode extends FHashMap<K,V> {
         int shift
         int bits
         FHashMap<K,V> [] table
@@ -223,7 +223,7 @@ abstract class FHashMap<K, V> {
                 newTable[i] = new LeafNode(hash, key, value)
                 def newBits = bits | mask
                 if (newBits == ~0) {
-                    return new FullNode<K,V>(shift, newTable)
+                    return new FullNode(shift, newTable)
                 } else {
                     return new BitmappedNode(shift, newBits, newTable)
                 }
@@ -284,7 +284,7 @@ abstract class FHashMap<K, V> {
                 def newTable = new FHashMap<K,V>[32]
                 System.arraycopy table, 0, newTable, 0, 32
                 newTable[i] = node
-                return new FullNode<K,V>(shift, newTable)
+                return new FullNode(shift, newTable)
             }
         }
 
@@ -297,10 +297,10 @@ abstract class FHashMap<K, V> {
                 if (node == emptyMap) {
                     newTable[i] = null
                     def mask = 1 << i
-                    return new BitmappedNode<K,V>(shift, ~mask, newTable)
+                    return new BitmappedNode(shift, ~mask, newTable)
                 } else {
                     newTable[i] = node
-                    return new FullNode<K,V>(shift, newTable)
+                    return new FullNode(shift, newTable)
                 }
             }
         }
