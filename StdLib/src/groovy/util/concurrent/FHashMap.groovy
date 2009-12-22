@@ -86,7 +86,7 @@ abstract class FHashMap<K, V> {
     }
 
     private static abstract class SingleNode<K,V> extends FHashMap<K,V> {
-        abstract int getHash()
+        int hash
 
         BitmappedNode<K,V> bitmapped(int shift, int hash, K key, V value) {
             def shift1 = (getHash() >>> shift) & 0x1f
@@ -105,7 +105,6 @@ abstract class FHashMap<K, V> {
     }
 
     private static class LeafNode<K,V> extends SingleNode<K,V> {
-        int hash
         K key
         V value
 
@@ -137,7 +136,6 @@ abstract class FHashMap<K, V> {
     }
 
     private static class CollisionNode<K,V> extends SingleNode<K,V> {
-        int hash
         FList<Pair<K, V>> bucket
 
         CollisionNode(int hash, FList<Pair<K, V>> bucket) {
@@ -195,7 +193,6 @@ abstract class FHashMap<K, V> {
             table.filter {it != null}.foldLeft(0) {e, sum -> sum + e.size()}
         }
 
-        @Typed
         V getAt(K key, int hash) {
             def i = (hash >>> shift) & 0x1f
             def mask = 1 << i
@@ -259,7 +256,6 @@ abstract class FHashMap<K, V> {
     private static class FullNode extends FHashMap<K,V> {
         int shift
         FHashMap<K,V>[] table
-
 
         def FullNode(int shift, FHashMap<K,V>[] table) {
             this.shift = shift

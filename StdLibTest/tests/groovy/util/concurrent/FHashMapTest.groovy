@@ -12,13 +12,13 @@ public class FHashMapTest extends GroovyTestCase {
     void testInsertMany () {
         FHashMap<Integer,Integer> map = FHashMap.emptyMap
 
-        for(i in 0..<100000) {
+        for(i in 0..<1000000) {
             map = map.put(i, -i)
         }
-        for(i in 0..<100000) {
+        for(i in 0..<1000000) {
             map = map.remove(2*i)
         }
-        assertEquals 50000, map.size()
+        assertEquals 500000, map.size()
         assertEquals (-25,map [25])
     }
 }
