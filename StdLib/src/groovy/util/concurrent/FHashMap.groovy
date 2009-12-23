@@ -34,6 +34,8 @@
 
 package groovy.util.concurrent
 
+import java.util.Map.Entry
+
 /**
  * A clean-room port of Rich Hickey's persistent hash trie implementation from
  * Clojure (http://clojure.org).  Originally presented as a mutable structure in
@@ -44,7 +46,7 @@ package groovy.util.concurrent
  */
 
 @Typed
-abstract class FHashMap<K, V> {
+abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
     final int size() {
       if (size < 0) size = size_()
       size
@@ -82,6 +84,14 @@ abstract class FHashMap<K, V> {
         FHashMap<K,V> update(int shift, K key, int hash, V value) { new LeafNode(hash, key, value) }
 
         FHashMap<K,V> remove(K key, int hash) { this }
+
+        Iterator iterator () {
+            [
+                hasNext:{false},
+                next:{throw new NoSuchElementException()},
+                remove:{throw new UnsupportedOperationException()}
+            ]
+        }
     }
 
     private static abstract class SingleNode extends FHashMap<K,V> {
@@ -103,14 +113,14 @@ abstract class FHashMap<K, V> {
         }
     }
 
-    private static class LeafNode extends SingleNode {
-        K key
-        V value
+    private static class LeafNode extends SingleNode implements Map.Entry {
+        final K key
+        final V value
 
         def LeafNode(int hash, K key, V value) {
             this.hash = hash;
-            this.key = key;
-            this.value = value;
+            this.@key = key;
+            this.@value = value;
         }
 
         int size_() { 1 }
@@ -132,12 +142,39 @@ abstract class FHashMap<K, V> {
         FHashMap<K,V> remove(K key, int hash) {
             if (this.key == key) return emptyMap else return this
         }
+
+        Iterator iterator () {
+            [
+                _hasNext:true,
+                hasNext:{_hasNext},
+                next:{if(_hasNext) {_hasNext = false; LeafNode.this } else {throw new UnsupportedOperationException()} },
+                remove:{throw new UnsupportedOperationException()}
+            ]
+        }
+
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException()
+        }
+    }
+
+    private static class BucketElement<K,V> implements Map.Entry<K,V> {
+        final K key
+        final V value
+
+        BucketElement(K key, V value) {
+            this.@key = key
+            this.@value = value
+        }
+
+        public V setValue(V value) {
+            throw new UnsupportedOperationException()
+        }
     }
 
     private static class CollisionNode extends SingleNode {
-        FList<Pair<K, V>> bucket
+        FList<BucketElement<K, V>> bucket
 
-        CollisionNode(int hash, FList<Pair<K, V>> bucket) {
+        CollisionNode(int hash, FList<BucketElement<K, V>> bucket) {
             this.hash = hash;
             this.bucket = bucket
         }
@@ -146,16 +183,20 @@ abstract class FHashMap<K, V> {
 
         V getAt(K key, int hash) {
             if (hash == this.hash) {
-                def p = bucket.find { it.first.equals(key) }
-                return p?.second
+                def p = bucket.find { it.key.equals(key) }
+                return p?.value
             }
         }
 
-        private FList<Pair<K, V>> removeBinding(K key, FList<Pair<K, V>> bucket) {
+        public Iterator<Map.Entry<K, V>> iterator() {
+            bucket.iterator()
+        }
+
+        private FList<BucketElement<K, V>> removeBinding(K key, FList<BucketElement<K, V>> bucket) {
             if (bucket.isEmpty()) return bucket
-            if (bucket.getHead().first == key) return bucket.getTail()
-            def t = removeBinding(key, bucket.getTail())
-            if (t == bucket.getTail()) return bucket else return t + bucket.getHead()
+            if (bucket.head.key == key) return bucket.tail
+            def t = removeBinding(key, bucket.tail)
+            if (t == bucket.getTail()) return bucket else return t + bucket.head
         }
 
         FHashMap<K,V> update(int shift, K key, int hash, V value) {
@@ -171,13 +212,13 @@ abstract class FHashMap<K, V> {
             def b = removeBinding(key, bucket)
             if (b == this) return this
             if (b.size == 1) {
-                return new LeafNode(hash, b.getHead().first, b.getHead().second)
+                return new LeafNode(hash, b.head.key, b.head.value)
             }
             new CollisionNode(hash, b)
         }
     }
 
-    private static class BitmappedNode extends FHashMap<K,V> {
+    private static class BitmappedNode<K,V> extends FHashMap<K,V> {
         int shift
         int bits
         FHashMap<K,V> [] table
@@ -190,6 +231,10 @@ abstract class FHashMap<K, V> {
 
         int size_() {
             table.filter {it != null}.foldLeft(0) {e, sum -> sum + e.size()}
+        }
+
+        public Iterator<Map.Entry<K, V>> iterator() {
+            table.iterator().filter {it != null}.map{it.iterator()}.flatten()
         }
 
         V getAt(K key, int hash) {
@@ -263,6 +308,10 @@ abstract class FHashMap<K, V> {
 
         int size_() {
             table.foldLeft(0) {e, sum -> sum + e.size() }
+        }
+
+        public Iterator<Map.Entry<K, V>> iterator() {
+            table.iterator().map{it.iterator()}.flatten()
         }
 
         V getAt(K key, int hash) {
