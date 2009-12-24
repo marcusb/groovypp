@@ -87,4 +87,36 @@ public class ClosureTest extends GroovyShellTestCase {
     """)
     assertEquals([14, 15, 16], res)
   }
+
+  void testSeveralClosuresCall1() {
+    def res = shell.evaluate("""
+    @Typed class C {
+      static <S,R> R apply (List<S> self, Function1<S,R> mutator, Function1<R,S> extractor) {
+        mutator(self[0])
+      }
+      static foo() {
+        def l = [1,2]
+        apply l, { new Pair<Integer, Integer>(it, it) }, {it.first}
+      }
+    }
+    C.foo()
+    """)
+    assertEquals 1, res.first
+  }
+
+  void testSeveralClosuresCall2() {
+    def res = shell.evaluate("""
+    @Typed class C {
+      static <S,R> R apply (List<S> self, Function1<R,S> extractor, Function1<S,R> mutator) {
+        mutator(self[0])
+      }
+      static foo() {
+        def l = [1,2]
+        apply l, {it.first}, { new Pair<Integer, Integer>(it, it) }
+      }
+    }
+    C.foo()
+    """)
+    assertEquals 1, res.first
+  }
 }
