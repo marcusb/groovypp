@@ -96,7 +96,7 @@ public class ClosureTest extends GroovyShellTestCase {
       }
       static foo() {
         def l = [1,2]
-        apply l, { new Pair<Integer, Integer>(it, it) }, {it.first}
+        apply l, { new Pair(it, it) }, {it.first.byteValue()}
       }
     }
     C.foo()
@@ -112,7 +112,7 @@ public class ClosureTest extends GroovyShellTestCase {
       }
       static foo() {
         def l = [1,2]
-        apply l, {it.first}, { new Pair<Integer, Integer>(it, it) }
+        apply l, {it.first.byteValue()}, { new Pair(it, it) }
       }
     }
     C.foo()
