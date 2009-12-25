@@ -191,24 +191,25 @@ public class Mappers extends DefaultGroovyMethodsSupport {
       ]
     }
     else {
-      [   pending: new AtomicInteger(),
+      [   pending: 0,
           ready: new LinkedBlockingQueue<R>(),
 
           scheduleIfNeeded: {->
-            while (self && ready.size() + pending.get() < maxConcurrentTasks) {
-              pending.incrementAndGet()
+            while (self && pending < maxConcurrentTasks) {
+              pending++
               def nextElement = self.next()
-              executor.execute {-> ready << op.call(nextElement); pending.decrementAndGet() }
+              executor.execute {-> ready << op.call(nextElement) }
             }
           },
 
           next: {->
             def res = ready.take()
+            pending--
             scheduleIfNeeded()
             res
           },
 
-          hasNext: {-> scheduleIfNeeded(); !ready.empty || pending.get() > 0 },
+          hasNext: {-> scheduleIfNeeded(); pending > 0 },
 
           remove: {-> throw new UnsupportedOperationException("remove () is unsupported by the iterator") },
       ]

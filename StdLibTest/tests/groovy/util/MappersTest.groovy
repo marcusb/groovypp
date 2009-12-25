@@ -50,7 +50,7 @@ class MappersTest extends GroovyShellTestCase {
       assertEquals((List<Pair>) [[0, 1], [1, 2], [2, 3]], list)
     }
 
-    @Typed(debug=true)
+    @Typed
     void testFlatMap () {
       def l = [[0,1,2], [3,4]]
       assertEquals(["0", "1", "2", "3", "4"], l.flatMap{it.toString()}.asList())
@@ -72,7 +72,7 @@ class MappersTest extends GroovyShellTestCase {
         res = (0..100000).iterator ().mapConcurrently (pool, false, 50) {
 //            println "2nd pass ${Thread.currentThread().id} $it"
             it + 1
-        }.toArray ()
+        }.toList ()
         res.sort()
         assertEquals ((1..100001), res)
     }
