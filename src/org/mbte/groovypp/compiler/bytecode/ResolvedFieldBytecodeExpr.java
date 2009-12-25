@@ -36,7 +36,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     private void checkAssignment() {
-        if (fieldNode.isFinal() && value != null && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
+        if (fieldNode.isFinal() && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
             compiler.addError("Can't modify final field " + formatFieldName(), parent);
         }
     }

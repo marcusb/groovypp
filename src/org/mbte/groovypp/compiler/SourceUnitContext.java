@@ -32,16 +32,18 @@ public class SourceUnitContext {
             getter.setDeclaringClass(clazz);
             clazz.addMethod(getter);
             generatedFieldGetters.put(field, getter);
-            String setterName = "setField" + num;
-            Parameter[] setterParams = {new Parameter(field.getType(), "p")};
-            ExpressionStatement code = new ExpressionStatement(new BinaryExpression(new VariableExpression(field),
-                                                               Token.newSymbol(Types.ASSIGN, -1, -1),
-                                                               new VariableExpression("p")));
-            MethodNode setter = new MethodNode(setterName, modifiers, ClassHelper.VOID_TYPE, setterParams, new ClassNode[0],
-                    code);
-            setter.setDeclaringClass(clazz);
-            clazz.addMethod(setter);
-            generatedFieldSetters.put(field, setter);
+            if (!field.isFinal()) {
+                String setterName = "setField" + num;
+                Parameter[] setterParams = {new Parameter(field.getType(), "p")};
+                ExpressionStatement code = new ExpressionStatement(new BinaryExpression(new VariableExpression(field),
+                                                                   Token.newSymbol(Types.ASSIGN, -1, -1),
+                                                                   new VariableExpression("p")));
+                MethodNode setter = new MethodNode(setterName, modifiers, ClassHelper.VOID_TYPE, setterParams, new ClassNode[0],
+                        code);
+                setter.setDeclaringClass(clazz);
+                clazz.addMethod(setter);
+                generatedFieldSetters.put(field, setter);
+            }
             ClassNodeCache.clearCache(clazz);
         }
         return getter;
