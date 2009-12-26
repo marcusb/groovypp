@@ -40,7 +40,7 @@ public class ClassNodeCache {
         addGlobalDGM();
         initDgm(Arrays.class);
         initDgm(Collections.class);
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any", "find"));
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "flatten", "any", "find"));
     }
 
     private static void initDgm(String klazz) {
