@@ -74,6 +74,9 @@ class StringTest extends GroovyShellTestCase {
             assert b != 'z'
 
             assert b > z
+            assert z < b
+            assert b >= z
+            assert z <= b
             assert z.charAt(0) == 'z'
             assert b.charAt(0) == '{'
           }

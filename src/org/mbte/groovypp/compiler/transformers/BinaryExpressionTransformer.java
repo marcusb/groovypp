@@ -37,6 +37,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.LOGICAL_OR:
             case Types.KEYWORD_INSTANCEOF:
             case Types.COMPARE_IDENTICAL: // ===
+            case Types.COMPARE_NOT_IDENTICAL: // ===
             case Types.COMPARE_GREATER_THAN:
             case Types.COMPARE_GREATER_THAN_EQUAL:
             case Types.COMPARE_LESS_THAN:
@@ -188,7 +189,10 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 throw new UnsupportedOperationException();
 
             case Types.COMPARE_IDENTICAL: // ===
-                throw new UnsupportedOperationException();
+                return evaluateCompare(exp, compiler, label, onTrue, op);
+
+            case Types.COMPARE_NOT_IDENTICAL: // !==
+                return evaluateCompare(exp, compiler, label, onTrue, op);
 
             case Types.COMPARE_GREATER_THAN:
                 return evaluateCompare(exp, compiler, label, onTrue, op);
@@ -479,17 +483,48 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     r.visit(mv);
                     box(r.getType(), mv);
 
-                    mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
-                    if (onTrue)
-                        if (be.getOperation().getType() == Types.COMPARE_EQUAL)
-                            mv.visitJumpInsn(IFNE, label);
-                        else
-                            mv.visitJumpInsn(IFEQ, label);
-                    else
-                        if (be.getOperation().getType() == Types.COMPARE_EQUAL)
-                            mv.visitJumpInsn(IFEQ, label);
-                        else
-                            mv.visitJumpInsn(IFNE, label);
+                    switch (be.getOperation().getType()) {
+                        case  Types.COMPARE_EQUAL:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+                            mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+                            break;
+
+                        case  Types.COMPARE_NOT_EQUAL:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+                            mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
+                            break;
+
+                        case  Types.COMPARE_IDENTICAL:
+                            mv.visitJumpInsn(onTrue ? IF_ACMPEQ : IF_ACMPNE, label);
+                            break;
+
+                        case  Types.COMPARE_NOT_IDENTICAL:
+                            mv.visitJumpInsn(onTrue ? IF_ACMPNE : IF_ACMPEQ, label);
+                            break;
+
+                        case Types.COMPARE_LESS_THAN:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)I");
+                            mv.visitJumpInsn(onTrue ? IFLT : IFGE, label);
+                            break;
+
+                        case Types.COMPARE_LESS_THAN_EQUAL:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)I");
+                            mv.visitJumpInsn(onTrue ? IFLE : IFGT, label);
+                            break;
+
+                        case Types.COMPARE_GREATER_THAN:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)I");
+                            mv.visitJumpInsn(onTrue ? IFGT : IFLE, label);
+                            break;
+
+                        case Types.COMPARE_GREATER_THAN_EQUAL:
+                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)I");
+                            mv.visitJumpInsn(onTrue ? IFGE : IFLT, label);
+                            break;
+
+                        default:
+                            throw new UnsupportedOperationException();
+                    }
                 }
             };
     }

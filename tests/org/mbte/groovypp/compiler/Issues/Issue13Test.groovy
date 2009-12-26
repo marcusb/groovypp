@@ -4,8 +4,10 @@ package org.mbte.groovypp.compiler.Issues
 public class Issue13Test extends GroovyShellTestCase {
     void testEachWithIndex () {
         shell.evaluate """
-        (0..10).eachWithIndex { it, index ->
-            println "\$index"
+        @Typed def u () {
+            (0..10).eachWithIndex { it, index ->
+                println "\$index"
+            }
         }
         """
     }
