@@ -31,7 +31,9 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Check is this list empty
      */
-    boolean isEmpty () { size == 0 }
+    final boolean isEmpty () { size == 0 }
+
+    final int size () { size }
 
     /**
      * Creates new list containing given element and then all element of this list
@@ -52,7 +54,7 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Utility method allowing convinient syntax <code>flist ()</code> for accessing head of the list
      */
-    T call () { getHead() }
+    final T call () { getHead() }
 
     /**
      * Create reversed copy of the list

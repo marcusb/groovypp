@@ -20,8 +20,8 @@ public class Mappers extends DefaultGroovyMethodsSupport {
    * @param op mapping function.
    * @return collection containing the results of application.
    */
-  static <T, R> Collection<R> map(Collection<T> self, Function1<T, R> op) {
-    def res = (Collection<R>) createSimilarCollection(self)
+  static <T, R> Collection<R> map(Iterable<T> self, Function1<T, R> op) {
+    def res = (Collection<R>) (self instanceof Collection ? createSimilarCollection((Collection)self) : new ArrayList<R>())
     for (T t: self) {
       res << op[t]
     }

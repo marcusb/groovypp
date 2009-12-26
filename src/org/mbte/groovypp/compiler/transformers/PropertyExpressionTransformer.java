@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.AccessibilityCheck;
@@ -15,22 +16,32 @@ import java.text.MessageFormat;
 
 public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpression> {
     public Expression transform(PropertyExpression exp, CompilerTransformer compiler) {
+        Expression originalProperty = exp.getProperty();
         if (exp.isSpreadSafe()) {
-            compiler.addError("Spread operator is not supported yet by static compiler", exp);
-            return null;
+            Parameter param = new Parameter(ClassHelper.OBJECT_TYPE, "$it");
+            VariableExpression ve = new VariableExpression(param);
+            ve.setSourcePosition(originalProperty);
+            PropertyExpression prop = new PropertyExpression(ve, originalProperty);
+            prop.setSourcePosition(originalProperty);
+            ReturnStatement retStat = new ReturnStatement(prop);
+            retStat.setSourcePosition(originalProperty);
+            ClosureExpression ce = new ClosureExpression(new Parameter[]{param}, retStat);
+            ce.setVariableScope(new VariableScope(compiler.compileStack.getScope()));
+            MethodCallExpression mce = new MethodCallExpression(exp.getObjectExpression(), "map", new ArgumentListExpression(ce));
+            mce.setSourcePosition(exp);
+            return compiler.transform(mce);
         }
 
         if (exp.isSafe()) {
             return transformSafe(exp, compiler);
         }
 
-        Object property = exp.getProperty();
         String propName = null;
-        if (!(property instanceof ConstantExpression) || !(((ConstantExpression) property).getValue() instanceof String)) {
+        if (!((Object) originalProperty instanceof ConstantExpression) || !(((ConstantExpression) originalProperty).getValue() instanceof String)) {
             compiler.addError("Non-static property name", exp);
             return null;
         } else {
-            propName = (String) ((ConstantExpression) property).getValue();
+            propName = (String) ((ConstantExpression) originalProperty).getValue();
         }
 
         final BytecodeExpr object;

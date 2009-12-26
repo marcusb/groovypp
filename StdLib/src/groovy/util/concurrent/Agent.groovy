@@ -6,7 +6,11 @@ public class Agent<T>  {
 
     private volatile FQueue<Function1<T,T>> queue = FQueue.emptyQueue
 
-    T get () { ref }
+    Agent () {}
+
+    Agent (T ref) { this.@ref = ref }
+    
+    final T get () { ref }
 
     T apply (Function1<T,T> mutation) {
         for (;;) {

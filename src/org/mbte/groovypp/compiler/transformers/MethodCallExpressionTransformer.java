@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.transformers;
 
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
@@ -30,13 +31,24 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             methodName = (String) ((ConstantExpression) method).getValue();
         }
 
+        if (exp.isSpreadSafe()) {
+            Parameter param = new Parameter(ClassHelper.OBJECT_TYPE, "$it");
+            VariableExpression ve = new VariableExpression(param);
+            Expression originalMethod = exp.getMethod();
+            ve.setSourcePosition(originalMethod);
+            MethodCallExpression prop = new MethodCallExpression(ve, originalMethod, exp.getArguments());
+            prop.setSourcePosition(originalMethod);
+            ReturnStatement retStat = new ReturnStatement(prop);
+            retStat.setSourcePosition(originalMethod);
+            ClosureExpression ce = new ClosureExpression(new Parameter[]{param}, retStat);
+            ce.setVariableScope(new VariableScope(compiler.compileStack.getScope()));
+            MethodCallExpression mce = new MethodCallExpression(exp.getObjectExpression(), "map", new ArgumentListExpression(ce));
+            mce.setSourcePosition(exp);
+            return compiler.transform(mce);
+        }
+
         Expression args = compiler.transform(exp.getArguments());
         exp.setArguments(args);
-
-        if (exp.isSpreadSafe()) {
-            compiler.addError("Spread operator is not supported by static compiler", exp);
-            return null;
-        }
 
         if (exp.isSafe()) {
             return transformSafe(exp, compiler);
