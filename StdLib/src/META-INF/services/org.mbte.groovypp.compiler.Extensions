@@ -1,0 +1,7 @@
+# files to add as standard extension methods
+groovy.util.Conversions
+groovy.util.Filters
+groovy.util.Iterations
+groovy.util.Mappers
+groovy.util.concurrent.Atomics
+groovy.util.concurrent.CallLaterExecutors

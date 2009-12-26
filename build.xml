@@ -116,6 +116,11 @@
         <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}"
             destdir="${stdlib.prod.output}">
         </groovyc >
+        <copy todir="${stdlib.prod.output}">
+            <fileset dir="${stdlib.src}">
+                <exclude name="**/*.groovy"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="compile.tests.stdlib"  depends="compile.stdlib,compile.tests.compiler">

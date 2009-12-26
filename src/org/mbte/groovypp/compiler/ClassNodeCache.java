@@ -11,6 +11,10 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
 
 public class ClassNodeCache {
     public static class ClassNodeInfo {
@@ -33,12 +37,7 @@ public class ClassNodeCache {
     static {
         initDgm(DefaultGroovyPPMethods.class);
         initDgm(ArraysMethods.class);
-        initDgm("groovy.util.Conversions");
-        initDgm("groovy.util.Filters");
-        initDgm("groovy.util.Iterations");
-        initDgm("groovy.util.Mappers");
-        initDgm("groovy.util.concurrent.Atomics");
-        initDgm("groovy.util.concurrent.CallLaterExecutors");
+        addGlobalDGM();
         initDgm(Arrays.class);
         initDgm(Collections.class);
         initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "eachWithIndex", "flatten", "any", "find"));
@@ -433,6 +432,37 @@ public class ClassNodeCache {
 
         public DGM(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
             super(name, modifiers, returnType, parameters, exceptions, code);
+        }
+    }
+
+    private static void addGlobalDGM() {
+        Map<String, URL> names = new LinkedHashMap<String, URL>();
+        try {
+            Enumeration<URL> globalServices = ClassNodeCache.class.getClassLoader().getResources("META-INF/services/org.mbte.groovypp.compiler.Extensions");
+            while (globalServices.hasMoreElements()) {
+                URL service = globalServices.nextElement();
+                String className;
+                BufferedReader svcIn = new BufferedReader(new InputStreamReader(service.openStream()));
+                try {
+                    className = svcIn.readLine();
+                } catch (IOException ioe) {
+                    continue;
+                }
+                while (className != null) {
+                    if (!className.startsWith("#") && className.length() > 0) {
+                        names.put(className, service);
+                    }
+                    try {
+                        className = svcIn.readLine();
+                    } catch (IOException ioe) {//
+                    }
+                }
+            }
+        } catch (IOException e) { //
+        }
+
+        for (String name : names.keySet()) {
+            initDgm(name);
         }
     }
 }
