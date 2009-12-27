@@ -142,8 +142,10 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
             if (prop != null) {
                 if (!checkAccessible(prop, exp, thisType, compiler)) return null;
+                boolean isStatic = PropertyUtil.isStatic(prop);
+                if (!isStatic && exp.isStatic()) return null;
                 final ClassNode thisTypeFinal = thisType;
-                object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
+                object = isStatic ? null : new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                     protected void compile(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
                         ClassNode curThis = compiler.methodNode.getDeclaringClass();
@@ -158,8 +160,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
             }
 
-            FieldNode ownerField = thisType.getField("this$0");
-            thisType = ownerField == null ? null : ownerField.getType();
+            thisType = thisType.getOuterClass();
         }
 
         compiler.addError("Can't resolve property " + propName, exp);

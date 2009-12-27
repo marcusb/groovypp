@@ -145,4 +145,11 @@ public class PropertyUtil {
     private static BytecodeExpr createDynamicCall(ASTNode exp, final String propName, final BytecodeExpr object, final BytecodeExpr value) {
         return new UnresolvedLeftExpr(exp, value, object, propName);
     }
+
+    public static boolean isStatic(Object prop) {
+        if (prop instanceof MethodNode) return ((MethodNode) prop).isStatic();
+        if (prop instanceof PropertyNode) return ((PropertyNode) prop).isStatic();
+        if (prop instanceof FieldNode) return ((FieldNode) prop).isStatic();
+        return false;
+    }
 }
