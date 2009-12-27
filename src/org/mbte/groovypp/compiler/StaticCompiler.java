@@ -177,7 +177,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
                 etype = generics[0].getType();
             }
         }
-        if (forLoop.getVariable().isDynamicTyped()) forLoop.getVariable().setType(etype);
+        if (forLoop.getVariable().isDynamicTyped())
+            forLoop.getVariable().setType(etype);
+        else
+            etype = forLoop.getVariable().getType();
 
         Register variable = compileStack.defineVariable(forLoop.getVariable(), false);
 
