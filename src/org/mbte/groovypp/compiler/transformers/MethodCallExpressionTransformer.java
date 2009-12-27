@@ -6,10 +6,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedFieldBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedGetterBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -87,7 +84,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         final ClassNode thisTypeFinal = thisType;
                         if (foundMethod.isStatic())
                             object = null;
-                        else
+                        else {
+                            if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
+                                compiler.addError("Cannot reference an instance method from static context", exp);
+                                return null;
+                            }
                             object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
                                 protected void compile(MethodVisitor mv) {
                                     mv.visitVarInsn(ALOAD, 0);
@@ -104,6 +105,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     return thisTypeFinal.equals(compiler.classNode);
                                 }
                             };
+                        }
 
                         if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
                                 foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
