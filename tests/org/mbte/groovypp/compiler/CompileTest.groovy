@@ -328,4 +328,16 @@ u()
     """)
     assertEquals "a", res
   }
+
+  void testIssue16() {
+    shell.evaluate """
+    @Typed class C {
+      static String LINES = "a\\n\b"
+      static def foo() {
+        LINES.eachLine {print it}
+      }
+    }
+    C.foo()
+    """
+  }
 }
