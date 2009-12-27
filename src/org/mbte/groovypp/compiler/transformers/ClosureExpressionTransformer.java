@@ -15,7 +15,7 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
             ce.getParameters()[0] = new Parameter(ClassHelper.OBJECT_TYPE, "it", new ConstantExpression(null));
         }
 
-        final ClosureClassNode newType = new ClosureClassNode(compiler.classNode, compiler.getNextClosureName());
+        final ClosureClassNode newType = new ClosureClassNode(compiler.methodNode, compiler.getNextClosureName());
         newType.setInterfaces(new ClassNode[]{TypeUtil.TCLOSURE});
         newType.setClosureExpression(ce);
 

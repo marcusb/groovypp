@@ -280,8 +280,14 @@ public class ClosureUtil {
         }
         else {
             if (superClass == ClassHelper.CLOSURE_TYPE) {
-                superCallArgs.addExpression(new VariableExpression(constrParams[0]));
-                superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+                if (constrParams.length > 0) {
+                    superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+                    superCallArgs.addExpression(new VariableExpression(constrParams[0]));
+                }
+                else {
+                    superCallArgs.addExpression(ConstantExpression.NULL);
+                    superCallArgs.addExpression(ConstantExpression.NULL);
+                }
             }
             finalConstrParams = constrParams;
         }
