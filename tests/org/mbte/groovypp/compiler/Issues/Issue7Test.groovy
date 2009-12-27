@@ -14,4 +14,18 @@ public class Issue7Test extends GroovyShellTestCase {
     """)
         }
     }
+
+    void testFailWhenClosure() {
+        shouldFail {
+            shell.evaluate("""
+                @Typed static u ()
+                {
+                    int j = 0
+                    "lin11\\nline2\\n".eachLine{ j++ }
+                    j
+                }
+                u ()
+    """)
+        }
+    }
 }
