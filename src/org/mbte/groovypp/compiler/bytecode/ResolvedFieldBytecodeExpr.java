@@ -131,19 +131,17 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         checkAssignment();
         ClassNode vtype = getType();
 
-        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
         };
 
-        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr dupObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
-                if (object != null) {
-                    object.visit(mv);
-                    dup(object.getType(), mv);
-                }
+                object.visit(mv);
+                dup(object.getType(), mv);
             }
         };
 
@@ -212,19 +210,17 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         checkAssignment();
         ClassNode vtype = getType();
 
-        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
         };
 
-        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr dupObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
-                if (object != null) {
-                    object.visit(mv);
-                    dup(object.getType(), mv);
-                }
+                object.visit(mv);
+                dup(object.getType(), mv);
             }
         };
 

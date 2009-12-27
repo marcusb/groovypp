@@ -305,4 +305,20 @@ public class PrefixPostfixTest extends GroovyShellTestCase {
       }
     }
   }
+
+  void testStaticFieldPrefixPostfix() {
+    def res = shell.evaluate("""
+    class A {
+      static int FIELD = 0
+      @Typed
+      public static def foo ()
+      {
+        FIELD++
+        --FIELD
+      }
+    }
+    A.foo()
+    """)
+    assertEquals 0, res
+  }
 }
