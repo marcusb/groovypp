@@ -75,6 +75,16 @@ public abstract class ExprTransformer<T extends Expression> implements Opcodes {
     }
 
     public static BytecodeExpr transformLogicalExpression(Expression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
+        if (exp instanceof StaticMethodCallExpression) {
+            StaticMethodCallExpression smce = (StaticMethodCallExpression) exp;
+            MethodCallExpression mce = new MethodCallExpression(
+                    new ClassExpression(smce.getOwnerType()),
+                    smce.getMethod(),
+                    smce.getArguments());
+            mce.setSourcePosition(smce);
+            return transformLogicalExpression(mce, compiler, label, onTrue);
+        }
+
         ExprTransformer t = transformers.get(exp.getClass());
         return t.transformLogical(exp, compiler, label, onTrue);
     }
