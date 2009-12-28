@@ -1,7 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
@@ -9,8 +9,6 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
-
-import java.util.List;
 
 public class DeclarationExpressionTransformer extends ExprTransformer<DeclarationExpression> {
     public Expression transform(DeclarationExpression exp, final CompilerTransformer compiler) {
@@ -59,7 +57,12 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         }
         else {
             if (!ve.isDynamicTyped()) {
-                right = compiler.cast(right, ve.getType());
+                if (ve.getType().equals(right.getType().redirect()) &&
+                        ve.getType().getGenericsTypes() == null) {
+                    ve.setType(right.getType());   //this is safe as long as generics are variant in type parameter.
+                } else {
+                    right = compiler.cast(right, ve.getType());
+                }
                 return new Static(exp, ve, right, compiler);
             } else {
                 if (right instanceof MapExpressionTransformer.UntransformedMapExpr) {
