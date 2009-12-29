@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
@@ -35,17 +36,18 @@ public class ClassNodeCache {
     static final Map<ClassNode, List<MethodNode>> dgmMethods = new HashMap<ClassNode, List<MethodNode>>();
 
     static {
-        initDgm(DefaultGroovyPPMethods.class);
-        initDgm(ArraysMethods.class);
+        initDgm(DefaultGroovyPPMethods.class, false);
+        initDgm(DefaultGroovyStaticMethods.class, true);
+        initDgm(ArraysMethods.class, false);
         addGlobalDGM();
-        initDgm(Arrays.class);
-        initDgm(Collections.class);
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "flatten", "any", "find"));
+        initDgm(Arrays.class, false);
+        initDgm(Collections.class, false);
+        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "flatten", "any", "find"), false);
     }
 
     private static void initDgm(String klazz) {
         try {
-            initDgm(Class.forName(klazz));
+            initDgm(Class.forName(klazz), false);
         } catch (ClassNotFoundException e) { //
             System.err.println("failed to load " + klazz);
         }
@@ -358,11 +360,11 @@ public class ClassNodeCache {
         return -1;
     }
 
-    private static void initDgm(final Class klazz) {
-        initDgm(klazz, Collections.<String>emptyList());
+    private static void initDgm(final Class klazz, boolean isStatic) {
+        initDgm(klazz, Collections.<String>emptyList(), isStatic);
     }
 
-    private static void initDgm(final Class klazz, List<String> ignore) {
+    private static void initDgm(final Class klazz, List<String> ignore, boolean isStatic) {
         ClassNode classNode = ClassHelper.make(klazz);
         List<MethodNode> methodList = classNode.getMethods();
 
@@ -378,7 +380,7 @@ public class ClassNodeCache {
                 for (int j = 0; j != params.length; ++j)
                     params[j] = parameters[j+1];
 
-                DGM mn = createDGM(klazz, methodNode, declaringClass, methodNode.getExceptions(), params);
+                DGM mn = createDGM(klazz, methodNode, declaringClass, methodNode.getExceptions(), params, isStatic);
 
                 List<MethodNode> list = dgmMethods.get(declaringClass);
                 if (list == null) {
@@ -408,10 +410,10 @@ public class ClassNodeCache {
         return substitue;
     }
 
-    private static DGM createDGM(Class klazz, MethodNode method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params) {
+    private static DGM createDGM(Class klazz, MethodNode method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params, boolean isStatic) {
         DGM mn = new DGM(
                 method.getName(),
-                Opcodes.ACC_PUBLIC,
+                Opcodes.ACC_PUBLIC | (isStatic ? Opcodes.ACC_STATIC : 0),
                 method.getReturnType(),
                 params,
                 exs,

@@ -225,6 +225,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 object.visit(mv);
                 if (ClassHelper.isPrimitiveType(object.getType()) && !ClassHelper.isPrimitiveType(dgm.getParameters()[0].getType()))
                     box(object.getType(), mv);
+            } else if (methodNode.isStatic()) {
+                // DGSM method needs fake argument.
+                mv.visitInsn(ACONST_NULL);
             }
 
             classInternalName = ((ClassNodeCache.DGM) methodNode).callClassInternalName;
