@@ -19,6 +19,8 @@ public class Issue6Test extends GroovyShellTestCase {
            assert r == 1
            int t = r + 1
            assert t == 2
+           int v = 1 / r
+           assert v == 1
         }
         foo()
         """
