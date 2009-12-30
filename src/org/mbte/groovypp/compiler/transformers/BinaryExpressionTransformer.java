@@ -153,7 +153,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
     private Expression evaluateCompareTo(BinaryExpression be, CompilerTransformer compiler) {
         final BytecodeExpr left = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
-        final BytecodeExpr right = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        final BytecodeExpr right = unboxReference(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
         return new BytecodeExpr(be, ClassHelper.Integer_TYPE) {
             protected void compile(MethodVisitor mv) {
                 left.visit(mv);
@@ -236,7 +236,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
     private Expression evaluateMathOperation(final BinaryExpression be, String method, final CompilerTransformer compiler) {
         final BytecodeExpr l = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
-        final BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        final BytecodeExpr r = unboxReference(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             if (be.getOperation().getType() == Types.POWER)
@@ -331,7 +331,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     private BytecodeExpr evaluateLogicalOr(final BinaryExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {
         if (onTrue) {
             final BytecodeExpr l = unboxReference(exp, compiler.transformLogical(exp.getLeftExpression(), label, true), compiler);
-            final BytecodeExpr r = compiler.transformLogical(exp.getRightExpression(), label, true);
+            final BytecodeExpr r = unboxReference(exp, compiler.transformLogical(exp.getRightExpression(), label, true), compiler);
             return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     l.visit(mv);
@@ -341,7 +341,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         } else {
             final Label _true = new Label();
             final BytecodeExpr l = unboxReference(exp, compiler.transformLogical(exp.getLeftExpression(), _true, true), compiler);
-            final BytecodeExpr r = compiler.transformLogical(exp.getRightExpression(), label, false);
+            final BytecodeExpr r = unboxReference(exp, compiler.transformLogical(exp.getRightExpression(), label, false), compiler);
             return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     l.visit(mv);
@@ -356,7 +356,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         if (onTrue) {
             final Label _false = new Label();
             final BytecodeExpr l = unboxReference(exp, compiler.transformLogical(exp.getLeftExpression(), _false, false), compiler);
-            final BytecodeExpr r = compiler.transformLogical(exp.getRightExpression(), label, true);
+            final BytecodeExpr r = unboxReference(exp, compiler.transformLogical(exp.getRightExpression(), label, true), compiler);
             return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     l.visit(mv);
@@ -366,7 +366,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             };
         } else {
             final BytecodeExpr l = unboxReference(exp, compiler.transformLogical(exp.getLeftExpression(), label, false), compiler);
-            final BytecodeExpr r = compiler.transformLogical(exp.getRightExpression(), label, false);
+            final BytecodeExpr r = unboxReference(exp, compiler.transformLogical(exp.getRightExpression(), label, false), compiler);
             return new BytecodeExpr(exp, ClassHelper.VOID_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     l.visit(mv);
@@ -413,7 +413,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             l = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)l).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
         be.setLeftExpression(l);
 
-        BytecodeExpr r = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        BytecodeExpr r = unboxReference(be,  (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
         if (r instanceof ListExpressionTransformer.UntransformedListExpr)
             r = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)r).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
         be.setRightExpression(r);
