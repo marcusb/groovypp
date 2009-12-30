@@ -411,12 +411,10 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         BytecodeExpr l = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
         if (l instanceof ListExpressionTransformer.UntransformedListExpr)
             l = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)l).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
-        be.setLeftExpression(l);
 
         BytecodeExpr r = unboxReference(be,  (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
         if (r instanceof ListExpressionTransformer.UntransformedListExpr)
             r = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)r).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
-        be.setRightExpression(r);
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
@@ -481,16 +479,16 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                         throw new RuntimeException("Internal Error");
                 }
             };
-        } else
+        } else {
+            final BytecodeExpr l2 = l;
+            final BytecodeExpr r2 = r;
             return new BytecodeExpr(be, ClassHelper.boolean_TYPE) {
                 public void compile(MethodVisitor mv) {
-                    final BytecodeExpr l = (BytecodeExpr) be.getLeftExpression();
-                    l.visit(mv);
-                    box(l.getType(), mv);
+                    l2.visit(mv);
+                    box(l2.getType(), mv);
 
-                    final BytecodeExpr r = (BytecodeExpr) be.getRightExpression();
-                    r.visit(mv);
-                    box(r.getType(), mv);
+                    r2.visit(mv);
+                    box(r2.getType(), mv);
 
                     switch (be.getOperation().getType()) {
                         case  Types.COMPARE_EQUAL:
@@ -536,6 +534,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     }
                 }
             };
+        }
     }
 
     private static BytecodeExpr evaluateFindRegexp(final BinaryExpression exp, final CompilerTransformer compiler) {
