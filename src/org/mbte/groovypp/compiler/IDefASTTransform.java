@@ -39,7 +39,7 @@ public class IDefASTTransform implements ASTTransformation, Opcodes {
 
         for (MethodNode mn : toProcess) {
             final String name = mn.getDeclaringClass().getName() + "_I" + Character.toUpperCase(mn.getName().charAt(0)) + mn.getName().substring(1);
-            ClassNode newType = new ClassNode(name, ACC_PUBLIC|ACC_INTERFACE|ACC_ABSTRACT, ClassHelper.OBJECT_TYPE);
+            ClassNode newType = new ClassNode(name, ACC_PUBLIC|ACC_INTERFACE|ACC_ABSTRACT|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
             module.addClass(newType);
 
             newType.addMethod(mn.getName(), ACC_PUBLIC|ACC_ABSTRACT, mn.getReturnType(), mn.getParameters(), ClassNode.EMPTY_ARRAY, null);

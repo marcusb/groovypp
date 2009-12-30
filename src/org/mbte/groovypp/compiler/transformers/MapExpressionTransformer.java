@@ -15,7 +15,7 @@ import java.util.List;
 
 public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
     public Expression transform(final MapExpression exp, final CompilerTransformer compiler) {
-        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC, ClassHelper.OBJECT_TYPE);
+        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         newType.setModule(compiler.classNode.getModule());
         newType.setInterfaces(new ClassNode[] {TypeUtil.TMAP});
         return new UntransformedMapExpr(exp, newType);

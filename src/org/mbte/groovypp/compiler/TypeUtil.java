@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler;
 
+import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 import groovy.lang.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -125,8 +126,9 @@ public class TypeUtil {
         return isDirectlyAssignableFrom(classToTransformTo, substituted);
     }
 
-    public static MethodNode getReferenceUnboxingMethod(ClassNode classToTransformFrom) {
-        MethodNode method = MethodSelection.findMethodInClass(classToTransformFrom, "get", new ClassNode[0]);
+    public static MethodNode getReferenceUnboxingMethod(ClassNode classNode) {
+        if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0) return null;
+        MethodNode method = MethodSelection.findMethodInClass(classNode, "get", new ClassNode[0]);
         return method != null && method.getParameters().length == 0 ? method : null;
     }
 

@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
     public Expression transform(final ListExpression exp, final CompilerTransformer compiler) {
-        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC, ClassHelper.OBJECT_TYPE);
+        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         newType.setInterfaces(new ClassNode[] {TypeUtil.TLIST});
         return new UntransformedListExpr(exp, newType);
     }
