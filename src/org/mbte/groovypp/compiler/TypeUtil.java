@@ -1,6 +1,5 @@
 package org.mbte.groovypp.compiler;
 
-import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 import groovy.lang.*;
 import org.codehaus.groovy.ast.ClassHelper;
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -11,6 +10,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
+import org.objectweb.asm.Opcodes;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
