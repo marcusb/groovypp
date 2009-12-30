@@ -22,69 +22,69 @@ import java.util.*;
  * e) primitive types goes via boxing and Number
  */
 public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
-    public BytecodeExpr transform(CastExpression exp, CompilerTransformer compiler) {
+    public BytecodeExpr transform(CastExpression cast, CompilerTransformer compiler) {
 
-        if (exp.getExpression() instanceof TernaryExpression) {
-            return compiler.cast(exp.getExpression(), exp.getType());
+        if (cast.getExpression() instanceof TernaryExpression) {
+            return compiler.cast(cast.getExpression(), cast.getType());
         }
 
-        if (exp.getExpression() instanceof ListExpressionTransformer.UntransformedListExpr) {
-            final CastExpression newExp = new CastExpression(exp.getType(), ((ListExpressionTransformer.UntransformedListExpr) exp.getExpression()).exp);
-            newExp.setSourcePosition(exp);
-            exp = newExp;
+        if (cast.getExpression() instanceof ListExpressionTransformer.UntransformedListExpr) {
+            final CastExpression newExp = new CastExpression(cast.getType(), ((ListExpressionTransformer.UntransformedListExpr) cast.getExpression()).exp);
+            newExp.setSourcePosition(cast);
+            cast = newExp;
         }
 
-        if (exp.getExpression() instanceof MapExpressionTransformer.UntransformedMapExpr) {
-            final CastExpression newExp = new CastExpression(exp.getType(), ((MapExpressionTransformer.UntransformedMapExpr) exp.getExpression()).exp);
-            newExp.setSourcePosition(exp);
-            exp = newExp;
+        if (cast.getExpression() instanceof MapExpressionTransformer.UntransformedMapExpr) {
+            final CastExpression newExp = new CastExpression(cast.getType(), ((MapExpressionTransformer.UntransformedMapExpr) cast.getExpression()).exp);
+            newExp.setSourcePosition(cast);
+            cast = newExp;
         }
 
-        if (exp.getType().equals(ClassHelper.boolean_TYPE) || exp.getType().equals(ClassHelper.Boolean_TYPE)) {
-            if (exp.getExpression() instanceof ListExpression) {
-                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)exp.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), exp.getType());
+        if (cast.getType().equals(ClassHelper.boolean_TYPE) || cast.getType().equals(ClassHelper.Boolean_TYPE)) {
+            if (cast.getExpression() instanceof ListExpression) {
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), cast.getType());
             }
-            if (exp.getExpression() instanceof MapExpression) {
-                return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)exp.getExpression(), compiler), exp.getType());
+            if (cast.getExpression() instanceof MapExpression) {
+                return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)cast.getExpression(), compiler), cast.getType());
             }
-            return compiler.castToBoolean((BytecodeExpr)compiler.transform(exp.getExpression()), exp.getType());
+            return compiler.castToBoolean((BytecodeExpr)compiler.transform(cast.getExpression()), cast.getType());
         }
 
-        if (exp.getType().equals(ClassHelper.STRING_TYPE)) {
-            if (exp.getExpression() instanceof ListExpression) {
-                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)exp.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), exp.getType());
+        if (cast.getType().equals(ClassHelper.STRING_TYPE)) {
+            if (cast.getExpression() instanceof ListExpression) {
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), cast.getType());
             }
-            return compiler.castToString((BytecodeExpr)compiler.transform(exp.getExpression()), exp.getType());
+            return compiler.castToString((BytecodeExpr)compiler.transform(cast.getExpression()), cast.getType());
         }
 
-        if (exp.getExpression() instanceof ListExpression) {
-            ListExpression listExpression = (ListExpression) exp.getExpression();
+        if (cast.getExpression() instanceof ListExpression) {
+            ListExpression listExpression = (ListExpression) cast.getExpression();
 
-            if (exp.getType().isArray()) {
-                ClassNode componentType = exp.getType().getComponentType();
+            if (cast.getType().isArray()) {
+                ClassNode componentType = cast.getType().getComponentType();
                 improveListTypes(listExpression, componentType);
                 final ArrayExpression array = new ArrayExpression(componentType, listExpression.getExpressions(), null);
                 array.setSourcePosition(listExpression);
                 return (BytecodeExpr) compiler.transform(array);
             }
 
-            if(exp.getType().implementsInterface(TypeUtil.ITERABLE) || exp.getType().equals(TypeUtil.ITERABLE)) {
-                if(compiler.findConstructor(exp.getType(), ClassNode.EMPTY_ARRAY) != null){
-                    ClassNode componentType = compiler.getCollectionType(exp.getType());
+            if(cast.getType().implementsInterface(TypeUtil.ITERABLE) || cast.getType().equals(TypeUtil.ITERABLE)) {
+                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY) != null){
+                    ClassNode componentType = compiler.getCollectionType(cast.getType());
                     improveListTypes(listExpression, componentType);
                     final List list = listExpression.getExpressions();
                     for (int i = 0; i != list.size(); ++i) {
                         list.set(i, compiler.transform((Expression) list.get(i)));
                     }
 
-                    ClassNode collType = calcResultCollectionType(exp, componentType, compiler);
+                    ClassNode collType = calcResultCollectionType(cast, componentType, compiler);
                     return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
                 }
             }
 
-            if (!TypeUtil.isDirectlyAssignableFrom(exp.getType(), TypeUtil.ARRAY_LIST_TYPE)) {
-                final ConstructorCallExpression constr = new ConstructorCallExpression(exp.getType(), new ArgumentListExpression(listExpression.getExpressions()));
-                constr.setSourcePosition(exp);
+            if (!TypeUtil.isDirectlyAssignableFrom(cast.getType(), TypeUtil.ARRAY_LIST_TYPE)) {
+                final ConstructorCallExpression constr = new ConstructorCallExpression(cast.getType(), new ArgumentListExpression(listExpression.getExpressions()));
+                constr.setSourcePosition(cast);
                 return (BytecodeExpr) compiler.transform(constr);
             }
             else {
@@ -101,30 +101,30 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
 
-        if (exp.getExpression() instanceof MapExpression) {
-            MapExpression mapExpression = (MapExpression) exp.getExpression();
+        if (cast.getExpression() instanceof MapExpression) {
+            MapExpression mapExpression = (MapExpression) cast.getExpression();
 
-            if (!exp.getType().implementsInterface(ClassHelper.MAP_TYPE)
-             && !exp.getType().equals(ClassHelper.MAP_TYPE)
-             && !TypeUtil.isAssignableFrom(exp.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
-                return buildClassFromMap (mapExpression, exp.getType(), compiler);
+            if (!cast.getType().implementsInterface(ClassHelper.MAP_TYPE)
+             && !cast.getType().equals(ClassHelper.MAP_TYPE)
+             && !TypeUtil.isAssignableFrom(cast.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
+                return buildClassFromMap (mapExpression, cast.getType(), compiler);
             }
             else {
-                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) exp.getExpression(), compiler);
-                return standardCast(exp, compiler, inner);
+                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) cast.getExpression(), compiler);
+                return standardCast(cast, compiler, inner);
             }
         }
 
-        BytecodeExpr expr = (BytecodeExpr) compiler.transform(exp.getExpression());
+        BytecodeExpr expr = (BytecodeExpr) compiler.transform(cast.getExpression());
 
         if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
-            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(exp.getType());
-            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType(), compiler, exp.getType());
+            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(cast.getType());
+            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType(), compiler, cast.getType());
             if (one != null && doCall != null) {
-                ClosureUtil.makeOneMethodClass(expr.getType(), exp.getType(), one, doCall);
+                ClosureUtil.makeOneMethodClass(expr.getType(), cast.getType(), one, doCall);
 
-                if (exp.getExpression() instanceof VariableExpression) {
-                    VariableExpression ve = (VariableExpression) exp.getExpression();
+                if (cast.getExpression() instanceof VariableExpression) {
+                    VariableExpression ve = (VariableExpression) cast.getExpression();
                     if (ve.isDynamicTyped()) {
                         compiler.getLocalVarInferenceTypes().addWeak(ve, expr.getType());
                     }
@@ -134,12 +134,14 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
 
-        MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(expr.getType());
-        if (unboxing != null) {
-            expr = ResolvedMethodBytecodeExpr.create(exp, unboxing, expr, new ArgumentListExpression(), compiler);
+        if (!TypeUtil.isDirectlyAssignableFrom(cast.getType(), expr.getType())) {
+            MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(expr.getType());
+            if (unboxing != null) {
+                expr = ResolvedMethodBytecodeExpr.create(cast, unboxing, expr, new ArgumentListExpression(), compiler);
+            }
         }
 
-        return standardCast(exp, compiler, expr);
+        return standardCast(cast, compiler, expr);
     }
 
     private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
