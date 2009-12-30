@@ -17,9 +17,9 @@ public class Issue6Test extends GroovyShellTestCase {
         @Typed def foo () {
            Reference r = [1]
            assert r == 1
-           int t = r + 1
+           def t = r + 1
            assert t == 2
-           int v = 1 / r
+           def v = 1 / r
            assert v == 1
         }
         foo()
