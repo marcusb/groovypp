@@ -126,10 +126,28 @@ public class TypeUtil {
         return isDirectlyAssignableFrom(classToTransformTo, substituted);
     }
 
+    private static String[] TRANSPARENT_DEREFERENCE_CLASSES = {
+            "groovy.lang.Reference",
+            "java.lang.ref.Reference",
+            "java.util.concurrent.atomic.AtomicReference",
+            "java.util.concurrent.atomic.AtomicInteger",
+            "java.util.concurrent.atomic.AtomicLong",
+            "java.util.concurrent.atomic.AtomicBoolean"
+    };
+
     public static MethodNode getReferenceUnboxingMethod(ClassNode classNode) {
-        if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0) return null;
+        if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0
+                || ClassHelper.isPrimitiveType(classNode)) return null;
+        if (!isTransparentClass(classNode)) return null;
         MethodNode method = MethodSelection.findMethodInClass(classNode, "get", new ClassNode[0]);
         return method != null && method.getParameters().length == 0 ? method : null;
+    }
+
+    private static boolean isTransparentClass(ClassNode node) {
+        for (String name : TRANSPARENT_DEREFERENCE_CLASSES) {
+            if (node.getName().equals(name)) return true;
+        }
+        return false;
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {
