@@ -548,4 +548,11 @@ public class MethodSelection {
         }
         return true;
     }
+
+    public static MethodNode findMethodInClass(ClassNode classToTransformFrom, String methodName, ClassNode[] args) {
+        Object methods = ClassNodeCache.getMethods(classToTransformFrom, methodName);
+        final Object selected = chooseMethod(methodName, methods, classToTransformFrom, args);
+        if (!(selected instanceof MethodNode)) return null;
+        return (MethodNode) selected;
+    }
 }

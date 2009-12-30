@@ -112,7 +112,22 @@ public class TypeUtil {
         if (classToTransformFrom.implementsInterface(TLIST))
             return TypeUtil.isDirectlyAssignableFrom(classToTransformTo, TypeUtil.ARRAY_LIST_TYPE);
 
+        if (isReferenceUnboxing(classToTransformTo, classToTransformFrom)) return true;
+
         return isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom);
+    }
+
+    public static boolean isReferenceUnboxing(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
+        MethodNode method = getReferenceUnboxingMethod(classToTransformFrom);
+        if (method == null) return false;
+        ClassNode substituted = getSubstitutedType(method.getReturnType(), method.getDeclaringClass(),
+                classToTransformFrom);
+        return isDirectlyAssignableFrom(classToTransformTo, substituted);
+    }
+
+    public static MethodNode getReferenceUnboxingMethod(ClassNode classToTransformFrom) {
+        MethodNode method = MethodSelection.findMethodInClass(classToTransformFrom, "get", new ClassNode[0]);
+        return method != null && method.getParameters().length == 0 ? method : null;
     }
 
     public static boolean isDirectlyAssignableFrom(ClassNode to, ClassNode from) {

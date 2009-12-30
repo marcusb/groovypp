@@ -7,6 +7,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
+import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -16,7 +17,7 @@ import java.util.*;
  * Cast processing rules:
  * a) as operator always go via asType method
  * b) both numerical types always goes via primitive types
- * c) if we cast staticly to lower type we keep upper (except if upper NullType)
+ * c) if we cast statically to lower type we keep upper (except if upper NullType)
  * d) otherwise we do direct cast
  * e) primitive types goes via boxing and Number
  */
@@ -114,7 +115,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
         }
 
-        final BytecodeExpr expr = (BytecodeExpr) compiler.transform(exp.getExpression());
+        BytecodeExpr expr = (BytecodeExpr) compiler.transform(exp.getExpression());
 
         if (expr.getType().implementsInterface(TypeUtil.TCLOSURE)) {
             List<MethodNode> one = ClosureUtil.isOneMethodAbstract(exp.getType());
@@ -131,6 +132,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 return expr;
             }
+        }
+
+        MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(expr.getType());
+        if (unboxing != null) {
+            expr = ResolvedMethodBytecodeExpr.create(exp, unboxing, expr, new ArgumentListExpression(), compiler);
         }
 
         return standardCast(exp, compiler, expr);
