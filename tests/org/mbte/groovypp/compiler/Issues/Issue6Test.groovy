@@ -35,4 +35,18 @@ public class Issue6Test extends GroovyShellTestCase {
         foo()
         """
     }
+    void test4 () {
+        shell.evaluate """
+        @Typed class C {
+           def f1 = 11
+           public def f2 = 13
+        }
+        @Typed def foo () {
+           Reference r = [new C()]
+           assert r.f1 == 11
+           assert r.f2 == 13
+        }
+        foo()
+        """
+    }
 }

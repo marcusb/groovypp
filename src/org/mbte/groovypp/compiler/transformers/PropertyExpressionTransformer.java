@@ -1,14 +1,15 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.AccessibilityCheck;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
+import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
@@ -36,15 +37,15 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             return transformSafe(exp, compiler);
         }
 
-        String propName = null;
-        if (!((Object) originalProperty instanceof ConstantExpression) || !(((ConstantExpression) originalProperty).getValue() instanceof String)) {
+        String propName;
+        if (!(originalProperty instanceof ConstantExpression) || !(((ConstantExpression) originalProperty).getValue() instanceof String)) {
             compiler.addError("Non-static property name", exp);
             return null;
         } else {
             propName = (String) ((ConstantExpression) originalProperty).getValue();
         }
 
-        final BytecodeExpr object;
+        BytecodeExpr object;
         final ClassNode type;
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
@@ -107,6 +108,17 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
                 if (prop == null)
                     prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                if (prop == null) {
+                    MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
+                        if (unboxing != null) {
+                            ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
+                            prop = PropertyUtil.resolveGetProperty(t, propName, compiler);
+                            if (prop != null) {
+                                object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
+                                        new ArgumentListExpression(), compiler);
+                            }
+                        }
+                }
                 if (!checkAccessible(prop, exp, type, compiler)) return null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
