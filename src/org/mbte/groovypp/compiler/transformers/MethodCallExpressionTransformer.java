@@ -141,6 +141,17 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
                             return createCall(exp, compiler, args, object, foundMethod);
                         }
+                    } else {
+                        MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
+                        if (unboxing != null) {
+                            ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
+                            foundMethod = findMethodWithClosureCoercion(t, methodName, argTypes, compiler);
+                            if (foundMethod != null) {
+                                object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
+                                        new ArgumentListExpression(), compiler);
+                                return createCall(exp, compiler, args, object, foundMethod);
+                            }
+                        }
                     }
 
                     if (object instanceof ResolvedFieldBytecodeExpr) {

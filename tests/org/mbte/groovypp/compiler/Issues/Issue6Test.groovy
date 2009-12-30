@@ -25,4 +25,14 @@ public class Issue6Test extends GroovyShellTestCase {
         foo()
         """
     }
+
+    void test3 () {
+        shell.evaluate """
+        @Typed def foo () {
+           Reference r = [1]
+           assert r.intValue() == 1
+        }
+        foo()
+        """
+    }
 }
