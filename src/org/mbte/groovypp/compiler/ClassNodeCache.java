@@ -43,7 +43,6 @@ public class ClassNodeCache {
         initDgm(Arrays.class, false);
         initDgm(Collections.class, false);
         initDgm(DefaultGroovyMethods.class, new HashSet<String>(Arrays.asList(
-                "java.lang.Object each(java.lang.Object, groovy.lang.Closure)",
                 "java.util.Iterator each(java.util.Iterator, groovy.lang.Closure)",
                 "java.util.Map each(java.util.Map, groovy.lang.Closure)",
                 "java.util.Collection flatten(java.util.Collection)",
