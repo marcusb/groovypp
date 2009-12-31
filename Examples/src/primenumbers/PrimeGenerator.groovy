@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue
                 for (p in primes.get()) {
                     int candidate = p.key
                     if (n % candidate == 0)
-                        return divisors (n.candidate, alreadyFound + candidate)
+                        return divisors (n / candidate, alreadyFound + candidate)
                 }
 
                 for(candidate in 2..<n)
