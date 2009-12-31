@@ -47,6 +47,7 @@ public class ClassNodeCache {
                 "java.util.Iterator each(java.util.Iterator, groovy.lang.Closure)",
                 "java.util.Map each(java.util.Map, groovy.lang.Closure)",
                 "java.util.Collection flatten(java.util.Collection)",
+                "java.util.Collection flatten(java.util.Collection, groovy.lang.Closure)",
                 "boolean any(java.lang.Object, groovy.lang.Closure)",
                 "boolean any(java.util.Iterator, groovy.lang.Closure)",
                 "boolean any(java.util.Map, groovy.lang.Closure)",
