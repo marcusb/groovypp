@@ -17,7 +17,7 @@ class DivideAndConquerProblemSolver {
     List<Job> atomics = []
     while (jobs.size() > 0 && jobs.size() < nWorkers) {
       jobs = removeAtomic(jobs, atomics)
-      jobs = jobs.map{ job -> job.problem.sub().map{ new Job(it, job) } }.flatten().asList()
+      jobs = jobs.map{ job -> job.problem.sub().map{ new Job(it, job) } }.asList()
     }
     for (int i = 0; i < jobs.size(); ++i) workers[i % nWorkers].jobs.addFirst(jobs[i])
     for (int i = 0; i < atomics.size(); ++i) workers[i % nWorkers].jobs.addFirst(atomics[i])
