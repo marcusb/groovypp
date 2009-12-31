@@ -49,4 +49,15 @@ public class Issue6Test extends GroovyShellTestCase {
         foo()
         """
     }
+
+    void test5 () {
+        shell.evaluate """
+        import java.util.concurrent.atomic.AtomicReference
+        @Typed def foo () {
+           AtomicReference<Map<Integer, Integer>> r = [[0:1]]
+           assert r[0] == 1
+        }
+        foo()
+        """
+    }
 }

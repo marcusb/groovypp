@@ -36,28 +36,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     protected abstract void compile(MethodVisitor mv);
 
 
-    public BytecodeExpr createIndexed(ASTNode parent, BytecodeExpr index, CompilerTransformer compiler) {
-        if (getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, index.getType()))
-            return new ResolvedArrayBytecodeExpr(parent, this, index, compiler);
-        else {
-            MethodNode getter = compiler.findMethod(getType(), "getAt", new ClassNode[]{index.getType()});
-
-            if (getter != null) {
-                return new ResolvedArrayLikeBytecodeExpr(parent, this, index, getter, compiler);
-            }
-
-            if (index instanceof ListExpressionTransformer.UntransformedListExpr) {
-                MethodCallExpression mce = new MethodCallExpression(this, "getAt", new ArgumentListExpression(((ListExpressionTransformer.UntransformedListExpr)index).exp.getExpressions()));
-                mce.setSourcePosition(parent);
-                return (BytecodeExpr) compiler.transform(mce);
-            }
-
-            compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(getType()), parent);
-            return null;
-        }
-    }
-
-
     public BytecodeExpr createPrefixOp(ASTNode exp, int type, CompilerTransformer compiler) {
         ClassNode vtype = getType();
         if (TypeUtil.isNumericalType(vtype)) {

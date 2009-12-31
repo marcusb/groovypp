@@ -8,12 +8,13 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedLeftExpr;
-import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+
+import static org.codehaus.groovy.ast.ClassHelper.int_TYPE;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
     private static final Token INTDIV = Token.newSymbol(Types.INTDIV, -1, -1);
@@ -323,9 +324,36 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
-        final BytecodeExpr arrExp = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
+        BytecodeExpr object = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
-        return arrExp.createIndexed(bin, indexExp, compiler);
+        if (object.getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, indexExp.getType()))
+            return new ResolvedArrayBytecodeExpr(bin, object, indexExp, compiler);
+        else {
+            MethodNode getter = compiler.findMethod(object.getType(), "getAt", new ClassNode[]{indexExp.getType()});
+            if (getter == null) {
+                MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(object.getType());
+                if (unboxing != null) {
+                    ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), object.getType());
+                    getter = compiler.findMethod(t, "getAt", new ClassNode[]{indexExp.getType()});
+                    if (getter != null) {
+                        object = ResolvedMethodBytecodeExpr.create(bin, unboxing, object,
+                                new ArgumentListExpression(), compiler);
+                        return new ResolvedArrayLikeBytecodeExpr(bin, object, indexExp, getter, compiler);
+                    }
+                }
+            } else {
+                return new ResolvedArrayLikeBytecodeExpr(bin, object, indexExp, getter, compiler);
+            }
+
+            if (indexExp instanceof ListExpressionTransformer.UntransformedListExpr) {
+                MethodCallExpression mce = new MethodCallExpression(object, "getAt", new ArgumentListExpression(((ListExpressionTransformer.UntransformedListExpr) indexExp).exp.getExpressions()));
+                mce.setSourcePosition(bin);
+                return compiler.transform(mce);
+            }
+
+            compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(object.getType()), bin);
+            return null;
+        }
     }
 
     private BytecodeExpr evaluateLogicalOr(final BinaryExpression exp, CompilerTransformer compiler, Label label, boolean onTrue) {

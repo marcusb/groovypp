@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
     FList<Integer> divisors(int n, FList<Integer> alreadyFound = FList.emptyList) {
         if (n > 2) {
-            if(!primes.get()[n]) {
+            if(!primes[n]) {
                 for (p in primes) {
                     int candidate = p.key
                     if (n % candidate == 0)
