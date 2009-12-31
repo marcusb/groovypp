@@ -5,6 +5,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
@@ -102,5 +103,9 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
 
     public static Pattern bitwiseNegate(GString self) {
         return DefaultGroovyMethods.bitwiseNegate(self.toString());
+    }
+
+    public static Iterator<String> iterator(String self) {
+        return DefaultGroovyMethods.toList(self).iterator();
     }
 }

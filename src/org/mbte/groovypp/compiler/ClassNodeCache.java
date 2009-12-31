@@ -42,7 +42,19 @@ public class ClassNodeCache {
         addGlobalDGM();
         initDgm(Arrays.class, false);
         initDgm(Collections.class, false);
-        initDgm(DefaultGroovyMethods.class, Arrays.asList("each", "flatten", "any", "find"), false);
+        initDgm(DefaultGroovyMethods.class, new HashSet<String>(Arrays.asList(
+                "java.lang.Object each(java.lang.Object, groovy.lang.Closure)",
+                "java.util.Iterator each(java.util.Iterator, groovy.lang.Closure)",
+                "java.util.Map each(java.util.Map, groovy.lang.Closure)",
+                "java.util.Collection flatten(java.util.Collection)",
+                "boolean any(java.lang.Object, groovy.lang.Closure)",
+                "boolean any(java.util.Iterator, groovy.lang.Closure)",
+                "boolean any(java.util.Map, groovy.lang.Closure)",
+                "java.lang.Object find(java.lang.Object, groovy.lang.Closure)",
+                "java.lang.Object find(java.util.Iterator, groovy.lang.Closure)",
+                "java.util.Map.Entry find(java.util.Map, groovy.lang.Closure)",
+                "java.lang.Object getAt(java.lang.Object, java.lang.String)",
+                "java.util.Iterator iterator(java.lang.Object)")), false);
     }
 
     private static void initDgm(String klazz) {
@@ -361,17 +373,17 @@ public class ClassNodeCache {
     }
 
     private static void initDgm(final Class klazz, boolean isStatic) {
-        initDgm(klazz, Collections.<String>emptyList(), isStatic);
+        initDgm(klazz, Collections.<String>emptySet(), isStatic);
     }
 
-    private static void initDgm(final Class klazz, List<String> ignore, boolean isStatic) {
+    private static void initDgm(final Class klazz, Set<String> ignore, boolean isStatic) {
         ClassNode classNode = ClassHelper.make(klazz);
         List<MethodNode> methodList = classNode.getMethods();
 
         for (MethodNode methodNode : methodList) {
             Parameter[] parameters = methodNode.getParameters();
             if (methodNode.isPublic() && methodNode.isStatic() && parameters.length > 0) {
-                if (ignore.contains(methodNode.getName()))
+                if (ignore.contains(methodNode.getTypeDescriptor()))
                     continue;
                 
                 ClassNode declaringClass = methodNode.getParameters()[0].getType();
