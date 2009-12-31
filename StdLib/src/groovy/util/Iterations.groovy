@@ -105,4 +105,11 @@ abstract class Iterations {
       op.call(el.key, el.value)
     }
   }
+
+  /**
+   * Default dynamic iteration.
+   */
+  static <T> T each(T self, Closure closure) {
+    return DefaultGroovyMethods.each(self, closure)
+  }
 }
