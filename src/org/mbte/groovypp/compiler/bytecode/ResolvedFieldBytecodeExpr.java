@@ -4,7 +4,6 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -85,9 +84,9 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         cast(TypeUtil.wrapSafely(fieldNode.getType()), TypeUtil.wrapSafely(getType()), mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         checkAssignment();
-        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, (BytecodeExpr) compiler.transform(right), compiler);
+        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right, compiler);
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {

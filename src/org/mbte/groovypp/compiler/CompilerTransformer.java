@@ -3,12 +3,12 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.TypePolicy;
 import groovy.lang.Use;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
@@ -17,15 +17,14 @@ import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
-import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
-
-import org.mbte.groovypp.compiler.types.TypesUtil;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+
+import static org.mbte.groovypp.compiler.transformers.ExprTransformer.transformExpression;
 
 public abstract class CompilerTransformer extends ReturnsAdder implements Opcodes, LocalVarTypeInferenceState {
 
@@ -450,53 +449,6 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         final CastExpression cast = new CastExpression(type, be);
         cast.setSourcePosition(be);
         return (BytecodeExpr) transform(cast);
-
-//        if (TypeUtil.isDirectlyAssignableFrom(type, be.getType()))
-//            return be;
-//
-//        boolean booleanOrString = type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE) || type.equals(ClassHelper.STRING_TYPE);
-//
-//        if (be instanceof MapExpressionTransformer.UntransformedMapExpr) {
-//            if (TypeUtil.isDirectlyAssignableFrom(type, TypeUtil.LINKED_HASH_MAP_TYPE)
-//                || type.implementsInterface(ClassHelper.MAP_TYPE)
-//                || type.equals(ClassHelper.MAP_TYPE)
-//                || booleanOrString) {
-//                return cast(new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)be).exp,this), type);
-//            }
-//            else {
-//                final CastExpression exp = new CastExpression(type, ((MapExpressionTransformer.UntransformedMapExpr)be).exp);
-//                exp.setSourcePosition(be);
-//                return (BytecodeExpr) transform(exp);
-//            }
-//        }
-//
-//        if (be instanceof ListExpressionTransformer.UntransformedListExpr) {
-//            final CastExpression exp = new CastExpression(type, be);
-//            exp.setSourcePosition(be);
-//            return (BytecodeExpr) transform(exp);
-//        }
-//
-//        if (type.equals(ClassHelper.boolean_TYPE) || type.equals(ClassHelper.Boolean_TYPE)) {
-//            return castToBoolean(be, type);
-//        }
-//
-//        if (type.equals(ClassHelper.STRING_TYPE)) {
-//            return castToString(be, type);
-//        }
-//
-//        if (TypeUtil.isAssignableFrom(type, be.getType())) {
-//            return new CastExpressionTransformer.Cast(type, be);
-//        }
-//
-//        if (be.getType().implementsInterface(TypeUtil.TCLOSURE)) {
-//            List<MethodNode> one = ClosureUtil.isOneMethodAbstract(type);
-//            MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) be.getType(), this, type);
-//            ClosureUtil.makeOneMethodClass(be.getType(), type, one, doCall);
-//            return new CastExpressionTransformer.Cast(type, be);
-//        }
-//
-//        addError("Can not cast " + be.getType().getName() + " to " + type.getName(), be);
-//        return null;
     }
 
     public BytecodeExpr castToBoolean(final BytecodeExpr be, final ClassNode type) {

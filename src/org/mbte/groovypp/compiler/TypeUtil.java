@@ -143,6 +143,18 @@ public class TypeUtil {
         return method != null && method.getParameters().length == 0 ? method : null;
     }
 
+    public static MethodNode getReferenceBoxingMethod(ClassNode classNode, ClassNode arg) {
+        if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0
+                || ClassHelper.isPrimitiveType(classNode)) return null;
+        if (!isTransparentClass(classNode)) return null;
+        MethodNode method = MethodSelection.findMethodInClass(classNode, "set", new ClassNode[] {arg});
+        if (method == null || method.getParameters().length != 1) return null;
+        ClassNode paramType = method.getParameters()[0].getType();
+        ClassNode substituted = getSubstitutedType(paramType, method.getDeclaringClass(), classNode);
+        if (!isDirectlyAssignableFrom(ClassHelper.getWrapper(substituted), ClassHelper.getWrapper(arg))) return null;
+        return method;
+    }
+
     private static boolean isTransparentClass(ClassNode node) {
         for (String name : TRANSPARENT_DEREFERENCE_CLASSES) {
             if (node.getName().equals(name)) return true;

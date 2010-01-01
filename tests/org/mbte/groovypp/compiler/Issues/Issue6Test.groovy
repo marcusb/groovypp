@@ -60,4 +60,19 @@ public class Issue6Test extends GroovyShellTestCase {
         foo()
         """
     }
+
+  void test6 () {
+      shell.evaluate """
+      import java.util.concurrent.atomic.AtomicBoolean
+      @Typed void foo () {
+         Reference r = [0]
+         r = 1
+         assert r == 1
+         AtomicBoolean ab = [true]
+         ab = false
+         assert ab == false
+      }
+      foo()
+      """
+  }
 }

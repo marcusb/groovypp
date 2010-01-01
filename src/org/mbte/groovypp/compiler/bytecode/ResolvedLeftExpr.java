@@ -12,7 +12,7 @@ public abstract class ResolvedLeftExpr extends BytecodeExpr {
         super(parent, type);
     }
 
-    public abstract BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler);
+    public abstract BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler);
 
     public abstract BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler);
 }

@@ -72,9 +72,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY) != null){
                     ClassNode componentType = compiler.getCollectionType(cast.getType());
                     improveListTypes(listExpression, componentType);
-                    final List list = listExpression.getExpressions();
+                    final List<Expression> list = listExpression.getExpressions();
                     for (int i = 0; i != list.size(); ++i) {
-                        list.set(i, compiler.transform((Expression) list.get(i)));
+                        list.set(i, compiler.transform(list.get(i)));
                     }
 
                     ClassNode collType = calcResultCollectionType(cast, componentType, compiler);
@@ -91,9 +91,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 // Assignable from ArrayList but not Iterable
                 ClassNode componentType = ClassHelper.OBJECT_TYPE;
                 improveListTypes(listExpression, componentType);
-                final List list = listExpression.getExpressions();
+                final List<Expression> list = listExpression.getExpressions();
                 for (int i = 0; i != list.size(); ++i) {
-                    list.set(i, compiler.transform((Expression) list.get(i)));
+                    list.set(i, compiler.transform(list.get(i)));
                 }
 
                 ClassNode collType = TypeUtil.ARRAY_LIST_TYPE;
@@ -150,12 +150,12 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
     private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
 
-        final List list = exp.getMapEntryExpressions();
+        final List<MapEntryExpression> list = exp.getMapEntryExpressions();
 
         Expression superArgs = null;
 
         for (int i = 0; i != list.size(); ++i) {
-            final MapEntryExpression me = (MapEntryExpression) list.get(i);
+            final MapEntryExpression me = list.get(i);
 
             Expression key = me.getKeyExpression();
             if (!(key instanceof ConstantExpression) || !(((ConstantExpression)key).getValue() instanceof String)) {
@@ -174,7 +174,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         final List<MapEntryExpression> fields = new LinkedList<MapEntryExpression>();
 
         for (int i = 0; i != list.size(); ++i) {
-            final MapEntryExpression me = (MapEntryExpression) list.get(i);
+            final MapEntryExpression me = list.get(i);
 
             String keyName = (String) ((ConstantExpression)me.getKeyExpression()).getValue();
             Expression value = me.getValueExpression();
@@ -188,7 +188,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
             final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler);
             if (prop != null) {
-                ClassNode propType = null;
+                ClassNode propType;
                 if (prop instanceof MethodNode)
                     propType = ((MethodNode)prop).getParameters()[0].getType();
                 else

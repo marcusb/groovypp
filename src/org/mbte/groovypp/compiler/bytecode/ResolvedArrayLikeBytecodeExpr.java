@@ -7,7 +7,6 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
@@ -36,10 +35,10 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         getterExpr.visit(mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         if (!checkSetter(parent, compiler)) return null;
 
-        return ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, compiler.transform(right)), compiler);
+        return ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, right), compiler);
     }
 
     private boolean checkSetter(ASTNode exp, CompilerTransformer compiler) {

@@ -14,6 +14,8 @@ import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.Collections;
+
 import static org.codehaus.groovy.ast.ClassHelper.int_TYPE;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
@@ -302,14 +304,19 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateAssign(BinaryExpression be, CompilerTransformer compiler) {
-        Expression left = compiler.transform(be.getLeftExpression());
+        BytecodeExpr left = (BytecodeExpr) compiler.transform(be.getLeftExpression());
 
         if (!(left instanceof ResolvedLeftExpr)) {
             compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
             return null;
         }
 
-        return ((ResolvedLeftExpr) left).createAssign(be, be.getRightExpression(), compiler);
+        BytecodeExpr right = (BytecodeExpr) compiler.transform(be.getRightExpression());
+        MethodNode boxing = TypeUtil.getReferenceBoxingMethod(left.getType(), right.getType());
+        if (boxing != null) {
+            return ResolvedMethodBytecodeExpr.create(be, boxing, left, new ArgumentListExpression(right), compiler);
+        }
+        return ((ResolvedLeftExpr) left).createAssign(be, right, compiler);
     }
 
     private Expression evaluateMathOperationAssign(BinaryExpression be, Token method, CompilerTransformer compiler) {

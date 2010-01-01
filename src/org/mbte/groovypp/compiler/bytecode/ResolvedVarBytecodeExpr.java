@@ -28,10 +28,9 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         load(getType(), var.getIndex(), mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, Expression right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
         if (ve.isDynamicTyped()) {
-            right = compiler.transform(right);
             if (right instanceof ListExpressionTransformer.UntransformedListExpr)
                 right = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)right).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
             vtype = right.getType();
@@ -41,7 +40,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             right = compiler.cast(right, vtype);
         }
 
-        final BytecodeExpr finalRight = (BytecodeExpr) right;
+        final BytecodeExpr finalRight = right;
 
         return new BytecodeExpr(parent, vtype) {
             protected void compile(MethodVisitor mv) {
@@ -57,7 +56,7 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {
         final BinaryExpression op = new BinaryExpression(this, method, right);
         op.setSourcePosition(parent);
-        return createAssign(parent, op, compiler);
+        return createAssign(parent, (BytecodeExpr) compiler.transform(op), compiler);
     }
 
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {

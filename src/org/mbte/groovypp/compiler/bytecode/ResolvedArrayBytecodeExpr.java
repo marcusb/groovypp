@@ -7,7 +7,6 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -37,8 +36,8 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
         }
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, Expression right0, CompilerTransformer compiler) {
-        final BytecodeExpr right = (BytecodeExpr) compiler.transform(compiler.cast(right0, getType()));
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right0, CompilerTransformer compiler) {
+        final BytecodeExpr right = compiler.cast(right0, getType());
         return new BytecodeExpr(parent, getType()) {
             protected void compile(MethodVisitor mv) {
                 array.visit(mv);
