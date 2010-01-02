@@ -7,6 +7,8 @@ public class Issue6Test extends GroovyShellTestCase {
            Reference r = [1]
            int t = r
            assert t == 1
+           Reference rr = [null]
+           assert rr != null
         }
         foo()
         """

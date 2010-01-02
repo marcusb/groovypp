@@ -14,8 +14,6 @@ import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
-import java.util.Collections;
-
 import static org.codehaus.groovy.ast.ClassHelper.int_TYPE;
 
 public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpression> {
@@ -155,16 +153,15 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateCompareTo(BinaryExpression be, CompilerTransformer compiler) {
-        final BytecodeExpr left = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
-        final BytecodeExpr right = unboxReference(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+        final Operands operands = new Operands(be, compiler);
         return new BytecodeExpr(be, ClassHelper.Integer_TYPE) {
             protected void compile(MethodVisitor mv) {
-                left.visit(mv);
-                if (ClassHelper.isPrimitiveType(left.getType()))
-                    box(left.getType(), mv);
-                right.visit(mv);
-                if (ClassHelper.isPrimitiveType(right.getType()))
-                    box(right.getType(), mv);
+                operands.getLeft().visit(mv);
+                if (ClassHelper.isPrimitiveType(operands.getLeft().getType()))
+                    box(operands.getLeft().getType(), mv);
+                operands.getRight().visit(mv);
+                if (ClassHelper.isPrimitiveType(operands.getRight().getType()))
+                    box(operands.getRight().getType(), mv);
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "compareTo", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Integer;");
             }
         };
@@ -238,8 +235,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateMathOperation(final BinaryExpression be, String method, final CompilerTransformer compiler) {
-        final BytecodeExpr l = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
-        final BytecodeExpr r = unboxReference(be, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+        final Operands operands = new Operands(be, compiler);
+        final BytecodeExpr l = operands.getLeft();
+        final BytecodeExpr r = operands.getRight();
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             if (be.getOperation().getType() == Types.POWER)
@@ -443,11 +441,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue, final int op) {
-        BytecodeExpr l = unboxReference(be, (BytecodeExpr) compiler.transform(be.getLeftExpression()), compiler);
+        final Operands operands = new Operands(be, compiler);
+        BytecodeExpr l = operands.getLeft();
         if (l instanceof ListExpressionTransformer.UntransformedListExpr)
             l = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)l).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
 
-        BytecodeExpr r = unboxReference(be,  (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+        BytecodeExpr r = operands.getRight();
         if (r instanceof ListExpressionTransformer.UntransformedListExpr)
             r = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)r).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
 
@@ -629,6 +628,28 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             mv.visitLabel(_false);
             mv.visitInsn(ICONST_0);
             mv.visitLabel(_end);
+        }
+    }
+
+    private class Operands {
+        private BytecodeExpr left;
+        private BytecodeExpr right;
+
+        public Operands(BinaryExpression be, CompilerTransformer compiler) {
+            left = (BytecodeExpr) compiler.transform(be.getLeftExpression());
+            right = (BytecodeExpr) compiler.transform(be.getRightExpression());
+            if (!TypeUtil.areTypesConvertible(left.getType(), right.getType())) {
+                left = unboxReference(be, left, compiler);
+                right = unboxReference(be, right, compiler);
+            }
+        }
+
+        public BytecodeExpr getLeft() {
+            return left;
+        }
+
+        public BytecodeExpr getRight() {
+            return right;
         }
     }
 }

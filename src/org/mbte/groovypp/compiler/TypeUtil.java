@@ -173,6 +173,11 @@ public class TypeUtil {
                 || to.isInterface() && implementsInterface(to, from);
     }
 
+    public static boolean areTypesConvertible(ClassNode t1, ClassNode t2) {
+        return (t1.isInterface() && t2.isInterface()) || isDirectlyAssignableFrom(t1, t2) ||
+                isDirectlyAssignableFrom(t2, t1);
+    }
+
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
         return type1.implementsInterface(type);
     }
