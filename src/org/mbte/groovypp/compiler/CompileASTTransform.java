@@ -113,8 +113,11 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
             final Statement code = mn.getCode();
             if (!(code instanceof BytecodeSequence)) {
-                if (!mn.getName().equals("$doCall"))
-                    StaticMethodBytecode.replaceMethodCode(source, context, mn, new CompilerStack(null), localDebug ? 0 : -1, policy, mn.getDeclaringClass().getName() + "$" + (mn.getName().equals("<init>") ? "_init_" : mn.getName()));
+                if (!mn.getName().equals("$doCall")) {
+                    String name = mn.getName().equals("<init>") ? "_init_" :
+                            mn.getName().equals("<clinit>") ? "_clinit_" : mn.getName();
+                    StaticMethodBytecode.replaceMethodCode(source, context, mn, new CompilerStack(null), localDebug ? 0 : -1, policy, mn.getDeclaringClass().getName() + "$" + name);
+                }
             }
         }
 
