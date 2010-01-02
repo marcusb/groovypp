@@ -36,7 +36,7 @@ void generate () {
 
     def primeCache = new PrimeCache()
 
-    def queue = new LinkedBlockingQueue()
+    def queue = new LinkedBlockingQueue<List>()
 
     def builderProcess = Thread.start {
         new MarkupBuilder().numbers {

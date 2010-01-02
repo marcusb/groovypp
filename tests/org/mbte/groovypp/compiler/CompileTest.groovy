@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler
 
 import static groovy.CompileTestSupport.shouldCompile
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class CompileTest extends GroovyShellTestCase {
 
@@ -327,5 +328,15 @@ u()
     C.foo()
     """)
     assertEquals "a", res
+  }
+
+  void testUnassignableTypes () {
+    shouldNotCompile """
+      @Typed void foo () {
+         int t = 0
+         t = new Date()
+      }
+      foo()
+      """
   }
 }
