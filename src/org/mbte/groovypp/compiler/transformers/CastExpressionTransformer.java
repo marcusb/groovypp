@@ -319,7 +319,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
 
         ClassNodeCache.clearCache (_doCallMethod.getDeclaringClass());
-        StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+        StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, _doCallMethod.getDeclaringClass().getName());
     }
 
     private ClassNode createNewType(ClassNode type, CompilerTransformer compiler) {

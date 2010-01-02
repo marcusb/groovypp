@@ -55,7 +55,17 @@ public class ClassNodeCache {
                 "java.lang.Object find(java.util.Iterator, groovy.lang.Closure)",
                 "java.util.Map.Entry find(java.util.Map, groovy.lang.Closure)",
                 "java.lang.Object getAt(java.lang.Object, java.lang.String)",
-                "java.util.Iterator iterator(java.lang.Object)")), false);
+                "void putAt(java.lang.Object, java.lang.String, java.lang.Object)",
+                "java.util.Iterator iterator(java.lang.Object)",
+                "void eachFile(java.io.File, groovy.lang.Closure)",
+                "void eachDir(java.io.File, groovy.lang.Closure)",
+                "void eachFileRecurse(java.io.File, groovy.lang.Closure)",
+                "void eachDirRecurse(java.io.File, groovy.lang.Closure)",
+                "java.lang.String eachMatch(java.lang.String, java.lang.String, groovy.lang.Function1)",
+                "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Function1)",
+                "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Function1)",
+                "java.util.Map sort(java.util.Map, groovy.lang.Closure)"
+        )), false);
     }
 
     private static void initDgm(String klazz) {

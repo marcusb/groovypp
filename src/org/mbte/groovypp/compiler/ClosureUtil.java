@@ -45,7 +45,7 @@ public class ClosureUtil {
             MethodNode one = null;
             for (Iterator<MethodNode> it = am.iterator(); it.hasNext();) {
                 MethodNode mn = it.next();
-                if (!likeGetter(mn) && !likeSetter(mn) && !traitMethod(mn)) {
+                if (!likeGetter(mn) && !likeSetter(mn) && !traitMethod(mn) && !objectMethod(mn)) {
                     if (one != null) {
                         info.isOneMethodAbstract = NONE;
                         return null;
@@ -70,6 +70,10 @@ public class ClosureUtil {
             return null;
 
         return info.isOneMethodAbstract;
+    }
+
+    private static boolean objectMethod(MethodNode mn) {
+        return mn.getName().equals("equals") && mn.getReturnType().equals(ClassHelper.boolean_TYPE) && mn.getParameters() != null && mn.getParameters().length == 1;
     }
 
     private static boolean traitMethod(MethodNode mn) {
@@ -369,6 +373,7 @@ public class ClosureUtil {
                 newType.addField(astVar.getName(), Opcodes.ACC_FINAL, vtype, null);
             }
         }
+        ClassNodeCache.clearCache(newType);
     }
 
     public static Parameter[] createClosureConstructorParams(ClassNode newType, CompilerTransformer compiler) {

@@ -418,7 +418,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             else {
                 if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
                     ClosureUtil.improveClosureType(change.original, ClassHelper.CLOSURE_TYPE);
-                    StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)change.original).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, compiler.classNode.getName());
+                    StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)change.original).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, change.original.getName());
                     argTypes [change.index] = change.original;
                     it.remove();
                 }

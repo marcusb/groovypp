@@ -112,6 +112,28 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     answer
   }
 
+    /**
+     * Group the elements of the input collection according to the grouping function.
+     * @param self input collection.
+     * @param op grouping function.
+     * @return @link{java.util.Map} associating keys to lists of elements in the original collection,
+     * matching that key.
+     */
+    @Typed
+    static <T, K> Map<K, List<T>> groupBy(Iterator<T> self, Function1<T, K> op) {
+      def answer = (Map<K, List<T>>) [:]
+      for (element in self) {
+        def value = op.call(element)
+        def list = answer.get(value)
+        if (list == null) {
+          list = new LinkedList<T>()
+          answer[value] = list
+        }
+        list << element
+      }
+      answer
+    }
+
   /**
    * Flattens the results of applying the mapping function to each element of input iterator.
    * @param self input iterator of iterators.

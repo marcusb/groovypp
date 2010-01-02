@@ -444,7 +444,7 @@ public class TypeUtil {
     private static ClassNode getBindingNormalized(String name, String[] typeParameters, GenericsType[] typeArgs) {
         GenericsType genericType = getBinding(name, typeParameters, typeArgs);
         if (genericType == null) return null;
-        if (genericType.isWildcard()) return genericType.getUpperBounds()[0];
+        if (isExtends(genericType)) return genericType.getUpperBounds()[0];
         return genericType.getType();
     }
 
