@@ -376,14 +376,14 @@ class RegularExpressionsTest extends GroovyShellTestCase {
         def result = []
         def letters = []
         def numbers = []
-        string.eachMatch(/([a-z]):(\\d)/) {full, group1, group2 ->
-            result << full
-            letters << group1
-            numbers << group2
-        }
-        assert result == ['a:1', 'b:2', 'c:3']
-        assert letters.join('') == 'abc'
-        assert numbers.join('') == '123'
+//        string.eachMatch(/([a-z]):(\\d)/) {full, group1, group2 ->
+//            result << full
+//            letters << group1
+//            numbers << group2
+//        }
+//        assert result == ['a:1', 'b:2', 'c:3']
+//        assert letters.join('') == 'abc'
+//        assert numbers.join('') == '123'
 
         result = []
         letters = []
