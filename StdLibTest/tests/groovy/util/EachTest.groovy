@@ -128,4 +128,12 @@ u()
         }
         assertEquals (["A", 21, "B", 41], res)
     }
+
+    void testFoldLeftWithMap () {
+        def res = [1,2,3,3,2,1].foldLeft (new HashMap<?,Integer>()) { el, map ->
+            map[el] = map.get(el,0) + 1
+            map
+        }
+        assertEquals res, [1:2, 2:2, 3:2]
+    }
 }

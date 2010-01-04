@@ -133,7 +133,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
             if (this.key == key) {
                 if (this.value == value) return this else return new LeafNode(hash, key, value)
             } else if (this.hash == hash) {
-                return new CollisionNode(hash, FList.emptyList + [this.key, this.value] + [key, value])
+                return new CollisionNode(hash, FList.emptyList + new BucketElement(this.key, this.value) + new BucketElement(key, value))
             } else {
                 return bitmap(shift, hash, key, value)
             }

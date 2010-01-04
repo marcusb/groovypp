@@ -48,7 +48,7 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
         private final BytecodeExpr internal;
 
         public NotBytecodeExpr(NotExpression exp, BytecodeExpr internal) {
-            super(exp, ClassHelper.Boolean_TYPE);
+            super(exp, ClassHelper.boolean_TYPE);
             this.internal = internal;
         }
 
@@ -60,7 +60,6 @@ public class BooleanExpressionTransformer extends ExprTransformer<BooleanExpress
             mv.visitInsn(POP);
             mv.visitInsn(ICONST_1);
             mv.visitLabel(ok);
-            box(ClassHelper.boolean_TYPE, mv);
         }
     }
 }

@@ -11,6 +11,7 @@ import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpression>{
     public Expression transform(TernaryExpression exp, CompilerTransformer compiler) {
@@ -54,25 +55,33 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
     private Expression transfromElvis(ElvisOperatorExpression ee, CompilerTransformer compiler) {
         ee = (ElvisOperatorExpression) ee.transformExpression(compiler);
         final ElvisOperatorExpression eee = ee;
-        return new Elvis(ee, eee);
+        final BytecodeExpr be = (BytecodeExpr) ee.getBooleanExpression().getExpression();
+        final BytecodeExpr brunch = compiler.castToBoolean( new BytecodeExpr(be, be.getType()){
+            protected void compile(MethodVisitor mv) {
+                be.visit(mv);
+                dup(be.getType(), mv);
+            }
+        }, ClassHelper.boolean_TYPE);
+        return new Elvis(ee, eee, brunch);
     }
 
     private static class Elvis extends BytecodeExpr {
         private final ElvisOperatorExpression eee;
+        private BytecodeExpr brunch;
 
-        public Elvis(ElvisOperatorExpression ee, ElvisOperatorExpression eee) {
+        public Elvis(ElvisOperatorExpression ee, ElvisOperatorExpression eee, BytecodeExpr brunch) {
             super(ee, TypeUtil.commonType(ee.getBooleanExpression().getExpression().getType(), ee.getFalseExpression().getType()));
             this.eee = eee;
+            this.brunch = brunch;
         }
 
         protected void compile(MethodVisitor mv) {
-            final BytecodeExpr be = (BytecodeExpr) eee.getBooleanExpression().getExpression();
-            be.visit(mv);
-            dup(be.getType(), mv);
+            brunch.visit(mv);
 
             Label elseLabel = new Label();
-            StaticCompiler.branch(be, IFEQ, elseLabel, mv);
+            mv.visitJumpInsn(Opcodes.IFEQ, elseLabel);
 
+            final BytecodeExpr be = (BytecodeExpr) eee.getBooleanExpression().getExpression();
             box (be.getType(), mv);
             cast(TypeUtil.wrapSafely(be.getType()), TypeUtil.wrapSafely(getType()), mv);
             unbox(getType(), mv);

@@ -4,9 +4,11 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
+import org.mbte.groovypp.compiler.transformers.ConstantExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -70,6 +72,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 }
             }
         }
+
+        while (bargs.getExpressions().size() < parameters.length)
+            bargs.getExpressions().add(compiler.cast(ConstantExpression.NULL, parameters[bargs.getExpressions().size()].getType()));
 
         for (int i = 0; i != parameters.length; ++i) {
             final BytecodeExpr arg = (BytecodeExpr) bargs.getExpressions().get(i);
