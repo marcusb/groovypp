@@ -75,6 +75,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
     @Override
     public void visitAssertStatement(AssertStatement statement) {
+        visitStatement(statement);
         Label noError = new Label();
 
         BytecodeExpr condition = transformLogical(statement.getBooleanExpression().getExpression(), noError, true);
