@@ -27,7 +27,8 @@
     <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
     <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
 	<property name="test.reports" location="${output.dir}/test-reports"/>
-
+	<property name="temp.compile.dir" location="_tmp_" />
+	
 	<property name="jar.name" location="${app.name}.jar"/>
 	<property name="target.jvm" value="5" />
 
@@ -144,7 +145,8 @@
     </target>
 
     <target  name="test" depends="compile.tests.stdlibtest, compile.tests.stdlib, compile.tests.compiler" description="run unit tests">
-        <junit printsummary="yes" fork="yes" forkmode="perBatch">
+		<mkdir dir="${temp.compile.dir}" />
+        <junit printsummary="yes" fork="yes" forkmode="perBatch" dir="${temp.compile.dir}">
             <jvmarg value="-Xmx512m"/>
 
             <classpath>
@@ -171,6 +173,7 @@
     		</fileset>
     		<report todir="${test.reports}"/>
     	</junitreport>
+		<delete dir="${temp.compile.dir}" />
     </target>
 
     <target name="make.jar" depends="clean,compile.examples,test" description="Build application jar file">
