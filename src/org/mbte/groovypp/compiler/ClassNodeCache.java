@@ -41,7 +41,9 @@ public class ClassNodeCache {
         initDgm(ArraysMethods.class, false);
         addGlobalDGM();
         initDgm(Arrays.class, false);
-        initDgm(Collections.class, false);
+        initDgm(Collections.class, new HashSet<String>(Arrays.asList(
+                "void sort(java.util.List)",
+                "void sort(java.util.List, java.util.Comparator)")), false);
         initDgm(DefaultGroovyMethods.class, new HashSet<String>(Arrays.asList(
                 "java.lang.Object each(java.lang.Object, groovy.lang.Closure)",
                 "java.util.Iterator each(java.util.Iterator, groovy.lang.Closure)",
