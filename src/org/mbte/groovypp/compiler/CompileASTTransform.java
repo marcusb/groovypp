@@ -17,9 +17,7 @@ import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.objectweb.asm.Opcodes;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Handles generation of code for the @Typed annotation
@@ -37,7 +35,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
 
-        LinkedList toProcess = new LinkedList();
+        Map<MethodNode, TypePolicy> toProcess = new HashMap<MethodNode, TypePolicy>();
         final ClassNode classNode;
 
         OpenVerifier verifier = new OpenVerifier();
@@ -47,8 +45,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
             classNode = parent.getDeclaringClass();
             if (methodPolicy != TypePolicy.DYNAMIC) {
-                toProcess.addLast(parent);
-                toProcess.addLast(methodPolicy);
+                toProcess.put((MethodNode) parent, methodPolicy);
             }
 
             verifier.visitClass(classNode);
@@ -59,8 +56,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             final MethodNode mn = (MethodNode) parent;
             classNode = mn.getDeclaringClass();
             if (methodPolicy != TypePolicy.DYNAMIC) {
-                toProcess.addLast(mn);
-                toProcess.addLast(methodPolicy);
+                toProcess.put(mn, methodPolicy);
             }
 
             verifier.visitClass(classNode);
@@ -71,16 +67,17 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             addMetaClassField(classNode);
             verifier.visitClass(classNode);
 
-            allMethods(source, toProcess, classNode, classPolicy, true);
+            allMethods(source, toProcess, classNode, classPolicy);
         } else if (parent instanceof PackageNode) {
             TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
-            for (ClassNode node : source.getAST().getClasses()) {
-                TypePolicy classPolicy = getPolicy(node, source, modulePolicy);
+            for (ClassNode clazz : source.getAST().getClasses()) {
+                if (clazz instanceof ClosureClassNode) continue;
+                if (isAnnotated(clazz)) continue;
 
-                addMetaClassField(node);
-                verifier.visitClass(node);
+                addMetaClassField(clazz);
+                verifier.visitClass(clazz);
 
-                allMethods(source, toProcess, node, classPolicy, false);
+                allMethods(source, toProcess, clazz, modulePolicy);
             }
         } else {
             int line = parent.getLineNumber();
@@ -94,11 +91,10 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         final Expression member = ((AnnotationNode) nodes[0]).getMember("debug");
         boolean debug = member != null && member instanceof ConstantExpression && ((ConstantExpression) member).getValue().equals(Boolean.TRUE);
 
-        final HashMap<String, Integer> usedNames = new HashMap<String, Integer>();
         SourceUnitContext context = new SourceUnitContext();
-        while (toProcess.size() > 0) {
-            final MethodNode mn = (MethodNode) toProcess.removeFirst();
-            final TypePolicy policy = (TypePolicy) toProcess.removeFirst();
+        for (Map.Entry<MethodNode, TypePolicy> entry : toProcess.entrySet()) {
+            final MethodNode mn = entry.getKey();
+            final TypePolicy policy = entry.getValue();
 
             final List<AnnotationNode> anns = mn.getAnnotations(COMPILE_TYPE);
             boolean localDebug = debug;
@@ -133,6 +129,14 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         return;
     }
 
+    private boolean isAnnotated(ClassNode clazz) {
+        while (clazz != null) {
+            if(!clazz.getAnnotations(COMPILE_TYPE).isEmpty()) return true;
+            clazz = clazz.getOuterClass();
+        }
+        return false;
+    }
+
     private void addMetaClassField(ClassNode node) {
         if (node.isInterface()) return;
         FieldNode meta = node.getDeclaredField("metaClass");
@@ -142,13 +146,12 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         }
     }
 
-    private void allMethods(SourceUnit source, LinkedList toProcess, ClassNode classNode, TypePolicy classPolicy, boolean inners) {
+    private void allMethods(SourceUnit source, Map<MethodNode, TypePolicy> toProcess, ClassNode classNode, TypePolicy classPolicy) {
         for (MethodNode mn : classNode.getMethods()) {
             if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                 TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
                 if (methodPolicy != TypePolicy.DYNAMIC) {
-                    toProcess.addLast(mn);
-                    toProcess.addLast(methodPolicy);
+                    toProcess.put(mn, methodPolicy);
                 }
             }
         }
@@ -157,25 +160,21 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                 TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
                 if (methodPolicy != TypePolicy.DYNAMIC) {
-                    toProcess.addLast(mn);
-                    toProcess.addLast(methodPolicy);
+                    toProcess.put(mn, methodPolicy);
                 }
             }
         }
 
-        if (inners) {
-            for (ClassNode node : source.getAST().getClasses()) {
-                if (node instanceof InnerClassNode && classNode.equals(node.getOuterClass())) {
-                    TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
+        Iterator<InnerClassNode> inners = classNode.getInnerClasses();
+        while (inners.hasNext()) {
+            InnerClassNode node = inners.next();
+            TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
 
-                    OpenVerifier verifier = new OpenVerifier();
-                    addMetaClassField(node);
-                    verifier.visitClass(node);
+            OpenVerifier verifier = new OpenVerifier();
+            addMetaClassField(node);
+            verifier.visitClass(node);
 
-                    allMethods(source, toProcess, node, innerClassPolicy, inners);
-                }
-            }
-        }
+            allMethods(source, toProcess, node, innerClassPolicy);        }
     }
 
     private TypePolicy getPolicy(AnnotatedNode ann, SourceUnit source, TypePolicy def) {
