@@ -23,7 +23,7 @@ public class CompiledClosureBytecodeExpr extends BytecodeExpr {
     }
 
     protected void compile(MethodVisitor mv) {
-        ClosureUtil.createClosureConstructor(getType(), constrParams, null);
+        ClosureUtil.createClosureConstructor(getType(), constrParams, null, compiler);
         ClosureUtil.instantiateClass(getType(), compiler, constrParams, null, mv);
     }
 

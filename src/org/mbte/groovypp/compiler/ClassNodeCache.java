@@ -63,9 +63,8 @@ public class ClassNodeCache {
                 "void eachDir(java.io.File, groovy.lang.Closure)",
                 "void eachFileRecurse(java.io.File, groovy.lang.Closure)",
                 "void eachDirRecurse(java.io.File, groovy.lang.Closure)",
-                "java.lang.String eachMatch(java.lang.String, java.lang.String, groovy.lang.Function1)",
-                "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Function1)",
-                "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Function1)",
+                "java.lang.String eachMatch(java.lang.String, java.lang.String, groovy.lang.Closure)",
+                "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Closure)",
                 "java.util.Map sort(java.util.Map, groovy.lang.Closure)",
                 "java.util.List sort(java.util.Collection, groovy.lang.Closure)"
         )), false);
@@ -122,8 +121,12 @@ public class ClassNodeCache {
             info.constructors = list;
 
             List constructors = type.redirect().getDeclaredConstructors();
-            if (constructors.isEmpty())
-                list.add(new ConstructorNode(Opcodes.ACC_PUBLIC, null));
+            if (constructors.isEmpty()) {
+                ConstructorNode constructorNode = new ConstructorNode(Opcodes.ACC_PUBLIC, null);
+                constructorNode.setSynthetic(true);
+                type.addConstructor(constructorNode);
+                list.add(constructorNode);
+            }
             else
                 for (Object o : constructors) {
                     ConstructorNode cn = (ConstructorNode) o;

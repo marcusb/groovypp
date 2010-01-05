@@ -9,6 +9,8 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.MethodVisitor;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -261,7 +263,7 @@ public class ClosureUtil {
         }
     }
 
-    public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams, Expression superArgs) {
+    public static void createClosureConstructor(final ClassNode newType, final Parameter[] constrParams, Expression superArgs, CompilerTransformer compiler) {
 
         final ClassNode superClass = newType.getSuperClass();
 
@@ -326,12 +328,21 @@ public class ClosureUtil {
         });
 
 
+        BlockStatement code = new BlockStatement();
+        code.addStatement(new ExpressionStatement(superCall));
+
         ConstructorNode cn = new ConstructorNode(
                     Opcodes.ACC_PUBLIC,
                     finalConstrParams,
                     ClassNode.EMPTY_ARRAY,
-                new BlockStatement(new Statement[] { new ExpressionStatement(superCall), fieldInit, ReturnStatement.RETURN_NULL_OR_VOID}, new VariableScope()));
+                code);
         newType.addConstructor(cn);
+
+        code.addStatement(fieldInit);
+
+        new OpenVerifier().visitClass(newType);
+
+        StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, cn, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, newType.getName());
 
         if (newType.getOuterClass() != null && newType.getMethods("methodMissing").isEmpty()) {
             newType.addMethod("methodMissing",

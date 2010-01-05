@@ -243,7 +243,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             for (int i = 0; i != ll.size(); ++i)
                 ll.set(i, compiler.cast(ll.get(i), constructor.getParameters()[i].getType()));
 
-            ClosureUtil.createClosureConstructor(objType, constrParams, superArgs);
+            ClosureUtil.createClosureConstructor(objType, constrParams, superArgs, compiler);
 
             for (MapEntryExpression me : fields) {
                 final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();

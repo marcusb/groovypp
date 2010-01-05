@@ -291,7 +291,7 @@ class RegularExpressionsTest extends GroovyShellTestCase {
 
   void testRyhmeMatchGina() {
     shell.evaluate """
-        @Typed
+        @Typed(debug=true)
         def u () {
           def myFairStringy = 'The rain in Spain stays mainly in the plain!'
           def BOUNDS = /\\b/
@@ -314,7 +314,7 @@ class RegularExpressionsTest extends GroovyShellTestCase {
 
   void testEachMatchWithPattern() {
     shell.evaluate """
-        @Typed
+        @Typed(debug=true)
         def u () {
           def compiledPattern = ~/.at/
           def result = []
