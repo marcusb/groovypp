@@ -394,7 +394,7 @@ public class TypeUtil {
                 if (oldUpper != null) {
                     upperBounds = new ClassNode[oldUpper.length];
                     for (int j = 0; j < upperBounds.length; j++) {
-                        upperBounds[j] = getSubstitutedTypeInner(oldUpper[i], typeVariables, typeArgs);
+                        upperBounds[j] = getSubstitutedTypeInner(oldUpper[j], typeVariables, typeArgs);
 
                     }
                 }
