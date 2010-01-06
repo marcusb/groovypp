@@ -1,10 +1,9 @@
-@Typed
 package groovy.util
 
 import java.util.regex.Pattern
 import java.util.regex.Matcher
 
-public class Strings {
+@Typed class Strings {
 
     /**
      * Process each regex group matched substring of the given string. If the closure
@@ -17,7 +16,7 @@ public class Strings {
      * @param closure a closure with one parameter
      * @return the source string
      */
-    public static String eachMatch(String self, String regex, Function1<?,?> closure) {
+    static String eachMatch(CharSequence self, String regex, Function1<?,?> closure) {
         eachMatch(self, Pattern.compile(regex), closure)
     }
 
@@ -32,7 +31,7 @@ public class Strings {
      * @param closure a closure with one parameter
      * @return the source string
      */
-    public static String eachMatch(String self, Pattern pattern, Function1<?,?> closure) {
+    static String eachMatch(CharSequence self, Pattern pattern, Function1<?,?> closure) {
         pattern.matcher(self).iterator().each(closure)
         self
     }

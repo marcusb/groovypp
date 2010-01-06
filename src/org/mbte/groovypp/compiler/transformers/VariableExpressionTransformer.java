@@ -93,6 +93,12 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
         }
     }
 
+    public static class ThisSpecial extends This {
+        public ThisSpecial(VariableExpression exp, CompilerTransformer compiler) {
+            super(exp, compiler);
+        }
+    }
+
     public static class Super extends ThisBase {
         public Super(VariableExpression exp, CompilerTransformer compiler) {
             super(exp, compiler.classNode.getSuperClass());

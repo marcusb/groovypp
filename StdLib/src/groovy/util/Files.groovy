@@ -1,6 +1,8 @@
-@Typed package groovy.util
+package groovy.util
 
-public class Files {
+import java.nio.ByteBuffer
+
+@Typed class Files {
     /**
      * This method is used to throw useful exceptions when the eachFile* and eachDir closure methods
      * are used incorrectly.
@@ -120,5 +122,62 @@ public class Files {
         def files = self.listFiles()
         [files.iterator(),
          files.iterator().filter{f ->  f.directory}.map { f -> f.recurseFileIterator() }.flatten ()].iterator().flatten ()
+    }
+
+    static byte [] getBytes (File file) {
+        def size = file.length()
+        def io = new FileInputStream(file)
+        try {
+            def channel = io.channel
+            try {
+                def b = new byte[size]
+                def buf = ByteBuffer.wrap(b)
+                for (def k = 0; (k += channel.read(buf)) < size;) {}
+                b
+            }
+            finally {
+                channel.close ()
+            }
+        }
+        finally {
+            io.close ()
+        }
+    }
+
+    static CharSequence getCharSequence (File file) {
+        new BytesCharSequence(file.bytes)
+    }
+
+    private static class BytesCharSequence implements CharSequence {
+
+        private final byte [] b
+        private final int start
+        private final int end
+
+        BytesCharSequence(byte [] b) {
+            this(b, 0, b.length)
+        }
+
+        BytesCharSequence(byte [] b, int start, int end) {
+            this.@b = b
+            this.@start = start
+            this.@end = end
+        }
+
+        final int length() {
+            end - start
+        }
+
+        char charAt(int index) {
+            b [start + index]
+        }
+
+        CharSequence subSequence(int start, int end) {
+            new BytesCharSequence(this.@start + start, this.@end + end)
+        }
+
+        String toString() {
+            new String(b, start, end-start)
+        }
     }
 }

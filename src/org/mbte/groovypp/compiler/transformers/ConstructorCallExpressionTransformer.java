@@ -187,7 +187,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             return ResolvedMethodBytecodeExpr.create(exp, constructor,
                     exp.isSuperCall() ?
                         new VariableExpressionTransformer.Super(VariableExpression.SUPER_EXPRESSION, compiler)
-                      : new VariableExpressionTransformer.This(VariableExpression.THIS_EXPRESSION, compiler), 
+                      : new VariableExpressionTransformer.ThisSpecial(VariableExpression.THIS_EXPRESSION, compiler), 
                     (ArgumentListExpression) newArgs, compiler);
         }
 

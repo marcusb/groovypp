@@ -244,7 +244,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 op = INVOKEINTERFACE;
 
             if (object != null) {
-                if (object instanceof VariableExpressionTransformer.Super) {
+                if (object instanceof VariableExpressionTransformer.Super || object instanceof VariableExpressionTransformer.ThisSpecial) {
                     op = INVOKESPECIAL;
                 }
 

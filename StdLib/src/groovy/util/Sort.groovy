@@ -1,6 +1,6 @@
-@Typed package groovy.util
+package groovy.util
 
-public class Sort {
+@Typed public class Sort {
 
     /**
      * Sorts the given map into a sorted map using
@@ -9,7 +9,7 @@ public class Sort {
      * @param closure a Closure used as a comparator
      * @return the sorted map
      */
-    static <K, V> Map<K, V> sort(Map<K, V> self, Comparator<Map.Entry<K,V>> comparator) {
+    public static <K, V> Map<K, V> sort(Map<K, V> self, Comparator<Map.Entry<K,V>> comparator) {
         def result = new LinkedHashMap<K, V>()
         def entries = self.entrySet().asList()
         entries.sort(comparator)
