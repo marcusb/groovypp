@@ -3,7 +3,7 @@ package org.mbte.groovypp.compiler
 import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
 
-public class CompileStdLibTest extends GroovyTestCase {
+public class CompileStdLibTest extends GroovyFileSystemCompilerTestCase {
     void testCompile () {
         def finder = new FileNameFinder ()
         
@@ -11,6 +11,6 @@ public class CompileStdLibTest extends GroovyTestCase {
         names.each {
             println it
         }
-        new FileSystemCompiler (new CompilerConfiguration()).compile (names)
+        compiler.compile (names)
     }
 }
