@@ -4,7 +4,7 @@ import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
 
 
-class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
+abstract class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
 
     protected FileSystemCompiler compiler;
     protected File outputDir;
@@ -12,7 +12,8 @@ class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
 
-        outputDir = new File("tmp" + Math.random())
+        outputDir = File.createTempFile("gfsctc", null)
+        if (!outputDir.delete()) throw new IllegalStateException("Could not delete temp file")
         outputDir.mkdir()
 
         def compilerConfiguration = new CompilerConfiguration()
