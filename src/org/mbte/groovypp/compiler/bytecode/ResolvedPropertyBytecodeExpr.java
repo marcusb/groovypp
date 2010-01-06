@@ -66,8 +66,8 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
             final ClassNode paramType = propertyNode.getType();
             final ClassNode type = bargs.getType();
             box(type, mv);
-            bargs.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
-            bargs.unbox(paramType, mv);
+            cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(paramType), mv);
+            unbox(paramType, mv);
             if (!propertyNode.isStatic())
                 dup_x1(paramType, mv);
             else

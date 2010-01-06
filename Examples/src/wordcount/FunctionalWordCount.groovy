@@ -1,4 +1,5 @@
-@Typed package org.mbte.groovypp.examples.wordcount
+@Typed
+package wordcount
 
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicReference

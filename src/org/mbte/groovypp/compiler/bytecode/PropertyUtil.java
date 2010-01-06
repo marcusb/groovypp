@@ -23,8 +23,9 @@ public class PropertyUtil {
             return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler);
         }
 
-        if (prop instanceof PropertyNode)
+        if (prop instanceof PropertyNode) {
             return new ResolvedPropertyBytecodeExpr(exp, (PropertyNode) prop, object, null, compiler);
+        }
 
         if (prop instanceof FieldNode) {
             FieldNode field = (FieldNode) prop;
@@ -88,30 +89,35 @@ public class PropertyUtil {
         return dynamicOrFail(parent, compiler, propName, object, value);
     }
 
-    public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler) {
-        final FieldNode field = compiler.findField(type, name);
-
+    public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler, boolean onlyStatic) {
         String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null && (field == null || !field.isPublic()))
+        if (mn != null && !mn.isAbstract() && (!onlyStatic || mn.isStatic()))
             return mn;
 
-        getterName = "is" + Verifier.capitalize(name);
-        mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null && mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (field == null || !field.isPublic()))
-            return mn;
+        if (mn == null) {
+            getterName = "is" + Verifier.capitalize(name);
+            mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+            if (mn != null && !mn.isAbstract() &&
+                mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (!onlyStatic || mn.isStatic()))
+                return mn;
+        }
 
         final PropertyNode pnode = compiler.findProperty(type, name);
-        if (pnode != null) {
+        if (pnode != null && (!onlyStatic || pnode.isStatic())) {
             return pnode;
         }
 
-        if (field != null)
+        if (mn != null && (!onlyStatic || mn.isStatic()))
+            return mn;
+
+        final FieldNode field = compiler.findField(type, name);
+        if (field != null && (!onlyStatic || field.isStatic()))
             return field;
 
         final String setterName = "set" + Verifier.capitalize(name);
         mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE});
-        if (mn != null) {
+        if (mn != null && (!onlyStatic || mn.isStatic())) {
             final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, null, null);
             res.setDeclaringClass(mn.getDeclaringClass());
             return res;

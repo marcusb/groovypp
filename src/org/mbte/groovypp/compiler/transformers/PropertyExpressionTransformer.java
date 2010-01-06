@@ -49,17 +49,16 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         final ClassNode type;
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
-            Object prop = PropertyUtil.resolveGetProperty(ClassHelper.CLASS_Type, propName, compiler);
+            Object prop = PropertyUtil.resolveGetProperty(ClassHelper.CLASS_Type, propName, compiler, false);
             if (prop != null) {
                 type = ClassHelper.CLASS_Type;
-                prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
                 if (!checkAccessible(prop, exp, type, compiler)) return null;
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
             else {
                 type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
-                prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                prop = PropertyUtil.resolveGetProperty(type, propName, compiler, true);
                 if (!checkAccessible(prop, exp, type, compiler)) return null;
                 object = null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
@@ -93,7 +92,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                     }
 
                     if (prop == null)
-                        prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                        prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false);
                     if (!checkAccessible(prop, exp, type, compiler)) return null;
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
@@ -107,12 +106,12 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 }
 
                 if (prop == null)
-                    prop = PropertyUtil.resolveGetProperty(type, propName, compiler);
+                    prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false);
                 if (prop == null) {
                     MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
                         if (unboxing != null) {
                             ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
-                            prop = PropertyUtil.resolveGetProperty(t, propName, compiler);
+                            prop = PropertyUtil.resolveGetProperty(t, propName, compiler, false);
                             if (prop != null) {
                                 object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
                                         new ArgumentListExpression(), compiler);
@@ -151,7 +150,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
         ClassNode thisType = compiler.classNode;
         while (thisType != null) {
-            Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler);
+            Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler, false);
             if (prop != null) {
                 if (!checkAccessible(prop, exp, thisType, compiler)) return null;
                 boolean isStatic = PropertyUtil.isStatic(prop);
