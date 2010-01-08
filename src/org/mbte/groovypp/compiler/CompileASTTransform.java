@@ -38,7 +38,6 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         Map<MethodNode, TypePolicy> toProcess = new HashMap<MethodNode, TypePolicy>();
         final ClassNode classNode;
 
-        OpenVerifier verifier = new OpenVerifier();
         if (parent instanceof ConstructorNode) {
             TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
             TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
@@ -48,7 +47,6 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 toProcess.put((MethodNode) parent, methodPolicy);
             }
 
-            verifier.visitClass(classNode);
         } else if (parent instanceof MethodNode) {
             TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
             TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
@@ -59,13 +57,11 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 toProcess.put(mn, methodPolicy);
             }
 
-            verifier.visitClass(classNode);
         } else if (parent instanceof ClassNode) {
             classNode = (ClassNode) parent;
             TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
 
             addMetaClassField(classNode);
-            verifier.visitClass(classNode);
 
             allMethods(source, toProcess, classNode, classPolicy);
         } else if (parent instanceof PackageNode) {
@@ -75,7 +71,6 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 if (isAnnotated(clazz)) continue;
 
                 addMetaClassField(clazz);
-                verifier.visitClass(clazz);
 
                 allMethods(source, toProcess, clazz, modulePolicy);
             }
@@ -170,9 +165,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             InnerClassNode node = inners.next();
             TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
 
-            OpenVerifier verifier = new OpenVerifier();
             addMetaClassField(node);
-            verifier.visitClass(node);
 
             allMethods(source, toProcess, node, innerClassPolicy);        }
     }

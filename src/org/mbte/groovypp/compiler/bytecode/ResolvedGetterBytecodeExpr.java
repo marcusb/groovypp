@@ -204,7 +204,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                     new BytecodeExpr(exp, get.getType()) {
                         protected void compile(MethodVisitor mv) {
                             get.visit(mv);
-                            if (object != null && !methodNode.isStatic())
+                            if (object != null && !ResolvedGetterBytecodeExpr.this.methodNode.isStatic())
                                 dup_x1(get.getType(), mv);
                             else
                                 dup(get.getType(), mv);
