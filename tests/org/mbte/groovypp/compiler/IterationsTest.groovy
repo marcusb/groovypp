@@ -27,6 +27,17 @@ public class IterationsTest extends GroovyShellTestCase {
         assertEquals (15, res)
     }
 
+    void testFoldRight () {
+        def res = shell.evaluate("""
+            @Typed
+            u () {
+                [0,1,2,3,4,5].foldRight([]) { e, List l -> l << e; l }
+            }
+            u ()
+        """)
+        assertEquals ([5,4,3,2,1,0], res)
+    }
+
     void testFunctions () {
         def res = shell.evaluate("""
 @Trait
