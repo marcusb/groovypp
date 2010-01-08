@@ -48,8 +48,7 @@ abstract class Iterations {
   private static <T, R> R foldRightInner(Iterator<T> self, R init, Function2<T, R, R> op, Function1<R,R> cont) {
     if(self.hasNext()) {
       def e = self.next()
-      return foldRightInner(self, init, op, {
-        it -> cont(op(e, it)) })
+      return foldRightInner(self, init, op, { cont(op(e, it)) })
     }
     cont(init)
   }
