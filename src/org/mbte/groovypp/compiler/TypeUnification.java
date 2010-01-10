@@ -70,7 +70,6 @@ public class TypeUnification {
                     formal = formal.getComponentType();
                     instantiated = instantiated.getComponentType();
                 }
-                if (instantiated.isArray()) continue;
                 formal = TypeUtil.wrapSafely(formal);
                 instantiated = TypeUtil.wrapSafely(instantiated);
 

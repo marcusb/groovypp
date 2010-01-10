@@ -207,4 +207,16 @@ class GenericsTest extends GroovyShellTestCase {
     """)
     assertEquals "b",res
   }
+
+  void testFoldLeft() {
+    Object res = shell.evaluate("""
+    @Typed def foo() {
+      Object[] arr = [1]
+      Object[] arr2 = [arr]
+      (0..0).foldLeft(arr2) {i, a -> (Object[])a[i]}
+    }
+    foo()
+    """)
+    assertEquals 1, res[0]
+  }
 }
