@@ -390,8 +390,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             return foundMethod;
 
         Parameter parameters[] = foundMethod.getParameters();
-        if (parameters.length != argTypes.length) {
-            return null;
+        ClassNode[] paramTypes = new ClassNode[argTypes.length];
+        for (int i = 0; i < parameters.length - 1; i++) {
+            paramTypes[i] = parameters[i].getType();
+        }
+        ClassNode lastType = parameters[parameters.length - 1].getType();
+        if (parameters.length == argTypes.length) {
+            paramTypes[paramTypes.length -1] = lastType;
+        } else {
+            if (!lastType.isArray()) return null;
+            for (int i = parameters.length -1 ; i < paramTypes.length; i++) {
+                paramTypes[i] = lastType.getComponentType();
+            }
         }
 
         boolean hasGenerics = TypeUtil.hasGenericsTypes(foundMethod);
@@ -409,21 +419,21 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
         for (Iterator<Changed> it = changed.iterator(); it.hasNext(); ) {
             Changed change = it.next();
-            ClassNode argType = parameters[change.index].getType();
+            ClassNode paramType = paramTypes[change.index];
 
             if (!change.original.implementsInterface(TypeUtil.TCLOSURE)) {
                 it.remove();
                 // nothing special needs to be done for list & maps
             }
             else {
-                if (argType.equals(ClassHelper.CLOSURE_TYPE)) {
+                if (paramType.equals(ClassHelper.CLOSURE_TYPE)) {
                     ClosureUtil.improveClosureType(change.original, ClassHelper.CLOSURE_TYPE);
                     StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, ((ClosureClassNode)change.original).getDoCallMethod(), compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, change.original.getName());
                     argTypes [change.index] = change.original;
                     it.remove();
                 }
                 else {
-                    List<MethodNode> one = ClosureUtil.isOneMethodAbstract(argType);
+                    List<MethodNode> one = ClosureUtil.isOneMethodAbstract(paramType);
                     if (one == null) {
                         return null;
                     }
@@ -432,15 +442,15 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     if (!hasGenerics) {
                         it.remove();
 
-                        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, compiler, argType);
+                        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, compiler, paramType);
                         if (doCall == null) {
                             return null;
                         } else {
-                            ClosureUtil.makeOneMethodClass(change.original, argType, one, doCall);
+                            ClosureUtil.makeOneMethodClass(change.original, paramType, one, doCall);
                         }
                     } else {
                         boolean[] used = new boolean[typeVars.length];
-                        extractUsedVariables(one.get(0), indices, used, argType);
+                        extractUsedVariables(one.get(0), indices, used, paramType);
                         inTypeVars.put(change, used);
                     }
                 }
@@ -452,18 +462,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         if (changed.size() == 1) {
-            ClassNode[] bindings = obtainInitialBindings(type, foundMethod, argTypes, parameters, typeVars);
-            return inferTypesForClosure(type, foundMethod, compiler, parameters, changed.get(0), bindings, typeVars) ? foundMethod : null;
+            ClassNode[] bindings = obtainInitialBindings(type, foundMethod, argTypes, paramTypes, typeVars);
+            return inferTypesForClosure(type, foundMethod, compiler, paramTypes, changed.get(0), bindings, typeVars) ? foundMethod : null;
         }
 
-        ClassNode[] bindings = obtainInitialBindings(type, foundMethod, argTypes, parameters, typeVars);
+        ClassNode[] bindings = obtainInitialBindings(type, foundMethod, argTypes, paramTypes, typeVars);
         Next:
         while (true) {
             if (changed.isEmpty()) return foundMethod;
             for (Iterator<Changed> it = changed.iterator(); it.hasNext();) {
                 Changed change = it.next();
                 if (isBound(bindings, inTypeVars.get(change))) {
-                    if (!inferTypesForClosure(type, foundMethod, compiler, parameters, change, bindings, typeVars)) return null;
+                    if (!inferTypesForClosure(type, foundMethod, compiler, paramTypes, change, bindings, typeVars)) return null;
                     it.remove();
                     continue Next;
                 }
@@ -504,21 +514,21 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
     }
 
     private boolean inferTypesForClosure(ClassNode type, MethodNode foundMethod,
-                                         CompilerTransformer compiler, Parameter[] parameters,
+                                         CompilerTransformer compiler, ClassNode[] paramTypes,
                                          Changed info, ClassNode[] bindings, GenericsType[] typeVars) {
-        ClassNode argType = parameters[info.index].getType();
-        argType = TypeUtil.getSubstitutedType(argType, foundMethod, bindings);
+        ClassNode paramType = paramTypes[info.index];
+        paramType = TypeUtil.getSubstitutedType(paramType, foundMethod, bindings);
 
         if (type != null) {
-            argType = TypeUtil.getSubstitutedType(argType, foundMethod.getDeclaringClass(), type);
+            paramType = TypeUtil.getSubstitutedType(paramType, foundMethod.getDeclaringClass(), type);
         }
 
         List<MethodNode> one = info.oneMethodAbstract;
-        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) info.original, compiler, argType);
+        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) info.original, compiler, paramType);
         if (doCall == null) {
             return false;
         } else {
-            ClosureUtil.makeOneMethodClass(info.original, argType, one, doCall);
+            ClosureUtil.makeOneMethodClass(info.original, paramType, one, doCall);
             ClassNode formal = one.get(0).getReturnType();
             ClassNode instantiated = doCall.getReturnType();
             ClassNode[] addition = TypeUnification.inferTypeArguments(typeVars, new ClassNode[]{formal},
@@ -530,7 +540,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
     }
 
-    private ClassNode[] obtainInitialBindings(ClassNode type, MethodNode foundMethod, ClassNode[] argTypes, Parameter[] parameters, GenericsType[] methodTypeVars) {
+    private ClassNode[] obtainInitialBindings(ClassNode type, MethodNode foundMethod, ClassNode[] argTypes, ClassNode[] paramTypes, GenericsType[] methodTypeVars) {
         ArrayList<ClassNode> formals = new ArrayList<ClassNode> (2);
         ArrayList<ClassNode> instantiateds = new ArrayList<ClassNode> (2);
 
@@ -540,7 +550,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         for (int j = 0; j != argTypes.length; j++) {
-            formals.add(parameters[j].getType());
+            formals.add(paramTypes[j]);
             instantiateds.add(argTypes[j]);
         }
 
