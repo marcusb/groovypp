@@ -2,6 +2,8 @@ package groovy.util.concurrent
 
 import java.util.concurrent.*
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  */
@@ -179,5 +181,32 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
 
     abstract static class Listener<V> {
         abstract void onBound (BindLater<V> data)
+    }
+
+    static class Group extends BindLater {
+        AtomicInteger counter
+
+        Group (int concurrency) {
+            counter = [concurrency]
+        }
+
+        void attach (BindLater inner) {
+            inner.whenBound { bl ->
+                if (!isDone()) {
+                    if (bl.exception) {
+                        try {
+                            bl.get ()
+                        }
+                        catch (ExecutionException e) {
+                            setException(e.cause)
+                        }
+                    }
+                    else {
+                        if (!counter.decrementAndGet())
+                            set(null)
+                    }
+                }
+            }
+        }
     }
 }

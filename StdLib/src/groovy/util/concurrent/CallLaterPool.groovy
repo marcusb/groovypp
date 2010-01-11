@@ -10,11 +10,6 @@ class CallLaterPool extends ThreadPoolExecutor {
         ((DefaultThreadFactory)getThreadFactory()).pool = this
     }
 
-    public <T> BindLater<T> callLater (CallLater<T> future) {
-        execute future
-        future
-    }
-
     protected static class GroovyThread extends Thread {
        final ExecutorService pool
 
