@@ -24,6 +24,10 @@ class CallLaterExecutors {
         new CallLaterPool(0, Integer.MAX_VALUE, 1L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>())
     }
 
+    static void execute (Executor executor, Runnable...run) {
+        for(r in run)
+            executor.execute r
+    }
 
     static <T> BindLater<T> callLater(Object self, CallLaterPool executor = CallLaterExecutors.currentExecutor, CallLater<T> operation) {
         executor.callLater(operation)
