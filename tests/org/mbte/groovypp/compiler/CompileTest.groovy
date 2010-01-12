@@ -339,4 +339,14 @@ u()
       foo()
       """
   }
+
+  void testArrayArray () {
+    shouldCompile """
+      @Typed void foo () {
+         Object[] arr = [1]
+         arr = [arr]
+      }
+      foo()
+      """
+  }
 }
