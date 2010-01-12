@@ -34,6 +34,12 @@ public class PresentationUtil {
     }
 
     private static void getText(ClassNode type, StringBuilder builder) {
+        if (type.isArray()) {
+            getText(type.getComponentType(), builder);
+            builder.append("[]");
+            return;
+        }
+
         builder.append(type.getNameWithoutPackage());
         GenericsType[] generics = type.getGenericsTypes();
         if (generics != null && generics.length > 0) {
