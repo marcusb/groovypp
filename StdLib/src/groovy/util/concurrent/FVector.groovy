@@ -144,4 +144,52 @@ class FVector<T> {
       return [ret, null]
     }
   }
+
+  Pair<T, FVector<T>> pop() {
+    if (length == 0) {
+      throw new IllegalStateException("Cannot pop from empty vector")
+    } else if (length == 1) {
+      return [tail[0], emptyVector]
+    } else if (tail.length > 1) {
+      def newTail = new T[tail.length -1]
+      System.arraycopy tail, 0, newTail, 0, newTail.length
+      return [tail[tail.length - 1], new FVector<T>(length - 1, shift, root, newTail)]
+    } else {
+      def popped = popTail(shift - 5, root)
+      def newRoot = popped.first
+      def pTail = popped.second
+      if (newRoot == null) newRoot = new Object[0]
+      def newShift = shift
+      if (shift > 5 && newRoot.length == 1) {
+        newRoot = (Object[])newRoot[0]
+        newShift -= 5
+      }
+      return [tail[0], new FVector<T>(length - 1, newShift, newRoot, (T[])pTail)]
+    }
+  }
+
+  private Pair<Object[], Object> popTail(int shift, Object[] arr) {
+    def newTail
+    if (shift  > 0) {
+      def popped = popTail(shift - 5, (Object[])arr[arr.length - 1])
+      def newChild = popped.first
+      def subPTail = popped.second
+      if (newChild != null) {
+        def ret = new Object[arr.length]
+        System.arraycopy arr, 0, ret, 0, arr.length
+        ret[arr.length - 1] = newChild
+        return [ret, subPTail]
+      }
+      newTail = subPTail
+    } else {
+      newTail = arr[arr.length - 1]
+    }
+    if (arr.length == 1) {
+      return [null, newTail]
+    } else {
+      def ret = new Object[arr.length - 1]
+      System.arraycopy arr, 0, ret, 0, ret.length
+      return [ret, newTail]
+    }
+  }
 }
