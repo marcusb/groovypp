@@ -15,5 +15,9 @@ public class FVectorTest extends GroovyTestCase {
         }
 
         assertEquals 500000, vec.length
+
+        for(i in 0..<500000) {
+          assertEquals 2*i, vec[i]
+        }
     }
 }
