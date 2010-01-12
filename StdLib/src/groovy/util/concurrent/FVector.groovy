@@ -99,18 +99,49 @@ class FVector<T> {
     ret
   }
 
-  Vector<T> addAll (Iterable<T> other) {
+  FVector<T> addAll (Iterable<T> other) {
     other.foldLeft(this) {e, vec -> vec + e}
   }
 
-  Vector<T> plus(T obj) {
+  FVector<T> plus(T obj) {
     if (tail.length < 32) {
       def newTail = new T[tail.length + 1]
       System.arraycopy tail, 0, newTail, 0, tail.length
       newTail[tail.length] = obj
       return new FVector<T> (length + 1, shift, root, newTail)
     } else {
-      // todo
+      def pushed = pushTail(shift - 5, root, tail)
+      Object[] newRoot = pushed.first
+      T expansion = pushed.second
+      def newShift = shift
+      if (expansion) {
+        newShift += 5
+        newRoot = [newRoot, expansion]
+      }
+      T[] newTail = [obj]
+      return new FVector<T> (length + 1, newShift, newRoot, newTail)
+    }
+  }
+
+  private Pair<Object[], Object> pushTail(int level, Object[] arr, T[] tailNode) {
+    def newChild
+    if (level == 0) newChild = tailNode else {
+      def rec = pushTail(level - 5, (Object[])arr[arr.length - 1], tailNode)
+      def subexp = rec.second
+      if (subexp != null) newChild = subexp else {
+        def ret = new Object[arr.length]
+        System.arraycopy arr, 0, ret, 0, arr.length
+        ret[arr.length - 1] = rec.first
+        return [ret, null]
+      }
+    }
+    if (arr.length == 32) {
+      return [arr, (Object[])[newChild]]
+    } else {
+      def ret = new Object[arr.length + 1]
+      System.arraycopy arr, 0, ret, 0, arr.length
+      ret[arr.length] = newChild
+      return [ret, null]
     }
   }
 }
