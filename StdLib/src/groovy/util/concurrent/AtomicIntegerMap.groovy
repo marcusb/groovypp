@@ -19,7 +19,7 @@ class AtomicIntegerMap<K> implements Iterable<AtomicIntegerMap.Entry<K>> {
 
     AtomicInteger getAt(K key) {
         def h = hash(key)
-        map.segmentFor(h).getOrPut(key, h, null)
+        map.segmentFor(h).getOrPut(key, h, null).value
     }
 
     void remove (K key) {
