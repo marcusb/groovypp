@@ -40,25 +40,29 @@ public class PresentationUtil {
             return;
         }
 
-        builder.append(type.getNameWithoutPackage());
-        GenericsType[] generics = type.getGenericsTypes();
-        if (generics != null && generics.length > 0) {
-            builder.append("<");
-            for (int i = 0; i < generics.length; i++) {
-                if (i > 0) builder.append(",");
-                if (generics[i].isWildcard()) {
-                    if (TypeUtil.isExtends(generics[i])) {
-                        builder.append("? extends ");
-                    } else if (TypeUtil.isSuper(generics[i])) {
-                        builder.append("? super ");
-                    } else {
-                        builder.append("?");
-                        continue;
+        if (type.isGenericsPlaceHolder()) {
+            builder.append(type.getUnresolvedName());
+        } else {
+            builder.append(type.getNameWithoutPackage());
+            GenericsType[] generics = type.getGenericsTypes();
+            if (generics != null && generics.length > 0) {
+                builder.append("<");
+                for (int i = 0; i < generics.length; i++) {
+                    if (i > 0) builder.append(",");
+                    if (generics[i].isWildcard()) {
+                        if (TypeUtil.isExtends(generics[i])) {
+                            builder.append("? extends ");
+                        } else if (TypeUtil.isSuper(generics[i])) {
+                            builder.append("? super ");
+                        } else {
+                            builder.append("?");
+                            continue;
+                        }
                     }
+                    getText(generics[i].getType(), builder);
                 }
-                getText(generics[i].getType(), builder);
+                builder.append(">");
             }
-            builder.append(">");
         }
     }
 }
