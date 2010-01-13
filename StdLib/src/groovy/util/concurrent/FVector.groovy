@@ -70,7 +70,7 @@ class FVector<T> {
     }
   }
 
-  Vector<T> set(int i, T obj) {
+  FVector<T> set(int i, T obj) {
     if (i >= 0 && i < length) {
       if (i >= tailOff()) {
         def newTail = new T[tail.length]
