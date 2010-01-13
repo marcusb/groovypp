@@ -90,17 +90,23 @@ public class PropertyUtil {
     }
 
     public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler, boolean onlyStatic) {
+        final FieldNode field = compiler.findField(type, name);
+
         String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
-        if (mn != null && !mn.isAbstract() && (!onlyStatic || mn.isStatic()))
+        if (mn != null && !mn.isAbstract() && (!onlyStatic || mn.isStatic())) {
+            if (mn == compiler.methodNode && field != null) return field;  // Access inside the getter itself is to the field.
             return mn;
+        }
 
         if (mn == null) {
             getterName = "is" + Verifier.capitalize(name);
             mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
             if (mn != null && !mn.isAbstract() &&
-                mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (!onlyStatic || mn.isStatic()))
+                mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (!onlyStatic || mn.isStatic())) {
+                if (mn == compiler.methodNode && field != null) return field;  // Access inside the getter itself is to the field.
                 return mn;
+            }
         }
 
         final PropertyNode pnode = compiler.findProperty(type, name);
@@ -111,7 +117,6 @@ public class PropertyUtil {
         if (mn != null && (!onlyStatic || mn.isStatic()))
             return mn;
 
-        final FieldNode field = compiler.findField(type, name);
         if (field != null && (!onlyStatic || field.isStatic()))
             return field;
 
