@@ -340,15 +340,6 @@ u()
       """
   }
 
-  void testUnassignableReturn () {
-    shouldNotCompile """
-      @Typed int foo () {
-         new Date()
-      }
-      foo()
-      """
-  }
-
   void testArrayArray () {
     shouldCompile """
       @Typed void foo () {

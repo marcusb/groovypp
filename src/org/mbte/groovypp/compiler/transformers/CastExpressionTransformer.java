@@ -442,6 +442,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                         }
                     }
 
+                    if (!TypeUtil.areTypesConvertible(exp.getType(), rtype)) {
+                        compiler.addError("Cannot convert " + PresentationUtil.getText(rtype) +
+                                " to " + PresentationUtil.getText(exp.getType()), exp);
+                        return null;
+                    }
                     return new Cast(exp.getType(), expr);
                 }
             }

@@ -638,7 +638,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         public Operands(BinaryExpression be, CompilerTransformer compiler) {
             left = (BytecodeExpr) compiler.transform(be.getLeftExpression());
             right = (BytecodeExpr) compiler.transform(be.getRightExpression());
-            if (!TypeUtil.areTypesConvertible(left.getType(), right.getType())) {
+            if (!TypeUtil.areTypesDirectlyConvertible(left.getType(), right.getType())) {
                 left = unboxReference(be, left, compiler);
                 right = unboxReference(be, right, compiler);
             }

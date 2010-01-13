@@ -174,6 +174,26 @@ public class TypeUtil {
     }
 
     public static boolean areTypesConvertible(ClassNode t1, ClassNode t2) {
+        if (isNumericalType(t1)) {
+            if(isNumericalType(t2) || t2 == ClassHelper.Character_TYPE || t2 == ClassHelper.char_TYPE
+                    || t2 == ClassHelper.STRING_TYPE) return true;
+        } else if (isNumericalType(t1)) {
+            if(t1 == ClassHelper.Character_TYPE || t1 == ClassHelper.char_TYPE || t1 == ClassHelper.STRING_TYPE) 
+                return true;
+        } else if (t1 instanceof ClosureClassNode) {
+            if ("groovy.lang.Closure".equals(t2.getName())) return true;
+        }  else if (t2 instanceof ClosureClassNode) {
+            if ("groovy.lang.Closure".equals(t1.getName())) return true;
+        }
+        t1 = wrapSafely(t1);
+        t2 = wrapSafely(t2);
+        return (t1.isInterface() && t2.isInterface()) || isAssignableFrom(t1, t2) ||
+                isAssignableFrom(t2, t1);
+    }
+
+    public static boolean areTypesDirectlyConvertible(ClassNode t1, ClassNode t2) {
+        t1 = wrapSafely(t1);
+        t2 = wrapSafely(t2);
         return (t1.isInterface() && t2.isInterface()) || isDirectlyAssignableFrom(t1, t2) ||
                 isDirectlyAssignableFrom(t2, t1);
     }

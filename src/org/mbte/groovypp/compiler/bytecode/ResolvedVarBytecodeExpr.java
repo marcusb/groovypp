@@ -37,11 +37,6 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {
             vtype = ve.getType();
-            if (!TypeUtil.isAssignableFrom(vtype, right.getType())) {
-                compiler.addError("Cannot assign " + PresentationUtil.getText(right.getType()) +
-                        " to " + PresentationUtil.getText(vtype), parent);
-                return null;
-            }
             right = compiler.cast(right, vtype);
         }
 

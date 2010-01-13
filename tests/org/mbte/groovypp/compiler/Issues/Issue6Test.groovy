@@ -72,6 +72,7 @@ public class Issue6Test extends GroovyShellTestCase {
          assert r == 1
          AtomicBoolean ab = [true]
          ab = false
+         assert ab
          assert ab == false
       }
       foo()
