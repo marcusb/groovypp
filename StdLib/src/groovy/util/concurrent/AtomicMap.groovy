@@ -1,13 +1,12 @@
-@Typed package groovy.util.concurrent
+@Typed(debug=true) package groovy.util.concurrent
 
 import org.codehaus.groovy.util.AbstractConcurrentMap
-import java.util.concurrent.atomic.AtomicInteger
 import org.codehaus.groovy.util.AbstractConcurrentMapBase
-import AtomicMapEntry.AtomicMapEntry
+import groovy.util.concurrent.AtomicMapEntry
 
 abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
 
-    private final Map<K,V> map = []
+    private final Map<K,V> map = new Map ()
 
     protected static <K> int hash(K key) {
         def h = key.hashCode ()
