@@ -1,10 +1,7 @@
 package org.mbte.groovypp.compiler
 
-import static groovy.CompileTestSupport.shouldCompile
 import static groovy.CompileTestSupport.shouldNotCompile
-/**
- * @author ven
- */
+
 class AccessTest extends GroovyShellTestCase {
   void testPrivateMethod() {
     shouldNotCompile """

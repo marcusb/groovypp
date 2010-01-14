@@ -2,9 +2,6 @@ package groovy.util.concurrent
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
-/**
-* @author ven
-*/
 @Typed
 class DivideAndConquerProblemSolver {
 

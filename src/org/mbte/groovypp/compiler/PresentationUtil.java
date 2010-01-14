@@ -5,9 +5,6 @@ import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.Parameter;
 import org.objectweb.asm.Opcodes;
 
-/**
- * @author ven
- */
 public class PresentationUtil {
     public static String getText(ClassNode type) {
         StringBuilder builder = new StringBuilder();

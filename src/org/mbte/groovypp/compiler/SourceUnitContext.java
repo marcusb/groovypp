@@ -11,9 +11,6 @@ import org.objectweb.asm.Opcodes;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author ven
- */
 public class SourceUnitContext {
     private int syntheticAccessorNumber = 1979;
     public Map<FieldNode, MethodNode> generatedFieldGetters = new HashMap<FieldNode, MethodNode>();

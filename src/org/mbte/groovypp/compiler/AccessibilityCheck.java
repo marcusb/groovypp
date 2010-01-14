@@ -3,9 +3,6 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.ClassNode;
 import org.objectweb.asm.Opcodes;
 
-/**
- * @author ven
- */
 public class AccessibilityCheck {
     public static boolean isAccessible(int modifiers,
                                        ClassNode declaringClass,

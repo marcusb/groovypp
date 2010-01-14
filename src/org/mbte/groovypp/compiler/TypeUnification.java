@@ -6,9 +6,6 @@ import org.codehaus.groovy.ast.GenericsType;
 import static org.mbte.groovypp.compiler.TypeUnification.Constraint.*;
 import static org.mbte.groovypp.compiler.TypeUtil.*;
 
-/**
- * @author ven
- */
 public class TypeUnification {
     static enum Constraint {
         EQ, SUBTYPE, SUPERTYPE
