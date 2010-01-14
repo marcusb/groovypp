@@ -1,4 +1,4 @@
-@Typed(debug=true) package groovy.util.concurrent
+@Typed package groovy.util.concurrent
 
 import org.codehaus.groovy.util.AbstractConcurrentMap
 import org.codehaus.groovy.util.AbstractConcurrentMapBase
