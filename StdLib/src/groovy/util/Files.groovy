@@ -120,8 +120,8 @@ import java.nio.ByteBuffer
     static Iterator<File> recurseFileIterator (File self) {
         checkDir(self)
         def files = self.listFiles()
-        [files.iterator(),
-         files.iterator().filter{f ->  f.directory}.map { f -> f.recurseFileIterator() }.flatten ()].iterator().flatten ()
+        def rec = files.iterator().filter {it.directory}.map {it.recurseFileIterator()}.flatten()
+        files.iterator().followedBy(rec)
     }
 
     static byte [] getBytes (File file) {
