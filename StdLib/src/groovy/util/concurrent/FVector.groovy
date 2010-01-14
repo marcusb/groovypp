@@ -40,7 +40,7 @@ package groovy.util.concurrent
   @author Rich Hickey
 */
 @Typed
-class FVector<T> {
+class FVector<T> implements Iterable<T> {
   int length
   int shift
   Object[] root
@@ -191,5 +191,10 @@ class FVector<T> {
       System.arraycopy arr, 0, ret, 0, ret.length
       return [ret, newTail]
     }
+  }
+
+  Iterator<T> iterator() {
+    def rec = (shift..<0).step(5).foldLeft(root.iterator()) { level, iter -> iter.map{ ((Object[])it).iterator() }.flatten() }
+    rec.followedBy(tail.iterator())
   }
 }

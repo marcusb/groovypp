@@ -20,4 +20,19 @@ public class FVectorTest extends GroovyTestCase {
           assertEquals 2*i, vec[i]
         }
     }
+
+    void testIterator() {
+      FVector<Integer> vec = FVector.emptyVector
+      def range = 0..<100000
+      for(i in range) {
+          vec = vec + i
+      }
+
+      def l = []
+      for (i in vec) {
+        l << i
+      }
+
+      assertEquals range, l
+    }
 }

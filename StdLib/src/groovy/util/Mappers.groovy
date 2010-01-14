@@ -237,4 +237,12 @@ public class Mappers extends DefaultGroovyMethodsSupport {
       ]
     }
   }
+
+  static <T> Iterator<T> followedBy(Iterator<T> self, Iterator<T> follower) {
+    [
+            hasNext: { self.hasNext() || follower.hasNext() },
+            next: { self.hasNext() ? self.next() : follower.next() },
+            remove: {-> throw new UnsupportedOperationException("remove () is unsupported by the iterator") },
+    ]
+  }
 }
