@@ -649,28 +649,28 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
 
     }
 
-    public void dup(ClassNode type, MethodVisitor mv) {
+    public static void dup(ClassNode type, MethodVisitor mv) {
         if (type == double_TYPE || type == long_TYPE)
             mv.visitInsn(Opcodes.DUP2);
         else
             mv.visitInsn(Opcodes.DUP);
     }
 
-    public void dup_x1(ClassNode type, MethodVisitor mv) {
+    public static void dup_x1(ClassNode type, MethodVisitor mv) {
         if (type == double_TYPE || type == long_TYPE)
             mv.visitInsn(Opcodes.DUP2_X1);
         else
             mv.visitInsn(Opcodes.DUP_X1);
     }
 
-    public void dup_x2(ClassNode type, MethodVisitor mv) {
+    public static void dup_x2(ClassNode type, MethodVisitor mv) {
         if (type == double_TYPE || type == long_TYPE)
             mv.visitInsn(Opcodes.DUP2_X2);
         else
             mv.visitInsn(Opcodes.DUP_X2);
     }
 
-    public void pop(ClassNode type, MethodVisitor mv) {
+    public static void pop(ClassNode type, MethodVisitor mv) {
         if (type == double_TYPE || type == long_TYPE)
             mv.visitInsn(Opcodes.POP2);
         else
