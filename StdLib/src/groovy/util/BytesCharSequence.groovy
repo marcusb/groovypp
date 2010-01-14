@@ -25,7 +25,7 @@ package groovy.util
     }
 
     CharSequence subSequence(int start, int end) {
-        new BytesCharSequence(this.@start + start, this.@end + end)
+        new BytesCharSequence(this.b, this.start + start, this.end + end)
     }
 
     String toString() {
