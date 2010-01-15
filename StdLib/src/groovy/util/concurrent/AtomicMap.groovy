@@ -4,7 +4,7 @@ import org.codehaus.groovy.util.AbstractConcurrentMap
 import org.codehaus.groovy.util.AbstractConcurrentMapBase
 import groovy.util.concurrent.AtomicMapEntry
 
-abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
+abstract class AtomicMap<K,V extends AtomicMapEntry> implements Iterable<V> {
 
     private final Map<K,V> map = new Map ()
 
@@ -27,13 +27,13 @@ abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
         map.segmentFor(h).remove(key, h)
     }
 
-    Iterator<AtomicMapEntry<K,V>> iterator () {
+    Iterator<V> iterator () {
         map.iterator()
     }
 
-    abstract AtomicMapEntry<K,V> createEntry(K key, int hash)
+    abstract V createEntry(K key, int hash)
 
-    private class Map<K,V> extends AbstractConcurrentMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
+    private class Map<K,V extends AtomicMapEntry> extends AbstractConcurrentMap<K,V> implements Iterable<V> {
 
         Map() { super(null) }
 
@@ -41,11 +41,11 @@ abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
             return new Segment(cap)
         }
 
-        Iterator<AtomicIntegerMap.Entry> iterator () {
+        Iterator<V> iterator () {
             segments.iterator().map { s -> ((Segment)s).iterator() }.flatten ()
         }
 
-        private class Segment<K,V> extends AbstractConcurrentMap.Segment<K,V> implements Iterable<AtomicMapEntry<K,V>> {
+        private class Segment<K,V extends AtomicMapEntry> extends AbstractConcurrentMap.Segment<K,V> implements Iterable<V> {
             Segment(int cap) {
                 super(cap);
             }
@@ -54,13 +54,13 @@ abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
                 createEntry(key, hash)
             }
 
-            Iterator<AtomicMapEntry<K,V>> iterator () {
+            Iterator<V> iterator () {
                 new MyIterator<K> (table)
             }
         }
     }
 
-    private static class MyIterator<K> implements Iterator<AtomicMapEntry<K>> {
+    private static class MyIterator<V extends AtomicMapEntry> implements Iterator<V> {
         final Object [] table
         int index = 0, innerIndex = 0
 
