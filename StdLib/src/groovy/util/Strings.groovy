@@ -35,4 +35,20 @@ import java.util.regex.Matcher
         pattern.matcher(self).iterator().each(closure)
         self
     }
+
+    /**
+     * Process each regex group matched substring of the given pattern. If the closure
+     * parameter takes one argument, an array with all match groups is passed to it.
+     * If the closure takes as many arguments as there are match groups, then each
+     * parameter will be one match group.
+     *
+     * @param self    the source string
+     * @param pattern a regex Pattern
+     * @param closure a closure with one parameter
+     * @return the source string
+     */
+    static String eachMatch(CharSequence self, Matcher pattern, Function1<?,?> closure) {
+        pattern.reset(self).iterator().each(closure)
+        self
+    }
 }

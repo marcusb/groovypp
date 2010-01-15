@@ -50,7 +50,7 @@ abstract class AtomicMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
                 super(cap);
             }
 
-            protected AbstractConcurrentMap.Entry<K> createEntry(K key, int hash, V unused) {
+            protected AbstractConcurrentMap.Entry<K,V> createEntry(K key, int hash, V unused) {
                 createEntry(key, hash)
             }
 

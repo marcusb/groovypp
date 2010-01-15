@@ -6,14 +6,14 @@ class Issue46Test extends GroovyShellTestCase {
     void testMe()
     {
         shell.evaluate """
-    @Typed(debug=true) package pack
+    @Typed package pack
 
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
     static class MyThread extends Thread
     {
-        MyThread ( target )
+        MyThread ( Runnable target )
         {
             super( target );
             println "MyThread created"
@@ -23,11 +23,11 @@ import java.util.concurrent.Executors
     }
 
 
-        Executor pool = Executors.newFixedThreadPool( 3, [ newThread : { Runnable r -> println "new thread"; new MyThread( r ) } ] );
+        def pool = Executors.newFixedThreadPool( 3, [ newThread : { Runnable r -> println "new thread"; new MyThread( r ) } ] );
 
         [ 1, 2, 3 ].iterator().each(pool) { it ->
-            println Thread.currentThread();
-        }
+            println Thread.currentThread()
+        }.get()
         """
     }
 }

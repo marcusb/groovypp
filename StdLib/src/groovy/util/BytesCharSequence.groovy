@@ -1,6 +1,6 @@
 package groovy.util
 
-@Typed class BytesCharSequence implements CharSequence {
+@Typed(debug=true) class BytesCharSequence implements CharSequence {
 
     private final byte [] b
     private final int start
@@ -9,6 +9,9 @@ package groovy.util
     BytesCharSequence(byte [] b) {
         this(b, 0, b.length)
     }
+
+    MetaClass getMetaClass () {}
+    void setMetaClass (MetaClass mc) {}
 
     BytesCharSequence(byte [] b, int start, int end) {
         this.@b = b
@@ -25,10 +28,10 @@ package groovy.util
     }
 
     CharSequence subSequence(int start, int end) {
-        new BytesCharSequence(this.b, this.start + start, this.end + end)
+        new BytesCharSequence(this.b, this.start + start, this.start + end)
     }
 
     String toString() {
-        new String(b, start, end-start)
+        new String(b, 0, start, end-start)
     }
 }
