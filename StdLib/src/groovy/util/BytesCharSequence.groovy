@@ -1,6 +1,6 @@
 package groovy.util
 
-@Typed(debug=true) class BytesCharSequence implements CharSequence {
+@Typed class BytesCharSequence implements CharSequence {
 
     private final byte [] b
     private final int start
