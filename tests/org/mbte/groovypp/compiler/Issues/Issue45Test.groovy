@@ -7,7 +7,7 @@ import groovy.util.concurrent.*
 import org.codehaus.groovy.util.AbstractConcurrentMap
 import org.codehaus.groovy.util.AbstractConcurrentMapBase
 
-@Typed(debug=true) class A {
+@Typed class A {
     def m = new Map ()
 
     private class Map<K,V> extends AbstractConcurrentMap<K,V> implements Iterable<AtomicMapEntry<K,V>> {
@@ -25,9 +25,12 @@ new A ()
 
     void testMe () {
         shell.evaluate """
+            @Typed package p
+
             import groovy.util.concurrent.*
 
-            def m = new AtomicIntegerMap ()
+            def m = new AtomicIntegerMap<String> ()
+            m ['10'].incrementAndGet ()
         """
     }
 }
