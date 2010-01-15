@@ -147,7 +147,18 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     }
 
     private static void addImplMethod(ClassNode classNode, MethodNode method, final Parameter[] oldParams, final MethodNode found) {
-        classNode.addMethod(method.getName(), Opcodes.ACC_PUBLIC, method.getReturnType(), oldParams, method.getExceptions(), new BytecodeSequence(new BytecodeInstruction() {
+        final ClassNode returnType = TypeUtil.mapTypeFromSuper(method.getReturnType(), method.getDeclaringClass(), classNode);
+        Parameter[] newParams = new Parameter[oldParams.length];
+        for (int i = 0; i < oldParams.length; i++) {
+            ClassNode t = TypeUtil.mapTypeFromSuper(oldParams[i].getType(), method.getDeclaringClass(), classNode);
+            newParams[i] = new Parameter(t, oldParams[i].getName());
+        }
+        ClassNode[] oldExns = method.getExceptions();
+        ClassNode[] newExns = new ClassNode[oldExns.length];
+        for (int i = 0; i < oldExns.length; i++) {
+            newExns[i] = TypeUtil.mapTypeFromSuper(oldExns[i], method.getDeclaringClass(), classNode);
+        }
+        classNode.addMethod(method.getName(), Opcodes.ACC_PUBLIC, returnType, newParams, newExns, new BytecodeSequence(new BytecodeInstruction() {
             public void visit(MethodVisitor mv) {
                 mv.visitVarInsn(ALOAD, 0);
                 int cur = 1;
@@ -177,7 +188,13 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                     }
                 }
                 mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(found.getDeclaringClass()), found.getName(), BytecodeHelper.getMethodDescriptor(found.getReturnType(), found.getParameters()));
-                BytecodeExpr.doReturn(mv, found.getReturnType());
+                if (!TypeUtil.isDirectlyAssignableFrom(returnType, found.getReturnType())) {
+                    BytecodeExpr.box(found.getReturnType(), mv);
+                    BytecodeExpr.cast(TypeUtil.wrapSafely(found.getReturnType()),
+                            TypeUtil.wrapSafely(returnType), mv);
+                    BytecodeExpr.unbox(returnType, mv);
+                }
+                BytecodeExpr.doReturn(mv, returnType);
             }
         }));
     }

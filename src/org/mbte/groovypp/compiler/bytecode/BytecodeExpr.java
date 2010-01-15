@@ -362,29 +362,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    public void doCast(Class type, MethodVisitor mv) {
-        if (type != Object.class) {
-            if (type.isPrimitive() && type != Void.TYPE) {
-                unbox(type, mv);
-            } else {
-                mv.visitTypeInsn(
-                        Opcodes.CHECKCAST,
-                        type.isArray() ? getTypeDescription(type) : getClassInternalName(type.getName()));
-            }
-        }
-    }
-
-    public void doCast(ClassNode type, MethodVisitor mv) {
-        if (type == OBJECT_TYPE) return;
-        if (isPrimitiveType(type) && type != VOID_TYPE) {
-            unbox(type, mv);
-        } else {
-            mv.visitTypeInsn(
-                    Opcodes.CHECKCAST,
-                    type.isArray() ? getTypeDescription(type) : getClassInternalName(type));
-        }
-    }
-
     public static void load(ClassNode type, int idx, MethodVisitor mv) {
         if (type == double_TYPE) {
             mv.visitVarInsn(Opcodes.DLOAD, idx);
