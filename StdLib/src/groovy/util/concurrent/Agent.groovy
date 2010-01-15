@@ -18,7 +18,7 @@ public class Agent<T>  {
             def p = q.addLast(mutation)
             if (queue.compareAndSet(q, p)) {
                 if (p.size == 1) {
-                    callLater(CallLaterExecutors.currentExecutor) {
+                    CallLaterExecutors.currentExecutor.callLater {
                         for (;;) {
                             def qq = queue
                             if (!qq.size) {

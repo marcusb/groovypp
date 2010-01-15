@@ -34,10 +34,6 @@ class CallLaterExecutors {
             executor.execute r
     }
 
-    static <T> BindLater<T> callLater(Object self, CallLaterPool executor = CallLaterExecutors.currentExecutor, CallLater<T> operation) {
-        executor.callLater(operation)
-    }
-
     static synchronized CallLaterPool getDefaultExecutor () {
         if (!_defaultExecutor)
             _defaultExecutor = new CallLaterPool(0, Integer.MAX_VALUE, 1L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>())

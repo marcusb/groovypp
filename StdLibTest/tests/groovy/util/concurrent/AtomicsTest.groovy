@@ -25,7 +25,7 @@ public class AtomicsTest extends GroovyTestCase {
 
         CountDownLatch cdl = [n]
         for(i in 0..<n) {
-            callLater(pool) {
+            pool.callLater {
                 atom.apply { state -> state + i }
                 i
             }.whenBound { future ->
@@ -47,7 +47,7 @@ public class AtomicsTest extends GroovyTestCase {
 
         CountDownLatch cdl = [n]
         for(i in 0..<n) {
-            callLater(pool) {
+            pool.callLater {
                 queue.apply { q -> q.addLast(i) }
                 i
             }.whenBound { future ->
@@ -71,7 +71,7 @@ public class AtomicsTest extends GroovyTestCase {
 
         CountDownLatch cdl = [n]
         for(i in 0..<n) {
-            callLater(pool) {
+            pool.callLater {
                 map.apply { m -> m.put(i,i) }
                 i
             }.whenBound { future ->
