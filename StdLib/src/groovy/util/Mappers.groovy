@@ -238,11 +238,24 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     }
   }
 
+  /**
+   * Generate the concatenation of two iterators.
+   * @param self first iterator
+   * @param follower second iterator
+   * @return iterator that iterates over the 'concatenation' of given arguments
+   */
   static <T> Iterator<T> followedBy(Iterator<T> self, Iterator<T> follower) {
     [
             hasNext: { self.hasNext() || follower.hasNext() },
             next: { self.hasNext() ? self.next() : follower.next() },
             remove: {-> throw new UnsupportedOperationException("remove () is unsupported by the iterator") },
     ]
+  }
+
+  /**
+   * Operator notation for @link{#followedBy(self, follower)} method.
+   */
+  static <T> Iterator<T> or(Iterator<T> self, Iterator<T> follower) {
+    followedBy(self, follower)
   }
 }

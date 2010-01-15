@@ -194,7 +194,7 @@ class FVector<T> implements Iterable<T> {
   }
 
   Iterator<T> iterator() {
-    def rec = (shift..<0).step(5).foldLeft(root.iterator()) { level, iter -> iter.map{ ((Object[])it).iterator() }.flatten() }
-    rec.followedBy(tail.iterator())
+    (shift..<0).step(5).foldLeft(root.iterator()) { level, iter -> iter.map{ ((Object[])it).iterator() }.flatten() } |
+            tail.iterator()
   }
 }
