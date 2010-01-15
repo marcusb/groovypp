@@ -6,10 +6,10 @@ package groovy.util
      * Sorts the given map into a sorted map using
      * given comparator.
      * @param self the map to be sorted
-     * @param closure a Closure used as a comparator
-     * @return the sorted map
+     * @param @link{java.util.Comparator} comparator
+     * @return @link{java.util.LinkedHashMap} where entres are added in the sort order.
      */
-    public static <K, V> Map<K, V> sort(Map<K, V> self, Comparator<Map.Entry<K,V>> comparator) {
+    public static <K, V> LinkedHashMap<K, V> sort(Map<K, V> self, Comparator<Map.Entry<K,V>> comparator) {
         def result = new LinkedHashMap<K, V>()
         def entries = self.entrySet().asList()
         entries.sort(comparator)
@@ -20,13 +20,12 @@ package groovy.util
     }
 
     /**
-     * Sorts the given map into a sorted map using
-     * given comparator.
+     * Sorts the given map into a sorted map using a function mapping entries to comparable objects.
      * @param self the map to be sorted
-     * @param closure a Closure used as a comparator
-     * @return the sorted map
+     * @param projection a function mapping entries to comparable objects.
+     * @return @link{java.util.LinkedHashMap} where entres are added in the sort order.
      */
-    static <K, V, R extends Comparable> Map<K, V> sort(Map<K, V> self, Function1<Map.Entry<K,V>,R> projection) {
+    static <K, V, R extends Comparable> LinkedHashMap<K, V> sort(Map<K, V> self, Function1<Map.Entry<K,V>,R> projection) {
         def result = new LinkedHashMap<K, V>()
         def entries = self.entrySet().asList()
         entries.sort(new ProjectionComparator<Map.Entry<K,V>,R> (projection));
