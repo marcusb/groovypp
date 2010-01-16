@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
     public Expression transform(final ListExpression exp, final CompilerTransformer compiler) {
-        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
+        InnerClassNode newType = new InnerClassNode(compiler.classNode, compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         newType.setInterfaces(new ClassNode[] {TypeUtil.TLIST});
         return new UntransformedListExpr(exp, newType);
     }

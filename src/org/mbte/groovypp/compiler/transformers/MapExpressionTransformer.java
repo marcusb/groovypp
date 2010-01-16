@@ -1,11 +1,11 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
     public Expression transform(final MapExpression exp, final CompilerTransformer compiler) {
-        ClassNode newType = new ClassNode(compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
+        InnerClassNode newType = new InnerClassNode(compiler.classNode, compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         newType.setModule(compiler.classNode.getModule());
         newType.setInterfaces(new ClassNode[] {TypeUtil.TMAP});
         return new UntransformedMapExpr(exp, newType);
