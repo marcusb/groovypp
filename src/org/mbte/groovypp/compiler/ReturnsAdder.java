@@ -66,7 +66,7 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
             ExpressionStatement expStmt = (ExpressionStatement) statement;
             Expression expr = expStmt.getExpression();
             Statement ret;
-            if (expr.getClass() == TernaryExpression.class) {
+            if (expr instanceof TernaryExpression) {
                 TernaryExpression t = (TernaryExpression)expr;
                 ExpressionStatement trueExpr = new ExpressionStatement(t.getTrueExpression());
                 trueExpr.setSourcePosition(t.getTrueExpression());
