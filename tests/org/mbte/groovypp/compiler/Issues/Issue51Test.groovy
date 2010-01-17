@@ -1,29 +1,19 @@
 package org.mbte.groovypp.compiler.Issues
 
+import static groovy.CompileTestSupport.shouldNotCompile
+
 public class Issue51Test extends GroovyShellTestCase {
-    void testStatic () {
-        shell.evaluate """
+    void testBug () {
+        shouldNotCompile """
             @Typed package p
+            class U { void u() {} }
+            class V { void v() {} }
 
             class C {
-              static int N
+              def f(U u) {}
+              def f(V v) {}
               def foo() {
-                Runnable r = [run : { def n = N }]
-              }
-            }
-
-            new C().foo()
-        """
-    }
-
-    void testNonStatic () {
-        shell.evaluate """
-            @Typed package p
-
-            class C {
-              int N
-              def foo() {
-                Runnable r = [run : { def n = N }]
+                f([u : {}])
               }
             }
 
