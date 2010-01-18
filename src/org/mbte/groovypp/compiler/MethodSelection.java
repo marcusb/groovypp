@@ -1,6 +1,8 @@
 package org.mbte.groovypp.compiler;
 
 import static org.codehaus.groovy.ast.ClassHelper.*;
+
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -8,7 +10,6 @@ import org.codehaus.groovy.util.FastArray;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class MethodSelection {
@@ -137,7 +138,7 @@ public class MethodSelection {
             } else if (!(matchingMethods instanceof ArrayList)) {
                 return matchingMethods;
             }
-            return chooseMostSpecificParams(methodName, (List) matchingMethods, arguments);
+            return chooseMostSpecificParams(methodName, (List<MethodNode>) matchingMethods, arguments);
 
         }
         if (answer != null) {
@@ -147,45 +148,67 @@ public class MethodSelection {
         return null;
     }
 
-    private static Object chooseMostSpecificParams(String name, List matchingMethods, ClassNode[] arguments) {
+    private static Object chooseMostSpecificParams(String name, List<MethodNode> matchingMethods, ClassNode[] arguments) {
         long matchesDistance = -1;
-        LinkedList matches = new LinkedList();
-        for (Iterator iter = matchingMethods.iterator(); iter.hasNext();) {
-            MethodNode method = (MethodNode) iter.next();
+        int matchesIndirect = -1;
+        List<MethodNode> matches = new ArrayList<MethodNode>();
+        for (Iterator<MethodNode> iter = matchingMethods.iterator(); iter.hasNext();) {
+            MethodNode method = iter.next();
             Parameter[] paramTypes = method.getParameters();
             long dist = calculateParameterDistance(arguments, paramTypes);
             if (dist == 0) return method;
+            int indirectCount = getIndirectlyAssignableParamsCount(paramTypes, arguments);
             if (matches.size() == 0) {
                 matches.add(method);
                 matchesDistance = dist;
-            } else if (dist < matchesDistance) {
+                matchesIndirect = indirectCount;
+            } else if (dist < matchesDistance || (dist == matchesDistance && indirectCount < matchesIndirect)) {
                 matchesDistance = dist;
+                matchesIndirect = indirectCount;
                 matches.clear();
                 matches.add(method);
-            } else if (dist == matchesDistance) {
+            } else if (dist == matchesDistance && indirectCount == matchesIndirect) {
                 matches.add(method);
             }
 
         }
         if (matches.size() == 1) {
-            return matches.getFirst();
+            return matches.get(0);
         }
         if (matches.size() == 0) {
             return null;
         }
 
-        //more than one matching method found --> ambiguous!
-//        String msg = "Ambiguous method overloading for method ";
-//        msg += theClass.getName() + "#" + name;
-//        msg += ".\nCannot resolve which method to invoke for ";
-//        msg += InvokerHelper.toString(arguments);
-//        msg += " due to overlapping prototypes between:";
-//        for (Iterator iter = matches.iterator(); iter.hasNext();) {
-//            Class[] types = ((ParameterTypes) iter.next()).getNativeParameterTypes();
-//            msg += "\n\t" + InvokerHelper.toString(types);
-//        }
-//        throw new GroovyRuntimeException(msg);
-        return matches.getFirst();
+        return null;
+    }
+
+    private static int getIndirectlyAssignableParamsCount(Parameter[] params, ClassNode[] args) {
+        int res = 0;
+        for (int i = 0; i < params.length - 1; i++) {
+            if (!isAssignableDirectly(params[i].getType(), args[i])) res++;
+        }
+        if (params.length == args.length && TypeUtil.isAssignableFrom(params[params.length -1].getType(),
+                args[params.length -1])) {
+            if (!isAssignableDirectly(params[params.length -1].getType(), args[params.length -1])) res++;
+        } else if (args.length > params.length) {
+            ClassNode last = params[params.length - 1].getType().getComponentType();
+            for (int i =  params.length - 1; i < args.length;  i++) {
+                if (!isAssignableDirectly(last, args[i])) {
+                    res++;
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+
+    private static boolean isAssignableDirectly(ClassNode param, ClassNode arg) {
+        if (arg == null) return true;
+        if (param == ClassHelper.boolean_TYPE) {
+            return arg == ClassHelper.boolean_TYPE;
+        }
+        if (ClassHelper.isPrimitiveType(param) && ClassHelper.isPrimitiveType(arg)) return true;
+        return TypeUtil.isDirectlyAssignableFrom(param.redirect(), arg.redirect());
     }
 
     private static long calculateParameterDistance(ClassNode argument, ClassNode parameter) {
@@ -435,6 +458,7 @@ public class MethodSelection {
                     // to check the distance to Object
                     if (closestDist == -1) closestDist = getSuperClassDistance(closestClass);
                     int newDist = getSuperClassDistance(theType);
+                    if (newDist == closestDist) answer = null;
                     if (newDist < closestDist) {
                         closestDist = newDist;
                         closestVargsClass = null;
