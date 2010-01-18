@@ -354,16 +354,18 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         MethodNode foundMethod;
         List<Changed> changed  = null;
 
-        for (int i = 0; i < argTypes.length+1; ++i) {
-            foundMethod = compiler.findMethod(type, methodName, argTypes);
+        ClassNode[] argTypesCopy = new ClassNode[argTypes.length];
+        System.arraycopy(argTypes, 0, argTypesCopy, 0, argTypes.length);
+        for (int i = 0; i < argTypesCopy.length+1; ++i) {
+            foundMethod = compiler.findMethod(type, methodName, argTypesCopy);
             if (foundMethod != null) {
-                return foundMethodInference(type, foundMethod, changed, argTypes, compiler);
+                return foundMethodInference(type, foundMethod, changed, argTypesCopy, compiler);
             }
 
-            if (i == argTypes.length)
+            if (i == argTypesCopy.length)
                 return null;
 
-            final ClassNode oarg = argTypes[i];
+            final ClassNode oarg = argTypesCopy[i];
             if (oarg == null)
                 continue;
 
@@ -376,9 +378,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                 Changed change = new Changed();
                 change.index = i;
-                change.original = argTypes[i];
+                change.original = argTypesCopy[i];
                 changed.add(change);
-                argTypes[i] = null;
+                argTypesCopy[i] = null;
             }
         }
 

@@ -37,6 +37,14 @@ public class PresentationUtil {
             return;
         }
 
+        if (type == TypeUtil.TMAP) {
+            builder.append("<map>");
+            return;
+        } else if (type == TypeUtil.TLIST) {
+            builder.append("<list>");
+            return;
+        }
+
         if (type.isGenericsPlaceHolder()) {
             builder.append(type.getUnresolvedName());
         } else {
