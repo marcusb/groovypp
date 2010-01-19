@@ -76,7 +76,7 @@ abstract class FQueue<T> implements Iterable<T> {
         }
 
         Iterator<T> iterator () {
-            [head.singleton().iterator(), output.iterator(), input.reverse(FList.emptyList).iterator()].iterator().flatten ()
+            head.singleton().iterator() | output.iterator() | input.reverse(FList.emptyList).iterator()
         }
     }
 }
