@@ -3,7 +3,10 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.*;
 import org.mbte.groovypp.compiler.*;
+import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.objectweb.asm.Opcodes;
+
+import java.util.Iterator;
 
 public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpression> {
     public Expression transform(ClosureExpression ce, CompilerTransformer compiler) {
@@ -29,8 +32,10 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
         newType.addMethod(_doCallMethod);
         newType.setDoCallMethod(_doCallMethod);
 
-        if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl"))
-            newType.addField("this$0", Opcodes.ACC_PUBLIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+        if (!compiler.methodNode.isStatic() || compiler.classNode.getName().endsWith("$TraitImpl")) {
+            if (usesOuterInstance(ce))
+                newType.addField("this$0", ACC_PUBLIC | ACC_FINAL | ACC_SYNTHETIC, !compiler.methodNode.isStatic() ? compiler.classNode : compiler.methodNode.getParameters()[0].getType(), null);
+        }
 
         _doCallMethod.createDependentMethods(newType);
 
@@ -38,5 +43,15 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
         ce.setType(newType);
 
         return CompiledClosureBytecodeExpr.createCompiledClosureBytecodeExpr(compiler, ce);
+    }
+
+    private static boolean usesOuterInstance(ClosureExpression ce) {
+        Iterator<Variable> it = ce.getVariableScope().getReferencedClassVariablesIterator();
+        while (it.hasNext()) {
+            Variable variable = it.next();
+            if (variable instanceof DynamicVariable || // the variable might be static, but we don't have a way to tell.
+                !PropertyUtil.isStatic(variable)) return true;
+        }
+        return false;
     }
 }
