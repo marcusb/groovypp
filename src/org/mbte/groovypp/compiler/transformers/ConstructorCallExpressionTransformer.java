@@ -12,7 +12,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
@@ -125,6 +124,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     if ((getType().getModifiers() & ACC_STATIC) == 0 && getType().redirect() instanceof InnerClassNode) {
                         mv.visitVarInsn(ALOAD, 0);
                         for (ClassNode tp = compilerClass ; tp != getType().redirect().getOuterClass(); ) {
+                            compiler.context.setOuterClassInstanceUsed(tp);
                             final ClassNode outerTp = tp.redirect().getOuterClass();
                             mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
                             tp = outerTp;

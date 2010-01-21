@@ -115,6 +115,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
 
+                    compiler.context.setOuterClassInstanceUsed(thisType);
                     FieldNode ownerField = thisType.getField("this$0");
                     thisType = ownerField == null ? null : ownerField.getType();
                 }

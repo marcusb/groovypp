@@ -161,6 +161,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         mv.visitVarInsn(ALOAD, 0);
                         ClassNode curThis = compiler.methodNode.getDeclaringClass();
                         while (curThis != thisTypeFinal) {
+                            compiler.context.setOuterClassInstanceUsed(curThis);
                             ClassNode next = curThis.getField("this$0").getType();
                             mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
                             curThis = next;

@@ -9,13 +9,17 @@ import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.Opcodes;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SourceUnitContext {
     private int syntheticAccessorNumber = 1979;
     public Map<FieldNode, MethodNode> generatedFieldGetters = new HashMap<FieldNode, MethodNode>();
     public Map<FieldNode, MethodNode> generatedFieldSetters = new HashMap<FieldNode, MethodNode>();
     public Map<MethodNode, MethodNode> generatedMethodDelegates = new HashMap<MethodNode, MethodNode>();
+
+    private Set<ClassNode> outerClassInstanceUsers = new HashSet<ClassNode>();
 
     public MethodNode getFieldGetter(FieldNode field) {
         MethodNode getter = generatedFieldGetters.get(field);
@@ -90,5 +94,13 @@ public class SourceUnitContext {
             ClassNodeCache.clearCache(clazz);
         }
         return delegate;
+    }
+
+    public void setOuterClassInstanceUsed(ClassNode node) {
+        outerClassInstanceUsers.add(node);
+    }
+
+    public boolean isOuterClassInstanceUsed(ClassNode node) {
+        return outerClassInstanceUsers.contains(node);
     }
 }

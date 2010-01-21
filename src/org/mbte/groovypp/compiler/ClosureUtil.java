@@ -1,19 +1,15 @@
 package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.classgen.BytecodeSequence;
-import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.syntax.Token;
-import org.codehaus.groovy.syntax.Types;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.MethodVisitor;
+import org.codehaus.groovy.classgen.BytecodeInstruction;
+import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.util.*;
 
@@ -390,18 +386,18 @@ public class ClosureUtil {
     public static Parameter[] createClosureConstructorParams(ClassNode newType, CompilerTransformer compiler) {
         List<FieldNode> fields = newType.getFields();
 
-        final Parameter constrParams [] = new Parameter[fields.size()];
+        final List<Parameter> constrParams = new ArrayList<Parameter>(fields.size());
 
         int k = 0;
         FieldNode ownerField = newType.getField("this$0");
         if (ownerField != null)
-            constrParams [k++] = new Parameter(ownerField.getType(), "this$0");
+            constrParams.add(new Parameter(ownerField.getType(), "this$0"));
         for (int i = 0; i != fields.size(); ++i) {
             final FieldNode fieldNode = fields.get(i);
-            if (!fieldNode.getName().equals("this$0"))
-                constrParams [k++] = new Parameter(fieldNode.getType(), fieldNode.getName());
+            if (!fieldNode.getName().equals("this$0") && !fieldNode.isHolder())
+                constrParams.add(new Parameter(fieldNode.getType(), fieldNode.getName()));
         }
-        return constrParams;
+        return constrParams.toArray(new Parameter[constrParams.size()]);
     }
 
     public static void instantiateClass(ClassNode type, CompilerTransformer compiler, Parameter[] constrParams, Expression superArgs, MethodVisitor mv) {
