@@ -147,7 +147,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
             [
                 _hasNext:true,
                 hasNext:{_hasNext},
-                next:{if(_hasNext) {_hasNext = false; LeafNode.this } else {throw new UnsupportedOperationException()} },
+                next:{if(_hasNext) {_hasNext = false; LeafNode.this } else {throw new NoSuchElementException()} },
                 remove:{throw new UnsupportedOperationException()}
             ]
         }

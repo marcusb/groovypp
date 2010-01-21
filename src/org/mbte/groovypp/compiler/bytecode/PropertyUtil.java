@@ -37,15 +37,16 @@ public class PropertyUtil {
         }
 
         if (object == null && "this".equals(propName)) {
-            ClassNode cur = compiler.classNode;
-            while (cur != null) {
-                final FieldNode field = cur.getDeclaredField("this$0");
+            ClassNode curr = compiler.classNode;
+            while (curr != null) {
+                final FieldNode field = curr.getDeclaredField("this$0");
                 if (field == null)
                     break;
 
-                cur = field.getType();
-                if (cur.equals(exp.getObjectExpression().getType())) {
-                    return new BytecodeExpr(exp,cur){
+                compiler.context.setOuterClassInstanceUsed(curr);
+                curr = field.getType();
+                if (curr.equals(exp.getObjectExpression().getType())) {
+                    return new BytecodeExpr(exp, curr){
                         protected void compile(MethodVisitor mv) {
                             ClassNode cur = compiler.classNode;
                             mv.visitVarInsn(ALOAD, 0);
