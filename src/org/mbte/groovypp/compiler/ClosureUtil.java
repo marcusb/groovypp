@@ -388,13 +388,12 @@ public class ClosureUtil {
 
         final List<Parameter> constrParams = new ArrayList<Parameter>(fields.size());
 
-        int k = 0;
         FieldNode ownerField = newType.getField("this$0");
         if (ownerField != null)
             constrParams.add(new Parameter(ownerField.getType(), "this$0"));
         for (int i = 0; i != fields.size(); ++i) {
             final FieldNode fieldNode = fields.get(i);
-            if (!fieldNode.getName().equals("this$0") && !fieldNode.isHolder())
+            if (!fieldNode.getName().equals("this$0") && !compiler.context.isSelfInitialized(fieldNode))
                 constrParams.add(new Parameter(fieldNode.getType(), fieldNode.getName()));
         }
         return constrParams.toArray(new Parameter[constrParams.size()]);

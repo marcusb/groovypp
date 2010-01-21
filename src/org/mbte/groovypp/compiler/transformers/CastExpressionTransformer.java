@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.util.FastArray;
@@ -219,8 +220,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
 
         if (objType != null) {
-            final Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(objType, compiler);
-
             if (superArgs != null) {
                 if (superArgs instanceof ListExpression) {
                     superArgs = new ArgumentListExpression(((ListExpression)superArgs).getExpressions());
@@ -230,7 +229,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
             else
                 superArgs = new ArgumentListExpression();
-            superArgs = compiler.transform(superArgs);
+            final Expression finalSA = compiler.transform(superArgs);
 
             final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler);
 
@@ -243,8 +242,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             for (int i = 0; i != ll.size(); ++i)
                 ll.set(i, compiler.cast(ll.get(i), constructor.getParameters()[i].getType()));
 
-            ClosureUtil.createClosureConstructor(objType, constrParams, superArgs, compiler);
-
             for (MapEntryExpression me : fields) {
                 final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
 
@@ -252,7 +249,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 me.setValueExpression(init);
 
-                objType.addField(keyName, 0, init.getType(), null);
+                FieldNode fieldNode = objType.addField(keyName, 0, init.getType(), null);
+                compiler.context.setSelfInitialized(fieldNode);
             }
 
             for (MapEntryExpression me : methods) {
@@ -260,19 +258,26 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
             }
 
-            final Expression finalSA = superArgs;
             return new BytecodeExpr(exp, objType) {
                 protected void compile(MethodVisitor mv) {
-                    ClosureUtil.instantiateClass(getType(), compiler, constrParams, finalSA, mv);
+                    ClassNode type = getType();
+                    if (compiler.policy == TypePolicy.STATIC && !compiler.context.isOuterClassInstanceUsed(type) &&
+                            type.getDeclaredField("this$0") != null /* todo: remove this check */) {
+                        type.removeField("this$0");
+                    }
+
+                    final Parameter[] constrParams = ClosureUtil.createClosureConstructorParams(type, compiler);
+                    ClosureUtil.createClosureConstructor(type, constrParams, finalSA, compiler);
+                    ClosureUtil.instantiateClass(type, compiler, constrParams, finalSA, mv);
 
                     for (MapEntryExpression me : fields) {
                         final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
 
-                        final FieldNode fieldNode = getType().getDeclaredField(keyName);
+                        final FieldNode fieldNode = type.getDeclaredField(keyName);
 
                         mv.visitInsn(DUP);
                         ((BytecodeExpr)me.getValueExpression()).visit(mv);
-                        mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(getType()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
+                        mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(type), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
                     }
                 }
             };
