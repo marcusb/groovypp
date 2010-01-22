@@ -340,15 +340,20 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Label continueLabel = compileStack.getContinueLabel();
 
         coll.visit(mv);
+        mv.visitInsn(DUP);
+        int collIdx = compileStack.defineTemporaryVariable("$coll$", ClassHelper.OBJECT_TYPE, true);
         mv.visitTypeInsn(INSTANCEOF, BytecodeHelper.getClassInternalName(EmptyRange.class));
         mv.visitJumpInsn(IFNE, breakLabel);
 
-        ((BytecodeExpr) transform(new MethodCallExpression(coll, "getFrom", new ArgumentListExpression()))).visit(mv);
+        mv.visitVarInsn(ALOAD, collIdx);
+        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "groovy/lang/Range", "getFrom", "()Ljava/lang/Comparable;");
         BytecodeExpr.unbox(ClassHelper.int_TYPE, mv);
-        ((BytecodeExpr) transform(new MethodCallExpression(coll, "getTo", new ArgumentListExpression()))).visit(mv);
+        mv.visitVarInsn(ALOAD, collIdx);
+        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "groovy/lang/Range", "getTo", "()Ljava/lang/Comparable;");
         BytecodeExpr.unbox(ClassHelper.int_TYPE, mv);
 
-        ((BytecodeExpr) transform(new MethodCallExpression(coll, "isReverse", new ArgumentListExpression()))).visit(mv);
+        mv.visitVarInsn(ALOAD, collIdx);
+        mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "groovy/lang/Range", "isReverse", "()Z");
 
         mv.visitInsn(DUP);
         int isReverse = compileStack.defineTemporaryVariable("$isReverse$", ClassHelper.boolean_TYPE, true);
