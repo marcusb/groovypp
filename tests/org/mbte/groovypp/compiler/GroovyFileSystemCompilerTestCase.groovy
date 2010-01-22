@@ -4,7 +4,7 @@ import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
 
 
-abstract class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
+@Typed abstract class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
 
     protected FileSystemCompiler compiler;
     protected File outputDir;

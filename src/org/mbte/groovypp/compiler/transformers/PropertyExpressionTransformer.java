@@ -52,15 +52,15 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             Object prop = PropertyUtil.resolveGetProperty(ClassHelper.CLASS_Type, propName, compiler, false);
             if (prop != null) {
                 type = ClassHelper.CLASS_Type;
-                if (!checkAccessible(prop, exp, type, compiler)) return null;
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
             else {
                 type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
                 prop = PropertyUtil.resolveGetProperty(type, propName, compiler, true);
-                if (!checkAccessible(prop, exp, type, compiler)) return null;
                 object = null;
+                if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         } else {
@@ -93,7 +93,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
                     if (prop == null)
                         prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false);
-                    if (!checkAccessible(prop, exp, type, compiler)) return null;
+                    if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
             } else {
@@ -118,17 +118,19 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                             }
                         }
                 }
-                if (!checkAccessible(prop, exp, type, compiler)) return null;
+                if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         }
     }
 
-    private boolean checkAccessible(Object prop, PropertyExpression exp, ClassNode type, CompilerTransformer compiler) {
+    private boolean checkAccessible(Object prop, PropertyExpression exp, ClassNode type, CompilerTransformer compiler, BytecodeExpr object) {
+        // 'super' access is always permitted.
+        final ClassNode accessType = object instanceof VariableExpressionTransformer.Super ? null : type;
         if (prop instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) prop;
             if (!AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(),
-                    compiler.classNode, type)) {
+                    compiler.classNode, accessType)) {
                 compiler.addError(MessageFormat.format("Cannot access method ''{0}''", methodNode.getName()),
                         exp.getProperty());
                 return false;
@@ -136,7 +138,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         } else if (prop instanceof FieldNode) {
             FieldNode fieldNode = (FieldNode) prop;
             if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
-                    compiler.classNode, type)) {
+                    compiler.classNode, accessType)) {
                 compiler.addError(MessageFormat.format("Cannot access field ''{0}''", fieldNode.getName()),
                         exp.getProperty());
                 return false;
@@ -152,7 +154,6 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         while (thisType != null) {
             Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler, false);
             if (prop != null) {
-                if (!checkAccessible(prop, exp, thisType, compiler)) return null;
                 boolean isStatic = PropertyUtil.isStatic(prop);
                 if (!isStatic && exp.isStatic()) return null;
                 final ClassNode thisTypeFinal = thisType;
@@ -168,6 +169,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         }
                     }
                 };
+                if (!checkAccessible(prop, exp, thisType, compiler, object)) return null;
 
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
             }

@@ -194,8 +194,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
                 }
 
+                // 'super' access is always permitted. 
+                final ClassNode accessType = object instanceof VariableExpressionTransformer.Super ? null : type;
                 if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                        foundMethod.getDeclaringClass(), compiler.classNode, type)) {
+                        foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
                 }
 
