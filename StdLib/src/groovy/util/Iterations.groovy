@@ -46,15 +46,15 @@ abstract class Iterations {
      * @return computed aggregated value.
      */
     static <T, R> R foldRight(Iterator<T> self, R init, Function2<T, R, R> op) {
-        foldRightInner(self, init, op, { it })
-    }
-
-    private static <T, R> R foldRightInner(Iterator<T> self, R init, Function2<T, R, R> op, Function1<R, R> cont) {
-        if (self.hasNext()) {
-            def e = self.next()
-            return foldRightInner(self, init, op, { cont(op(e, it)) })
+        def inner = { Function1<R, R> cont ->
+            if (self.hasNext()) {
+                def e = self.next()
+                doCall { cont(op(e, it)) }
+            } else {
+                cont(init)
+            }
         }
-        cont(init)
+        inner { it }
     }
 
     /**
