@@ -39,7 +39,6 @@ abstract class Iterations {
 
     /**
      * Computes the aggregate of the given iterator applying the operation to the last iterator element first.
-     * NB: this method is not tail-recursive.
      * @param self input iterator.
      * @param init the initial value to be passed on op first invocation.
      * @param op the function that computes aggregate given the current element and its own result computed so far.
@@ -59,7 +58,6 @@ abstract class Iterations {
 
     /**
      * Computes the aggregate of the given iterator applying the operation to the last element first.
-     * NB: this method is not tail-recursive.
      * @param self input @link{Iterable} object.
      * @param init the initial value to be passed on op first invocation.
      * @param op the function that computes aggregate given the current element and its own result computed so far.
@@ -67,6 +65,10 @@ abstract class Iterations {
      */
     static <T, R> R foldRight(Iterable<T> self, R init, Function2<T, R, R> op) {
         foldRight(self.iterator(), init, op)
+    }
+
+    static <T, R> R foldRight(T[] self, R init, Function2<T, R, R> op) {
+        foldRight(self.asList(), init, op)
     }
 
     /**
