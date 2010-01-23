@@ -526,13 +526,23 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
                     switch (be.getOperation().getType()) {
                         case  Types.COMPARE_EQUAL:
-                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
-                            mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+                            if (l2.getType().equals(TypeUtil.NULL_TYPE) || r2.getType().equals(TypeUtil.NULL_TYPE)) {
+                                mv.visitJumpInsn(onTrue ? IF_ACMPEQ : IF_ACMPNE, label);
+                            }
+                            else {
+                                mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+                                mv.visitJumpInsn(onTrue ? IFNE : IFEQ, label);
+                            }
                             break;
 
                         case  Types.COMPARE_NOT_EQUAL:
-                            mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
-                            mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
+                            if (l2.getType().equals(TypeUtil.NULL_TYPE) || r2.getType().equals(TypeUtil.NULL_TYPE)) {
+                                mv.visitJumpInsn(onTrue ? IF_ACMPNE : IF_ACMPEQ, label);
+                            }
+                            else {
+                                mv.visitMethodInsn(INVOKESTATIC, TypeUtil.DTT_INTERNAL, "compareEqual", "(Ljava/lang/Object;Ljava/lang/Object;)Z");
+                                mv.visitJumpInsn(onTrue ? IFEQ : IFNE, label);
+                            }
                             break;
 
                         case  Types.COMPARE_IDENTICAL:

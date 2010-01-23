@@ -2,8 +2,9 @@ package org.mbte.groovypp.compiler
 
 import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
+import groovy.util.test.GroovyFileSystemCompilerTestCase
 
-public class CompileStdLibTest extends GroovyFileSystemCompilerTestCase {
+class CompileStdLibTest extends GroovyFileSystemCompilerTestCase {
     void testCompile () {
         def finder = new FileNameFinder ()
         

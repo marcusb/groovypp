@@ -857,6 +857,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     public LocalVarInferenceTypes getLocalVarInferenceTypes() {
-        return ((BytecodeImproverMethodAdapter) mv).getLocalVarInferenceTypes();
+        return ((UneededBoxingRemoverMethodAdapter) mv).getLocalVarInferenceTypes();
     }
 }

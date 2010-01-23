@@ -12,12 +12,12 @@ import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter implements Opcodes {
+public class UneededBoxingRemoverMethodAdapter extends StackAwareMethodAdapter implements Opcodes {
     private String boxingDesc = null;
     private static final String DTT  = BytecodeHelper.getClassInternalName(DefaultTypeTransformation.class.getName());
     private static final String DGPP = BytecodeHelper.getClassInternalName(DefaultGroovyPPMethods.class.getName());
 
-    public BytecodeImproverMethodAdapter(MethodVisitor mv) {
+    public UneededBoxingRemoverMethodAdapter(MethodVisitor mv) {
         super(mv);
     }
 
@@ -112,6 +112,9 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
         if (cst instanceof Integer) {
             Integer value = (Integer) cst;
             switch (value) {
+                case -1:
+                    super.visitInsn(Opcodes.ICONST_M1);
+                    break;
                 case 0:
                     super.visitInsn(Opcodes.ICONST_0);
                     break;
@@ -150,6 +153,33 @@ public class BytecodeImproverMethodAdapter extends StackAwareMethodAdapter imple
             super.visitInsn(DUP);
             super.visitLdcInsn(cst.toString());
             super.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
+        }
+        else if (cst instanceof Double) {
+            Double aDouble = (Double) cst;
+            if (aDouble == 1.0d)
+                super.visitInsn(DCONST_1);
+            else
+                super.visitLdcInsn(cst);
+        }
+        else if (cst instanceof Long) {
+            Long aLong = (Long) cst;
+            if (aLong == 0L)
+                super.visitInsn(LCONST_0);
+            else
+                if (aLong == 1L)
+                    super.visitInsn(LCONST_1);
+                else
+                    super.visitLdcInsn(cst);
+        }
+        else if (cst instanceof Float) {
+            Float aFloat = (Float) cst;
+            if (aFloat == 1.0f)
+                super.visitInsn(FCONST_1);
+            else
+                if (aFloat == 2.0f)
+                    super.visitInsn(FCONST_2);
+                else
+                    super.visitLdcInsn(cst);
         }
         else if (cst == null) {
             super.visitInsn(ACONST_NULL);

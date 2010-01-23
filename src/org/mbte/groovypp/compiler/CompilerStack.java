@@ -423,7 +423,7 @@ public class CompilerStack implements Opcodes {
         Register answer = defineVar(name, type, false);
         stackVariables.put(name, answer);
 
-        Label startLabel  = new Label();
+        Label startLabel  = new VarStartLabel();
         answer.setStartLabel(startLabel);
 
         if (!initFromStack) {
@@ -454,7 +454,7 @@ public class CompilerStack implements Opcodes {
         Register answer = defineTypeInferenceVar(name);
         stackVariables.put(name, answer);
 
-        Label startLabel  = new Label();
+        Label startLabel  = new VarStartLabel();
         answer.setStartLabel(startLabel);
 
         doStore(initType);
@@ -587,5 +587,8 @@ public class CompilerStack implements Opcodes {
 
     public void popFinallyBlockVisit(Runnable block) {
         visitedBlocks.remove(block);
+    }
+
+    public static class VarStartLabel extends Label {
     }
 }

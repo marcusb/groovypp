@@ -887,7 +887,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                         checkCast(type, mv);
                         mv.visitLabel(doneLabel);
                     } else {
-                        BytecodeExpr.checkCast(type, mv);
+                        checkCast(type, mv);
                     }
                 }
             }

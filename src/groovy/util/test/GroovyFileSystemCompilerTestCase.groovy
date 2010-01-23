@@ -1,4 +1,4 @@
-package org.mbte.groovypp.compiler
+package groovy.util.test
 
 import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
