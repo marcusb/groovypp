@@ -118,9 +118,6 @@ class OpenVerifier extends Verifier {
         visitProperty(node);
     }
 
-    public void visitMethod(MethodNode node) {
-    }
-
     protected void addInitialization(ClassNode node, ConstructorNode constructorNode) {
         if (constructorNode.getCode() instanceof BytecodeSequence)
             return;
