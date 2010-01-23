@@ -132,9 +132,10 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             StaticMethodCallExpression smce = (StaticMethodCallExpression) exp;
             MethodCallExpression mce = new MethodCallExpression(
                     new ClassExpression(smce.getOwnerType()),
-                    smce.getMethod(),
+                    new ConstantExpression(smce.getMethod()),
                     smce.getArguments());
             mce.setSourcePosition(smce);
+            mce.getMethod().setSourcePosition(smce);
             return transform(mce);
         }
 
