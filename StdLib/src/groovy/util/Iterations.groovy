@@ -5,6 +5,7 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executor
 import groovy.util.concurrent.BindLater
+import groovy.util.concurrent.FList
 
 /**
  * Utility methods to iterate over objects of standard types.
@@ -45,15 +46,11 @@ abstract class Iterations {
      * @return computed aggregated value.
      */
     static <T, R> R foldRight(Iterator<T> self, R init, Function2<T, R, R> op) {
-        def inner = { Function1<R, R> cont ->
-            if (self.hasNext()) {
-                def e = self.next()
-                doCall { cont(op(e, it)) }
-            } else {
-                cont(init)
-            }
-        }
-        inner { it }
+      def rev = FList.emptyList
+      while(self.hasNext()) {
+        rev = rev + self.next()
+      }
+      foldLeft(rev.iterator(), init, op)
     }
 
     /**

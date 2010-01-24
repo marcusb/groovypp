@@ -6,7 +6,6 @@ import org.codehaus.groovy.ast.expr.ElvisOperatorExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
-import org.mbte.groovypp.compiler.StaticCompiler;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.Label;
@@ -67,16 +66,16 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
 
     private static class Elvis extends BytecodeExpr {
         private final ElvisOperatorExpression eee;
-        private BytecodeExpr brunch;
+        private BytecodeExpr branch;
 
-        public Elvis(ElvisOperatorExpression ee, ElvisOperatorExpression eee, BytecodeExpr brunch) {
+        public Elvis(ElvisOperatorExpression ee, ElvisOperatorExpression eee, BytecodeExpr branch) {
             super(ee, TypeUtil.commonType(ee.getBooleanExpression().getExpression().getType(), ee.getFalseExpression().getType()));
             this.eee = eee;
-            this.brunch = brunch;
+            this.branch = branch;
         }
 
         protected void compile(MethodVisitor mv) {
-            brunch.visit(mv);
+            branch.visit(mv);
 
             Label elseLabel = new Label();
             mv.visitJumpInsn(Opcodes.IFEQ, elseLabel);

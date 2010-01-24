@@ -38,6 +38,13 @@ public class IterationsTest extends GroovyShellTestCase {
         assertEquals ([5,4,3,2,1,0], res)
     }
 
+    void testFoldRightTailRecursive () {
+        shell.evaluate("""
+            @Typed package p
+            (0..<100000).foldRight([]) { e, List l -> l }
+        """)
+    }
+
     void testFunctions () {
         def res = shell.evaluate("""
 @Trait

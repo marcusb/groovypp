@@ -49,11 +49,16 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
     protected abstract Statement getCode();
 
     private Statement addReturnsIfNeeded(Statement statement, VariableScope scope) {
-        if (statement instanceof ReturnStatement
-           || statement instanceof BytecodeSequence
+        if (statement instanceof BytecodeSequence
            || statement instanceof ThrowStatement)
         {
             return statement;
+        }
+
+        if (statement instanceof ReturnStatement) {
+            final Expression expr = ((ReturnStatement) statement).getExpression();
+            if (!(expr instanceof TernaryExpression)) return statement;
+            statement = new ExpressionStatement(expr);
         }
 
         if (statement instanceof EmptyStatement) {
