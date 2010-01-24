@@ -18,7 +18,7 @@ public class IterationsTest extends GroovyShellTestCase {
         def res = shell.evaluate("""
             @Typed
             u () {
-                [0,1,2,3,4,5].foldLeft(0) { el, int sum ->
+                [0,1,2,3,4,5].foldLeft(0) { el, sum ->
                    el + sum
                 }
             }
