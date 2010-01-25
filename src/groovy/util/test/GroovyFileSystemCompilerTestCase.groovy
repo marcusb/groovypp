@@ -3,7 +3,6 @@ package groovy.util.test
 import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
 
-
 @Typed abstract class GroovyFileSystemCompilerTestCase extends GroovyTestCase {
 
     protected FileSystemCompiler compiler;

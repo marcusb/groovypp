@@ -100,8 +100,12 @@
 		<copy todir="${compiler.prod.output}">
 			<fileset dir="${compiler.src}">
 				<exclude name="**/*.java"/>
+                <exclude name="**/*.groovy"/>
 			</fileset>
 		</copy>
+        <groovyc classpathref="compile.stdlib.classpath" srcdir="${compiler.src}"
+            destdir="${compiler.prod.output}">
+        </groovyc >
 	</target>
 
 	<target name="compile.tests.compiler" depends="compile.compiler" >
