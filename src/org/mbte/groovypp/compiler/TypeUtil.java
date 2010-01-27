@@ -139,7 +139,7 @@ public class TypeUtil {
         if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0
                 || ClassHelper.isPrimitiveType(classNode)) return null;
         if (!isTransparentClass(classNode)) return null;
-        MethodNode method = MethodSelection.findMethodInClass(classNode, "get", new ClassNode[0]);
+        MethodNode method = MethodSelection.findPublicMethodInClass(classNode, "get", new ClassNode[0]);
         return method != null && method.getParameters().length == 0 ? method : null;
     }
 
@@ -147,7 +147,7 @@ public class TypeUtil {
         if (classNode instanceof ClosureClassNode || (classNode.getModifiers() & Opcodes.ACC_SYNTHETIC) != 0
                 || ClassHelper.isPrimitiveType(classNode)) return null;
         if (!isTransparentClass(classNode)) return null;
-        MethodNode method = MethodSelection.findMethodInClass(classNode, "set", new ClassNode[] {arg});
+        MethodNode method = MethodSelection.findPublicMethodInClass(classNode, "set", new ClassNode[] {arg});
         if (method == null || method.getParameters().length != 1) return null;
         ClassNode paramType = method.getParameters()[0].getType();
         ClassNode substituted = getSubstitutedType(paramType, method.getDeclaringClass(), classNode);

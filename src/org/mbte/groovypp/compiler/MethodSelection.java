@@ -97,7 +97,7 @@ public class MethodSelection {
         FastArray methods = (FastArray) methodOrList;
         if (methods == null) return null;
         int methodCount = methods.size();
-        if (methodCount > 1 && contextClass != null) {
+        if (methodCount > 1) {
             for (int i = 0; i < methodCount; i++) {
                 final MethodNode methodNode = (MethodNode) methods.get(i);
                 if (methodNode != null && !AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(),
@@ -585,10 +585,19 @@ public class MethodSelection {
         return true;
     }
 
-    public static MethodNode findMethodInClass(ClassNode classToTransformFrom, String methodName, ClassNode[] args) {
-        Object methods = ClassNodeCache.getMethods(classToTransformFrom, methodName);
-        final Object selected = chooseMethod(methodName, methods, classToTransformFrom, args, null);
-        if (!(selected instanceof MethodNode)) return null;
-        return (MethodNode) selected;
+    public static MethodNode findPublicMethodInClass(ClassNode classToTransformFrom, String methodName, ClassNode[] args) {
+        Object methodOrList = ClassNodeCache.getMethods(classToTransformFrom, methodName);
+        if (methodOrList instanceof MethodNode) {
+            if (!((MethodNode)methodOrList).isPublic()) return null;
+        } else {
+            final FastArray array = (FastArray) methodOrList;
+            for (int i = 0; i < array.size(); i++) {
+                final MethodNode method = (MethodNode) array.get(i);
+                if (!method.isPublic()) array.remove(i);
+            }
+        }
+        final Object selected = chooseMethod(methodName, methodOrList, classToTransformFrom, args, null);
+        return selected instanceof MethodNode ? (MethodNode)selected : null;
     }
+
 }
