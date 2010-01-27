@@ -85,7 +85,7 @@ public class MethodSelection {
         return Math.max(max, superClassMax);
     }
 
-    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode type, ClassNode[] arguments) {
+    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode type, ClassNode[] arguments, ClassNode contextClass) {
         if (methodOrList instanceof MethodNode) {
             if (isValidMethod(((MethodNode) methodOrList).getParameters(), arguments,
                     type, ((MethodNode) methodOrList).getDeclaringClass())) {
@@ -97,6 +97,15 @@ public class MethodSelection {
         FastArray methods = (FastArray) methodOrList;
         if (methods == null) return null;
         int methodCount = methods.size();
+        if (methodCount > 1 && contextClass != null) {
+            for (int i = 0; i < methodCount; i++) {
+                final MethodNode methodNode = (MethodNode) methods.get(i);
+                if (methodNode != null && !AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(),
+                        contextClass, null)) methods.remove(i);
+            }
+        }
+        methodCount = methods.size();
+        
         if (methodCount <= 0) {
             return null;
         } else if (methodCount == 1) {
@@ -578,7 +587,7 @@ public class MethodSelection {
 
     public static MethodNode findMethodInClass(ClassNode classToTransformFrom, String methodName, ClassNode[] args) {
         Object methods = ClassNodeCache.getMethods(classToTransformFrom, methodName);
-        final Object selected = chooseMethod(methodName, methods, classToTransformFrom, args);
+        final Object selected = chooseMethod(methodName, methods, classToTransformFrom, args, null);
         if (!(selected instanceof MethodNode)) return null;
         return (MethodNode) selected;
     }

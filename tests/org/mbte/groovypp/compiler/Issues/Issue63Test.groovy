@@ -8,7 +8,7 @@ public class Issue63Test extends GroovyShellTestCase {
           int f(Object o) {1}
           private int f(Integer i) {2}
         }
-        assert 2 == new C().f(11)
+        assert 1 == new C().f(11)
         """
     }
 }
