@@ -97,7 +97,7 @@ public class MethodSelection {
         FastArray methods = (FastArray) methodOrList;
         if (methods == null) return null;
         int methodCount = methods.size();
-        if (methodCount > 1) {
+        if (methodCount > 1 && contextClass != null) {
             for (int i = 0; i < methodCount; i++) {
                 final MethodNode methodNode = (MethodNode) methods.get(i);
                 if (methodNode != null && !AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(),
