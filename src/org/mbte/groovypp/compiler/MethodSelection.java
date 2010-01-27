@@ -220,6 +220,9 @@ public class MethodSelection {
 
         if (argument == null || parameter.equals(argument)) return 0;
 
+        if (argument.implementsInterface(TypeUtil.TLIST)) argument = TypeUtil.ARRAY_LIST_TYPE;
+        if (argument.implementsInterface(TypeUtil.TMAP)) argument = TypeUtil.LINKED_HASH_MAP_TYPE;
+
         if (parameter.isInterface()) {
             return getMaximumInterfaceDistance(argument, parameter) << INTERFACE_SHIFT;
         }
