@@ -5,7 +5,7 @@ import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 
 public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, LocalVarTypeInferenceState {
 
@@ -17,7 +17,7 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
 //    int LOOKUPSWITCH = 171;
 
     private BytecodeStack stack = new BytecodeStack();
-    private HashMap<Label, LocalVarInferenceTypes> labelMap = new HashMap<Label, LocalVarInferenceTypes>();
+    private IdentityHashMap<Label, LocalVarInferenceTypes> labelMap = new IdentityHashMap<Label, LocalVarInferenceTypes>();
 
     private LocalVarInferenceTypes curInference = new LocalVarInferenceTypes();
     private static final LocalVarInferenceTypes AFTER_GOTO = new LocalVarInferenceTypes();
