@@ -523,8 +523,6 @@ public class MethodSelection {
             return isValidVarargsMethod(arguments, size, pt, paramMinus1, accessType, declaringClass);
         else if (pt.length == size)
             return isValidExactMethod(arguments, pt, accessType, declaringClass);
-        else if (pt.length == 1 && size == 0)
-            return true;
         return false;
     }
 

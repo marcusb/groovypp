@@ -3,13 +3,12 @@ package org.mbte.groovypp.compiler.Issues
 public class Issue2Test extends GroovyShellTestCase {
     void testBug () {
         shell.evaluate """
-            @Typed def u (def v) {
+            @Typed package p 
+            def u (def v = 0) {
                 v
             }
 
-            @Typed def u2 () {
-                assert !u()
-            }
+            assert u() == 0
         """
     }
 }
