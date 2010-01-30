@@ -139,7 +139,7 @@ public class PropertyUtil {
             return mn;
 
         final PropertyNode pnode = type.getProperty(name);
-        if (pnode != null) {
+        if (pnode != null && (pnode.getModifiers() & Opcodes.ACC_FINAL) == 0) {
             return pnode;
         }
 
