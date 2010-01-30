@@ -4,11 +4,11 @@ public class Issue2Test extends GroovyShellTestCase {
     void testBug () {
         shell.evaluate """
             @Typed package p 
-            def u (def v = 0) {
+            def u (def v = null) {
                 v
             }
 
-            assert u() == 0
+            assert !u()
         """
     }
 }
