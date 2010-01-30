@@ -6,12 +6,12 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.TypeUtil;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class LocalVarInferenceTypes extends BytecodeLabelInfo {
 
-    IdentityHashMap<Variable, ClassNode> defVars;
+    HashMap<Variable, ClassNode> defVars;
     private boolean visited;
 
     public void add(VariableExpression ve, ClassNode type) {
@@ -19,7 +19,7 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
             return;
 
         if (defVars == null)
-            defVars = new IdentityHashMap<Variable, ClassNode>();
+            defVars = new HashMap<Variable, ClassNode>();
 
         defVars.put(ve.getAccessedVariable(), type);
     }
@@ -65,9 +65,9 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
             if (defVars == null) {
                 // we are 1st time here - just init
                 if (cur.defVars != null)
-                    defVars = (IdentityHashMap<Variable, ClassNode>) cur.defVars.clone();
+                    defVars = (HashMap<Variable, ClassNode>) cur.defVars.clone();
                 else
-                    defVars = new IdentityHashMap<Variable, ClassNode>();
+                    defVars = new HashMap<Variable, ClassNode>();
             } else {
                 // we were here already, so we need to merge
                 if (cur.defVars != null)
