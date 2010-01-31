@@ -90,13 +90,13 @@ public class PropertyUtil {
         return dynamicOrFail(parent, compiler, propName, object, value);
     }
 
-    public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler, boolean onlyStatic) {
+    public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler, boolean onlyStatic, boolean isSameObject) {
         final FieldNode field = compiler.findField(type, name);
 
         String getterName = "get" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
         if (mn != null && !mn.isAbstract() && (!onlyStatic || mn.isStatic())) {
-            if (mn == compiler.methodNode && field != null) return field;  // Access inside the getter itself is to the field.
+            if (mn == compiler.methodNode && isSameObject && field != null) return field;  // Access inside the getter itself is to the field.
             return mn;
         }
 
@@ -105,7 +105,7 @@ public class PropertyUtil {
             mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
             if (mn != null && !mn.isAbstract() &&
                 mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (!onlyStatic || mn.isStatic())) {
-                if (mn == compiler.methodNode && field != null) return field;  // Access inside the getter itself is to the field.
+                if (mn == compiler.methodNode && isSameObject && field != null) return field;  // Access inside the getter itself is to the field.
                 return mn;
             }
         }
@@ -132,18 +132,21 @@ public class PropertyUtil {
         return null;
     }
 
-    public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler) {
+    public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler, boolean isSameObject) {
+        final FieldNode field = compiler.findField(type, name);
         final String setterName = "set" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, setterName, new ClassNode[]{arg});
-        if (mn != null && mn.getReturnType() == ClassHelper.VOID_TYPE)
+        if (mn != null && mn.getReturnType() == ClassHelper.VOID_TYPE) {
+            if (mn == compiler.methodNode && isSameObject && field != null) return field;
             return mn;
+        }
 
         final PropertyNode pnode = type.getProperty(name);
         if (pnode != null && (pnode.getModifiers() & Opcodes.ACC_FINAL) == 0) {
             return pnode;
         }
 
-        return compiler.findField(type, name);
+        return field;
     }
 
     private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value) {

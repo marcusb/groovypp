@@ -187,7 +187,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 continue;
             }
 
-            final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler);
+            final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler, true);
             if (prop != null) {
                 ClassNode propType;
                 if (prop instanceof MethodNode)

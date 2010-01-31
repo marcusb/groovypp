@@ -7,6 +7,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.PresentationUtil;
+import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
@@ -37,7 +38,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(), name, right.getType(), compiler);
+        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(),
+                name, right.getType(), compiler, object instanceof VariableExpressionTransformer.This);
         return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop);
     }
 
@@ -61,7 +63,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler);
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler,
+                object instanceof VariableExpressionTransformer.This);
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
 
         return new BytecodeExpr(parent, propExpr.getType()) {
@@ -139,7 +142,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler);
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler,
+                object instanceof VariableExpressionTransformer.This);
         return PropertyUtil.createSetProperty(exp, compiler, name, dupObject, incDec, prop);
     }
 
@@ -217,7 +221,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler);
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler,
+                object instanceof VariableExpressionTransformer.This);
 
         final BytecodeExpr put = PropertyUtil.createSetProperty(exp, compiler, name, dupObject, incDec, prop);
         return new BytecodeExpr(exp, getType()) {

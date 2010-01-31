@@ -50,7 +50,7 @@ class DivideAndConquerProblemSolver {
     }
 
     void setResult(Object result) {
-      this.@result = result  // todo: remove '@'
+      this.result = result
       assert parent != this
       if (parent) {
         synchronized (parent) {
