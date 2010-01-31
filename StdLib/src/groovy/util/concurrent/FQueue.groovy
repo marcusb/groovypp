@@ -20,7 +20,7 @@ abstract class FQueue<T> implements Iterable<T> {
     static final EmptyQueue emptyQueue = []
 
     FQueue (int size) {
-        this.@size = size
+        this.size = size
     }
 
     private static class EmptyQueue<T> extends FQueue<T> {
@@ -47,9 +47,9 @@ abstract class FQueue<T> implements Iterable<T> {
 
         NonEmptyQueue (T head, FList<T> input, FList<T> output) {
             super(input.size + output.size + 1)
-            this.@input  = input
-            this.@output = output
-            this.@head   = head
+            this.input  = input
+            this.output = output
+            this.head   = head
         }
 
         NonEmptyQueue<T> addLast (T element) {
