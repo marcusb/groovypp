@@ -15,7 +15,7 @@ abstract static class FList<T> implements Iterable<T> {
      */
     final int size
 
-    FList (int size) { this.@size = size }
+    FList (int size) { this.size = size }
 
     /**
      * Element last added to the list
@@ -88,8 +88,8 @@ abstract static class FList<T> implements Iterable<T> {
 
         Node (T head, FList<T> tail) {
             super (tail.size+1)
-            this.@head = head
-            this.@tail = tail
+            this.head = head
+            this.tail = tail
         }
 
         Iterator<T> iterator () {
