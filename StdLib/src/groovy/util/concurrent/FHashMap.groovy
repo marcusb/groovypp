@@ -95,7 +95,11 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
     }
 
     private static abstract class SingleNode extends FHashMap<K,V> {
-        int hash
+        final int hash
+
+        SingleNode(int hash) {
+          this.hash = hash
+        }
 
         BitmappedNode bitmap(int shift, int hash, K key, V value) {
             def shift1 = (getHash() >>> shift) & 0x1f
@@ -118,9 +122,9 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         final V value
 
         def LeafNode(int hash, K key, V value) {
-            this.hash = hash;
-            this.@key = key;
-            this.@value = value;
+            super(hash)
+            this.@key = key  // todo remove '@'
+            this.@value = value
         }
 
         int size_() { 1 }
@@ -162,8 +166,8 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         final V value
 
         BucketElement(K key, V value) {
-            this.@key = key
-            this.@value = value
+            this.key = key
+            this.value = value
         }
 
         public V setValue(V value) {
@@ -175,7 +179,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         FList<BucketElement<K, V>> bucket
 
         CollisionNode(int hash, FList<BucketElement<K, V>> bucket) {
-            this.hash = hash;
+            super(hash)
             this.bucket = bucket
         }
 
