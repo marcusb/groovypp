@@ -44,13 +44,13 @@ class DivideAndConquerProblemSolver {
     volatile Object result
 
     Job(SelfRecurringProblem problem, Job parent) {
-      this.@problem = problem
-      this.@parent = parent
-      if (parent) parent.@children << this
+      this.problem = problem
+      this.parent = parent
+      if (parent) parent.children << this
     }
 
     void setResult(Object result) {
-      this.@result = result
+      this.@result = result  // todo: remove '@'
       assert parent != this
       if (parent) {
         synchronized (parent) {
