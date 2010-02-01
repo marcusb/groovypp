@@ -53,6 +53,8 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                     nme.setSourcePosition(me);
                     list.set(i, nme);
                 }
+                if (keyArg == TypeUtil.NULL_TYPE) keyArg = ClassHelper.OBJECT_TYPE;
+                if (valueArg == TypeUtil.NULL_TYPE) valueArg = ClassHelper.OBJECT_TYPE;
                 setType(TypeUtil.withGenericTypes(getType(), keyArg, valueArg));
             }
         }
