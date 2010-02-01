@@ -64,6 +64,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 ClassNode clazz = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
                 foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler);
                 if (foundMethod == null) {
+                    // Try some property with 'call' method.
+                    final Object prop = resolveCallableProperty(compiler, methodName, type, true);
+                    if (prop != null) {
+                        final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                        if (callMethod != null) {
+                            return createCallMethodCall(exp, compiler, methodName, args, null, prop, callMethod);
+                        }
+                    }
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
                 }
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
@@ -79,6 +87,16 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 ClassNode thisType = compiler.methodNode.getDeclaringClass();
                 while (thisType != null) {
                     foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler);
+                    if (foundMethod == null) {
+                        // Try some property with 'call' method.
+                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
+                        if (prop != null) {
+                            final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                            if (callMethod != null) {
+                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                            }
+                        }
+                    }
 
                     if (foundMethod != null) {
                         final ClassNode thisTypeFinal = thisType;
@@ -89,22 +107,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 compiler.addError("Cannot reference an instance method from static context", exp);
                                 return null;
                             }
-                            object = new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
-                                protected void compile(MethodVisitor mv) {
-                                    mv.visitVarInsn(ALOAD, 0);
-                                    ClassNode curThis = compiler.methodNode.getDeclaringClass();
-                                    while (curThis != thisTypeFinal) {
-                                        ClassNode next = curThis.getField("this$0").getType();
-                                        mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
-                                        curThis = next;
-                                    }
-                                }
-
-                                @Override
-                                public boolean isThis() {
-                                    return thisTypeFinal.equals(compiler.classNode);
-                                }
-                            };
+                            object = createThisFetchingObject(exp, compiler, thisTypeFinal);
                         }
 
                         if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
@@ -134,6 +137,17 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                 if (foundMethod == null)
                     foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+
+                if (foundMethod == null) {
+                    // Try some property with 'call' method.
+                    final Object prop = resolveCallableProperty(compiler, methodName, type, compiler.methodNode.isStatic());
+                    if (prop != null) {
+                        final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                        if (callMethod != null) {
+                            return createCallMethodCall(exp, compiler, methodName, args, object, prop, callMethod);
+                        }
+                    }
+                }
 
                 if (foundMethod == null) {
                     if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
@@ -204,6 +218,43 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 return createCall(exp, compiler, args, object, foundMethod);
             }
         }
+    }
+
+    private Expression createCallMethodCall(MethodCallExpression exp, CompilerTransformer compiler, String methodName, Expression args, BytecodeExpr object, Object prop, MethodNode callMethod) {
+        PropertyExpression propertyExpression = new PropertyExpression(
+                exp.getObjectExpression(), methodName);
+        object = PropertyUtil.createGetProperty(propertyExpression, compiler, methodName,
+                object, prop, true);
+        return createCall(exp, compiler, args, object, callMethod);
+    }
+
+    private MethodNode resolveCallMethod(CompilerTransformer compiler, ClassNode[] argTypes, Object prop) {
+        final ClassNode propType = PropertyUtil.getPropertyType(prop);
+        return findMethodWithClosureCoercion(propType, "call", argTypes, compiler);
+    }
+
+    private Object resolveCallableProperty(CompilerTransformer compiler, String methodName, ClassNode thisType,
+                                           boolean onlyStatic) {
+        return PropertyUtil.resolveGetProperty(thisType, methodName, compiler, onlyStatic, false);
+    }
+
+    private BytecodeExpr createThisFetchingObject(final MethodCallExpression exp, final CompilerTransformer compiler, final ClassNode thisTypeFinal) {
+        return new BytecodeExpr(exp.getObjectExpression(), thisTypeFinal) {
+            protected void compile(MethodVisitor mv) {
+                mv.visitVarInsn(ALOAD, 0);
+                ClassNode curThis = compiler.methodNode.getDeclaringClass();
+                while (curThis != thisTypeFinal) {
+                    ClassNode next = curThis.getField("this$0").getType();
+                    mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
+                    curThis = next;
+                }
+            }
+
+            @Override
+            public boolean isThis() {
+                return thisTypeFinal.equals(compiler.classNode);
+            }
+        };
     }
 
     private Expression createCall(MethodCallExpression exp, CompilerTransformer compiler, Expression args, BytecodeExpr object, MethodNode foundMethod) {

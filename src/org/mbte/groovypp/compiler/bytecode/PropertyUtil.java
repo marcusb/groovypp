@@ -174,4 +174,10 @@ public class PropertyUtil {
         if (prop instanceof FieldNode) return ((FieldNode) prop).isStatic();
         return false;
     }
+
+    public static ClassNode getPropertyType(Object prop) {
+        if (prop instanceof FieldNode) return ((FieldNode) prop).getType();
+        if(prop instanceof PropertyNode) return ((PropertyNode) prop).getType();
+        return ((MethodNode) prop).getReturnType();
+    }
 }
