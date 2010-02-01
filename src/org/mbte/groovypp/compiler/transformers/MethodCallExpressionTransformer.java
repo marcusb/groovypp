@@ -172,8 +172,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 }
                             }
                         }
-                    } else if (object instanceof ResolvedGetterBytecodeExpr.Accessor) {
-                        ResolvedGetterBytecodeExpr.Accessor obj = (ResolvedGetterBytecodeExpr.Accessor) object;
+                    } else if (object instanceof ResolvedGetterBytecodeExpr) {
+                        ResolvedGetterBytecodeExpr obj = (ResolvedGetterBytecodeExpr) object;
                         FieldNode fieldNode = obj.getFieldNode();
                         if ((fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
                             FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");

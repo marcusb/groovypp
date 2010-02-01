@@ -9,26 +9,35 @@ import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final MethodNode methodNode;
 
     private final BytecodeExpr object;
     private final boolean needsObjectIfStatic;
+    private CompilerTransformer compiler;
+    private String propName;
     private final BytecodeExpr getter;
     private static final ArgumentListExpression EMPTY_ARGS = new ArgumentListExpression();
 
-    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
+    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler, String propName) {
         super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS, compiler));
         this.methodNode = methodNode;
         this.object = object;
         this.needsObjectIfStatic = needsObjectIfStatic;
+        this.compiler = compiler;
+        this.propName = propName;
         getter = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
                 methodNode.isStatic() && !needsObjectIfStatic ? null : object,
                 EMPTY_ARGS, compiler);
         setType(getter.getType());
+    }
+
+    public FieldNode getFieldNode() {
+        return compiler.findField(methodNode.getDeclaringClass(), propName);
     }
 
     protected void compile(MethodVisitor mv) {
@@ -39,8 +48,12 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         String name = methodNode.getName().substring(3);
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
         Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(),
-                name, right.getType(), compiler, object instanceof VariableExpressionTransformer.This);
+                name, right.getType(), compiler, isThisCall());
         return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop);
+    }
+
+    private boolean isThisCall() {
+        return object == null || object instanceof VariableExpressionTransformer.This;
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
@@ -64,7 +77,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
         Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler,
-                object instanceof VariableExpressionTransformer.This);
+                isThisCall());
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
 
         return new BytecodeExpr(parent, propExpr.getType()) {
@@ -79,19 +92,17 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     public BytecodeExpr createPrefixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
         ClassNode vtype = getType();
 
-        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
         };
 
-        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr dupObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
-                if (object != null) {
-                    object.visit(mv);
-                    dup(object.getType(), mv);
-                }
+                object.visit(mv);
+                dup(object.getType(), mv);
             }
         };
 
@@ -100,7 +111,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 methodNode,
                 fakeObject,
                 needsObjectIfStatic,
-                compiler);
+                compiler, propName);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -140,29 +151,25 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
             ));
         }
 
-        String name = methodNode.getName().substring(3);
-        name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler,
-                object instanceof VariableExpressionTransformer.This);
-        return PropertyUtil.createSetProperty(exp, compiler, name, dupObject, incDec, prop);
+        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, incDec.getType(), compiler,
+                isThisCall());
+        return PropertyUtil.createSetProperty(exp, compiler, propName, dupObject, incDec, prop);
     }
 
     public BytecodeExpr createPostfixOp(ASTNode exp, final int type, CompilerTransformer compiler) {
         ClassNode vtype = getType();
 
-        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
         };
 
-        final BytecodeExpr dupObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr dupObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
-                if (object != null) {
-                    object.visit(mv);
-                    dup(object.getType(), mv);
-                }
+                object.visit(mv);
+                dup(object.getType(), mv);
             }
         };
 
@@ -171,7 +178,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 methodNode,
                 fakeObject,
                 needsObjectIfStatic,
-                compiler);
+                compiler, propName);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -219,12 +226,10 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
             ));
         }
 
-        String name = methodNode.getName().substring(3);
-        name = name.substring(0, 1).toLowerCase() + name.substring(1);
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, incDec.getType(), compiler,
-                object instanceof VariableExpressionTransformer.This);
+        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, incDec.getType(), compiler,
+                isThisCall());
 
-        final BytecodeExpr put = PropertyUtil.createSetProperty(exp, compiler, name, dupObject, incDec, prop);
+        final BytecodeExpr put = PropertyUtil.createSetProperty(exp, compiler, propName, dupObject, incDec, prop);
         return new BytecodeExpr(exp, getType()) {
             protected void compile(MethodVisitor mv) {
                 put.visit(mv);
@@ -241,7 +246,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         private FieldNode fieldNode;
 
         public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
-            super(parent, methodNode, object, needsObjectIfStatic, compiler);
+            super(parent, methodNode, object, needsObjectIfStatic, compiler, fieldNode.getName());
             this.fieldNode = fieldNode;
         }
 

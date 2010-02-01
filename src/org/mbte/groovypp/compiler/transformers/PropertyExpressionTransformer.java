@@ -86,14 +86,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         type = TypeUtil.wrapSafely(object.getType());
                     }
 
-                    Object prop = null;
-                    if (exp.isImplicitThis()) {
-                        prop = compiler.findField(type, propName);
-                    }
-
-                    if (prop == null)
-                        prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
-                                object instanceof VariableExpressionTransformer.This);
+                    Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
+                            object instanceof VariableExpressionTransformer.This);
                     if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }

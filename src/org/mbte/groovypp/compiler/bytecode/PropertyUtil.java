@@ -18,9 +18,9 @@ public class PropertyUtil {
             MethodNode method = (MethodNode) prop;
             if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
                 MethodNode delegate = compiler.context.getMethodDelegate(method);
-                new ResolvedGetterBytecodeExpr(exp, delegate, object, needsObjectIfStatic, compiler);
+                new ResolvedGetterBytecodeExpr(exp, delegate, object, needsObjectIfStatic, compiler, propName);
             }
-            return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler);
+            return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler, propName);
         }
 
         if (prop instanceof PropertyNode) {
@@ -79,8 +79,15 @@ public class PropertyUtil {
             return new ResolvedMethodBytecodeExpr.Setter(parent, (MethodNode) prop, object, new ArgumentListExpression(value), compiler);
         }
 
-        if (prop instanceof PropertyNode)
-            return new ResolvedPropertyBytecodeExpr(parent, (PropertyNode) prop, object, value, compiler);
+        if (prop instanceof PropertyNode) {
+            final PropertyNode propertyNode = (PropertyNode) prop;
+            if ((propertyNode.getModifiers() & Opcodes.ACC_FINAL) != 0) {
+                final FieldNode fieldNode = compiler.findField(propertyNode.getDeclaringClass(), propName);
+                return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, value, compiler);
+            }
+
+            return new ResolvedPropertyBytecodeExpr(parent, propertyNode, object, value, compiler);
+        }
 
         if (prop instanceof FieldNode) {
             // Only go here if the field is runtime-accessible.
@@ -142,7 +149,7 @@ public class PropertyUtil {
         }
 
         final PropertyNode pnode = type.getProperty(name);
-        if (pnode != null && (pnode.getModifiers() & Opcodes.ACC_FINAL) == 0) {
+        if (pnode != null) {
             return pnode;
         }
 
