@@ -1,13 +1,10 @@
 package org.mbte.groovypp.compiler.transformers;
 
-import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.BytecodeSpreadExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
@@ -39,12 +36,10 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
 
     public static class TransformedListExpr extends BytecodeExpr {
         public final ListExpression exp;
-        private CompilerTransformer compiler;
 
         public TransformedListExpr(ListExpression exp, ClassNode collType, CompilerTransformer compiler) {
             super(exp, collType);
             this.exp = exp;
-            this.compiler = compiler;
 
             final List<Expression> list = exp.getExpressions();
             ClassNode genericArg = null;
@@ -62,6 +57,7 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
             }
 
             if (genericArg != null) {
+                if (genericArg == TypeUtil.NULL_TYPE) genericArg = ClassHelper.OBJECT_TYPE;
                 genericArg = TypeUtil.wrapSafely(genericArg);
                 setType( TypeUtil.withGenericTypes(collType, genericArg));
             }
