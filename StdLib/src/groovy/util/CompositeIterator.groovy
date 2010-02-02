@@ -6,7 +6,7 @@ class CompositeIterator<T> implements Iterator<T> {
     private int   cur
 
     CompositeIterator(Iterator<T> [] iters) {
-        this.@iters = iters
+        this.iters = iters
     }
 
     public boolean hasNext() {

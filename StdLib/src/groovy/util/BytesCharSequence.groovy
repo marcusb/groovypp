@@ -14,9 +14,9 @@ package groovy.util
     void setMetaClass (MetaClass mc) {}
 
     BytesCharSequence(byte [] b, int start, int end) {
-        this.@b = b
-        this.@start = start
-        this.@end = end
+        this.b = b
+        this.start = start
+        this.end = end
     }
 
     final int length() {
