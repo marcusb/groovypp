@@ -90,8 +90,12 @@ public class PropertyUtil {
         }
 
         if (prop instanceof FieldNode) {
-            // Only go here if the field is runtime-accessible.
-            return new ResolvedFieldBytecodeExpr(parent, (FieldNode) prop, object, value, compiler);
+            final FieldNode field = (FieldNode) prop;
+            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
+                MethodNode setter = compiler.context.getFieldSetter(field);
+                return new ResolvedMethodBytecodeExpr.Setter(parent, setter, object, new ArgumentListExpression(value), compiler);
+            }
+            return new ResolvedFieldBytecodeExpr(parent, field, object, value, compiler);
         }
 
         return dynamicOrFail(parent, compiler, propName, object, value);

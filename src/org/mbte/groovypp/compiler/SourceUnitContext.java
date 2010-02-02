@@ -25,30 +25,44 @@ public class SourceUnitContext {
     public MethodNode getFieldGetter(FieldNode field) {
         MethodNode getter = generatedFieldGetters.get(field);
         if (getter == null) {
-            int num = syntheticAccessorNumber++;
-            String getterName = "getField" + num;
-            int modifiers = field.getModifiers() & Opcodes.ACC_STATIC;
-            getter = new MethodNode(getterName, modifiers, field.getType(), new Parameter[0], new ClassNode[0],
-                    new ReturnStatement(new VariableExpression(field)));
-            ClassNode clazz = field.getDeclaringClass();
-            getter.setDeclaringClass(clazz);
-            clazz.addMethod(getter);
-            generatedFieldGetters.put(field, getter);
-            if (!field.isFinal()) {
-                String setterName = "setField" + num;
-                Parameter[] setterParams = {new Parameter(field.getType(), "p")};
-                ExpressionStatement code = new ExpressionStatement(new BinaryExpression(new VariableExpression(field),
-                                                                   Token.newSymbol(Types.ASSIGN, -1, -1),
-                                                                   new VariableExpression("p")));
-                MethodNode setter = new MethodNode(setterName, modifiers, ClassHelper.VOID_TYPE, setterParams, new ClassNode[0],
-                        code);
-                setter.setDeclaringClass(clazz);
-                clazz.addMethod(setter);
-                generatedFieldSetters.put(field, setter);
-            }
-            ClassNodeCache.clearCache(clazz);
+            initAccessors(field);
+            getter = generatedFieldGetters.get(field);
         }
         return getter;
+    }
+
+    public MethodNode getFieldSetter(FieldNode field) {
+        MethodNode setter = generatedFieldSetters.get(field);
+        if (setter == null) {
+            initAccessors(field);
+            setter = generatedFieldSetters.get(field);
+        }
+        return setter;
+    }
+
+    private void initAccessors(FieldNode field) {
+        int num = syntheticAccessorNumber++;
+        String getterName = "getField" + num;
+        int modifiers = field.getModifiers() & Opcodes.ACC_STATIC;
+        MethodNode getter = new MethodNode(getterName, modifiers, field.getType(), new Parameter[0], new ClassNode[0],
+                new ReturnStatement(new VariableExpression(field)));
+        ClassNode clazz = field.getDeclaringClass();
+        getter.setDeclaringClass(clazz);
+        clazz.addMethod(getter);
+        generatedFieldGetters.put(field, getter);
+        if (!field.isFinal()) {
+            String setterName = "setField" + num;
+            Parameter[] setterParams = {new Parameter(field.getType(), "p")};
+            ExpressionStatement code = new ExpressionStatement(new BinaryExpression(new VariableExpression(field),
+                                                               Token.newSymbol(Types.ASSIGN, -1, -1),
+                                                               new VariableExpression("p")));
+            MethodNode setter = new MethodNode(setterName, modifiers, ClassHelper.VOID_TYPE, setterParams, new ClassNode[0],
+                    code);
+            setter.setDeclaringClass(clazz);
+            clazz.addMethod(setter);
+            generatedFieldSetters.put(field, setter);
+        }
+        ClassNodeCache.clearCache(clazz);
     }
 
     public MethodNode getMethodDelegate(MethodNode method) {
