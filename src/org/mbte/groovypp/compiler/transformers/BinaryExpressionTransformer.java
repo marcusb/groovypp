@@ -330,6 +330,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
         BytecodeExpr object = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
+
+        if (object instanceof ListExpressionTransformer.UntransformedListExpr)
+            object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+        else if (object instanceof MapExpressionTransformer.UntransformedMapExpr)
+            object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
+
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
         if (object.getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, indexExp.getType()))
             return new ResolvedArrayBytecodeExpr(bin, object, indexExp, compiler);
