@@ -1,4 +1,4 @@
-package groovy.actors;
+package groovy.lang;
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 

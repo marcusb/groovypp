@@ -61,13 +61,15 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
         }
     }
 
-    final V get() throws InterruptedException, ExecutionException {
+    V get() throws InterruptedException, ExecutionException {
         acquireSharedInterruptibly(0)
         def s = getState()
         if (s == S_CANCELLED)
             throw new CancellationException()
-        if (s == S_EXCEPTION)
-            throw new ExecutionException((Throwable)internalData)
+        if (s == S_EXCEPTION) {
+            def throwable = (Throwable) internalData
+            throw new ExecutionException(throwable.message, throwable)
+        }
         (V)internalData
     }
 
@@ -77,8 +79,10 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
         def s = getState()
         if (s == S_CANCELLED)
             throw new CancellationException()
-        if (s == S_EXCEPTION)
-            throw new ExecutionException((Throwable)internalData)
+        if (s == S_EXCEPTION) {
+            def throwable = (Throwable) internalData
+            throw new ExecutionException(throwable.message, throwable)
+        }
         (V)internalData
     }
 

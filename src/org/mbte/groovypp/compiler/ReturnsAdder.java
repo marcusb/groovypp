@@ -134,6 +134,15 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
             return new BlockStatement(filterStatements(list), block.getVariableScope());
         }
 
+        if (statement instanceof SwitchStatement) {
+            SwitchStatement swi = (SwitchStatement) statement;
+            for (CaseStatement caseStatement : swi.getCaseStatements()) {
+                caseStatement.setCode(adjustSwitchCaseCode(caseStatement.getCode(), scope, false));
+            }
+            swi.setDefaultStatement(adjustSwitchCaseCode(swi.getDefaultStatement(), scope, true));
+            return swi;
+        }
+
         if (statement == null)
             return createSyntheticReturnStatement();
         else {
@@ -170,6 +179,23 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
                 ClosureExpression closureExp = (ClosureExpression) expression;
                 if (!closureExp.isParameterSpecified()) {
                     return closureExp.getCode();
+                }
+            }
+        }
+        return statement;
+    }
+
+    private Statement adjustSwitchCaseCode(Statement statement, VariableScope scope, boolean defaultCase) {
+        if(statement instanceof BlockStatement) {
+            final List list = ((BlockStatement)statement).getStatements();
+            if (!list.isEmpty()) {
+                int idx = list.size() - 1;
+                Statement last = (Statement) list.get(idx);
+                if(last instanceof BreakStatement) {
+                    list.remove(idx);
+                    return addReturnsIfNeeded(statement, scope);
+                } else if(defaultCase) {
+                    return addReturnsIfNeeded(statement, scope);
                 }
             }
         }

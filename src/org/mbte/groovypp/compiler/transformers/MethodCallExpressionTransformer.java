@@ -58,11 +58,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
         if (exp.getObjectExpression() instanceof ClassExpression) {
             type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
-            foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+            foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, true);
             if (foundMethod == null || !foundMethod.isStatic()) {
                 // Try methods from java.lang.Class
                 ClassNode clazz = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
-                foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler);
+                foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler, false);
                 if (foundMethod == null) {
                     // Try some property with 'call' method.
                     final Object prop = resolveCallableProperty(compiler, methodName, type, true);
@@ -85,31 +85,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
                 ClassNode thisType = compiler.methodNode.getDeclaringClass();
-                while (thisType != null) {
-                    foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler);
-                    if (foundMethod == null) {
-                        // Try some property with 'call' method.
-                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
-                        if (prop != null) {
-                            final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
-                            if (callMethod != null) {
-                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
-                            }
-                        }
-                    }
+                if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
+                    foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, true);
 
                     if (foundMethod != null) {
-                        final ClassNode thisTypeFinal = thisType;
-                        if (foundMethod.isStatic())
-                            object = null;
-                        else {
-                            if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
-                                compiler.addError("Cannot reference an instance method from static context", exp);
-                                return null;
-                            }
-                            object = createThisFetchingObject(exp, compiler, thisTypeFinal);
-                        }
-
+                        object = null;
                         if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
                                 foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
                             return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
@@ -117,10 +97,59 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
+                    else {
+                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
+                        if (prop != null) {
+                            final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                            if (callMethod != null) {
+                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                            }
+                        }
 
-                    compiler.context.setOuterClassInstanceUsed(thisType);
-                    FieldNode ownerField = thisType.getField("this$0");
-                    thisType = ownerField == null ? null : ownerField.getType();
+                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLASS_Type, methodName, argTypes, compiler, false);
+                        if (foundMethod != null) {
+                            object = (BytecodeExpr) compiler.transform(new ClassExpression(compiler.classNode));
+                            return createCall(exp, compiler, args, object, foundMethod);
+                        }
+                    }
+                }
+                else {
+                    while (thisType != null) {
+                        foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, false);
+                        if (foundMethod == null) {
+                            // Try some property with 'call' method.
+                            final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
+                            if (prop != null) {
+                                final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                                if (callMethod != null) {
+                                    return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                                }
+                            }
+                        }
+
+                        if (foundMethod != null) {
+                            if (foundMethod.isStatic())
+                                object = null;
+                            else {
+                                if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
+                                    compiler.addError("Cannot reference an instance method from static context", exp);
+                                    return null;
+                                }
+                                object = createThisFetchingObject(exp, compiler, thisType);
+                            }
+
+                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                    foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
+                                return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
+                            }
+
+                            return createCall(exp, compiler, args, object, foundMethod);
+                        }
+
+                        compiler.context.setOuterClassInstanceUsed(thisType);
+                        FieldNode ownerField = thisType.getField("this$0");
+                        thisType = ownerField == null ? null : ownerField.getType();
+                    }
                 }
 
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
@@ -133,10 +162,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 type = object.getType();
 
                 if (type.isDerivedFrom(ClassHelper.CLOSURE_TYPE) && methodName.equals("call"))
-                    foundMethod = findMethodWithClosureCoercion(type, "doCall", argTypes, compiler);
+                    foundMethod = findMethodWithClosureCoercion(type, "doCall", argTypes, compiler, false);
 
                 if (foundMethod == null)
-                    foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler);
+                    foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, false);
 
                 if (foundMethod == null) {
                     // Try some property with 'call' method.
@@ -151,7 +180,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                 if (foundMethod == null) {
                     if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
-                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLOSURE_TYPE, methodName, argTypes, compiler);
+                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLOSURE_TYPE, methodName, argTypes, compiler, false);
                         if (foundMethod != null) {
                             ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
                             return createCall(exp, compiler, args, object, foundMethod);
@@ -160,7 +189,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
                         if (unboxing != null) {
                             ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
-                            foundMethod = findMethodWithClosureCoercion(t, methodName, argTypes, compiler);
+                            foundMethod = findMethodWithClosureCoercion(t, methodName, argTypes, compiler, false);
                             if (foundMethod != null) {
                                 object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
                                         new ArgumentListExpression(), compiler);
@@ -178,7 +207,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 ClassNode [] newArgs = new ClassNode [argTypes.length+1];
                                 System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
                                 newArgs [0] = obj.getObject().getType();
-                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs);
+                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
                                 if (updaterMethod != null) {
                                     ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
                                     ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
@@ -195,7 +224,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 ClassNode[] newArgs = new ClassNode [argTypes.length+1];
                                 System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
                                 newArgs [0] = obj.getObject().getType();
-                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs);
+                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
                                 if (updaterMethod != null) {
                                     ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
                                     ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
@@ -230,7 +259,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private MethodNode resolveCallMethod(CompilerTransformer compiler, ClassNode[] argTypes, Object prop) {
         final ClassNode propType = PropertyUtil.getPropertyType(prop);
-        return findMethodWithClosureCoercion(propType, "call", argTypes, compiler);
+        return findMethodWithClosureCoercion(propType, "call", argTypes, compiler, false);
     }
 
     private Object resolveCallableProperty(CompilerTransformer compiler, String methodName, ClassNode thisType,
@@ -403,7 +432,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         List<MethodNode> oneMethodAbstract;
     }
 
-    private MethodNode findMethodVariatingArgs(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
+    private MethodNode findMethodVariatingArgs(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, boolean staticOnly) {
 
         MethodNode foundMethod;
         List<Changed> changed  = null;
@@ -411,7 +440,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         ClassNode[] argTypesCopy = new ClassNode[argTypes.length];
         System.arraycopy(argTypes, 0, argTypesCopy, 0, argTypes.length);
         for (int i = 0; i < argTypesCopy.length+1; ++i) {
-            foundMethod = compiler.findMethod(type, methodName, argTypesCopy);
+            foundMethod = compiler.findMethod(type, methodName, argTypesCopy, staticOnly);
             if (foundMethod != null) {
                 return foundMethodInference(type, foundMethod, changed, argTypesCopy, compiler);
             }
@@ -614,7 +643,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 instantiateds.toArray(new ClassNode[instantiateds.size()]));
     }
 
-    private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler) {
-        return findMethodVariatingArgs(type, methodName, argTypes, compiler);
+    private MethodNode findMethodWithClosureCoercion(ClassNode type, String methodName, ClassNode[] argTypes, CompilerTransformer compiler, boolean staticOnly) {
+        return findMethodVariatingArgs(type, methodName, argTypes, compiler, staticOnly);
     }
 }

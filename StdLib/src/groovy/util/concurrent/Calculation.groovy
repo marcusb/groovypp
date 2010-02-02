@@ -2,19 +2,18 @@ package groovy.util.concurrent
 
 import java.util.concurrent.*
 
-/**
- * Specially optimized version of FutureTask from JDK
- */
 @Typed
-abstract class CallLater<V> extends BindLater<V> implements Runnable, Future<V>, Callable<V> {
-    public final void run() {
+abstract class Calculation<V> extends BindLater<V> implements Future<V>, Runnable {
+    V get() throws InterruptedException, ExecutionException {
         if (setRunningThread()) {
             try {
-                set(call())
+                run()
             }
             catch (Throwable ex) {
                 setException(ex)
+                ex.printStackTrace System.err
             }
         }
+        super.get()
     }
 }

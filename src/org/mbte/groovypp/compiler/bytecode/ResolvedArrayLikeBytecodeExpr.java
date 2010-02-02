@@ -28,7 +28,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         this.getter = getter;
         this.getterExpr = ResolvedMethodBytecodeExpr.create(parent, getter, array, new ArgumentListExpression(index), compiler);
         setType(getterExpr.getType());
-        this.setter = compiler.findMethod(array.getType(), "putAt", new ClassNode[]{index.getType(), getType()});
+        this.setter = compiler.findMethod(array.getType(), "putAt", new ClassNode[]{index.getType(), getType()}, false);
     }
 
     protected void compile(MethodVisitor mv) {
@@ -117,7 +117,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
                 vtype = TypeUtil.wrapSafely(vtype);
 
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
-            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
                 compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
@@ -196,7 +196,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
                 vtype = TypeUtil.wrapSafely(vtype);
 
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
-            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+            final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
                 compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;

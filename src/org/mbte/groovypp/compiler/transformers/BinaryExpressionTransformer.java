@@ -334,12 +334,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         if (object.getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, indexExp.getType()))
             return new ResolvedArrayBytecodeExpr(bin, object, indexExp, compiler);
         else {
-            MethodNode getter = compiler.findMethod(object.getType(), "getAt", new ClassNode[]{indexExp.getType()});
+            MethodNode getter = compiler.findMethod(object.getType(), "getAt", new ClassNode[]{indexExp.getType()}, false);
             if (getter == null) {
                 MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(object.getType());
                 if (unboxing != null) {
                     ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), object.getType());
-                    getter = compiler.findMethod(t, "getAt", new ClassNode[]{indexExp.getType()});
+                    getter = compiler.findMethod(t, "getAt", new ClassNode[]{indexExp.getType()}, false);
                     if (getter != null) {
                         object = ResolvedMethodBytecodeExpr.create(bin, unboxing, object,
                                 new ArgumentListExpression(), compiler);

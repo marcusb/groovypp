@@ -14,7 +14,6 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.Register;
-import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -50,7 +49,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             vtype = TypeUtil.wrapSafely(vtype);
 
         String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
-        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
         if (methodNode == null) {
             compiler.addError("Can't find method " + methodName + " for type " + PresentationUtil.getText(vtype), exp);
             return null;
@@ -89,7 +88,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             vtype = TypeUtil.wrapSafely(vtype);
 
         String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
-        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY);
+        final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
         if (methodNode == null) {
             compiler.addError("Can't find method " + methodName + " for type " + PresentationUtil.getText(vtype), exp);
             return null;

@@ -101,7 +101,7 @@ public class PropertyUtil {
         final FieldNode field = compiler.findField(type, name);
 
         String getterName = "get" + Verifier.capitalize(name);
-        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+        MethodNode mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY, false);
         if (mn != null && !mn.isAbstract() && (!onlyStatic || mn.isStatic())) {
             if (mn == compiler.methodNode && isSameObject && field != null) return field;  // Access inside the getter itself is to the field.
             return mn;
@@ -109,7 +109,7 @@ public class PropertyUtil {
 
         if (mn == null) {
             getterName = "is" + Verifier.capitalize(name);
-            mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY);
+            mn = compiler.findMethod(type, getterName, ClassNode.EMPTY_ARRAY, false);
             if (mn != null && !mn.isAbstract() &&
                 mn.getReturnType().equals(ClassHelper.boolean_TYPE) && (!onlyStatic || mn.isStatic())) {
                 if (mn == compiler.methodNode && isSameObject && field != null) return field;  // Access inside the getter itself is to the field.
@@ -129,7 +129,7 @@ public class PropertyUtil {
             return field;
 
         final String setterName = "set" + Verifier.capitalize(name);
-        mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE});
+        mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE}, false);
         if (mn != null && (!onlyStatic || mn.isStatic())) {
             final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, null, null);
             res.setDeclaringClass(mn.getDeclaringClass());
@@ -142,7 +142,7 @@ public class PropertyUtil {
     public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler, boolean isSameObject) {
         final FieldNode field = compiler.findField(type, name);
         final String setterName = "set" + Verifier.capitalize(name);
-        MethodNode mn = compiler.findMethod(type, setterName, new ClassNode[]{arg});
+        MethodNode mn = compiler.findMethod(type, setterName, new ClassNode[]{arg}, false);
         if (mn != null && mn.getReturnType() == ClassHelper.VOID_TYPE) {
             if (mn == compiler.methodNode && isSameObject && field != null) return field;
             return mn;

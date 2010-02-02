@@ -28,7 +28,7 @@
     <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
 	<property name="test.reports" location="${output.dir}/test-reports"/>
 
-	<property name="jar.name" location="${app.name}.jar"/>
+	<property name="jar.name" location="${output.dir}/${app.name}.jar"/>
 	<property name="target.jvm" value="5" />
 
 	<path id="libs">
