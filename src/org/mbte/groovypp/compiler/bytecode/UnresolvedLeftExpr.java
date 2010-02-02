@@ -33,11 +33,13 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, final BytecodeExpr right, CompilerTransformer compiler) {
-        return new BytecodeExpr(parent, ClassHelper.VOID_TYPE) {
+        return new BytecodeExpr(parent, ClassHelper.getWrapper(right.getType())) {
             protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 mv.visitLdcInsn(propName);
                 right.visit(mv);
+                box(right.getType(), mv);
+                mv.visitInsn(DUP_X2);
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "setProperty", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V");
             }
         };
