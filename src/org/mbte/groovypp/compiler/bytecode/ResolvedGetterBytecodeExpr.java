@@ -45,11 +45,9 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
-        String name = methodNode.getName().substring(3);
-        name = name.substring(0, 1).toLowerCase() + name.substring(1);
         Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(),
-                name, right.getType(), compiler, isThisCall());
-        return PropertyUtil.createSetProperty(parent, compiler, name, object, right, prop);
+                propName, right.getType(), compiler, isThisCall());
+        return PropertyUtil.createSetProperty(parent, compiler, propName, object, right, prop);
     }
 
     private boolean isThisCall() {
@@ -57,9 +55,6 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
-        String name = methodNode.getName().substring(3);
-        name = name.substring(0, 1).toLowerCase() + name.substring(1);
-
         final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
@@ -76,9 +71,9 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), name, transformedOp.getType(), compiler,
+        Object prop = PropertyUtil.resolveSetProperty(object.getType(), propName, transformedOp.getType(), compiler,
                 isThisCall());
-        final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, name, fakeObject, transformedOp, prop);
+        final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, propName, fakeObject, transformedOp, prop);
 
         return new BytecodeExpr(parent, propExpr.getType()) {
             protected void compile(MethodVisitor mv) {
