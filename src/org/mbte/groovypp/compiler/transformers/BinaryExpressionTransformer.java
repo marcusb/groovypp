@@ -452,9 +452,17 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         if (l instanceof ListExpressionTransformer.UntransformedListExpr)
             l = ((ListExpressionTransformer.UntransformedListExpr)l).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
 
+        if (l instanceof MapExpressionTransformer.UntransformedMapExpr) {
+            l = ((MapExpressionTransformer.UntransformedMapExpr) l).transform(compiler);
+        }
+
         BytecodeExpr r = operands.getRight();
         if (r instanceof ListExpressionTransformer.UntransformedListExpr)
             r = ((ListExpressionTransformer.UntransformedListExpr)r).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
+
+        if (r instanceof MapExpressionTransformer.UntransformedMapExpr) {
+            r = ((MapExpressionTransformer.UntransformedMapExpr) r).transform(compiler);
+        }
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());
