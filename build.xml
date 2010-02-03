@@ -10,7 +10,7 @@
     <property name="stdlibtest.module.name" value="StdLibTest" />
     <property name="examples.module.name" value="Examples" />
 
-    <property name="version" value="0.1.10"/>
+    <property name="version" value="0.1.11"/>
 
     <property name="compiler.src" location="src" />
     <property name="compiler.tests" location="tests" />
@@ -120,9 +120,11 @@
         <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}"
             destdir="${stdlib.prod.output}">
         </groovyc >
+        <delete file="${compiler.prod.output}/META-INF/services/org.codehaus.groovy.transform.ASRTransformation"/>
         <copy todir="${stdlib.prod.output}">
             <fileset dir="${stdlib.src}">
                 <exclude name="**/*.groovy"/>
+                <exclude name="**/*.java"/>
             </fileset>
         </copy>
     </target>
@@ -147,12 +149,18 @@
         </groovyc >
     </target>
 
-    <target  name="test" depends="compile.tests.stdlibtest, compile.tests.stdlib, compile.tests.compiler" description="run unit tests">
+    <target  name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch">
             <jvmarg value="-Xmx512m"/>
 
             <classpath>
-                <path refid="tests.classpath" />
+                <path>
+                    <fileset dir="install/lib" includes="*.jar"/>
+                    <fileset file="${jar.name}"/>
+                </path>
+                <pathelement location="${stdlibtest.test.output}"/>
+                <pathelement location="${stdlib.test.output}"/>
+                <pathelement location="${compiler.test.output}"/>
             </classpath>
 
             <batchtest todir="${test.reports}">
@@ -177,14 +185,14 @@
     	</junitreport>
     </target>
 
-    <target name="make.jar" depends="clean,compile.examples,test" description="Build application jar file">
+    <target name="make.jar" depends="clean,compile.examples" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
         </jar>
     </target>
 
-    <target name="make.install" depends="make.jar" description="Build installation">
+    <target name="make.install" depends="test" description="Build installation">
         <zip destfile="groovy-booster-${version}.zip"
              comment="The Groovy Booster binary distribution.">
 

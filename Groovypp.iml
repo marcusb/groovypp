@@ -21,16 +21,27 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/EchoServer" />
       <excludeFolder url="file://$MODULE_DIR$/ErlangTest" />
+      <excludeFolder url="file://$MODULE_DIR$/Examples" />
       <excludeFolder url="file://$MODULE_DIR$/Functional" />
       <excludeFolder url="file://$MODULE_DIR$/GParallelizer" />
+      <excludeFolder url="file://$MODULE_DIR$/GridGainTest" />
       <excludeFolder url="file://$MODULE_DIR$/LucyData" />
       <excludeFolder url="file://$MODULE_DIR$/MinaTest" />
       <excludeFolder url="file://$MODULE_DIR$/NettyTest" />
       <excludeFolder url="file://$MODULE_DIR$/ParsersTest" />
       <excludeFolder url="file://$MODULE_DIR$/ScalaTest" />
       <excludeFolder url="file://$MODULE_DIR$/SpyMemCached" />
+      <excludeFolder url="file://$MODULE_DIR$/StdLib" />
+      <excludeFolder url="file://$MODULE_DIR$/StdLibTest" />
+      <excludeFolder url="file://$MODULE_DIR$/actors" />
+      <excludeFolder url="file://$MODULE_DIR$/org" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
+      <excludeFolder url="file://$MODULE_DIR$/primenumbers" />
+      <excludeFolder url="file://$MODULE_DIR$/shootout" />
+      <excludeFolder url="file://$MODULE_DIR$/untitled" />
+      <excludeFolder url="file://$MODULE_DIR$/untitled1" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

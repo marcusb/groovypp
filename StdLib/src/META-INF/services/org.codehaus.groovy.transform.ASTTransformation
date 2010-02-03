@@ -1,1 +1,6 @@
+org.mbte.groovypp.compiler.IDefASTTransform
+org.mbte.groovypp.compiler.TraitASTTransform
+org.mbte.groovypp.compiler.TraitASTTransformFinal
+org.mbte.groovypp.compiler.VerificationASTTransform
+
 org.mbte.groovypp.compiler.AsyncASTTransform

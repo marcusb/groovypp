@@ -84,7 +84,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
 
             if (!TypeUtil.isDirectlyAssignableFrom(cast.getType(), TypeUtil.ARRAY_LIST_TYPE)) {
-                final ConstructorCallExpression constr = new ConstructorCallExpression(cast.getType(), new ArgumentListExpression(listExpression.getExpressions()));
+                final ArgumentListExpression args = new ArgumentListExpression(listExpression.getExpressions());
+                if (cast.getType().redirect() instanceof InnerClassNode && (cast.getType().getModifiers() & ACC_STATIC) == 0) {
+                    args.getExpressions().add(0, VariableExpression.THIS_EXPRESSION);
+                }
+                final ConstructorCallExpression constr = new ConstructorCallExpression(cast.getType(), args);
                 constr.setSourcePosition(cast);
                 return (BytecodeExpr) compiler.transform(constr);
             }

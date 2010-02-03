@@ -24,6 +24,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         MethodNode constructor;
         ClassNode type = exp.getType();
+
+        rewriteThis0 (exp, compiler);
+
         if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
             MapExpression me = (MapExpression) ((TupleExpression)exp.getArguments()).getExpressions().get(0);
 
@@ -86,9 +89,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
             final Parameter[] params = constructor.getParameters();
             int base = 0;
-            if ((type.getModifiers() & ACC_STATIC) == 0 && type.redirect() instanceof InnerClassNode) {
-                base = 1;
-            }
+//            if ((type.getModifiers() & ACC_STATIC) == 0 && type.redirect() instanceof InnerClassNode) {
+//                base = 1;
+//            }
             final ArgumentListExpression finalArgs = wrapArgumentsForVarargs(newArgs, params, base);
 
             if ((constructor.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && constructor.getDeclaringClass() != compiler.classNode) {
@@ -121,16 +124,16 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     mv.visitInsn(DUP);
 
                     int first = 0;
-                    if ((getType().getModifiers() & ACC_STATIC) == 0 && getType().redirect() instanceof InnerClassNode) {
-                        mv.visitVarInsn(ALOAD, 0);
-                        for (ClassNode tp = compilerClass ; tp != getType().redirect().getOuterClass(); ) {
-                            compiler.context.setOuterClassInstanceUsed(tp);
-                            final ClassNode outerTp = tp.redirect().getOuterClass();
-                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
-                            tp = outerTp;
-                        }
-                        first = 1;
-                    }
+//                    if ((getType().getModifiers() & ACC_STATIC) == 0 && getType().redirect() instanceof InnerClassNode) {
+//                        mv.visitVarInsn(ALOAD, 0);
+//                        for (ClassNode tp = compilerClass ; tp != getType().redirect().getOuterClass(); ) {
+//                            compiler.context.setOuterClassInstanceUsed(tp);
+//                            final ClassNode outerTp = tp.redirect().getOuterClass();
+//                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(tp), "this$0", BytecodeHelper.getTypeDescription(outerTp));
+//                            tp = outerTp;
+//                        }
+//                        first = 1;
+//                    }
 
                     for (int i = 0; i != finalArgs.getExpressions().size(); ++i) {
                         BytecodeExpr be = (BytecodeExpr) finalArgs.getExpressions().get(i);
@@ -149,6 +152,25 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         compiler.addError("Cannot find constructor", exp);
         return null;
+    }
+
+    private void rewriteThis0(ConstructorCallExpression exp, CompilerTransformer compiler) {
+        if (!(exp.getType().redirect() instanceof InnerClassNode)) return;
+        InnerClassNode inner = (InnerClassNode) exp.getType().redirect();
+        if ((inner.getModifiers() & ACC_STATIC) != 0) return;
+
+        Expression this0 = VariableExpression.THIS_EXPRESSION;
+        ClassNode tp = compiler.classNode;
+        for ( ; tp != null && tp != inner.redirect().getOuterClass(); ) {
+            compiler.context.setOuterClassInstanceUsed(tp);
+            tp = tp.redirect().getOuterClass();
+            this0 = new PropertyExpression(this0, "this$0");
+        }
+
+        if (tp == null)
+           return;
+
+        ((TupleExpression)exp.getArguments()).getExpressions().set(0, this0);
     }
 
     // Insert array creation for varargs methods.
