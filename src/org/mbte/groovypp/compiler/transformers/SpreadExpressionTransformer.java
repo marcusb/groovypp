@@ -12,7 +12,7 @@ public class SpreadExpressionTransformer extends ExprTransformer<SpreadExpressio
         BytecodeExpr internal = (BytecodeExpr) compiler.transform(exp.getExpression());
 
         if (internal instanceof ListExpressionTransformer.UntransformedListExpr)
-            internal = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)internal).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+            internal = ((ListExpressionTransformer.UntransformedListExpr)internal).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
 
         if (!TypeUtil.isDirectlyAssignableFrom(TypeUtil.COLLECTION_TYPE, internal.getType())) {
           compiler.addError("Spread operator can be applied only to java.util.Collection", exp);

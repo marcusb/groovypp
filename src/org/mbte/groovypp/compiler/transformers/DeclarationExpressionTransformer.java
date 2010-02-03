@@ -67,11 +67,11 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                 return new Static(exp, ve, right, compiler);
             } else {
                 if (right instanceof MapExpressionTransformer.UntransformedMapExpr) {
-                    right = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)right).exp, compiler);
+                    right = ((MapExpressionTransformer.UntransformedMapExpr)right).transform(compiler);
                 }
 
                 if (right instanceof ListExpressionTransformer.UntransformedListExpr) {
-                    right = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)right).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                    right = ((ListExpressionTransformer.UntransformedListExpr)right).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
                 }
 
                 // let's try local type inference

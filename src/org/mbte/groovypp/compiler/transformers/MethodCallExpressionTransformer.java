@@ -156,9 +156,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             } else {
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                 if (object instanceof ListExpressionTransformer.UntransformedListExpr)
-                    object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                    object = ((ListExpressionTransformer.UntransformedListExpr)object).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
                 else if (object instanceof MapExpressionTransformer.UntransformedMapExpr)
-                    object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
+                    object = ((MapExpressionTransformer.UntransformedMapExpr)object).transform(compiler);
                 type = object.getType();
 
                 if (type.isDerivedFrom(ClassHelper.CLOSURE_TYPE) && methodName.equals("call"))
@@ -392,11 +392,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 compiler.processPendingClosure((CompiledClosureBytecodeExpr) arg);
             }
             if (arg instanceof ListExpressionTransformer.UntransformedListExpr) {
-                arg = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)arg).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                arg = ((ListExpressionTransformer.UntransformedListExpr)arg).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
                 args.set(i, arg);
             }
             if (arg instanceof MapExpressionTransformer.UntransformedMapExpr) {
-                arg = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)arg).exp, compiler);
+                arg = ((MapExpressionTransformer.UntransformedMapExpr)arg).transform(compiler);
                 args.set(i, arg);
             }
         }

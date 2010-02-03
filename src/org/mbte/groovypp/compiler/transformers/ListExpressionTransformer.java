@@ -32,6 +32,10 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
         protected void compile(MethodVisitor mv) {
             throw new UnsupportedOperationException();
         }
+
+        public BytecodeExpr transform (ClassNode collectionType, CompilerTransformer compiler) {
+            return new TransformedListExpr(exp, collectionType, compiler);
+        }
     }
 
     public static class TransformedListExpr extends BytecodeExpr {
@@ -46,9 +50,9 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
             for (int i = 0; i != list.size(); ++i) {
                 Expression transformed = compiler.transform(list.get(i));
                 if (transformed instanceof UntransformedListExpr)
-                    transformed = new TransformedListExpr(((UntransformedListExpr)transformed).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+                    transformed = ((UntransformedListExpr)transformed).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
                 if (transformed instanceof MapExpressionTransformer.UntransformedMapExpr)
-                    transformed = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)transformed).exp, compiler);
+                    transformed = ((MapExpressionTransformer.UntransformedMapExpr)transformed).transform(compiler);
                 list.set(i, transformed);
 
                 if (!(transformed instanceof BytecodeSpreadExpr))

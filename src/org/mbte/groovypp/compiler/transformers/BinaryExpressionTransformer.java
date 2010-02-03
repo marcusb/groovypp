@@ -332,9 +332,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         BytecodeExpr object = (BytecodeExpr) compiler.transform(bin.getLeftExpression());
 
         if (object instanceof ListExpressionTransformer.UntransformedListExpr)
-            object = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)object).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+            object = ((ListExpressionTransformer.UntransformedListExpr)object).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
         else if (object instanceof MapExpressionTransformer.UntransformedMapExpr)
-            object = new MapExpressionTransformer.TransformedMapExpr(((MapExpressionTransformer.UntransformedMapExpr)object).exp, compiler);
+            object = ((MapExpressionTransformer.UntransformedMapExpr)object).transform(compiler);
 
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
         if (object.getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, indexExp.getType()))
@@ -450,11 +450,11 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         final Operands operands = new Operands(be, compiler);
         BytecodeExpr l = operands.getLeft();
         if (l instanceof ListExpressionTransformer.UntransformedListExpr)
-            l = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)l).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+            l = ((ListExpressionTransformer.UntransformedListExpr)l).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
 
         BytecodeExpr r = operands.getRight();
         if (r instanceof ListExpressionTransformer.UntransformedListExpr)
-            r = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)r).exp, TypeUtil.ARRAY_LIST_TYPE, compiler);
+            r = ((ListExpressionTransformer.UntransformedListExpr)r).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());

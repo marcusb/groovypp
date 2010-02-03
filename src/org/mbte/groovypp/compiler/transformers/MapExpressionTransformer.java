@@ -32,6 +32,10 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
         protected void compile(MethodVisitor mv) {
             throw new UnsupportedOperationException();
         }
+
+        BytecodeExpr transform(CompilerTransformer compiler) {
+            return new TransformedMapExpr(exp, compiler);
+        }
     }
 
     public static class TransformedMapExpr extends BytecodeExpr {
@@ -47,7 +51,9 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 ClassNode valueArg = TypeUtil.NULL_TYPE;
                 for (int i = 0; i != list.size(); ++i) {
                     final MapEntryExpression me = list.get(i);
-                    MapEntryExpression nme = new MapEntryExpression(compiler.transform(me.getKeyExpression()), compiler.transform(me.getValueExpression()));
+                    final Expression key = transformInnerListsAndMaps(compiler.transform(me.getKeyExpression()), compiler);
+                    final Expression value = transformInnerListsAndMaps(compiler.transform(me.getValueExpression()), compiler);
+                    MapEntryExpression nme = new MapEntryExpression(key, value);
                     keyArg = TypeUtil.commonType(keyArg, nme.getKeyExpression().getType());
                     valueArg = TypeUtil.commonType(valueArg, nme.getValueExpression().getType());
                     nme.setSourcePosition(me);
@@ -57,6 +63,14 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 if (valueArg == TypeUtil.NULL_TYPE) valueArg = ClassHelper.OBJECT_TYPE;
                 setType(TypeUtil.withGenericTypes(getType(), keyArg, valueArg));
             }
+        }
+
+        private Expression transformInnerListsAndMaps(Expression expr, CompilerTransformer compiler) {
+            if (expr instanceof ListExpressionTransformer.UntransformedListExpr)
+                expr = ((ListExpressionTransformer.UntransformedListExpr) expr).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
+            if (expr instanceof UntransformedMapExpr)
+                expr = ((UntransformedMapExpr) expr).transform(compiler);
+            return expr;
         }
 
         protected void compile(MethodVisitor mv) {

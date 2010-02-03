@@ -449,7 +449,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         BytecodeExpr bytecodeExpr = (BytecodeExpr) transform(returnExpression);
 
         if (bytecodeExpr instanceof ListExpressionTransformer.UntransformedListExpr) {
-            bytecodeExpr = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)bytecodeExpr).exp, TypeUtil.ARRAY_LIST_TYPE, this);
+            bytecodeExpr = ((ListExpressionTransformer.UntransformedListExpr)bytecodeExpr).transform(TypeUtil.ARRAY_LIST_TYPE, this);
         }
 
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
@@ -603,7 +603,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             BytecodeExpr.load(cond.getType(), switchVariableIndex, mv);
             BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
             if (option instanceof ListExpressionTransformer.UntransformedListExpr)
-                option = new ListExpressionTransformer.TransformedListExpr(((ListExpressionTransformer.UntransformedListExpr)option).exp, TypeUtil.ARRAY_LIST_TYPE, this);
+                option = ((ListExpressionTransformer.UntransformedListExpr)option).transform(TypeUtil.ARRAY_LIST_TYPE, this);
             if (!ClassHelper.isPrimitiveType(option.getType()) || !ClassHelper.isPrimitiveType(cond.getType())) {
                 BytecodeExpr.box(cond.getType(), mv);
 
