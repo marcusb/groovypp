@@ -35,8 +35,4 @@ abstract class Conversions {
             result
         }
     }
-
-    static String plus(Object self, String add) {
-        self.toString() + add
-    }
 }
