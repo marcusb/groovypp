@@ -5,7 +5,42 @@ import org.objectweb.asm.MethodVisitor;
 import org.mbte.groovypp.compiler.CompilerStack;
 
 public class UneededDupStoreRemoverMethodAdapter extends UneededBoxingRemoverMethodAdapter {
-    private int dupCode, storeCode, storeIndex = -1;
+    private int dupCode;
+
+    private Store store;
+
+    abstract class Store {
+        abstract void execute (MethodVisitor mv);
+    }
+
+    class StoreVar extends Store {
+        final int storeCode, storeIndex;
+
+        public StoreVar(int storeCode, int storeIndex) {
+            this.storeCode = storeCode;
+            this.storeIndex = storeIndex;
+        }
+
+        void execute (MethodVisitor mv) {
+            UneededDupStoreRemoverMethodAdapter.super.visitVarInsn(storeCode, storeIndex);
+        }
+    }
+
+    class StoreStaticField extends Store {
+        final int opcode;
+        final String owner, name, desc;
+
+        public StoreStaticField(int opcode, String owner, String name, String desc) {
+            this.opcode = opcode;
+            this.desc = desc;
+            this.name = name;
+            this.owner = owner;
+        }
+
+        void execute (MethodVisitor mv) {
+            UneededDupStoreRemoverMethodAdapter.super.visitFieldInsn(opcode, owner, name, desc);
+        }
+    }
 
     public UneededDupStoreRemoverMethodAdapter(MethodVisitor mv) {
         super(mv);
@@ -15,20 +50,18 @@ public class UneededDupStoreRemoverMethodAdapter extends UneededBoxingRemoverMet
         if (dupCode != 0) {
             super.visitInsn(dupCode);
             dupCode = 0;
-            if (storeCode != 0) {
-                super.visitVarInsn(storeCode, storeIndex);
-                storeCode = 0;
-                storeIndex = -1;
+            if (store != null) {
+                store.execute(mv);
+                store = null;
             }
         }
     }
 
     public void visitInsn(int opcode) {
-        if (storeIndex != -1 && (opcode == POP || opcode == POP2)) {
-            super.visitVarInsn(storeCode, storeIndex);
+        if (store != null && (opcode == POP || opcode == POP2)) {
             dupCode = 0;
-            storeCode = 0;
-            storeIndex = -1;
+            store.execute(mv);
+            store = null;
         }
         else {
             if (dupCode == 0 && (opcode == DUP || opcode == DUP2)) {
@@ -47,15 +80,14 @@ public class UneededDupStoreRemoverMethodAdapter extends UneededBoxingRemoverMet
     }
 
     public void visitVarInsn(int opcode, int var) {
-        if (dupCode != 0 && storeIndex == -1) {
+        if (dupCode != 0 && store == null) {
             switch (opcode) {
                 case ISTORE:
                 case LSTORE:
                 case FSTORE:
                 case DSTORE:
                 case ASTORE:
-                    storeCode = opcode;
-                    storeIndex = var;
+                    store = new StoreVar(opcode, var);
                     break;
 
                 default:
@@ -75,8 +107,21 @@ public class UneededDupStoreRemoverMethodAdapter extends UneededBoxingRemoverMet
     }
 
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-        dropDupStore();
-        super.visitFieldInsn(opcode, owner, name, desc);
+        if (dupCode != 0 && store == null) {
+            switch (opcode) {
+                case PUTSTATIC:
+                    store = new StoreStaticField(opcode, owner, name, desc);
+                    break;
+
+                default:
+                    super.visitInsn(dupCode);
+                    super.visitFieldInsn(opcode, owner, name, desc);
+                    dupCode = 0;
+            }
+        }
+        else {
+            super.visitFieldInsn(opcode, owner, name, desc);
+        }
     }
 
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
