@@ -6,6 +6,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.vmplugin.v5.PluginDefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.mbte.groovypp.runtime.ArraysMethods;
 import org.objectweb.asm.Opcodes;
@@ -44,6 +45,7 @@ public class ClassNodeCache {
         initDgm(Collections.class, new HashSet<String>(Arrays.asList(
                 "void sort(java.util.List)",
                 "void sort(java.util.List, java.util.Comparator)")), false);
+        initDgm(PluginDefaultGroovyMethods.class,false);
         initDgm(DefaultGroovyMethods.class, new HashSet<String>(Arrays.asList(
                 "java.lang.Object each(java.lang.Object, groovy.lang.Closure)",
                 "java.util.Iterator each(java.util.Iterator, groovy.lang.Closure)",
