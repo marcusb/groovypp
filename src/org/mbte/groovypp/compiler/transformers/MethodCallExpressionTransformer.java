@@ -463,7 +463,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 change.index = i;
                 change.original = argTypesCopy[i];
                 changed.add(change);
-                argTypesCopy[i] = null;
+                argTypesCopy[i] = oarg.implementsInterface(TypeUtil.TCLOSURE) ?
+                        TypeUtil.withGenericTypes(TypeUtil.TCLOSURE_NULL,change.original) 
+                        : null;
             }
         }
 

@@ -11,6 +11,7 @@ import org.codehaus.groovy.util.FastArray;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 public class MethodSelection {
 
@@ -198,7 +199,7 @@ public class MethodSelection {
         for (int i = 0; i < params.length - 1; i++) {
             if (!isAssignableDirectly(params[i].getType(), args[i])) res++;
         }
-        if (params.length == args.length && TypeUtil.isAssignableFrom(params[params.length -1].getType(),
+        if (params.length == args.length && isAssignableOrInference(params[params.length -1].getType(),
                 args[params.length -1])) {
             if (!isAssignableDirectly(params[params.length -1].getType(), args[params.length -1])) res++;
         } else if (args.length > params.length) {
@@ -374,7 +375,7 @@ public class MethodSelection {
             // case C&D, we use baseType to calculate and set it
             // to the value we need according to case C and D
             ClassNode baseType = parameters[noVargsLength].getType(); // case C
-            if (!TypeUtil.isAssignableFrom(parameters[noVargsLength].getType(), arguments[noVargsLength])) {
+            if (!isAssignableOrInference(parameters[noVargsLength].getType(), arguments[noVargsLength])) {
                 baseType = baseType.getComponentType(); // case D
                 ret += 2l << VARGS_SHIFT; // penalty for vargs
             }
@@ -452,17 +453,17 @@ public class MethodSelection {
                 } else if (closestClass.equals(theType)) {
                     if (closestVargsClass == null) continue;
                     ClassNode newVargsClass = pt[1].getType();
-                    if (closestVargsClass == null || TypeUtil.isAssignableFrom(newVargsClass, closestVargsClass)) {
+                    if (closestVargsClass == null || isAssignableOrInference(newVargsClass, closestVargsClass)) {
                         closestVargsClass = newVargsClass;
                         answer = method;
                     }
-                } else if (TypeUtil.isAssignableFrom(theType, closestClass)) {
+                } else if (isAssignableOrInference(theType, closestClass)) {
                     closestVargsClass = pt[1].getType();
                     closestClass = theType;
                     answer = method;
                 }
             } else {
-                if (closestClass == null || TypeUtil.isAssignableFrom(theType, closestClass)) {
+                if (closestClass == null || isAssignableOrInference(theType, closestClass)) {
                     closestVargsClass = null;
                     closestClass = theType;
                     answer = method;
@@ -536,7 +537,7 @@ public class MethodSelection {
             if (accessType != null) {
                 t = TypeUtil.getSubstitutedType(t, declaringClass, accessType);
             }
-            if (!TypeUtil.isAssignableFrom(t, arguments[i])) {
+            if (!isAssignableOrInference(t, arguments[i])) {
                 return false;
             }
         }
@@ -545,7 +546,7 @@ public class MethodSelection {
 
     private static boolean testComponentAssignable(ClassNode toTestAgainst, ClassNode toTest) {
         ClassNode component = toTest.getComponentType();
-        return component != null && TypeUtil.isAssignableFrom(toTestAgainst, component);
+        return component != null && isAssignableOrInference(toTestAgainst, component);
     }
 
     private static boolean isValidVarargsMethod(ClassNode[] arguments,
@@ -560,7 +561,7 @@ public class MethodSelection {
             if (accessType != null) {
                 t = TypeUtil.getSubstitutedType(t, declaringClass, accessType);
             }
-            if (TypeUtil.isAssignableFrom(t, arguments[i])) continue;
+            if (isAssignableOrInference(t, arguments[i])) continue;
             return false;
         }
 
@@ -579,7 +580,7 @@ public class MethodSelection {
 
         // check varged
         for (int i = paramMinus1; i < size; i++) {
-            if (TypeUtil.isAssignableFrom(componentType, arguments[i])) continue;
+            if (isAssignableOrInference(componentType, arguments[i])) continue;
             return false;
         }
         return true;
@@ -600,4 +601,36 @@ public class MethodSelection {
         return selected instanceof MethodNode ? (MethodNode)selected : null;
     }
 
+    private static boolean isAssignableOrInference(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
+        if (TypeUtil.isAssignableFrom(classToTransformTo, classToTransformFrom))
+            return true;
+
+        if(classToTransformFrom.equals(TypeUtil.TCLOSURE_NULL)) {
+            if (classToTransformTo.equals(ClassHelper.CLOSURE_TYPE)) {
+                return true;
+            }
+            else {
+                List<MethodNode> one = ClosureUtil.isOneMethodAbstract(classToTransformTo);
+                if (one != null) {
+
+                    MethodNode missing = one.get(0);
+                    Parameter[] missingMethodParameters = missing.getParameters();
+                    List<MethodNode> methods = classToTransformFrom.getGenericsTypes()[0].getType().getDeclaredMethods("doCall");
+
+                    for (MethodNode method : methods) {
+                        Parameter[] closureParameters = method.getParameters();
+
+                        if (closureParameters.length != missingMethodParameters.length)
+                            continue;
+
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        return false;
+    }
 }
+

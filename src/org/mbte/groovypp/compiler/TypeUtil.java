@@ -42,6 +42,7 @@ public class TypeUtil {
     public static final ClassNode TMAP = make(TypedMap.class);
     public static final ClassNode TLIST = make(TypedList.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
+    public static final ClassNode TCLOSURE_NULL = make(TypedClosure.Null.class);
     public static final ClassNode ITERABLE = make(Iterable.class);
     public static final ClassNode ITERATOR = make(Iterator.class);
     public static final ClassNode ATOMIC_REFERENCE_FIELD_UPDATER = make(AtomicReferenceFieldUpdater.class);
@@ -64,6 +65,7 @@ public class TypeUtil {
     }
 
     public static interface TypedClosure {
+        public static interface Null<T> {}
     }
 
     public static interface TypedMap {
