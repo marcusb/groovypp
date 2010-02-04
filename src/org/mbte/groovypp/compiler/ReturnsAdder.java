@@ -3,7 +3,6 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
@@ -12,7 +11,6 @@ import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
@@ -124,14 +122,13 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
             if (!list.isEmpty()) {
                 int idx = list.size() - 1;
                 list.set(idx, addReturnsIfNeeded(list.get(idx), block.getVariableScope()));
+                return new BlockStatement(list, block.getVariableScope());
             }
             else {
                 ReturnStatement ret = new ReturnStatement(ConstantExpression.NULL);
                 ret.setSourcePosition(block);
                 return ret;
             }
-
-            return new BlockStatement(filterStatements(list), block.getVariableScope());
         }
 
         if (statement instanceof SwitchStatement) {
@@ -161,28 +158,6 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
         returnStatement.setLastLineNumber(methodNode.getLastLineNumber());
         returnStatement.setLastColumnNumber(methodNode.getLastColumnNumber());
         return returnStatement;
-    }
-
-    protected List<Statement> filterStatements(List<Statement> list) {
-        List<Statement> answer = new ArrayList<Statement>(list.size());
-        for (Iterator<Statement> iter = list.iterator(); iter.hasNext();) {
-            answer.add(filterStatement(iter.next()));
-        }
-        return answer;
-    }
-
-    protected Statement filterStatement(Statement statement) {
-        if (statement instanceof ExpressionStatement) {
-            ExpressionStatement expStmt = (ExpressionStatement) statement;
-            Expression expression = expStmt.getExpression();
-            if (expression instanceof ClosureExpression) {
-                ClosureExpression closureExp = (ClosureExpression) expression;
-                if (!closureExp.isParameterSpecified()) {
-                    return closureExp.getCode();
-                }
-            }
-        }
-        return statement;
     }
 
     private Statement adjustSwitchCaseCode(Statement statement, VariableScope scope, boolean defaultCase) {
