@@ -49,6 +49,18 @@ public class UneededLoadPopRemoverMethodAdapter extends UneededDupStoreRemoverMe
         }
     }
 
+    class Checkcast extends Load {
+        private String descr;
+
+        public Checkcast(String descr) {
+            this.descr = descr;
+        }
+
+        public void execute() {
+            UneededLoadPopRemoverMethodAdapter.super.visitTypeInsn(CHECKCAST, descr);
+        }
+    }
+
     public UneededLoadPopRemoverMethodAdapter(MethodVisitor mv) {
         super(mv);
     }
@@ -66,6 +78,10 @@ public class UneededLoadPopRemoverMethodAdapter extends UneededDupStoreRemoverMe
                 super.visitInsn(opcode);
                 super.visitLabel(((VarLabel)load).label);
             }
+            else
+                if (load instanceof Checkcast) {
+                    super.visitInsn(opcode);
+                }
             load = null;
             return;
         }
@@ -124,7 +140,16 @@ public class UneededLoadPopRemoverMethodAdapter extends UneededDupStoreRemoverMe
 
     public void visitTypeInsn(int opcode, String desc) {
         dropLoad();
-        super.visitTypeInsn(opcode, desc);
+        switch (opcode) {
+            case CHECKCAST:
+                load = new Checkcast(desc);
+//                super.visitTypeInsn(opcode, desc);
+                return;
+
+            default:
+                super.visitTypeInsn(opcode, desc);
+                break;
+        }
     }
 
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
