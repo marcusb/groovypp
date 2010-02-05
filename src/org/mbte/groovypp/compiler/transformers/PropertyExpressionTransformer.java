@@ -6,6 +6,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.AccessibilityCheck;
 import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
@@ -175,7 +176,9 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             isThis = false;
         }
 
-        compiler.addError("Cannot resolve property " + propName, exp);
+        compiler.addError(MessageFormat.format("Cannot resolve property {0}.{1}",
+                PresentationUtil.getText(compiler.classNode),
+                propName), exp);
         return null;
     }
 
