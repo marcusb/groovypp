@@ -73,6 +73,9 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
                 addMetaClassField(clazz);
 
                 allMethods(source, toProcess, clazz, modulePolicy);
+
+                // Prevent further passes trying to compile one again.
+                clazz.addAnnotation((AnnotationNode) nodes[0]);
             }
         } else {
             int line = parent.getLineNumber();

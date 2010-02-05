@@ -43,6 +43,9 @@ public class PresentationUtil {
         } else if (type == TypeUtil.TLIST) {
             builder.append("<list>");
             return;
+        } else if (type == TypeUtil.NULL_TYPE) {
+            builder.append("Object");
+            return;
         }
 
         if (type.isGenericsPlaceHolder()) {
