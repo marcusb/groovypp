@@ -362,7 +362,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 return compiler.transform(mce);
             }
 
-            compiler.addError("Can't find method 'getAt' for type: " + PresentationUtil.getText(object.getType()), bin);
+            compiler.addError("Cannot find method 'getAt' for type: " + PresentationUtil.getText(object.getType()), bin);
             return null;
         }
     }

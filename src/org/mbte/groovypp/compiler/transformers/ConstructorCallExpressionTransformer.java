@@ -213,7 +213,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     (ArgumentListExpression) newArgs, compiler);
         }
 
-        compiler.addError("Can't find constructor", exp);
+        compiler.addError("Cannot find constructor", exp);
         return null;
     }
 

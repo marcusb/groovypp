@@ -175,7 +175,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             isThis = false;
         }
 
-        compiler.addError("Can't resolve property " + propName, exp);
+        compiler.addError("Cannot resolve property " + propName, exp);
         return null;
     }
 

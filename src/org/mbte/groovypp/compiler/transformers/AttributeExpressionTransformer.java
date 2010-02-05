@@ -14,7 +14,7 @@ public class AttributeExpressionTransformer extends ExprTransformer<AttributeExp
         BytecodeExpr obj = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
         final FieldNode field = compiler.findField(obj.getType(), exp.getPropertyAsString());
         if (field == null) {
-            compiler.addError("Can't find field " + exp.getPropertyAsString() + " of class " + PresentationUtil.getText(obj.getType()), exp);
+            compiler.addError("Cannot find field " + exp.getPropertyAsString() + " of class " + PresentationUtil.getText(obj.getType()), exp);
         }
         return new ResolvedFieldBytecodeExpr(exp, field, obj, null, compiler);
     }

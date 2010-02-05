@@ -20,7 +20,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 if (compiler.methodNode.getName().equals("$doCall")) {
                     return new Self(exp, compiler);
                 } else {
-//                 compiler.addError("Can't use 'this' in static method", exp);
+//                 compiler.addError("Cannot use 'this' in static method", exp);
                     return ClassExpressionTransformer.newExpr(exp, compiler.classNode);
                 }
             }
@@ -33,7 +33,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
                 if (compiler.methodNode.getName().equals("$doCall")) {
                     return new Self(exp, compiler);
                 } else {
-//                 compiler.addError("Can't use 'this' in static method", exp);
+//                 compiler.addError("Cannot use 'this' in static method", exp);
                     return ClassExpressionTransformer.newExpr(exp, compiler.classNode);
                 }
             }
@@ -68,7 +68,7 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
             return new ResolvedVarBytecodeExpr(vtype, exp, compiler);
         }
 
-        compiler.addError("Can't find variable " + exp.getName(), exp);
+        compiler.addError("Cannot find variable " + exp.getName(), exp);
         return null;
     }
 

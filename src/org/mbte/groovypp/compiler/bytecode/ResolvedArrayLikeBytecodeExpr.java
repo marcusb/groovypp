@@ -43,7 +43,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
 
     private boolean checkSetter(ASTNode exp, CompilerTransformer compiler) {
         if (setter == null) {
-            compiler.addError("Can't find method 'putAt' for type: " + PresentationUtil.getText(getType()), exp);
+            compiler.addError("Cannot find method 'putAt' for type: " + PresentationUtil.getText(getType()), exp);
             return false;
         }
         return true;
@@ -119,7 +119,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
@@ -198,7 +198,7 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 

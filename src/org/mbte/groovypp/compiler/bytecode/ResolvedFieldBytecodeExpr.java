@@ -30,13 +30,13 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
 
         if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
                     compiler.classNode, object == null ? null : object.getType())) {
-          compiler.addError("Can't access field " + formatFieldName(), parent);
+          compiler.addError("Cannot access field " + formatFieldName(), parent);
         }
     }
 
     private void checkAssignment() {
         if (fieldNode.isFinal() && !compiler.methodNode.getName().equals(fieldNode.isStatic() ? "<clinit>" : "<init>")) {
-            compiler.addError("Can't modify final field " + formatFieldName(), parent);
+            compiler.addError("Cannot modify final field " + formatFieldName(), parent);
         }
     }
 
@@ -175,7 +175,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
@@ -258,7 +258,7 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Can't find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 

@@ -238,7 +238,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler);
 
             if (constructor == null) {
-                compiler.addError ("Can't find super constructor", objType);
+                compiler.addError ("Cannot find super constructor", objType);
                 return null;
             }
 
@@ -391,7 +391,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                                 collType = TypeUtil.LINKED_LIST_TYPE;
                         }
                         else {
-                            compiler.addError ("Can't instantiate list as instance of abstract type " + collType.getName(), exp);
+                            compiler.addError ("Cannot instantiate list as instance of abstract type " + collType.getName(), exp);
                             return null;
                         }
                     }
