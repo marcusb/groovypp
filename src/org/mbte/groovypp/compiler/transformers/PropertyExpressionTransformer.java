@@ -93,17 +93,11 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
             } else {
-                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                object = (BytecodeExpr) compiler.transformWithListsAndMaps(exp.getObjectExpression());
                 type = object.getType();
 
-                Object prop = null;
-                if (exp.isImplicitThis()) {
-                    prop = compiler.findField(type, propName);
-                }
-
-                if (prop == null)
-                    prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
-                            object instanceof VariableExpressionTransformer.This);
+                Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
+                        object instanceof VariableExpressionTransformer.This);
                 if (prop == null) {
                     MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
                         if (unboxing != null) {

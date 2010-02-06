@@ -17,6 +17,8 @@ import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
+import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
+import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -79,6 +81,15 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         finally {
             nestedLevel--;
         }
+    }
+    
+    public Expression transformWithListsAndMaps(Expression expr) {
+        final Expression res = transform(expr);
+        if (res instanceof ListExpressionTransformer.UntransformedListExpr)
+            return ((ListExpressionTransformer.UntransformedListExpr) res).transform(TypeUtil.ARRAY_LIST_TYPE, this);
+        else if (res instanceof MapExpressionTransformer.UntransformedMapExpr)
+            return ((MapExpressionTransformer.UntransformedMapExpr) res).transform(this);
+        return res;
     }
 
     private void processPendingClosures() {

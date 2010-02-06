@@ -33,7 +33,7 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
             throw new UnsupportedOperationException();
         }
 
-        BytecodeExpr transform(CompilerTransformer compiler) {
+        public BytecodeExpr transform(CompilerTransformer compiler) {
             return new TransformedMapExpr(exp, compiler);
         }
     }
