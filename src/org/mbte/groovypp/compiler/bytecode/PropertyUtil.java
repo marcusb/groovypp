@@ -62,7 +62,7 @@ public class PropertyUtil {
             return null;
         }
 
-        if (object.getType().isArray() && "length".equals(propName)) {
+        if (object != null && object.getType().isArray() && "length".equals(propName)) {
             return new BytecodeExpr(exp, ClassHelper.int_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     object.visit(mv);
