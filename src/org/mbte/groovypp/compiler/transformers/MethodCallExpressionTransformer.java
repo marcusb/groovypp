@@ -157,8 +157,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 object = (BytecodeExpr) compiler.transformWithListsAndMaps(exp.getObjectExpression());
                 type = object.getType();
 
-                if (type.isDerivedFrom(ClassHelper.CLOSURE_TYPE) && methodName.equals("call"))
-                    foundMethod = findMethodWithClosureCoercion(type, "doCall", argTypes, compiler, false);
+                if (type instanceof ClosureClassNode && methodName.equals("call"))
+                    // Since ClosureClassNode can't (at least currently) escape its scope we have a typed closure,
+                    // so let's forget about 'call' and deal with 'doCall' instead.
+                    methodName = "doCall";
 
                 if (foundMethod == null)
                     foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, false);
