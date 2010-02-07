@@ -52,7 +52,7 @@ class NumberMathTest extends GroovyShellTestCase {
             assert BD * BD instanceof BigDecimal
 
             //Division (/) promotes differently so change the expected results:
-            assert I / I instanceof BigDecimal
+            assert I / I instanceof Integer
 //            assert I / F instanceof Double
 //            assert I / D instanceof Double
 //            assert I / BI instanceof BigDecimal
@@ -102,9 +102,8 @@ class NumberMathTest extends GroovyShellTestCase {
           def BD2 = new BigDecimal("2.0")
           def BD20 = new BigDecimal("2.00")
 
-          println ((I1 / I2).class)
-          assert I1 / I2 instanceof BigDecimal
-          assert I1 / I2 == new BigDecimal("0.5")
+          assert I1 / I2 == 0
+          assert I3 / I2 == 1
           assert F1 / F2 instanceof Double
           junit.framework.Assert.assertEquals F1 / F2, 0.5, 0.0000000001
           assert D1 / D2 instanceof Double
@@ -125,11 +124,11 @@ class NumberMathTest extends GroovyShellTestCase {
           assert BI1.intdiv(BI2) instanceof BigInteger
           assert BI1.intdiv(BI2) == 0
 
-          assert I1 / I3 instanceof BigDecimal
-          assert I1 / I3 == new BigDecimal("0.3333333333")
+          assert I1.div(I3) instanceof BigDecimal
+          assert I1.div(I3) == new BigDecimal("0.3333333333")
 
-          assert I2 / I3 instanceof BigDecimal
-          assert I2 / I3 == new BigDecimal("0.6666666667")
+          assert I2.div(I3) instanceof BigDecimal
+          assert I2.div(I3) == new BigDecimal("0.6666666667")
 
           assert I1 / BD2 instanceof BigDecimal
 
