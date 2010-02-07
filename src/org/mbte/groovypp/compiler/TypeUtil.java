@@ -26,8 +26,6 @@ public class TypeUtil {
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
     public static final ClassNode RANGE_OF_INTEGERS_TYPE = TypeUtil.withGenericTypes(ClassHelper.RANGE_TYPE, ClassHelper.Integer_TYPE);
-    public static final ClassNode OWNER_AWARE = make(OwnerAware.class);
-    public static final ClassNode OWNER_AWARE_SETTER = make(OwnerAware.Setter.class);
     public static final ClassNode TYPED = make(Typed.class);
     public static final ClassNode TRAIT = make(Trait.class);
     public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);
