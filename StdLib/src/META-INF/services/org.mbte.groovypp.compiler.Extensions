@@ -6,5 +6,6 @@ groovy.util.Mappers
 groovy.util.Files
 groovy.util.Strings
 groovy.util.Sort
+groovy.util.With
 groovy.util.concurrent.Atomics
 groovy.util.concurrent.CallLaterExecutors

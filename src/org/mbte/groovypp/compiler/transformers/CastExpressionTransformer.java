@@ -126,7 +126,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             List<MethodNode> one = ClosureUtil.isOneMethodAbstract(cast.getType());
             MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) expr.getType(), compiler, cast.getType());
             if (one != null && doCall != null) {
-                ClosureUtil.makeOneMethodClass(expr.getType(), cast.getType(), one, doCall);
+                ClosureUtil.makeOneMethodClass(expr.getType(), cast.getType(), one, doCall, compiler);
 
                 if (cast.getExpression() instanceof VariableExpression) {
                     VariableExpression ve = (VariableExpression) cast.getExpression();

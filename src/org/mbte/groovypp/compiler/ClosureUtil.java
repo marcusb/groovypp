@@ -140,7 +140,7 @@ public class ClosureUtil {
         return null;
     }
 
-    public static void makeOneMethodClass(final ClassNode closureType, ClassNode baseType, List<MethodNode> abstractMethods, final MethodNode doCall) {
+    public static void makeOneMethodClass(final ClassNode closureType, ClassNode baseType, List<MethodNode> abstractMethods, final MethodNode doCall, CompilerTransformer compiler) {
         boolean traitMethods = false;
         int k = 0;
         for (final MethodNode missed : abstractMethods) {
@@ -200,13 +200,15 @@ public class ClosureUtil {
                 if (ClosureUtil.likeGetter(missed)) {
                     String pname = missed.getName().substring(3);
                     pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                    closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
+                    final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
+                    compiler.context.setSelfInitialized(propertyNode.getField());
                 }
                 else {
                     if (ClosureUtil.likeSetter(missed)) {
                         String pname = missed.getName().substring(3);
                         pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                        closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
+                        final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
+                        compiler.context.setSelfInitialized(propertyNode.getField());
                     }
                     else {
                         if (ClosureUtil.traitMethod(missed)) {
@@ -222,8 +224,7 @@ public class ClosureUtil {
             TraitASTTransformFinal.improveAbstractMethods(closureType);
     }
 
-    private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode closureType,
-                                                      ClassNode baseType) {
+    private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode closureType, ClassNode baseType) {
         ClassNode returnType = missed.getReturnType();
         if (missed.getParameters().length == doCall.getParameters().length) {
             int nParams = missed.getParameters().length;

@@ -531,7 +531,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         if (doCall == null) {
                             return null;
                         } else {
-                            ClosureUtil.makeOneMethodClass(change.original, paramType, one, doCall);
+                            ClosureUtil.makeOneMethodClass(change.original, paramType, one, doCall, compiler);
                         }
                     } else {
                         boolean[] used = new boolean[typeVars.length];
@@ -613,7 +613,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         if (doCall == null) {
             return false;
         } else {
-            ClosureUtil.makeOneMethodClass(info.original, paramType, one, doCall);
+            ClosureUtil.makeOneMethodClass(info.original, paramType, one, doCall, compiler);
             ClassNode formal = one.get(0).getReturnType();
             ClassNode instantiated = doCall.getReturnType();
             ClassNode[] addition = TypeUnification.inferTypeArguments(typeVars, new ClassNode[]{formal},

@@ -275,7 +275,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                                 if (one == null || doCall == null) {
                                     foundMethod = null;
                                 } else {
-                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall);
+                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall, compiler);
                                 }
                             }
                         }

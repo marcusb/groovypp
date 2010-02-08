@@ -46,6 +46,7 @@ public class TypeUtil {
     public static final ClassNode ATOMIC_REFERENCE_FIELD_UPDATER = make(AtomicReferenceFieldUpdater.class);
     public static final ClassNode ATOMIC_INTEGER_FIELD_UPDATER = make(AtomicIntegerFieldUpdater.class);
     public static final ClassNode ATOMIC_LONG_FIELD_UPDATER = make(AtomicLongFieldUpdater.class);
+    public static final ClassNode DELEGATING = make(Delegating.class);
 
     public static boolean hasGenericsTypes(MethodNode methodNode) {
         if (methodNode.getGenericsTypes() != null && methodNode.getGenericsTypes().length > 0) return true;
