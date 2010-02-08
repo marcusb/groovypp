@@ -12,7 +12,7 @@ class UnresolvedLeftExpr extends ResolvedLeftExpr {
     private final String propName;
 
     public UnresolvedLeftExpr(ASTNode exp, BytecodeExpr value, BytecodeExpr object, String propName) {
-        super(exp, value != null ? ClassHelper.OBJECT_TYPE : ClassHelper.VOID_TYPE);
+        super(exp, ClassHelper.DYNAMIC_TYPE);
         this.value = value;
         this.object = object;
         this.propName = propName;
