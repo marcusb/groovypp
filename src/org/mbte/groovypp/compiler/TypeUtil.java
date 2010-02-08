@@ -1,8 +1,9 @@
 package org.mbte.groovypp.compiler;
 
-import groovy.lang.*;
+import groovy.lang.Delegating;
+import groovy.lang.Trait;
+import groovy.lang.Typed;
 import org.codehaus.groovy.ast.ClassHelper;
-import static org.codehaus.groovy.ast.ClassHelper.*;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
@@ -13,10 +14,12 @@ import org.mbte.groovypp.runtime.LinkedHashMapEx;
 import org.objectweb.asm.Opcodes;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.regex.Matcher;
+
+import static org.codehaus.groovy.ast.ClassHelper.*;
 
 public class TypeUtil {
     public static final ClassNode Number_TYPE = ClassHelper.make(Number.class);
@@ -504,9 +507,12 @@ public class TypeUtil {
     }
 
     public static ClassNode withGenericTypes(ClassNode baseType, ClassNode... typeArgs) {
+        final GenericsType[] existing = baseType.redirect().getGenericsTypes();
+        assert existing != null && existing.length == typeArgs.length;
         GenericsType[] genericsTypes = new GenericsType[typeArgs.length];
         for (int i = 0; i < genericsTypes.length; i++) {
-            genericsTypes[i] = new GenericsType(typeArgs[i]);
+            final ClassNode typeArg = typeArgs[i];
+            genericsTypes[i] = typeArg == null ? existing[i] : new GenericsType(typeArg);
         }
         return withGenericTypes(baseType, genericsTypes);
     }

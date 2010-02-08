@@ -240,11 +240,9 @@ public class ClosureUtil {
                 actuals[actuals.length - 1] = doCall.getReturnType();
                 formals[formals.length - 1] = missed.getReturnType();
                 ClassNode[] unified = TypeUnification.inferTypeArguments(typeVars, formals, actuals);
-                if (TypeUnification.totalInference(unified)) {
-                    ClassNode newBase = TypeUtil.withGenericTypes(baseType, unified);
-                    improveClosureType(closureType, newBase);
-                    returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, newBase);
-                }
+                ClassNode newBase = TypeUtil.withGenericTypes(baseType, unified);
+                improveClosureType(closureType, newBase);
+                returnType = TypeUtil.getSubstitutedType(returnType, declaringClass, newBase);
             }
         }
         return returnType;
