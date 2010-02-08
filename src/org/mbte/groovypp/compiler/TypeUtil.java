@@ -85,8 +85,7 @@ public class TypeUtil {
         if (classToTransformTo.equals(classToTransformFrom)||
             classToTransformTo.equals(OBJECT_TYPE) ||
             classToTransformTo.equals(boolean_TYPE) ||
-            classToTransformTo.equals(Boolean_TYPE) ||
-            classToTransformTo.equals(STRING_TYPE))
+            classToTransformTo.equals(Boolean_TYPE))
             if (!classToTransformFrom.implementsInterface(TypeUtil.TMAP) &&
                 !classToTransformFrom.implementsInterface(TypeUtil.TLIST)) return true;
 
@@ -96,13 +95,14 @@ public class TypeUtil {
 
         if (TypeUtil.isNumericalType(classToTransformTo)) {
             if (TypeUtil.isNumericalType(classToTransformFrom)
-                    || classToTransformFrom.equals(Character_TYPE))
+                    || classToTransformFrom.equals(STRING_TYPE) || classToTransformFrom.equals(Character_TYPE))
                 return true;
         } else if (classToTransformTo.equals(Character_TYPE)) {
             if (TypeUtil.isNumericalType(classToTransformFrom) || classToTransformFrom.equals(STRING_TYPE))
                 return true;
         } else if (classToTransformTo.equals(STRING_TYPE)) {
-            if (classToTransformFrom.equals(STRING_TYPE) || isDirectlyAssignableFrom(GSTRING_TYPE, classToTransformFrom)) {
+            if (TypeUtil.isNumericalType(classToTransformFrom) || classToTransformFrom.equals(STRING_TYPE) ||
+                    isDirectlyAssignableFrom(GSTRING_TYPE, classToTransformFrom)) {
                 return true;
             }
         } else if (classToTransformTo.isArray() && classToTransformFrom.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
@@ -177,7 +177,7 @@ public class TypeUtil {
                 || to.isInterface() && implementsInterface(to, from);
     }
 
-    public static boolean areTypesConvertible(ClassNode t1, ClassNode t2) {
+    public static boolean isConvertibleFrom(ClassNode t1, ClassNode t2) {
         if (t1 instanceof ClosureClassNode) {
             if ("groovy.lang.Closure".equals(t2.getName())) return true;
         }  else if (t2 instanceof ClosureClassNode) {
@@ -186,7 +186,7 @@ public class TypeUtil {
         t1 = wrapSafely(t1);
         t2 = wrapSafely(t2);
         return (t1.isInterface() && t2.isInterface()) || isAssignableFrom(t1, t2) ||
-                isAssignableFrom(t2, t1);
+                areTypesDirectlyConvertible(t1, t2);
     }
 
     public static boolean areTypesDirectlyConvertible(ClassNode t1, ClassNode t2) {

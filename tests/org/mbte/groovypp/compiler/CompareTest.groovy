@@ -93,7 +93,7 @@ public class CompareTest extends GroovyShellTestCase {
           assert (10L  >  5.0)
           assert (5.0  <  10L)
           assert (4L  >=  4d)
-          assert ((byte)-4  >=  -5L)
+          assert (((byte)-4)  >=  -5L)
       }
       u ()
     """)

@@ -40,7 +40,7 @@ class GenericsTest extends GroovyShellTestCase {
       @Typed
       public class Test {
           public String foo(List<Integer> l) {
-              l.add("")
+              l.add(new Date())
           }
       }
       new Test().foo([])
