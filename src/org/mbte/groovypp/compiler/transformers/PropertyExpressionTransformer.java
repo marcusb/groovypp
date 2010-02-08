@@ -182,12 +182,14 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
         final BytecodeExpr object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
         ClassNode type = TypeUtil.wrapSafely(object.getType());
 
-        final BytecodeExpr call = (BytecodeExpr) compiler.transform(new PropertyExpression(new BytecodeExpr(object, type) {
+        final PropertyExpression newExp = new PropertyExpression(new BytecodeExpr(object, type) {
             protected void compile(MethodVisitor mv) {
                 // nothing to do
                 // expect parent on stack
             }
-        }, exp.getProperty()));
+        }, exp.getProperty());
+        newExp.setSourcePosition(exp);
+        final BytecodeExpr call = (BytecodeExpr) compiler.transform(newExp);
 
         if (ClassHelper.isPrimitiveType(call.getType())) {
             return new BytecodeExpr(exp,call.getType()) {

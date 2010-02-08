@@ -71,7 +71,7 @@ public class PropertyUtil {
             };
         }
 
-        return dynamicOrFail(exp, compiler, propName, object, null);
+        return dynamicOrFail(exp.getProperty(), compiler, propName, object, null);
     }
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
