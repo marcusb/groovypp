@@ -85,6 +85,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         } else {
             if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
                 ClassNode thisType = compiler.methodNode.getDeclaringClass();
+                if (thisType instanceof ClosureClassNode && methodName.equals("call"))
+                    // We have a closure recursive call,
+                    // let's forget about 'call' and deal with 'doCall' instead.
+                    methodName = "doCall";
+                
                 if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
                     foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, true);
 
