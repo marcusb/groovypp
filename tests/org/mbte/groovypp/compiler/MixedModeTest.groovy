@@ -44,7 +44,7 @@ public class MixedModeTest extends GroovyShellTestCase {
                       if (n > 3)
                           for(candidate in 2..<n)
                              if (n % candidate == 0)
-                                return doCall (n / candidate, alreadyFound << candidate)
+                                return call (n / candidate, alreadyFound << candidate)
 
                       alreadyFound << n
                   }
@@ -106,7 +106,7 @@ public class MixedModeTest extends GroovyShellTestCase {
                     if (n > 3)
                         for(candidate in 2..<n)
                            if (n % candidate == 0)
-                              return doCall (n / candidate, alreadyFound << candidate)
+                              return call (n / candidate, alreadyFound << candidate)
 
                     alreadyFound << n
                 }
