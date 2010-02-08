@@ -507,8 +507,12 @@ public class TypeUtil {
     }
 
     public static ClassNode withGenericTypes(ClassNode baseType, ClassNode... typeArgs) {
-        final GenericsType[] existing = baseType.redirect().getGenericsTypes();
-        assert existing != null && existing.length == typeArgs.length;
+        GenericsType[] existing = baseType.getGenericsTypes();
+        if (existing == null) existing = baseType.redirect().getGenericsTypes(); 
+        if (existing == null || existing.length != typeArgs.length) {
+            // Type arguments are not correct wrt to baseType. Shouldn't modify.
+            return baseType;
+        }
         GenericsType[] genericsTypes = new GenericsType[typeArgs.length];
         for (int i = 0; i < genericsTypes.length; i++) {
             final ClassNode typeArg = typeArgs[i];
