@@ -15,8 +15,9 @@ class Test {
     static main(args) {
         def x = new Foo().with {
             bar = "baz"
+            delegate
         }
-        println x.bar
+        assert "baz" == x.bar
     }
 }
 
