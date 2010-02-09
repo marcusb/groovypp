@@ -1,27 +1,39 @@
 package groovy.supervisors
 
-class SupervisorTest {
+@Typed class SupervisorTest extends GroovyTestCase {
     void testMe () {
-        def config = SupervisionConfig.configure {
-            beforeStart {
-                println "supervisor starting"
-            }
+        SupervisedConfig config = [
+            beforeStart: { println "supervisor starting" },
 
-            afterStop {
-                println "supervisor stopped"
-            }
+            afterStop: { println "supervisor stopped" },
 
-            worker {
-                afterStart {
-                    println "worker started"
+            afterChildsCreated: {
+                childs.each { c ->
+                    println c
                 }
+            },
 
-                beforeStop {
-                    println "worker stopped"
-                }
-            }
-        }
-//        Supervised supervisor = config.create()
+            childs: [
+                [
+                    afterStart: { println "worker started" },
+
+                    beforeStop: { println "worker stopped" }
+                ],
+
+                [ klazz : Supervised ],
+            ]
+        ]
+
+        Supervised supervisor = config.create()
+        supervisor.start ()
+        supervisor.stop ()
+    }
+
+    void testServer () {
+        SupervisedConfig config = [
+        ]
+
+        Supervised supervisor = config.create()
         supervisor.start ()
         supervisor.stop ()
     }
