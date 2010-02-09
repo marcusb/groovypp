@@ -10,7 +10,7 @@
     <property name="stdlibtest.module.name" value="StdLibTest" />
     <property name="examples.module.name" value="Examples" />
 
-    <property name="version" value="0.1.12"/>
+    <property name="version" value="0.1.13"/>
 
     <property name="compiler.src" location="src" />
     <property name="compiler.tests" location="tests" />
