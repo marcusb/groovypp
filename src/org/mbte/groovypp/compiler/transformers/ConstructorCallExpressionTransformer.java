@@ -38,7 +38,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                 if (constructor != null) {
                     for (MapEntryExpression mee : me.getMapEntryExpressions()) {
 
-                        BytecodeExpr obj = new BytecodeExpr(compiler.transform(mee), type) {
+                        BytecodeExpr obj = new BytecodeExpr(mee, type) {
                             protected void compile(MethodVisitor mv) {
                                 mv.visitInsn(DUP);
                             }

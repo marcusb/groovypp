@@ -71,6 +71,9 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     }
 
     public static void improveAbstractMethods(final ClassNode classNode) {
+        if ((classNode.getModifiers() & ACC_ABSTRACT) != 0)
+            return;
+
         List<MethodNode> abstractMethods = getAbstractMethods(classNode);
         if (abstractMethods != null) {
             for (final MethodNode method : abstractMethods) {
