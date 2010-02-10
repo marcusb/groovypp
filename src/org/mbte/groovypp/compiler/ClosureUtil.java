@@ -147,8 +147,8 @@ public class ClosureUtil {
             final Parameter[] missedParameters = missed.getParameters();
             final Parameter[] parameters = new Parameter[missedParameters.length];
             for (int i = 0; i < parameters.length; i++) {
-                // redirect has the effect of computing the erasure - nough here.
-                parameters[i] = new Parameter(missedParameters[i].getType().redirect(), missedParameters[i].getName());
+                final ClassNode t = ClassHelper.make(missedParameters[i].getType().getName());
+                parameters[i] = new Parameter(t, missedParameters[i].getName());
             }
             if (k == 0) {
                closureType.addMethod(
