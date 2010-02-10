@@ -79,16 +79,16 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             for (final MethodNode method : abstractMethods) {
                 List<AnnotationNode> list = method.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
                 if (list != null && !list.isEmpty()) {
-                    final Parameter[] parameters = TypeUtil.eraseParameterTypes(method.getParameters());
                     Expression klazz = list.get(0).getMember("value");
                     Expression field = list.get(0).getMember("fieldName");
                     if (field == null || (field instanceof ConstantExpression) && (((ConstantExpression)field).getValue() == null || "".equals((((ConstantExpression)field).getValue())))) {
-                        final Parameter[] newParams = new Parameter[parameters.length + 1];
-                        newParams[0] = new Parameter(method.getDeclaringClass(), "$self");
-                        System.arraycopy(parameters, 0, newParams, 1, parameters.length);
-                        final MethodNode found = klazz.getType().getMethod(method.getName(), newParams);
+                        final Parameter[] oldParams = method.getParameters();
+                        final Parameter[] params = new Parameter[oldParams.length + 1];
+                        params[0] = new Parameter(method.getDeclaringClass(), "$self");
+                        System.arraycopy(oldParams, 0, params, 1, oldParams.length);
+                        final MethodNode found = klazz.getType().getMethod(method.getName(), params);
                         if (found != null) {
-                            addImplMethod(classNode, method, parameters, found);
+                            addImplMethod(classNode, method, oldParams, found);
                         }
                     } else {
                         if ((classNode.getModifiers() & Opcodes.ACC_ABSTRACT) != 0)
@@ -97,10 +97,10 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                         final ClassNode fieldType;
                         final boolean getter;
                         if (method.getName().startsWith("get")) {
-                            fieldType = method.getReturnType().redirect();
+                            fieldType = method.getReturnType();
                             getter = true;
                         } else {
-                            fieldType = parameters[0].getType();
+                            fieldType = method.getParameters()[0].getType();
                             getter = false;
                         }
 
@@ -113,7 +113,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
                         }
 
-                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, parameters, ClassNode.EMPTY_ARRAY,
+                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, method.getParameters(), ClassNode.EMPTY_ARRAY,
                                 new BytecodeSequence(new BytecodeInstruction() {
                                     public void visit(MethodVisitor mv) {
                                         if (getter) {
