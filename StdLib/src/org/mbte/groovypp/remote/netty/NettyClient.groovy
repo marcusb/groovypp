@@ -57,7 +57,7 @@ import org.jboss.netty.channel.Channel
     }
 
     void doStop () {
-
+        channel?.close()
     }
 
     static class Config extends NettyConfig<NettyClient> {

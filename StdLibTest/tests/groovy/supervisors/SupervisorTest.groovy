@@ -35,11 +35,13 @@ import java.util.concurrent.TimeUnit
     }
 
     void testServer () {
-        CountDownLatch waitFor = [1]
+        int n = 250
+        CountDownLatch waitFor = [n]
 
         SupervisedConfig config = [
             childs: [
                 [
+                    numberOfInstances : n,
                     host : "localhost",
                     port : 8080,    
                     afterCreated: { println "client created"      },

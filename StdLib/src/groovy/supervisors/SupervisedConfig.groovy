@@ -4,6 +4,8 @@ package groovy.supervisors
 
     SupervisedConfig parent
 
+    int numberOfInstances = 1
+
     DelegatingFunction0<Supervised,?> afterCreated
     DelegatingFunction0<Supervised,?> beforeStart
     DelegatingFunction0<Supervised,?> afterStart
@@ -25,7 +27,8 @@ package groovy.supervisors
         afterCreated?.call(monitored)
 
         childs?.each { childConfig ->
-            childConfig.create(monitored)
+            for ( i in 0..<childConfig.numberOfInstances)
+                childConfig.create(monitored)
         }
 
         afterChildsCreated?.call(monitored)

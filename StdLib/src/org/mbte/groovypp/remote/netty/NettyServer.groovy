@@ -53,13 +53,7 @@ import java.util.concurrent.CountDownLatch
     }
 
     void doStop () {
-        if (channel) {
-            CountDownLatch cdl = [1]
-            channel.close().addListener { op ->
-                cdl.countDown()
-            }
-            cdl.await()
-        }
+        channel?.close()
     }
 
     static class Config extends NettyConfig<NettyServer> {
