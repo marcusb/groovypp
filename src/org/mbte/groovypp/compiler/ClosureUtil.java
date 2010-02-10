@@ -144,18 +144,24 @@ public class ClosureUtil {
         boolean traitMethods = false;
         int k = 0;
         for (final MethodNode missed : abstractMethods) {
+            final Parameter[] missedParameters = missed.getParameters();
+            final Parameter[] parameters = new Parameter[missedParameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+                // redirect has the effect of computing the erasure - nough here.
+                parameters[i] = new Parameter(missedParameters[i].getType().redirect(), missedParameters[i].getName());
+            }
             if (k == 0) {
                closureType.addMethod(
                     missed.getName(),
                     Opcodes.ACC_PUBLIC,
                     getSubstitutedReturnType(doCall, missed, closureType, baseType),
-                    missed.getParameters(),
+                       parameters,
                     ClassNode.EMPTY_ARRAY,
                     new BytecodeSequence(
                             new BytecodeInstruction() {
                                 public void visit(MethodVisitor mv) {
                                     mv.visitVarInsn(Opcodes.ALOAD, 0);
-                                    Parameter pp[] = missed.getParameters();
+                                    Parameter pp[] = parameters;
                                     for (int i = 0, k = 1; i != pp.length; ++i) {
                                         final ClassNode type = pp[i].getType();
                                         ClassNode expectedType = doCall.getParameters()[i].getType();
@@ -207,7 +213,7 @@ public class ClosureUtil {
                     if (ClosureUtil.likeSetter(missed)) {
                         String pname = missed.getName().substring(3);
                         pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                        final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
+                        final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, parameters[0].getType(), null, null, null);
                         compiler.context.setSelfInitialized(propertyNode.getField());
                     }
                     else {
