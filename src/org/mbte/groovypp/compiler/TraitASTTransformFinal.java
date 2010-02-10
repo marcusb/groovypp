@@ -161,7 +161,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
         for (int i = 0; i < oldExns.length; i++) {
             newExns[i] = TypeUtil.mapTypeFromSuper(oldExns[i], method.getDeclaringClass(), classNode);
         }
-        classNode.addMethod(method.getName(), Opcodes.ACC_PUBLIC, returnType, newParams, newExns, new BytecodeSequence(new BytecodeInstruction() {
+        final MethodNode methodNode = classNode.addMethod(method.getName(), Opcodes.ACC_PUBLIC, returnType, newParams, newExns, new BytecodeSequence(new BytecodeInstruction() {
             public void visit(MethodVisitor mv) {
                 mv.visitVarInsn(ALOAD, 0);
                 int cur = 1;
