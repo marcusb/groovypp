@@ -273,10 +273,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 compiler.context.setSelfInitialized(fieldNode);
             }
 
-            final GenericsType[] typeVars = getClassTypeVars(type);
             for (MapEntryExpression me : methods) {
                 final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
-                closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression(), typeVars);
+                closureToMethod(type, compiler, objType, keyName, (ClosureExpression)me.getValueExpression());
             }
 
             return new BytecodeExpr(exp, objType) {
@@ -324,8 +323,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         }
     }
 
-    private void closureToMethod(ClassNode type, CompilerTransformer compiler, ClassNode objType, String keyName,
-                                 ClosureExpression ce, GenericsType[] typeVars) {
+    private void closureToMethod(ClassNode type, CompilerTransformer compiler, ClassNode objType, String keyName, ClosureExpression ce) {
         if (ce.getParameters() != null && ce.getParameters().length == 0) {
             final VariableScope scope = ce.getVariableScope();
             ce = new ClosureExpression(new Parameter[1], ce.getCode());
@@ -339,7 +337,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 ClassHelper.OBJECT_TYPE,
                 ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
                 ce.getCode());
-        _doCallMethod.setGenericsTypes(typeVars);
         objType.addMethod(_doCallMethod);
 
         _doCallMethod.createDependentMethods(objType);
@@ -362,17 +359,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         ClassNodeCache.clearCache (_doCallMethod.getDeclaringClass());
         StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, _doCallMethod.getDeclaringClass().getName());
-    }
-
-    private static GenericsType[] getClassTypeVars(ClassNode clazz) {
-        List<GenericsType> list = new ArrayList<GenericsType>();
-        do {
-            final GenericsType[] genericTypes = clazz.getGenericsTypes();
-            if (genericTypes != null) list.addAll(Arrays.asList(genericTypes));
-            if (clazz.isStaticClass()) break;
-            clazz = clazz.getDeclaringClass();
-        } while (clazz != null);
-        return list.toArray(new GenericsType[list.size()]);
     }
 
     private ClassNode createNewType(ClassNode type, CompilerTransformer compiler) {
