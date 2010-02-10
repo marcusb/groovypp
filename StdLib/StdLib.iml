@@ -26,9 +26,18 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="groovy-1.7-rc-1-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="Groovypp" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../install/lib/netty-3.1.5.GA.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../../../netty-3.1.5.GA/jar/netty-3.1.5.GA-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
 

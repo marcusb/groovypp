@@ -1,6 +1,7 @@
 package groovy.supervisors
 
 @Typed class SupervisedConfig {
+
     SupervisedConfig parent
 
     DelegatingFunction0<Supervised,?> afterCreated
@@ -9,13 +10,14 @@ package groovy.supervisors
     DelegatingFunction0<Supervised,?> beforeStop
     DelegatingFunction0<Supervised,?> afterStop
     DelegatingFunction0<Supervised,?> afterChildsCreated
+    DelegatingFunction2<Supervised,String, Throwable,?> afterCrashed
 
     List<SupervisedConfig> childs
 
     Class<Supervised> klazz = Supervised
 
     Supervised create(Supervised parent = null) {
-        def monitored = klazz.newInstance()
+        def monitored = createSupervised()
         monitored.config = this
 
         parent?.addChild(monitored)
@@ -29,5 +31,9 @@ package groovy.supervisors
         afterChildsCreated?.call(monitored)
 
         monitored
+    }
+
+    protected Supervised createSupervised() {
+        klazz.newInstance()
     }
 }

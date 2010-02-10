@@ -4,7 +4,7 @@ package groovy.remote
  * Remode node in the claster
  */
 class RemoteNode {
-   private final ClusterNode clusterNode
+   protected final ClusterNode clusterNode
 
    final UUID remoteId
 

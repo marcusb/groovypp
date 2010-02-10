@@ -1,36 +1,57 @@
 package groovy.supervisors
 
-@Typed class Supervised {
-    Supervised       parent
-    SupervisedConfig config
+import groovy.util.concurrent.CallLater
+import groovy.util.concurrent.CallLaterExecutors
 
-    List<Supervised> childs
+@Typed class Supervised<C extends SupervisedConfig> {
+    Supervised parent
+    C          config
 
-    void start () {
+    protected List<Supervised> childs
+
+    final void start () {
         config.beforeStart?.call(this)
-
-        childs?.each { child ->
-            child.start ()
-        }
-
+        doStart ()
         config.afterStart?.call(this)
     }
 
-    void stop () {
+    final void stop () {
         config.beforeStop?.call(this)
-
-        childs?.reverse()?.each { child ->
-            child.stop ()
-        }
-
+        doStop ()
         config.afterStop?.call(this)
     }
 
-    void addChild(Supervised child) {
+    synchronized void addChild(Supervised child) {
         child.parent = this
         if (childs == null) {
             childs = []
         }
         childs << child
+    }
+
+    synchronized void removeChild(Supervised child) {
+        child.parent = null
+        childs?.remove(child)
+    }
+
+    void crash (String message = null, Throwable cause = null) {
+        CallLaterExecutors.getDefaultExecutor().execute {
+            config.afterCrashed?.call(this$0, message, cause)
+            def parent = this$0.parent
+            parent?.removeChild(this$0)
+            config.create(parent).start()
+        }
+    }
+
+    synchronized void doStart () {
+        childs?.each { child ->
+            child.start ()
+        }
+    }
+
+    synchronized void doStop () {
+        childs?.reverse()?.each { child ->
+            child.stop ()
+        }
     }
 }

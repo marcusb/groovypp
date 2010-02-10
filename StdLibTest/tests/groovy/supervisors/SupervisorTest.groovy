@@ -1,5 +1,10 @@
 package groovy.supervisors
 
+import org.mbte.groovypp.remote.netty.NettyServer
+import org.mbte.groovypp.remote.netty.NettyClient
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
 @Typed class SupervisorTest extends GroovyTestCase {
     void testMe () {
         SupervisedConfig config = [
@@ -30,11 +35,37 @@ package groovy.supervisors
     }
 
     void testServer () {
+        CountDownLatch waitFor = [1]
+
         SupervisedConfig config = [
+            childs: [
+                [
+                    host : "localhost",
+                    port : 8080,    
+                    afterCreated: { println "client created"      },
+                    beforeStart:  { println "client starting"     },
+                    afterStop:    { println "client stopped"      },
+                    onConnect:    { println "client connected"; channel.write "Hello"    },
+                    onDisconnect: { println "client disconnected" },
+                    afterCrashed: { msg, cause ->
+                        println "client crashed '${cause?.message ?: msg}'"
+                        cause?.printStackTrace ()
+                    },
+                ] as NettyClient.Config,
+                [
+                    port : 8080,    
+                    beforeStart: { println "server starting" },
+                    afterStop: { println "server stopped" },
+                    onMessage: { msg -> println msg; waitFor.countDown() }
+                ] as NettyServer.Config,
+            ]
         ]
 
         Supervised supervisor = config.create()
         supervisor.start ()
-        supervisor.stop ()
+
+        waitFor.await(30, TimeUnit.SECONDS)
+
+        supervisor.stop()
     }
 }

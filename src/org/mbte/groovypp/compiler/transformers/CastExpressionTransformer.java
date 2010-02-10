@@ -177,6 +177,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         List<MapEntryExpression> methods = new LinkedList<MapEntryExpression>();
         final List<MapEntryExpression> fields = new LinkedList<MapEntryExpression>();
+        final List<MapEntryExpression> props = new LinkedList<MapEntryExpression>();
 
         for (int i = 0; i != list.size(); ++i) {
             final MapEntryExpression me = list.get(i);
@@ -194,17 +195,32 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             final Object prop = PropertyUtil.resolveSetProperty(type, keyName, TypeUtil.NULL_TYPE, compiler, true);
             if (prop != null) {
                 ClassNode propType;
-                if (prop instanceof MethodNode)
+                ClassNode propDeclClass;
+                if (prop instanceof MethodNode) {
                     propType = ((MethodNode)prop).getParameters()[0].getType();
+                    propDeclClass = ((MethodNode)prop).getDeclaringClass();
+                }
                 else
-                    if (prop instanceof FieldNode)
+                    if (prop instanceof FieldNode) {
                         propType = ((FieldNode)prop).getType();
-                    else
+                        propDeclClass = ((FieldNode)prop).getDeclaringClass();
+                    }
+                    else {
+                        propDeclClass = ((PropertyNode)prop).getDeclaringClass();
                         propType = ((PropertyNode)prop).getType();
+                    }
+
+                propType = TypeUtil.getSubstitutedType(propType, propDeclClass, type);
 
                 final CastExpression cast = new CastExpression(propType, value);
                 cast.setSourcePosition(value);
-                exp.getMapEntryExpressions().set(i, new MapEntryExpression(me.getKeyExpression(), cast));
+                final BytecodeExpr obj = new BytecodeExpr(type, type) {
+                    protected void compile(MethodVisitor mv) {
+                        mv.visitInsn(DUP);
+                    }
+                };
+                final BytecodeExpr setter = PropertyUtil.createSetProperty(me, compiler, keyName, obj, (BytecodeExpr) compiler.transform(cast), prop);
+                props.add(new MapEntryExpression(me.getKeyExpression(), setter));
             }
             else {
                 if (objType == null)
@@ -283,13 +299,27 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                         ((BytecodeExpr)me.getValueExpression()).visit(mv);
                         mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(type), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
                     }
+
+                    for (MapEntryExpression me : props) {
+                        ((BytecodeExpr)me.getValueExpression()).visit(mv);
+                        mv.visitInsn(POP);
+                    }
                 }
             };
         }
         else {
-            final ConstructorCallExpression constr = new ConstructorCallExpression(type, new ArgumentListExpression(exp));
+            final ConstructorCallExpression constr = new ConstructorCallExpression(type, new ArgumentListExpression());
             constr.setSourcePosition(exp);
-            return (BytecodeExpr) compiler.transform(constr);
+            final BytecodeExpr transformendConstr = (BytecodeExpr) compiler.transform(constr);
+            return new BytecodeExpr(exp, type) {
+                protected void compile(MethodVisitor mv) {
+                    transformendConstr.visit(mv);
+                    for (MapEntryExpression me : props) {
+                        ((BytecodeExpr)me.getValueExpression()).visit(mv);
+                        mv.visitInsn(POP);
+                    }
+                }
+            };
         }
     }
 
