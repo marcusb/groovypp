@@ -60,15 +60,6 @@ public class TypeUtil {
         return false;
     }
 
-    public static Parameter[] eraseParameterTypes(Parameter[] parameters) {
-        final Parameter[] ret = new Parameter[parameters.length];
-        for (int i = 0; i < ret.length; i++) {
-            final ClassNode erased = withGenericTypes(parameters[i].getType(), (GenericsType[]) null);
-            ret[i] = new Parameter(erased, parameters[i].getName());
-        }
-        return ret;
-    }
-
     public static class Null {
     }
 
