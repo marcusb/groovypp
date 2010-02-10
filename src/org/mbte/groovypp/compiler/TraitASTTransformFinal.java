@@ -82,7 +82,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                     Expression klazz = list.get(0).getMember("value");
                     Expression field = list.get(0).getMember("fieldName");
                     if (field == null || (field instanceof ConstantExpression) && (((ConstantExpression)field).getValue() == null || "".equals((((ConstantExpression)field).getValue())))) {
-                        final Parameter[] oldParams = method.getParameters();
+                        final Parameter[] oldParams = TypeUtil.eraseParameterTypes(method.getParameters());
                         final Parameter[] params = new Parameter[oldParams.length + 1];
                         params[0] = new Parameter(method.getDeclaringClass(), "$self");
                         System.arraycopy(oldParams, 0, params, 1, oldParams.length);

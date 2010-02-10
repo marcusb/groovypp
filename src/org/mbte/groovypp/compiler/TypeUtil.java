@@ -3,10 +3,7 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.Delegating;
 import groovy.lang.Trait;
 import groovy.lang.Typed;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
@@ -61,6 +58,15 @@ public class TypeUtil {
             clazz = clazz.getDeclaringClass();
         } while (clazz != null);
         return false;
+    }
+
+    public static Parameter[] eraseParameterTypes(Parameter[] parameters) {
+        final Parameter[] ret = new Parameter[parameters.length];
+        for (int i = 0; i < ret.length; i++) {
+            // redirect has the effect of computing the erasure.
+            ret[i] = new Parameter(parameters[i].getType().redirect(), parameters[i].getName());
+        }
+        return ret;
     }
 
     public static class Null {

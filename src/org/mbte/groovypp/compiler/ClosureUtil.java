@@ -144,12 +144,7 @@ public class ClosureUtil {
         boolean traitMethods = false;
         int k = 0;
         for (final MethodNode missed : abstractMethods) {
-            final Parameter[] missedParameters = missed.getParameters();
-            final Parameter[] parameters = new Parameter[missedParameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                final ClassNode t = ClassHelper.make(missedParameters[i].getType().getName());
-                parameters[i] = new Parameter(t, missedParameters[i].getName());
-            }
+            final Parameter[] parameters = TypeUtil.eraseParameterTypes(missed.getParameters());
             if (k == 0) {
                closureType.addMethod(
                     missed.getName(),
