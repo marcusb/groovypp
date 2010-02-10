@@ -4,13 +4,14 @@
 
 	<property name="app.name" value="groovypp" />
 
+    <property file="build.properties"/>
     <property name="output.dir" location="out" />
     <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
     <property name="stdlibtest.module.name" value="StdLibTest" />
     <property name="examples.module.name" value="Examples" />
 
-    <property name="version" value="0.1.13"/>
+    <property name="version" value="${groovyPPVersion}"/>
 
     <property name="compiler.src" location="src" />
     <property name="compiler.tests" location="tests" />
@@ -93,7 +94,7 @@
 		<mkdir dir="${test.reports}"/>
 	</target>
 
-	<target name="compile.compiler" depends="clean" description="compiles compiler source files">
+	<target name="compile.compiler" depends="clean, releaseinfo" description="compiles compiler source files">
 		<javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
 			destdir="${compiler.prod.output}" target="${target.jvm}"
 			debug="yes" debuglevel="lines,vars,source" />
@@ -185,11 +186,26 @@
     	</junitreport>
     </target>
 
-    <target name="make.jar" depends="clean,compile.examples" description="Build application jar file">
+    <target name="make.jar" depends="clean,compile.examples,releaseinfo" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
         </jar>
+    </target>
+
+    <target name="releaseinfo">
+        <copy file="${compiler.src}/META-INF/groovypp-release-info.properties" 
+            todir="${compiler.prod.output}/META-INF" overwrite="true">
+        </copy>
+        <tstamp>
+            <format property="release.date" pattern="dd-MMM-yyyy"/>
+            <format property="release.time" pattern="hh:mm aa"/>
+        </tstamp>
+        <replace file="${compiler.prod.output}/META-INF/groovypp-release-info.properties">
+          <replacefilter token="##ImplementationVersion##" value="${groovyPPVersion}"/>   
+          <replacefilter token="##BuildDate##" value="${release.date}"/>
+          <replacefilter token="##BuildTime##" value="${release.time}"/>
+        </replace>
     </target>
 
     <target name="make.install" depends="test" description="Build installation">
