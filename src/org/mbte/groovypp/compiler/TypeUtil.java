@@ -63,8 +63,8 @@ public class TypeUtil {
     public static Parameter[] eraseParameterTypes(Parameter[] parameters) {
         final Parameter[] ret = new Parameter[parameters.length];
         for (int i = 0; i < ret.length; i++) {
-            // redirect has the effect of computing the erasure.
-            ret[i] = new Parameter(parameters[i].getType().redirect(), parameters[i].getName());
+            final ClassNode erased = withGenericTypes(parameters[i].getType(), (GenericsType[]) null);
+            ret[i] = new Parameter(erased, parameters[i].getName());
         }
         return ret;
     }
