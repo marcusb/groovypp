@@ -177,7 +177,9 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         final List<AnnotationNode> list = ann.getAnnotations(COMPILE_TYPE);
         if (list.isEmpty())
             return def;
-
+        
+        if(checkDuplicateTypedAnn(list, source)) return null;
+        
         for (AnnotationNode an : list) {
             final Expression member = an.getMember("value");
             if (member instanceof PropertyExpression) {
@@ -213,5 +215,18 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             return null;
         }
         return TypePolicy.STATIC;
+    }
+    
+    private boolean checkDuplicateTypedAnn(List<AnnotationNode> list, SourceUnit source) {
+    	if(list.size() > 1) {
+    		AnnotationNode secondAnn = list.get(1);
+            int line = secondAnn.getLineNumber();
+            int col = secondAnn.getColumnNumber();
+            source.getErrorCollector().addError(
+                    new SyntaxErrorMessage(new SyntaxException("Duplicate @Typed annotation found" + '\n', line, col), source), true
+            );
+            return true;
+    	}
+    	return false;
     }
 }
