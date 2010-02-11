@@ -95,25 +95,28 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                             continue;
 
                         final ClassNode fieldType;
+                        final Parameter[] parameters;
                         final boolean getter;
                         if (method.getName().startsWith("get")) {
-                            fieldType = method.getReturnType();
+                            fieldType = TypeUtil.mapTypeFromSuper(method.getReturnType(), method.getDeclaringClass(), classNode);
+                            parameters = Parameter.EMPTY_ARRAY;
                             getter = true;
                         } else {
-                            fieldType = method.getParameters()[0].getType();
+                            fieldType = TypeUtil.mapTypeFromSuper(method.getParameters()[0].getType(), method.getDeclaringClass(), classNode);
+                            parameters = new Parameter[] {new Parameter(fieldType, method.getParameters()[0].getName())};
                             getter = false;
                         }
 
                         final String fieldName = (String) ((ConstantExpression) field).getValue();
                         FieldNode klazzField = classNode.getField(fieldName);
                         if (klazzField == null) {
-                            klazzField = classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
+                            classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
                             final MethodNode initMethod = klazz.getType().getMethod("__init_" + fieldName, new Parameter[]{new Parameter(method.getDeclaringClass(), "$self")});
                             if (initMethod != null)
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
                         }
 
-                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? method.getReturnType() : ClassHelper.VOID_TYPE, method.getParameters(), ClassNode.EMPTY_ARRAY,
+                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? fieldType : ClassHelper.VOID_TYPE, parameters, ClassNode.EMPTY_ARRAY,
                                 new BytecodeSequence(new BytecodeInstruction() {
                                     public void visit(MethodVisitor mv) {
                                         if (getter) {
@@ -206,7 +209,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     private static Map<String, MethodNode> getDeclaredMethodsMap(ClassNode klazz) {
         // Start off with the methods from the superclass.
         ClassNode parent = klazz.getSuperClass();
-        Map<String, MethodNode> result = null;
+        Map<String, MethodNode> result;
         if (parent != null) {
             result = getDeclaredMethodsMap(parent);
         } else {
