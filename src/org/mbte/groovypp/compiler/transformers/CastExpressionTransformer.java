@@ -171,7 +171,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         ClassNode objType = null;
 
-        if ((type.getModifiers() & ACC_ABSTRACT) != 0) {
+        if ((type.getModifiers() & ACC_ABSTRACT) != 0 || type.isInterface()) {
             objType = createNewType(type, compiler);
         }
 

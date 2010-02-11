@@ -409,6 +409,7 @@ public class ClosureUtil {
     }
 
     public static void instantiateClass(ClassNode type, CompilerTransformer compiler, Parameter[] constrParams, Expression superArgs, MethodVisitor mv) {
+        TraitASTTransformFinal.improveAbstractMethods(type);
         type.getModule().addClass(type);
 
         final String classInternalName = BytecodeHelper.getClassInternalName(type);

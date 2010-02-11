@@ -91,18 +91,26 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 //                if (fieldNode.isStatic())
 //                    continue;
 
-                MethodNode getter = classNode.addMethod("get" + Verifier.capitalize(fieldNode.getName()), ACC_PUBLIC | ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
-                AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
-                value.addMember("value", new ClassExpression(innerClassNode));
-                value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
-                getter.addAnnotation(value);
+                final String getterName = "get" + Verifier.capitalize(fieldNode.getName());
+                MethodNode getter = classNode.getGetterMethod(getterName);
+                if (getter == null) {
+                    getter = classNode.addMethod(getterName, ACC_PUBLIC | ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
+                    AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
+                    value.addMember("value", new ClassExpression(innerClassNode));
+                    value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
+                    getter.addAnnotation(value);
+                }
 
-                Parameter valueParam = new Parameter(fieldNode.getType(), "$value");
-                MethodNode setter = classNode.addMethod("set" + Verifier.capitalize(fieldNode.getName()), ACC_PUBLIC | ACC_ABSTRACT, ClassHelper.VOID_TYPE, new Parameter[]{valueParam}, ClassNode.EMPTY_ARRAY, null);
-                value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
-                value.addMember("value", new ClassExpression(innerClassNode));
-                value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
-                setter.addAnnotation(value);
+                final String setterName = "set" + Verifier.capitalize(fieldNode.getName());
+                MethodNode setter = classNode.getSetterMethod(setterName);
+                if (setter == null) {
+                    Parameter valueParam = new Parameter(fieldNode.getType(), "$value");
+                    setter = classNode.addMethod(setterName, ACC_PUBLIC | ACC_ABSTRACT, ClassHelper.VOID_TYPE, new Parameter[]{valueParam}, ClassNode.EMPTY_ARRAY, null);
+                    AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
+                    value.addMember("value", new ClassExpression(innerClassNode));
+                    value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
+                    setter.addAnnotation(value);
+                }
 
                 if (fieldNode.hasInitialExpression()) {
                     final Expression initial = fieldNode.getInitialValueExpression();
