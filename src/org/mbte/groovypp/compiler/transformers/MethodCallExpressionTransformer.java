@@ -215,7 +215,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
                                 if (updaterMethod != null) {
                                     ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
-                                    ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
+                                    ((TupleExpression)args).getExpressions().add(0, obj.getObject());
                                     return createCall(exp, compiler, args, updaterInstance, updaterMethod);
                                 }
                             }
@@ -232,7 +232,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
                                 if (updaterMethod != null) {
                                     ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
-                                    ((ArgumentListExpression)args).getExpressions().add(0, obj.getObject());
+                                    ((TupleExpression)args).getExpressions().add(0, obj.getObject());
                                     return createCall(exp, compiler, args, updaterInstance, updaterMethod);
                                 }
                             }
@@ -293,7 +293,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private Expression createCall(MethodCallExpression exp, CompilerTransformer compiler, Expression args, BytecodeExpr object, MethodNode foundMethod) {
         if (foundMethod.getReturnType().equals(ClassHelper.VOID_TYPE)) {
-            final ResolvedMethodBytecodeExpr call = ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
+            final ResolvedMethodBytecodeExpr call = ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (TupleExpression) args, compiler);
             return new BytecodeExpr(exp, TypeUtil.NULL_TYPE) {
                 protected void compile(MethodVisitor mv) {
                     call.visit(mv);
@@ -302,7 +302,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             };
         }
         else
-            return ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (ArgumentListExpression) args, compiler);
+            return ResolvedMethodBytecodeExpr.create(exp, foundMethod, object, (TupleExpression) args, compiler);
     }
 
     private Expression transformSafe(MethodCallExpression exp, CompilerTransformer compiler) {
@@ -389,7 +389,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
     }
 
     private Expression createDynamicCall(final MethodCallExpression exp, CompilerTransformer compiler) {
-        final List<Expression> args = ((ArgumentListExpression) exp.getArguments()).getExpressions();
+        final List<Expression> args = ((TupleExpression) exp.getArguments()).getExpressions();
 
         for (int i = 0; i != args.size(); ++i) {
             Expression arg = args.get(i);

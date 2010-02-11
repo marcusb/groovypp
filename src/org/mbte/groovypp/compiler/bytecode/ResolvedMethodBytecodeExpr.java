@@ -1,14 +1,10 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ArrayExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
-import org.mbte.groovypp.compiler.transformers.ConstantExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -20,9 +16,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     private final BytecodeExpr object;
     private final String methodName;
 
-    private final ArgumentListExpression bargs;
+    private final TupleExpression bargs;
 
-    private ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
+    private ResolvedMethodBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, TupleExpression bargs, CompilerTransformer compiler) {
         super(parent, getReturnType(methodNode, object, bargs, compiler));
         this.methodNode = methodNode;
         this.object = object;
@@ -135,7 +131,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
+    public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, TupleExpression bargs, CompilerTransformer compiler) {
         final BytecodeExpr objectCopy = object;
         ClassNode returnType = methodNode.getReturnType();
         
@@ -198,7 +194,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         return objectCopy != null ? TypeUtil.getSubstitutedType(returnType, methodNode.getDeclaringClass(), objectCopy.getType()) : returnType;
     }
 
-    private void tryImproveClosureType(MethodNode methodNode, ArgumentListExpression bargs) {
+    private void tryImproveClosureType(MethodNode methodNode, TupleExpression bargs) {
         final Parameter[] parameters = methodNode.getParameters();
         if (parameters.length > 0) {
             final Parameter lastParam = parameters[parameters.length - 1];
@@ -285,7 +281,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         return methodNode;
     }
 
-    public ArgumentListExpression getBargs() {
+    public TupleExpression getBargs() {
         return bargs;
     }
 
@@ -309,7 +305,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         }
     }
 
-    public static ResolvedMethodBytecodeExpr create(ASTNode parent, MethodNode methodNode, BytecodeExpr object, ArgumentListExpression bargs, CompilerTransformer compiler) {
+    public static ResolvedMethodBytecodeExpr create(ASTNode parent, MethodNode methodNode, BytecodeExpr object, TupleExpression bargs, CompilerTransformer compiler) {
         if ((methodNode.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && methodNode.getDeclaringClass() != compiler.classNode) {
             MethodNode delegate = compiler.context.getMethodDelegate(methodNode);
             return new ResolvedMethodBytecodeExpr(parent, delegate, object, bargs, compiler);
