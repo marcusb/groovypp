@@ -140,63 +140,71 @@ public class ClosureUtil {
         return null;
     }
 
+    public static Parameter[] eraseParameterTypes(Parameter[] parameters) {
+        final Parameter[] ret = new Parameter[parameters.length];
+        for (int i = 0; i < ret.length; i++) {
+            final ClassNode erased = TypeUtil.withGenericTypes(parameters[i].getType().redirect(), (GenericsType[]) null);
+            ret[i] = new Parameter(erased, parameters[i].getName());
+        }
+        return ret;
+    }
+
     public static void makeOneMethodClass(final ClassNode closureType, ClassNode baseType, List<MethodNode> abstractMethods, final MethodNode doCall, CompilerTransformer compiler) {
         boolean traitMethods = false;
         int k = 0;
-        List<GenericsType> classVars = getClassTypeVars(baseType.redirect());
         for (final MethodNode missed : abstractMethods) {
+            final Parameter[] parameters = eraseParameterTypes(missed.getParameters());
             if (k == 0) {
-                final MethodNode methodNode = closureType.addMethod(
-                        missed.getName(),
-                        Opcodes.ACC_PUBLIC,
-                        getSubstitutedReturnType(doCall, missed, closureType, baseType),
-                        missed.getParameters(),
-                        ClassNode.EMPTY_ARRAY,
-                        new BytecodeSequence(
-                                new BytecodeInstruction() {
-                                    public void visit(MethodVisitor mv) {
-                                        mv.visitVarInsn(Opcodes.ALOAD, 0);
-                                        Parameter pp[] = missed.getParameters();
-                                        for (int i = 0, k = 1; i != pp.length; ++i) {
-                                            final ClassNode type = pp[i].getType();
-                                            ClassNode expectedType = doCall.getParameters()[i].getType();
-                                            if (ClassHelper.isPrimitiveType(type)) {
-                                                if (type == ClassHelper.long_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.LLOAD, k++);
-                                                    k++;
-                                                } else if (type == ClassHelper.double_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.DLOAD, k++);
-                                                    k++;
-                                                } else if (type == ClassHelper.float_TYPE) {
-                                                    mv.visitVarInsn(Opcodes.FLOAD, k++);
-                                                } else {
-                                                    mv.visitVarInsn(Opcodes.ILOAD, k++);
-                                                }
-                                                BytecodeExpr.box(type, mv);
-                                                BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(expectedType), mv);
+               closureType.addMethod(
+                    missed.getName(),
+                    Opcodes.ACC_PUBLIC,
+                    getSubstitutedReturnType(doCall, missed, closureType, baseType),
+                       parameters,
+                    ClassNode.EMPTY_ARRAY,
+                    new BytecodeSequence(
+                            new BytecodeInstruction() {
+                                public void visit(MethodVisitor mv) {
+                                    mv.visitVarInsn(Opcodes.ALOAD, 0);
+                                    Parameter pp[] = parameters;
+                                    for (int i = 0, k = 1; i != pp.length; ++i) {
+                                        final ClassNode type = pp[i].getType();
+                                        ClassNode expectedType = doCall.getParameters()[i].getType();
+                                        if (ClassHelper.isPrimitiveType(type)) {
+                                            if (type == ClassHelper.long_TYPE) {
+                                                mv.visitVarInsn(Opcodes.LLOAD, k++);
+                                                k++;
+                                            } else if (type == ClassHelper.double_TYPE) {
+                                                mv.visitVarInsn(Opcodes.DLOAD, k++);
+                                                k++;
+                                            } else if (type == ClassHelper.float_TYPE) {
+                                                mv.visitVarInsn(Opcodes.FLOAD, k++);
                                             } else {
-                                                mv.visitVarInsn(Opcodes.ALOAD, k++);
-                                                BytecodeExpr.checkCast(TypeUtil.wrapSafely(expectedType), mv);
+                                                mv.visitVarInsn(Opcodes.ILOAD, k++);
                                             }
-                                            BytecodeExpr.unbox(expectedType, mv);
+                                            BytecodeExpr.box(type, mv);
+                                            BytecodeExpr.cast(TypeUtil.wrapSafely(type), TypeUtil.wrapSafely(expectedType), mv);
+                                        } else {
+                                            mv.visitVarInsn(Opcodes.ALOAD, k++);
+                                            BytecodeExpr.checkCast(TypeUtil.wrapSafely(expectedType), mv);
                                         }
-                                        mv.visitMethodInsn(
-                                                Opcodes.INVOKEVIRTUAL,
-                                                BytecodeHelper.getClassInternalName(doCall.getDeclaringClass()),
-                                                doCall.getName(),
-                                                BytecodeHelper.getMethodDescriptor(doCall.getReturnType(), doCall.getParameters())
-                                        );
-
-                                        if (missed.getReturnType() != ClassHelper.VOID_TYPE) {
-                                            BytecodeExpr.box(doCall.getReturnType(), mv);
-                                            BytecodeExpr.checkCast(TypeUtil.wrapSafely(doCall.getReturnType()), mv);
-                                            BytecodeExpr.unbox(missed.getReturnType(), mv);
-                                        }
-                                        BytecodeExpr.doReturn(mv, missed.getReturnType());
+                                        BytecodeExpr.unbox(expectedType, mv);
                                     }
+                                    mv.visitMethodInsn(
+                                            Opcodes.INVOKEVIRTUAL,
+                                            BytecodeHelper.getClassInternalName(doCall.getDeclaringClass()),
+                                            doCall.getName(),
+                                            BytecodeHelper.getMethodDescriptor(doCall.getReturnType(), doCall.getParameters())
+                                    );
+
+                                    if (missed.getReturnType() != ClassHelper.VOID_TYPE) {
+                                        BytecodeExpr.box(doCall.getReturnType(), mv);
+                                        BytecodeExpr.checkCast(TypeUtil.wrapSafely(doCall.getReturnType()), mv);
+                                        BytecodeExpr.unbox(missed.getReturnType(), mv);
+                                    }
+                                    BytecodeExpr.doReturn(mv, missed.getReturnType());
                                 }
-                        ));
-                setTypeVars(methodNode, missed, classVars);
+                            }
+                    ));
             }
             else {
                 if (ClosureUtil.likeGetter(missed)) {
@@ -209,7 +217,7 @@ public class ClosureUtil {
                     if (ClosureUtil.likeSetter(missed)) {
                         String pname = missed.getName().substring(3);
                         pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
-                        final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getParameters()[0].getType(), null, null, null);
+                        final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, parameters[0].getType(), null, null, null);
                         compiler.context.setSelfInitialized(propertyNode.getField());
                     }
                     else {
@@ -224,26 +232,6 @@ public class ClosureUtil {
 
         if (traitMethods)
             TraitASTTransformFinal.improveAbstractMethods(closureType);
-    }
-
-    private static void setTypeVars(MethodNode methodNode, MethodNode missed, List<GenericsType> vars) {
-        GenericsType[] genericTypes = missed.getGenericsTypes();
-        if (genericTypes != null) {
-            vars = new ArrayList<GenericsType>(vars);
-            for (GenericsType type : genericTypes) vars.add(type);
-        }
-        methodNode.setGenericsTypes(vars.toArray(new GenericsType[vars.size()]));
-    }
-
-    private static List<GenericsType> getClassTypeVars(ClassNode clazz) {
-        List<GenericsType> ret = new ArrayList<GenericsType>();
-        do {
-            final GenericsType[] genericTypes = clazz.getGenericsTypes();
-            if (genericTypes != null) ret.addAll(Arrays.asList(genericTypes));
-            if (clazz.isStaticClass()) break;
-            clazz = clazz.getDeclaringClass();
-        } while (clazz != null);
-        return ret;
     }
 
     private static ClassNode getSubstitutedReturnType(MethodNode doCall, MethodNode missed, ClassNode closureType, ClassNode baseType) {
