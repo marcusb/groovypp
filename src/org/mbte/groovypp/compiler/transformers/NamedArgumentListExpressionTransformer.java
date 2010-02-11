@@ -10,8 +10,6 @@ public class NamedArgumentListExpressionTransformer extends ExprTransformer<Name
     public Expression transform(NamedArgumentListExpression exp, CompilerTransformer compiler) {
         MapExpression map = new MapExpression(exp.getMapEntryExpressions());
         map.setSourcePosition(exp);
-        ArgumentListExpression args = new ArgumentListExpression(map);
-        args.setSourcePosition(exp);
-        return compiler.transform(args);
+        return compiler.transform(map);
     }
 }

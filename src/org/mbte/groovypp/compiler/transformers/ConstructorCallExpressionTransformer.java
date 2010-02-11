@@ -76,7 +76,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             }
         }
 
-        final ArgumentListExpression newArgs = (ArgumentListExpression) compiler.transform(exp.getArguments());
+        final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
         constructor = findConstructorWithClosureCoercion(type, argTypes, compiler);
@@ -175,7 +175,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
     // Insert array creation for varargs methods.
     // Precondition: isApplicable.
-    private static ArgumentListExpression wrapArgumentsForVarargs(ArgumentListExpression args, Parameter[] params, int base) {
+    private static ArgumentListExpression wrapArgumentsForVarargs(TupleExpression args, Parameter[] params, int base) {
         List<Expression> unwrapped = args.getExpressions();
         List<Expression> wrapped = new ArrayList<Expression>();
         int nparams = params.length - base;
@@ -210,7 +210,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     exp.isSuperCall() ?
                         new VariableExpressionTransformer.Super(VariableExpression.SUPER_EXPRESSION, compiler)
                       : new VariableExpressionTransformer.ThisSpecial(VariableExpression.THIS_EXPRESSION, compiler), 
-                    (ArgumentListExpression) newArgs, compiler);
+                    (TupleExpression) newArgs, compiler);
         }
 
         compiler.addError("Cannot find constructor", exp);
