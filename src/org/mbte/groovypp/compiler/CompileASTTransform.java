@@ -35,7 +35,7 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
 
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
 
-        Map<MethodNode, TypePolicy> toProcess = new HashMap<MethodNode, TypePolicy>();
+        Map<MethodNode, TypePolicy> toProcess = new LinkedHashMap<MethodNode, TypePolicy>();
         final ClassNode classNode;
 
         if (parent instanceof ConstructorNode) {
