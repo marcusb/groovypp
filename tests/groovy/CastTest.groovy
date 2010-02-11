@@ -141,4 +141,26 @@ class CastTest extends GroovyShellTestCase {
       """
     )
   }
+
+  void testListConstructor () {
+      shouldFail {
+          shell.evaluate("""
+              @Typed package p
+
+              class A {
+                List<Integer> ints
+
+                A (List<Integer> ints) {
+                   this.ints = ints
+                }
+              }
+
+              assert new A (0, 1, 2, 3).ints == [0, 1, 2, 3]
+
+              A a = [3,4,5]
+              assert a.ints == [3,4,5]
+            """
+          )
+      }
+  }
 }
