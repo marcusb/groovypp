@@ -345,14 +345,14 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         if (methods != null) {
             if (methods instanceof MethodNode) {
                 MethodNode baseMethod = (MethodNode) methods;
-                _doCallMethod.checkOveride(baseMethod, type);
+                _doCallMethod.checkOverride(baseMethod, type);
             }
             else {
                 FastArray methodsArr = (FastArray) methods;
                 int methodCount = methodsArr.size();
                 for (int j = 0; j != methodCount; ++j) {
                     MethodNode baseMethod = (MethodNode) methodsArr.get(j);
-                    _doCallMethod.checkOveride(baseMethod, type);
+                    _doCallMethod.checkOverride(baseMethod, type);
                 }
             }
         }

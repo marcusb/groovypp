@@ -1,19 +1,14 @@
 package org.mbte.groovypp.compiler;
 
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.objectweb.asm.Opcodes;
+import org.codehaus.groovy.ast.stmt.Statement;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
 public class ClosureMethodNode extends MethodNode {
     private ClosureMethodNode owner;
@@ -94,7 +89,7 @@ public class ClosureMethodNode extends MethodNode {
         }
     }
 
-    public boolean checkOveride(MethodNode baseMethod, ClassNode baseType) {
+    public boolean checkOverride(MethodNode baseMethod, ClassNode baseType) {
         class Mutation {
             final Parameter p;
             final ClassNode t;
@@ -114,40 +109,38 @@ public class ClosureMethodNode extends MethodNode {
         Parameter[] baseMethodParameters = baseMethod.getParameters();
         Parameter[] closureParameters = getParameters();
 
-        boolean match = true;
         if (closureParameters.length == baseMethodParameters.length) {
             for (int i = 0; i < closureParameters.length; i++) {
                 Parameter closureParameter = closureParameters[i];
                 Parameter missingMethodParameter = baseMethodParameters[i];
 
                 ClassNode parameterType = missingMethodParameter.getType();
-                parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
-                if (!TypeUtil.isAssignableFrom(parameterType, closureParameter.getType())) {
-                    if (TypeUtil.isAssignableFrom(closureParameter.getType(), parameterType)) {
+                if (!parameterType.redirect().equals(closureParameter.getType().redirect())) {
+                    parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
+                    if (parameterType.redirect().equals(closureParameter.getType().redirect()) ||
+                        closureParameter.isDynamicTyped()) {
+                        parameterType = TypeUtil.withGenericTypes(parameterType, (GenericsType[]) null);
                         if (mutations == null)
-                            mutations = new LinkedList<Mutation>();
+                            mutations = new ArrayList<Mutation>();
                         mutations.add(new Mutation(parameterType, closureParameter));
-                        continue;
+                    } else {
+                        return false;
                     }
-                    match = false;
-                    break;
                 }
             }
 
-            if (match) {
-                if (mutations != null)
-                    for (Mutation mutation : mutations) {
-                        mutation.mutate();
-                    }
-                ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
-                setReturnType(returnType);
-                return true;
-            }
+            if (mutations != null)
+                for (Mutation mutation : mutations) {
+                    mutation.mutate();
+                }
+            ClassNode returnType = TypeUtil.getSubstitutedType(baseMethod.getReturnType(), baseType.redirect(), baseType);
+            setReturnType(returnType);
+            return true;
         }
 
         if (dependentMethods != null) {
             for (Dependent dependentMethod : dependentMethods) {
-                if(dependentMethod.checkOveride(baseMethod,  baseType))
+                if(dependentMethod.checkOverride(baseMethod,  baseType))
                     return true;
             }
         }
