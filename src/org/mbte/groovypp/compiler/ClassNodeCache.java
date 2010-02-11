@@ -190,6 +190,12 @@ public class ClassNodeCache {
                     addMethods(nameMap, list, true);
                 }
             }
+
+            if (type.isArray()) {
+                final MethodNode cloneNode = new MethodNode("clone", Opcodes.ACC_PUBLIC, type, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
+                cloneNode.setDeclaringClass(type);
+                addMethods(nameMap, Collections.singletonList(cloneNode), true);
+            }
         }
         return nameMap.get(methodName);
     }
