@@ -1,14 +1,13 @@
 package org.mbte.groovypp.compiler;
 
-import static org.codehaus.groovy.ast.ClassHelper.*;
-
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.util.FastArray;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LinkedList;
+
+import static org.codehaus.groovy.ast.ClassHelper.*;
 
 public class MethodSelection {
 
@@ -227,7 +226,7 @@ public class MethodSelection {
          *       information
          */
 
-        if (argument == null || parameter.equals(argument)) return 0;
+        if (argument == null || parameter == null || parameter.equals(argument)) return 0;
 
         if (argument.implementsInterface(TypeUtil.TLIST)) argument = TypeUtil.ARRAY_LIST_TYPE;
         if (argument.implementsInterface(TypeUtil.TMAP)) argument = TypeUtil.LINKED_HASH_MAP_TYPE;
@@ -517,13 +516,16 @@ public class MethodSelection {
         final int size = arguments.length;
         final int paramMinus1 = pt.length - 1;
 
+        if (pt.length == size && isValidExactMethod(arguments, pt, accessType, declaringClass)) {
+            return true;
+        }
+
         boolean isVargsMethod = pt.length != 0 && (pt[pt.length - 1].getType().isArray() ||
                 TypeUtil.isDirectlyAssignableFrom(ClassHelper.LIST_TYPE, pt[pt.length - 1].getType()));
-
+        
         if (isVargsMethod && size >= paramMinus1)
             return isValidVarargsMethod(arguments, size, pt, paramMinus1, accessType, declaringClass);
-        else if (pt.length == size)
-            return isValidExactMethod(arguments, pt, accessType, declaringClass);
+
         return false;
     }
 
