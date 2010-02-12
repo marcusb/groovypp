@@ -23,11 +23,21 @@ import java.util.concurrent.Executors
     }
 
 
-        def pool = Executors.newFixedThreadPool( 3, [ newThread : { Runnable r -> println "new thread"; new MyThread( r ) } ] );
+    def pool = Executors.newFixedThreadPool( 3, [
+        newThread : { Runnable r ->
+           println "new thread";
+           new MyThread( r )
+        } ] 
+    );
 
-        [ 1, 2, 3 ].iterator().each(pool) { it ->
+    [ 1, 2, 3 ].iterator().each(pool) { it ->
+        try {
             println Thread.currentThread()
-        }.get()
+        }
+        catch (Throwable t) {
+            t.printStackTrace ()
+        }
+    }.get()
         """
     }
 }
