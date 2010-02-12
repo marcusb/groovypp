@@ -27,8 +27,6 @@ public class ClosureExpressionTransformer extends ExprTransformer<ClosureExpress
                 ce.getParameters() == null ? Parameter.EMPTY_ARRAY : ce.getParameters(),
                 ce.getCode());
 
-        _doCallMethod.setGenericsTypes(compiler.methodNode.getGenericsTypes());
-
         newType.addMethod(_doCallMethod);
         newType.setDoCallMethod(_doCallMethod);
 
