@@ -30,9 +30,9 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         final ClassNode vtype;
-        if (right instanceof ListExpressionTransformer.UntransformedListExpr)
-            right = ((ListExpressionTransformer.UntransformedListExpr)right).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
         if (ve.isDynamicTyped()) {
+            if (right instanceof ListExpressionTransformer.UntransformedListExpr)
+                right = ((ListExpressionTransformer.UntransformedListExpr)right).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
             vtype = right.getType();
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {
