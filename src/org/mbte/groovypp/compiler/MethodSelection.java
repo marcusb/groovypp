@@ -2,10 +2,7 @@ package org.mbte.groovypp.compiler;
 
 import static org.codehaus.groovy.ast.ClassHelper.*;
 
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.util.FastArray;
 
 import java.util.ArrayList;
@@ -520,7 +517,8 @@ public class MethodSelection {
         final int size = arguments.length;
         final int paramMinus1 = pt.length - 1;
 
-        boolean isVargsMethod = pt.length != 0 && pt[pt.length - 1].getType().isArray();
+        boolean isVargsMethod = pt.length != 0 && (pt[pt.length - 1].getType().isArray() ||
+                TypeUtil.isDirectlyAssignableFrom(ClassHelper.LIST_TYPE, pt[pt.length - 1].getType()));
 
         if (isVargsMethod && size >= paramMinus1)
             return isValidVarargsMethod(arguments, size, pt, paramMinus1, accessType, declaringClass);
@@ -567,7 +565,15 @@ public class MethodSelection {
 
         // check direct match
         ClassNode varg = pt[paramMinus1].getType();
-        ClassNode componentType = varg.getComponentType();
+        ClassNode componentType;
+        if (varg.isArray()) {
+            componentType = varg.getComponentType();
+        } else {
+            // List type
+            final GenericsType[] generics = LIST_TYPE.getGenericsTypes();
+            if (generics == null) return false;
+            componentType = TypeUtil.getSubstitutedType(generics[0].getType(), LIST_TYPE, varg);
+        }
         if (accessType != null) {
             componentType = TypeUtil.getSubstitutedType(componentType, declaringClass, accessType);
         }
