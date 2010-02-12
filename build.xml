@@ -153,6 +153,7 @@
     <target  name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch">
             <jvmarg value="-Xmx512m"/>
+            <jvmarg value="-ea"/>
 
             <classpath>
                 <path>
