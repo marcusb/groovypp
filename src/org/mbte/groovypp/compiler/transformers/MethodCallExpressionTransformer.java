@@ -45,7 +45,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         Expression args = compiler.transform(exp.getArguments());
-        args = args instanceof TupleExpression ? args : new TupleExpression(args);
         exp.setArguments(args);
 
         if (exp.isSafe()) {
