@@ -255,7 +255,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 else
                     mv.visitInsn(POP);
             }
-            classInternalName = BytecodeHelper.getClassInternalName(methodNode.getDeclaringClass());
+            
+            ClassNode t = methodNode.getDeclaringClass();
+            classInternalName = (t.isArray()) ? BytecodeHelper.getTypeDescription(t) : BytecodeHelper.getClassInternalName(t); 
             methodDescriptor = BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters());
         }
 
