@@ -33,7 +33,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
         ModuleNode module = (ModuleNode) nodes[0];
         for (ClassNode classNode : module.getClasses()) {
             if (classNode instanceof InnerClassNode && classNode.getName().endsWith("$TraitImpl")) {
-                staticifyImplementationMethods(classNode, source);
+                makeImplementationMethodsStatic(classNode, source);
             }
         }
 
@@ -46,13 +46,14 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
         }
     }
 
-    private void staticifyImplementationMethods(ClassNode classNode, final SourceUnit source) {
+    private void makeImplementationMethodsStatic(final ClassNode classNode, final SourceUnit source) {
         for (final MethodNode methodNode : classNode.getMethods()) {
             if (methodNode.isStatic() || methodNode.isSynthetic())
                 continue;
 
             methodNode.setModifiers(methodNode.getModifiers() | Opcodes.ACC_STATIC);
             methodNode.getVariableScope().setInStaticContext(true);
+            final VariableExpression self = new VariableExpression(methodNode.getParameters()[0]);
 
             ClassCodeExpressionTransformer thisToSelf = new ClassCodeExpressionTransformer() {
                 protected SourceUnit getSourceUnit() {
@@ -60,15 +61,28 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                 }
 
                 public Expression transform(Expression exp) {
-                    if (exp instanceof VariableExpression && "this".equals(((VariableExpression) exp).getName()))
-                        return new VariableExpression(methodNode.getParameters()[0]);
-                    else
-                        return super.transform(exp);
+                    if (exp instanceof VariableExpression && isExplicitThis((VariableExpression) exp))
+                        return self;
+                    else if (exp instanceof PropertyExpression) {
+                        final PropertyExpression propExp = (PropertyExpression) exp;
+                        if (propExp.isImplicitThis() || (propExp.getObjectExpression() instanceof VariableExpression &&
+                        isExplicitThis((VariableExpression) propExp.getObjectExpression()))) {
+                            final String name = propExp.getPropertyAsString();
+                            final FieldNode field = classNode.getField(name);
+                            if (field != null) return new PropertyExpression(self, "$" + name);
+                        }
+                    }
+                    return super.transform(exp);
+                }
+
+                private boolean isExplicitThis(VariableExpression exp) {
+                    return "this".equals(exp.getName());
                 }
             };
             thisToSelf.visitMethod(methodNode);
         }
     }
+
 
     public static void improveAbstractMethods(final ClassNode classNode) {
         if ((classNode.getModifiers() & ACC_ABSTRACT) != 0)

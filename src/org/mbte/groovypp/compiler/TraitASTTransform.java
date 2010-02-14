@@ -95,22 +95,26 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 MethodNode getter = classNode.getGetterMethod(getterName);
                 if (getter == null) {
                     getter = classNode.addMethod(getterName, ACC_PUBLIC | ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
-                    AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
-                    value.addMember("value", new ClassExpression(innerClassNode));
-                    value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
-                    getter.addAnnotation(value);
+                    addFieldAnnotation(innerClassNode, fieldNode, getter);
                 }
 
+                // We need the second getter (and setter) to compile non-synthetic first one referring to the field.
+                // The references inside the first one will be retargeted to the second one.
+                final MethodNode realGetter = classNode.addMethod("get$" + fieldNode.getName(), ACC_PUBLIC |
+                        ACC_ABSTRACT, fieldNode.getType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
+                addFieldAnnotation(innerClassNode, fieldNode, realGetter);
+
                 final String setterName = "set" + Verifier.capitalize(fieldNode.getName());
+                Parameter valueParam = new Parameter(fieldNode.getType(), "$value");
                 MethodNode setter = classNode.getSetterMethod(setterName);
                 if (setter == null) {
-                    Parameter valueParam = new Parameter(fieldNode.getType(), "$value");
                     setter = classNode.addMethod(setterName, ACC_PUBLIC | ACC_ABSTRACT, ClassHelper.VOID_TYPE, new Parameter[]{valueParam}, ClassNode.EMPTY_ARRAY, null);
-                    AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
-                    value.addMember("value", new ClassExpression(innerClassNode));
-                    value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
-                    setter.addAnnotation(value);
+                    addFieldAnnotation(innerClassNode, fieldNode, setter);
                 }
+
+                final MethodNode realSetter = classNode.addMethod("set$" + fieldNode.getName(), ACC_PUBLIC |
+                        ACC_ABSTRACT, ClassHelper.VOID_TYPE, new Parameter[]{valueParam}, ClassNode.EMPTY_ARRAY, null);
+                addFieldAnnotation(innerClassNode, fieldNode, realSetter);
 
                 if (fieldNode.hasInitialExpression()) {
                     final Expression initial = fieldNode.getInitialValueExpression();
@@ -182,5 +186,12 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 methodNode.setCode(null);
             }
         }
+    }
+
+    private void addFieldAnnotation(InnerClassNode innerClassNode, FieldNode fieldNode, MethodNode getter) {
+        AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
+        value.addMember("value", new ClassExpression(innerClassNode));
+        value.addMember("fieldName", new ConstantExpression(fieldNode.getName()));
+        getter.addAnnotation(value);
     }
 }
