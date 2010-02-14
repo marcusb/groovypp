@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.codehaus.groovy.classgen.BytecodeSequence;
+import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
@@ -54,6 +55,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             methodNode.setModifiers(methodNode.getModifiers() | Opcodes.ACC_STATIC);
             methodNode.getVariableScope().setInStaticContext(true);
             final VariableExpression self = new VariableExpression(methodNode.getParameters()[0]);
+            final String propNameCapitalized = getPropertyNameCapitalized(methodNode);
 
             ClassCodeExpressionTransformer thisToSelf = new ClassCodeExpressionTransformer() {
                 protected SourceUnit getSourceUnit() {
@@ -69,7 +71,8 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                         isExplicitThis((VariableExpression) propExp.getObjectExpression()))) {
                             final String name = propExp.getPropertyAsString();
                             final FieldNode field = classNode.getField(name);
-                            if (field != null) return new PropertyExpression(self, "$" + name);
+                            if (field != null && Verifier.capitalize(field.getName()).equals(propNameCapitalized))
+                                return new PropertyExpression(self, "$" + name);
                         }
                     }
                     return super.transform(exp);
@@ -277,5 +280,14 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     private static boolean hasDefaultImpl(MethodNode method) {
         List<AnnotationNode> list = method.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
         return (list != null && !list.isEmpty());
+    }
+
+    // Includes synthetic '$self' parameter!
+    private static String getPropertyNameCapitalized(MethodNode accessor) {
+        final String accessorName = accessor.getName();
+        if (accessorName.startsWith("get") && accessorName.length() > 3 && accessor.getParameters().length == 1) return accessorName.substring(3);
+        if (accessorName.startsWith("is") && accessorName.length() > 2 && accessor.getParameters().length == 1) return accessorName.substring(2);
+        if (accessorName.startsWith("set") && accessorName.length() > 3 && accessor.getParameters().length == 2) return accessorName.substring(3);
+        return null;
     }
 }
