@@ -8,15 +8,17 @@ public class Issue125Test extends GroovyShellTestCase {
          package test
 
          class A {
-           def foo (B b) {}
+           def foo (B b) {b.f}
          }
          class B {
+           int f
            def bar () {
-             { -> new A().foo(this) }
+             f = 123;
+             { -> new A().foo(this) }()
            }
          }
 
-         new B().bar()
+         assert 123 == new B().bar()
       """
     }
 }
