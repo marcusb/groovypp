@@ -71,7 +71,8 @@ public class TypeUnification {
                 instantiated = TypeUtil.wrapSafely(instantiated);
 
                 // this is just one variance, be sure to add another if ever needed.
-                instantiated = formal.isGenericsPlaceHolder() ? instantiated :
+                instantiated = formal.isGenericsPlaceHolder() || formal.redirect().equals(instantiated.redirect()) ?
+                        instantiated :
                         mapTypeFromSuper(formal.redirect(), formal.redirect(), instantiated);
                 if (instantiated == null) continue;
 
