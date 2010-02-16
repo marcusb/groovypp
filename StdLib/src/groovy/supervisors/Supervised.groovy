@@ -7,22 +7,42 @@ import groovy.util.concurrent.CallLaterExecutors
     Supervised parent
     C          config
 
+    DelegatingFunction0<Supervised,?> afterCreated
+    DelegatingFunction0<Supervised,?> beforeStart
+    DelegatingFunction0<Supervised,?> afterStart
+    DelegatingFunction0<Supervised,?> beforeStop
+    DelegatingFunction0<Supervised,?> afterStop
+    DelegatingFunction0<Supervised,?> afterChildsCreated
+    DelegatingFunction1<Supervised,Throwable,?> afterCrashed
+
     protected List<Supervised> childs
 
+    void setConfig(C config) {
+        this.config = config
+
+        afterCreated       = config?.afterCreated?.clone(this)
+        beforeStart        = config?.beforeStart?.clone(this)
+        afterStart         = config?.afterStart?.clone(this)
+        beforeStop         = config?.beforeStop?.clone(this)
+        afterStop          = config?.afterStop?.clone(this)
+        afterChildsCreated = config?.afterChildsCreated?.clone(this)
+        afterCrashed       = config?.afterCrashed?.clone(this)
+    }
+
     final void start () {
-        config.beforeStart?.call(this)
+        beforeStart?.call(this)
         try {
             doStart ()
-            config.afterStart?.call(this)
+            afterStart?.call(this)
         }
         catch (Throwable t) {
         }
     }
 
     final void stop () {
-        config.beforeStop?.call(this)
+        beforeStop?.call(this)
         doStop ()
-        config.afterStop?.call(this)
+        afterStop?.call(this)
     }
 
     synchronized void addChild(Supervised child) {
@@ -40,7 +60,7 @@ import groovy.util.concurrent.CallLaterExecutors
 
     void crash (Throwable cause) {
         CallLaterExecutors.getDefaultExecutor().execute {
-            config.afterCrashed?.call(this$0, cause)
+            afterCrashed?.call(this$0, cause)
             def parent = this$0.parent
             parent?.removeChild(this$0)
             config.create(parent).start()
