@@ -187,14 +187,14 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
         abstract void onBound (BindLater<V> data)
     }
 
-    static class Group extends BindLater {
+    static class Group<V> extends BindLater<V> {
         AtomicInteger counter
 
         Group (int concurrency) {
             counter = [concurrency]
         }
 
-        void attach (BindLater inner) {
+        void attach (BindLater<V> inner) {
             inner.whenBound { bl ->
                 if (!isDone()) {
                     if (bl.exception) {
