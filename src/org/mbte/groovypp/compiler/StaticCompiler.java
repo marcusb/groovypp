@@ -15,7 +15,6 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.bytecode.*;
-import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -446,11 +445,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             returnExpression = castExpression;
         }
 
-        BytecodeExpr bytecodeExpr = (BytecodeExpr) transform(returnExpression);
-
-        if (bytecodeExpr instanceof ListExpressionTransformer.UntransformedListExpr) {
-            bytecodeExpr = ((ListExpressionTransformer.UntransformedListExpr)bytecodeExpr).transform(TypeUtil.ARRAY_LIST_TYPE, this);
-        }
+        BytecodeExpr bytecodeExpr = (BytecodeExpr) transformToGround(returnExpression);
 
         if (bytecodeExpr instanceof ResolvedMethodBytecodeExpr) {
             ResolvedMethodBytecodeExpr resolvedMethodBytecodeExpr = (ResolvedMethodBytecodeExpr) bytecodeExpr;
@@ -601,9 +596,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             visitStatement(caseStatement);
 
             BytecodeExpr.load(cond.getType(), switchVariableIndex, mv);
-            BytecodeExpr option = (BytecodeExpr) transform(caseStatement.getExpression());
-            if (option instanceof ListExpressionTransformer.UntransformedListExpr)
-                option = ((ListExpressionTransformer.UntransformedListExpr)option).transform(TypeUtil.ARRAY_LIST_TYPE, this);
+            BytecodeExpr option = (BytecodeExpr) transformToGround(caseStatement.getExpression());
+
             if (!ClassHelper.isPrimitiveType(option.getType()) || !ClassHelper.isPrimitiveType(cond.getType())) {
                 BytecodeExpr.box(cond.getType(), mv);
 

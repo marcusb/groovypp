@@ -12,6 +12,7 @@ import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.Register;
 import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
+import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
@@ -33,6 +34,9 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
         if (ve.isDynamicTyped()) {
             if (right instanceof ListExpressionTransformer.UntransformedListExpr)
                 right = ((ListExpressionTransformer.UntransformedListExpr)right).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
+            if (right instanceof MapExpressionTransformer.UntransformedMapExpr)
+                right = ((MapExpressionTransformer.UntransformedMapExpr) right).transform(compiler);
+            
             vtype = right.getType();
             compiler.getLocalVarInferenceTypes().add(ve, vtype);
         } else {

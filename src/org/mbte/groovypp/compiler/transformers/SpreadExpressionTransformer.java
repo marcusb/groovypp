@@ -9,10 +9,7 @@ import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 
 public class SpreadExpressionTransformer extends ExprTransformer<SpreadExpression>{
     public Expression transform(SpreadExpression exp, CompilerTransformer compiler) {
-        BytecodeExpr internal = (BytecodeExpr) compiler.transform(exp.getExpression());
-
-        if (internal instanceof ListExpressionTransformer.UntransformedListExpr)
-            internal = ((ListExpressionTransformer.UntransformedListExpr)internal).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
+        BytecodeExpr internal = (BytecodeExpr) compiler.transformToGround(exp.getExpression());
 
         if (!TypeUtil.isDirectlyAssignableFrom(TypeUtil.COLLECTION_TYPE, internal.getType())) {
           compiler.addError("Spread operator can be applied only to java.util.Collection", exp);

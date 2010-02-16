@@ -90,7 +90,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
             } else {
-                object = (BytecodeExpr) compiler.transformWithListsAndMaps(exp.getObjectExpression());
+                object = (BytecodeExpr) compiler.transformToGround(exp.getObjectExpression());
                 type = object.getType();
 
                 Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,

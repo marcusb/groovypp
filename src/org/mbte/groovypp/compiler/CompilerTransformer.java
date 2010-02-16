@@ -83,7 +83,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
     }
     
-    public Expression transformWithListsAndMaps(Expression expr) {
+    public Expression transformToGround(Expression expr) {
         final Expression res = transform(expr);
         if (res instanceof ListExpressionTransformer.UntransformedListExpr)
             return ((ListExpressionTransformer.UntransformedListExpr) res).transform(TypeUtil.ARRAY_LIST_TYPE, this);

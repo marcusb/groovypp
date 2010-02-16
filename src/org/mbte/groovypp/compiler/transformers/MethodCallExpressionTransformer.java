@@ -161,7 +161,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
                 return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
             } else {
-                object = (BytecodeExpr) compiler.transformWithListsAndMaps(exp.getObjectExpression());
+                object = (BytecodeExpr) compiler.transformToGround(exp.getObjectExpression());
                 type = object.getType();
 
                 if (type instanceof ClosureClassNode && methodName.equals("call"))
