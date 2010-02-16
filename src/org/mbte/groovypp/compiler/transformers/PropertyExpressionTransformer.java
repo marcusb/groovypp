@@ -62,7 +62,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
             }
         } else {
-            if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
+            if (exp.getObjectExpression() instanceof VariableExpression &&
+                    ((VariableExpression) exp.getObjectExpression()).getName().equals("this")) {
                 if ((compiler.classNode instanceof InnerClassNode)) {
                     return inCaseOfInner(exp, compiler, propName);
                 } else {

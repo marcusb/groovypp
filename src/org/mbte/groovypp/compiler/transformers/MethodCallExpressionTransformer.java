@@ -83,7 +83,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             }
             return createCall(exp, compiler, args, null, foundMethod);
         } else {
-            if (exp.getObjectExpression().equals(VariableExpression.THIS_EXPRESSION)) {
+            if (exp.getObjectExpression() instanceof VariableExpression &&
+                    ((VariableExpression) exp.getObjectExpression()).getName().equals("this")) {
                 ClassNode thisType = compiler.methodNode.getDeclaringClass();
                 if (thisType instanceof ClosureClassNode &&
                         thisType.isDerivedFrom(ClassHelper.CLOSURE_TYPE) &&
