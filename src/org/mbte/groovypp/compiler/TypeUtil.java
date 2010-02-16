@@ -354,8 +354,9 @@ public class TypeUtil {
     }
 
     private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
-        if (typeArgs == null || typeArgs.length == 0) return toSubstitute;  // all done.
         String[] typeVariables = getTypeParameterNames(accessClass);
+        if (typeVariables.length == 0) return toSubstitute;
+        if (typeArgs == null) typeArgs = new GenericsType[typeVariables.length];  // All nulls.
         return getSubstitutedTypeToplevelInner(toSubstitute, typeArgs, typeVariables);
     }
 
