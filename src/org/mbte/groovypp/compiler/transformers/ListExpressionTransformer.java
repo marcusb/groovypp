@@ -34,14 +34,14 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
         }
 
         public BytecodeExpr transform (ClassNode collectionType, CompilerTransformer compiler) {
-            return new TransformedListExpr(exp, collectionType, compiler);
+            return new TransformedListExpr(exp, collectionType, compiler, true);
         }
     }
 
     public static class TransformedListExpr extends BytecodeExpr {
         public final ListExpression exp;
 
-        public TransformedListExpr(ListExpression exp, ClassNode collType, CompilerTransformer compiler) {
+        public TransformedListExpr(ListExpression exp, ClassNode collType, CompilerTransformer compiler, boolean needInference) {
             super(exp, collType);
             this.exp = exp;
 
@@ -56,10 +56,14 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
                             TypeUtil.commonType(genericArg, transformed.getType());
             }
 
-            if (genericArg != null) {
-                if (genericArg == TypeUtil.NULL_TYPE) genericArg = ClassHelper.OBJECT_TYPE;
-                genericArg = TypeUtil.wrapSafely(genericArg);
-                setType( TypeUtil.withGenericTypes(collType, genericArg));
+            if (needInference) {
+                if (genericArg != null) {
+                    if (genericArg == TypeUtil.NULL_TYPE) genericArg = ClassHelper.OBJECT_TYPE;
+                    genericArg = TypeUtil.wrapSafely(genericArg);
+                    setType(TypeUtil.withGenericTypes(collType, genericArg));
+                } else {
+                    setType(TypeUtil.eraseTypeArguments(collType));
+                }
             }
         }
 

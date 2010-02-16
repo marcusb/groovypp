@@ -44,7 +44,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         if (cast.getType().equals(ClassHelper.boolean_TYPE) || cast.getType().equals(ClassHelper.Boolean_TYPE)) {
             if (cast.getExpression() instanceof ListExpression) {
-                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), cast.getType());
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true), cast.getType());
             }
             if (cast.getExpression() instanceof MapExpression) {
                 return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)cast.getExpression(), compiler), cast.getType());
@@ -54,7 +54,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
         if (cast.getType().equals(ClassHelper.STRING_TYPE)) {
             if (cast.getExpression() instanceof ListExpression) {
-                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler), cast.getType());
+                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true), cast.getType());
             }
             return compiler.castToString((BytecodeExpr)compiler.transform(cast.getExpression()), cast.getType());
         }
@@ -80,7 +80,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     }
 
                     ClassNode collType = calcResultCollectionType(cast, componentType, compiler);
-                    return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
+                    return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler, false);
                 }
             }
 
@@ -102,8 +102,8 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     list.set(i, compiler.transform(list.get(i)));
                 }
 
-                ClassNode collType = TypeUtil.ARRAY_LIST_TYPE;
-                return new ListExpressionTransformer.TransformedListExpr(listExpression, collType, compiler);
+                return new ListExpressionTransformer.TransformedListExpr(listExpression, TypeUtil.ARRAY_LIST_TYPE,
+                        compiler, true);
             }
         }
 
