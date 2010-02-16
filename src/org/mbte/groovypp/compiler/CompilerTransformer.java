@@ -582,7 +582,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public ClassNode getCollectionType(ClassNode type) {
-        ClassNode substitutedType = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE, type).getGenericsTypes()[0].getType();
+        final GenericsType[] generics = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE, type).getGenericsTypes();
+        if (generics == null) return ClassHelper.OBJECT_TYPE;
+        ClassNode substitutedType = generics[0].getType();
         while (substitutedType.equals(ClassHelper.OBJECT_TYPE) && !substitutedType.isGenericsPlaceHolder() && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
             GenericsType genericsType = substitutedType.getGenericsTypes()[0];
             if (genericsType.isWildcard()) {

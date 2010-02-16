@@ -49,6 +49,10 @@ public class TypeUtil {
     public static final ClassNode ATOMIC_LONG_FIELD_UPDATER = make(AtomicLongFieldUpdater.class);
     public static final ClassNode DELEGATING = make(Delegating.class);
 
+    public TypeUtil() {
+        RAW_CLASS = new ClassNode(RawMarker.class);
+    }
+
     public static boolean hasGenericsTypes(MethodNode methodNode) {
         if (methodNode.getGenericsTypes() != null && methodNode.getGenericsTypes().length > 0) return true;
         if (methodNode.isStatic()) return false;
@@ -353,10 +357,20 @@ public class TypeUtil {
         return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method));
     }
 
+    private static class RawMarker {}
+
+    private static ClassNode RAW_CLASS = new ClassNode(RawMarker.class);
+    private static GenericsType RAW_GENERIC_TYPE = new GenericsType(RAW_CLASS);
+
     private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
         String[] typeVariables = getTypeParameterNames(accessClass);
         if (typeVariables.length == 0) return toSubstitute;
-        if (typeArgs == null) typeArgs = new GenericsType[typeVariables.length];  // All nulls.
+        if (typeArgs == null) {
+            typeArgs = new GenericsType[typeVariables.length];
+            for (int i = 0; i < typeArgs.length; i++) {
+                typeArgs[i] = RAW_GENERIC_TYPE;
+            }
+        }
         return getSubstitutedTypeToplevelInner(toSubstitute, typeArgs, typeVariables);
     }
 
@@ -370,6 +384,7 @@ public class TypeUtil {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
+            if (binding == RAW_CLASS) binding = toSubstitute.redirect();
             return createArrayType(arrayCount, binding != null ? binding : toSubstitute);
         }
         if (typeVariables.length != typeArgs.length) return createArrayType(arrayCount, toSubstitute);
@@ -413,6 +428,7 @@ public class TypeUtil {
             GenericsType typeArg = toSubstituteTypeArgs[i];
             if (isTypeParameterPlaceholder(typeArg.getType())) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
+                if (binding == RAW_GENERIC_TYPE) return eraseTypeArguments(toSubstitute);
                 substitutedArgs[i] = binding != null ? binding : typeArg;
             } else {
                 ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
@@ -434,6 +450,10 @@ public class TypeUtil {
         }
         ClassNode result = withGenericTypes(toSubstitute, substitutedArgs);
         return result;
+    }
+
+    public static ClassNode eraseTypeArguments(ClassNode node) {
+        return withGenericTypes(node, (GenericsType[]) null);
     }
 
     public static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived) {
