@@ -84,11 +84,17 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
     
     public Expression transformToGround(Expression expr) {
-        final Expression res = transform(expr);
+        return transformSynthetic((BytecodeExpr) transform(expr));
+    }
+
+    public BytecodeExpr transformSynthetic(BytecodeExpr res) {
         if (res instanceof ListExpressionTransformer.UntransformedListExpr)
             return ((ListExpressionTransformer.UntransformedListExpr) res).transform(TypeUtil.ARRAY_LIST_TYPE, this);
         else if (res instanceof MapExpressionTransformer.UntransformedMapExpr)
             return ((MapExpressionTransformer.UntransformedMapExpr) res).transform(this);
+        else if (res.getType().declaresInterface(TypeUtil.TTHIS)) {
+            res.setType(res.getType().getOuterClass());
+        }
         return res;
     }
 

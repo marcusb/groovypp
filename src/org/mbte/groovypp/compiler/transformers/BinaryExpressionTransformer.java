@@ -443,21 +443,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
     private BytecodeExpr evaluateCompare(final BinaryExpression be, final CompilerTransformer compiler, final Label label, final boolean onTrue, final int op) {
         final Operands operands = new Operands(be, compiler);
-        BytecodeExpr l = operands.getLeft();
-        if (l instanceof ListExpressionTransformer.UntransformedListExpr)
-            l = ((ListExpressionTransformer.UntransformedListExpr)l).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
+        BytecodeExpr l = compiler.transformSynthetic(operands.getLeft());
 
-        if (l instanceof MapExpressionTransformer.UntransformedMapExpr) {
-            l = ((MapExpressionTransformer.UntransformedMapExpr) l).transform(compiler);
-        }
-
-        BytecodeExpr r = operands.getRight();
-        if (r instanceof ListExpressionTransformer.UntransformedListExpr)
-            r = ((ListExpressionTransformer.UntransformedListExpr)r).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
-
-        if (r instanceof MapExpressionTransformer.UntransformedMapExpr) {
-            r = ((MapExpressionTransformer.UntransformedMapExpr) r).transform(compiler);
-        }
+        BytecodeExpr r = compiler.transformSynthetic(operands.getRight());
 
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             final ClassNode mathType = TypeUtil.getMathType(l.getType(), r.getType());

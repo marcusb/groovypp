@@ -39,6 +39,7 @@ public class TypeUtil {
     public static final ClassNode MATCHER = make(Matcher.class);
     public static final ClassNode TMAP = make(TypedMap.class);
     public static final ClassNode TLIST = make(TypedList.class);
+    public static final ClassNode TTHIS = make(TypedThis.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
     public static final ClassNode TCLOSURE_NULL = make(TypedClosure.Null.class);
     public static final ClassNode ITERABLE = make(Iterable.class);
@@ -71,6 +72,9 @@ public class TypeUtil {
     }
 
     public static interface TypedList {
+    }
+
+    public static interface TypedThis {
     }
 
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
@@ -113,6 +117,15 @@ public class TypeUtil {
 
         if (classToTransformFrom.implementsInterface(TLIST))
             return TypeUtil.isDirectlyAssignableFrom(classToTransformTo, TypeUtil.ARRAY_LIST_TYPE);
+
+        if (classToTransformFrom.implementsInterface(TTHIS)) {
+            while (classToTransformFrom != null) {
+                if (isDirectlyAssignableFrom(classToTransformTo, classToTransformFrom)) return true;
+                if (classToTransformFrom.isStaticClass()) break;
+                classToTransformFrom = classToTransformFrom.getDeclaringClass();
+            }
+            return false;
+        }
 
         if (isReferenceUnboxing(classToTransformTo, classToTransformFrom)) return true;
 

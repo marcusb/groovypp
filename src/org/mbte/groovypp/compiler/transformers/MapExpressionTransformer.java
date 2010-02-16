@@ -51,8 +51,8 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 ClassNode valueArg = TypeUtil.NULL_TYPE;
                 for (int i = 0; i != list.size(); ++i) {
                     final MapEntryExpression me = list.get(i);
-                    final Expression key = transformInnerListsAndMaps(compiler.transform(me.getKeyExpression()), compiler);
-                    final Expression value = transformInnerListsAndMaps(compiler.transform(me.getValueExpression()), compiler);
+                    final Expression key = compiler.transformToGround(me.getKeyExpression());
+                    final Expression value = compiler.transformToGround(me.getValueExpression());
                     MapEntryExpression nme = new MapEntryExpression(key, value);
                     keyArg = TypeUtil.commonType(keyArg, nme.getKeyExpression().getType());
                     valueArg = TypeUtil.commonType(valueArg, nme.getValueExpression().getType());
@@ -63,14 +63,6 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 if (valueArg == TypeUtil.NULL_TYPE) valueArg = ClassHelper.OBJECT_TYPE;
                 setType(TypeUtil.withGenericTypes(getType(), keyArg, valueArg));
             }
-        }
-
-        private Expression transformInnerListsAndMaps(Expression expr, CompilerTransformer compiler) {
-            if (expr instanceof ListExpressionTransformer.UntransformedListExpr)
-                expr = ((ListExpressionTransformer.UntransformedListExpr) expr).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
-            if (expr instanceof UntransformedMapExpr)
-                expr = ((UntransformedMapExpr) expr).transform(compiler);
-            return expr;
         }
 
         protected void compile(MethodVisitor mv) {

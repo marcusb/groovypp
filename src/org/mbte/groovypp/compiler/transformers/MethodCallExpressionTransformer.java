@@ -392,18 +392,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         final List<Expression> args = ((TupleExpression) exp.getArguments()).getExpressions();
 
         for (int i = 0; i != args.size(); ++i) {
-            Expression arg = args.get(i);
+            BytecodeExpr arg = compiler.transformSynthetic((BytecodeExpr) args.get(i));
             if (arg instanceof CompiledClosureBytecodeExpr) {
                 compiler.processPendingClosure((CompiledClosureBytecodeExpr) arg);
             }
-            if (arg instanceof ListExpressionTransformer.UntransformedListExpr) {
-                arg = ((ListExpressionTransformer.UntransformedListExpr)arg).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
-                args.set(i, arg);
-            }
-            if (arg instanceof MapExpressionTransformer.UntransformedMapExpr) {
-                arg = ((MapExpressionTransformer.UntransformedMapExpr)arg).transform(compiler);
-                args.set(i, arg);
-            }
+            args.set(i, arg);
         }
 
         final BytecodeExpr methodExpr = (BytecodeExpr) compiler.transform(exp.getMethod());
@@ -459,7 +452,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
             if (oarg.implementsInterface(TypeUtil.TCLOSURE) ||
                 oarg.implementsInterface(TypeUtil.TLIST) ||
-                oarg.implementsInterface(TypeUtil.TMAP)) {
+                oarg.implementsInterface(TypeUtil.TMAP) ||
+                oarg.implementsInterface(TypeUtil.TTHIS)) {
 
                 if (changed == null)
                     changed = new ArrayList<Changed> ();

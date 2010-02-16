@@ -7,6 +7,7 @@ import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.InnerThisBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
@@ -137,6 +138,13 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 return expr;
             }
+        }
+
+        if (expr.getType().implementsInterface(TypeUtil.TTHIS)) {
+            ClassNode castType = cast.getType();
+            final ClassNode exprType = expr.getType().getOuterClass();
+            if (TypeUtil.isDirectlyAssignableFrom(castType, exprType)) return expr;
+            return new InnerThisBytecodeExpr(expr, castType, compiler, exprType);
         }
 
         if (!TypeUtil.isDirectlyAssignableFrom(cast.getType(), expr.getType())) {

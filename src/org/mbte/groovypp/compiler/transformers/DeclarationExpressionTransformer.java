@@ -66,13 +66,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
                 }
                 return new Static(exp, ve, right, compiler);
             } else {
-                if (right instanceof MapExpressionTransformer.UntransformedMapExpr) {
-                    right = ((MapExpressionTransformer.UntransformedMapExpr)right).transform(compiler);
-                }
-
-                if (right instanceof ListExpressionTransformer.UntransformedListExpr) {
-                    right = ((ListExpressionTransformer.UntransformedListExpr)right).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
-                }
+                right = compiler.transformSynthetic(right);
 
                 // let's try local type inference
                 compiler.getLocalVarInferenceTypes().add(ve, right.getType());

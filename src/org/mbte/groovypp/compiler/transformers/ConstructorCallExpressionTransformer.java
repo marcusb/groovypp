@@ -368,6 +368,16 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             }
                             argTypes[i] = oarg;
                             return foundMethod;
+                        } else if (oarg.implementsInterface(TypeUtil.TTHIS)) {
+                            ClassNode run = oarg.getOuterClass();
+                            while (run != null) {
+                                argTypes[i] = run;
+                                foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                                if (foundMethod != null) return foundMethod;
+                                if ((run.getModifiers() & Opcodes.ACC_STATIC) != 0) break;
+                                run = run.getOuterClass();
+                            }
+                            argTypes[i] = oarg.getOuterClass();
                         }
                     }
                 }

@@ -48,11 +48,7 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
             final List<Expression> list = exp.getExpressions();
             ClassNode genericArg = null;
             for (int i = 0; i != list.size(); ++i) {
-                Expression transformed = compiler.transform(list.get(i));
-                if (transformed instanceof UntransformedListExpr)
-                    transformed = ((UntransformedListExpr)transformed).transform(TypeUtil.ARRAY_LIST_TYPE, compiler);
-                if (transformed instanceof MapExpressionTransformer.UntransformedMapExpr)
-                    transformed = ((MapExpressionTransformer.UntransformedMapExpr)transformed).transform(compiler);
+                Expression transformed = compiler.transformToGround(list.get(i));
                 list.set(i, transformed);
 
                 if (!(transformed instanceof BytecodeSpreadExpr))

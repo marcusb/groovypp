@@ -1,15 +1,19 @@
 package org.mbte.groovypp.compiler.transformers;
 
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.Register;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.ResolvedVarBytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 public class VariableExpressionTransformer extends ExprTransformer<VariableExpression> {
     public Expression transform(final VariableExpression exp, final CompilerTransformer compiler) {
@@ -84,7 +88,23 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
 
     public static class This extends ThisBase {
         public This(VariableExpression exp, CompilerTransformer compiler) {
-            super(exp, compiler.classNode);
+            super(exp, getThisType(compiler));
+        }
+
+        private static ClassNode getThisType(CompilerTransformer compiler) {
+            final ClassNode classNode = compiler.classNode;
+            if (hasChoiceOfThis(classNode)) {
+                InnerClassNode newType = new InnerClassNode(classNode, compiler.getNextClosureName(),
+                        ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
+                newType.setInterfaces(new ClassNode[] {TypeUtil.TTHIS});
+                return newType;
+            } else {
+                return classNode;
+            }
+        }
+
+        private static boolean hasChoiceOfThis(ClassNode classNode) {
+            return classNode instanceof InnerClassNode && (classNode.getModifiers() & Opcodes.ACC_STATIC) == 0;
         }
 
         @Override
