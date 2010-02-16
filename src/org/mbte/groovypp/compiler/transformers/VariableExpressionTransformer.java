@@ -69,7 +69,10 @@ public class VariableExpressionTransformer extends ExprTransformer<VariableExpre
             ClassNode vtype = compiler.getLocalVarInferenceTypes().get(exp);
             if (vtype == null)
                 vtype = var.getType();
-            return new ResolvedVarBytecodeExpr(vtype, exp, compiler);
+            if (var.getIndex() == 0 && var.getName().equals("$self"))
+                return new Self(exp, compiler);
+            else
+                return new ResolvedVarBytecodeExpr(vtype, exp, compiler);
         }
 
         compiler.addError("Cannot find variable " + exp.getName(), exp);

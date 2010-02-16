@@ -3,9 +3,9 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.*;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.InnerThisBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
@@ -145,7 +145,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             if (prop != null) {
                 boolean isStatic = PropertyUtil.isStatic(prop);
                 if (!isStatic && exp.isStatic()) return null;
-                object = isStatic ? null : new InnerThisBytecodeExpr(exp, thisType, compiler, compiler.classNode);
+                object = isStatic ? null : new InnerThisBytecodeExpr(exp, thisType, compiler);
                 if (!checkAccessible(prop, exp, thisType, compiler, object)) return null;
 
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
@@ -154,7 +154,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             if (thisType.implementsInterface(TypeUtil.DELEGATING)) {
                 final MethodNode gd = compiler.findMethod(thisType, "getDelegate", ClassNode.EMPTY_ARRAY, false);
                 if (gd != null) {
-                    final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler, compiler.classNode);
+                    final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler);
                     final ResolvedMethodBytecodeExpr delegate = ResolvedMethodBytecodeExpr.create(exp, gd, innerThis, ArgumentListExpression.EMPTY_ARGUMENTS, compiler);
                     prop = PropertyUtil.resolveGetProperty(delegate.getType(), propName, compiler, false, false);
                     if (prop != null) {
@@ -234,6 +234,28 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                     checkCast(getType(), mv);
                 }
             };
+        }
+    }
+
+    private static class InnerThisBytecodeExpr extends BytecodeExpr {
+        private final ClassNode thisTypeFinal;
+        private final CompilerTransformer compiler;
+
+        public InnerThisBytecodeExpr(PropertyExpression exp, ClassNode thisTypeFinal, CompilerTransformer compiler) {
+            super(exp.getObjectExpression(), thisTypeFinal);
+            this.thisTypeFinal = thisTypeFinal;
+            this.compiler = compiler;
+        }
+
+        protected void compile(MethodVisitor mv) {
+            mv.visitVarInsn(ALOAD, 0);
+            ClassNode curThis = compiler.methodNode.getDeclaringClass();
+            while (curThis != thisTypeFinal) {
+                compiler.context.setOuterClassInstanceUsed(curThis);
+                ClassNode next = curThis.getField("this$0").getType();
+                mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
+                curThis = next;
+            }
         }
     }
 }

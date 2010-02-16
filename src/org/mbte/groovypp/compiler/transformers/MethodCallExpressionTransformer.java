@@ -132,6 +132,24 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
                                 }
                             }
+
+                            if (thisType.implementsInterface(TypeUtil.DELEGATING)) {
+                                final MethodNode gd = compiler.findMethod(thisType, "getDelegate", ClassNode.EMPTY_ARRAY, false);
+                                if (gd != null) {
+                                    final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler);
+                                    final ResolvedMethodBytecodeExpr delegate = ResolvedMethodBytecodeExpr.create(exp, gd, innerThis, ArgumentListExpression.EMPTY_ARGUMENTS, compiler);
+                                    foundMethod = findMethodWithClosureCoercion(delegate.getType(), methodName, argTypes, compiler, false);
+
+                                    if (foundMethod != null) {
+                                        if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                                foundMethod.getDeclaringClass(), compiler.classNode, delegate.getType())) {
+                                            return dynamicOrError(exp, compiler, methodName, delegate.getType(), argTypes, "Cannot access method ");
+                                        }
+
+                                        return createCall(exp, compiler, args, delegate, foundMethod);
+                                    }
+                                }
+                            }
                         }
 
                         if (foundMethod != null) {

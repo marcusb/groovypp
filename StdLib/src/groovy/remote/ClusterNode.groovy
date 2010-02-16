@@ -1,11 +1,13 @@
 package groovy.remote
 
 import java.util.concurrent.CopyOnWriteArraySet
+import groovy.supervisors.Supervised
+import groovy.supervisors.SupervisedConfig
 
 /**
  * Local node in the claster
  */
-class ClusterNode {
+class ClusterNode extends Supervised<ClusterNode.Config> {
     /**
      * Unique id of this node over cluster
      */
@@ -53,5 +55,19 @@ class ClusterNode {
         protected ClusterNode clusterNode
 
         abstract void onDiscoveryEvent (DiscoveryEventType eventType, RemoteNode node)
+    }
+
+    /**
+     * Configuration of the cluster node
+     */
+    @Trait abstract static class Config implements SupervisedConfig {
+        /**
+         * Server connection of the cluster node
+         */
+        void setServer (ClusterNodeServer.Config server) {
+            if (childs == null)
+                childs = []
+            childs  << server
+        }
     }
 }

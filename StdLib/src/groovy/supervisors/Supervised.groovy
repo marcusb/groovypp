@@ -11,8 +11,12 @@ import groovy.util.concurrent.CallLaterExecutors
 
     final void start () {
         config.beforeStart?.call(this)
-        doStart ()
-        config.afterStart?.call(this)
+        try {
+            doStart ()
+            config.afterStart?.call(this)
+        }
+        catch (Throwable t) {
+        }
     }
 
     final void stop () {
@@ -34,9 +38,9 @@ import groovy.util.concurrent.CallLaterExecutors
         childs?.remove(child)
     }
 
-    void crash (String message = null, Throwable cause = null) {
+    void crash (Throwable cause) {
         CallLaterExecutors.getDefaultExecutor().execute {
-            config.afterCrashed?.call(this$0, message, cause)
+            config.afterCrashed?.call(this$0, cause)
             def parent = this$0.parent
             parent?.removeChild(this$0)
             config.create(parent).start()

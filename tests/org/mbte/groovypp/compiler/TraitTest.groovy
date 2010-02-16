@@ -69,4 +69,25 @@ public class TraitTest extends GroovyShellTestCase {
             assert z.x == 10 && z.y == 10 && z.h == 5 && z.w == 5
         """
     }
+
+    void testWithGetterSetter () {
+        shell.evaluate """
+@Typed package p
+
+@Trait class Tr<T> {
+        T prop
+
+        T getProp () {
+            "prop: " + this.prop
+        }
+
+        void setProp (T prop) {
+            this.prop = prop
+        }
+}
+
+Tr<String> o = [prop: "123"]
+assert o.prop == "prop: 123"
+        """
+    }
 }

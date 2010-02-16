@@ -133,40 +133,59 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
                         }
 
-                        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? fieldType : ClassHelper.VOID_TYPE, parameters, ClassNode.EMPTY_ARRAY,
+                        createGetterSetter(classNode, method, fieldType, parameters, getter, fieldName);
+                    }
+                }
+                else {
+                    // very special case of clone ()
+                    if (method.getName().equals("clone") && method.getParameters().length == 0) {
+                        classNode.addMethod(method.getName(), ACC_PUBLIC, method.getReturnType(), Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY,
                                 new BytecodeSequence(new BytecodeInstruction() {
                                     public void visit(MethodVisitor mv) {
-                                        if (getter) {
                                             mv.visitVarInsn(ALOAD, 0);
-                                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
-                                            BytecodeExpr.doReturn(mv, fieldType);
-                                        } else {
-                                            mv.visitVarInsn(ALOAD, 0);
-                                            if (fieldType == double_TYPE) {
-                                                mv.visitVarInsn(Opcodes.DLOAD, 1);
-                                            } else if (fieldType == float_TYPE) {
-                                                mv.visitVarInsn(Opcodes.FLOAD, 1);
-                                            } else if (fieldType == long_TYPE) {
-                                                mv.visitVarInsn(Opcodes.LLOAD, 1);
-                                            } else if (
-                                                    fieldType == boolean_TYPE
-                                                            || fieldType == char_TYPE
-                                                            || fieldType == byte_TYPE
-                                                            || fieldType == int_TYPE
-                                                            || fieldType == short_TYPE) {
-                                                mv.visitVarInsn(Opcodes.ILOAD, 1);
-                                            } else {
-                                                mv.visitVarInsn(Opcodes.ALOAD, 1);
-                                            }
-                                            mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
-                                            mv.visitInsn(RETURN);
-                                        }
+                                            mv.visitMethodInsn(INVOKESPECIAL, BytecodeHelper.getClassInternalName(classNode.getSuperClass().getName()), "clone", "()Ljava/lang/Object;");
+                                            if (!ClassHelper.OBJECT_TYPE.equals(method.getReturnType()))
+                                                mv.visitTypeInsn(CHECKCAST, BytecodeHelper.getClassInternalName(method.getReturnType()));
+                                            BytecodeExpr.doReturn(mv, ClassHelper.OBJECT_TYPE);
                                     }
                                 }));
                     }
                 }
             }
         }
+    }
+
+    private static void createGetterSetter(final ClassNode classNode, MethodNode method, final ClassNode fieldType, Parameter[] parameters, final boolean getter, final String fieldName) {
+        classNode.addMethod(method.getName(), ACC_PUBLIC, getter ? fieldType : ClassHelper.VOID_TYPE, parameters, ClassNode.EMPTY_ARRAY,
+                new BytecodeSequence(new BytecodeInstruction() {
+                    public void visit(MethodVisitor mv) {
+                        if (getter) {
+                            mv.visitVarInsn(ALOAD, 0);
+                            mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
+                            BytecodeExpr.doReturn(mv, fieldType);
+                        } else {
+                            mv.visitVarInsn(ALOAD, 0);
+                            if (fieldType == double_TYPE) {
+                                mv.visitVarInsn(Opcodes.DLOAD, 1);
+                            } else if (fieldType == float_TYPE) {
+                                mv.visitVarInsn(Opcodes.FLOAD, 1);
+                            } else if (fieldType == long_TYPE) {
+                                mv.visitVarInsn(Opcodes.LLOAD, 1);
+                            } else if (
+                                    fieldType == boolean_TYPE
+                                            || fieldType == char_TYPE
+                                            || fieldType == byte_TYPE
+                                            || fieldType == int_TYPE
+                                            || fieldType == short_TYPE) {
+                                mv.visitVarInsn(Opcodes.ILOAD, 1);
+                            } else {
+                                mv.visitVarInsn(Opcodes.ALOAD, 1);
+                            }
+                            mv.visitFieldInsn(PUTFIELD, BytecodeHelper.getClassInternalName(classNode), fieldName, BytecodeHelper.getTypeDescription(fieldType));
+                            mv.visitInsn(RETURN);
+                        }
+                    }
+                }));
     }
 
     private static void addImplMethod(ClassNode classNode, MethodNode method, final Parameter[] oldParams, final MethodNode found) {
@@ -238,7 +257,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             Map<String, MethodNode> ifaceMethodsMap = getDeclaredMethodsMap(iface);
             for (Map.Entry<String, MethodNode> methSig : ifaceMethodsMap.entrySet()) {
                 MethodNode methNode = result.get(methSig.getKey());
-                if (methNode == null || methNode.isAbstract() && (!hasDefaultImpl(methNode) || hasDefaultImpl(methSig.getValue()) && methSig.getValue().getDeclaringClass().implementsInterface(methNode.getDeclaringClass()))) {
+                if (methNode == null || !methNode.isPublic() || methNode.isAbstract() && (!hasDefaultImpl(methNode) || hasDefaultImpl(methSig.getValue()) && methSig.getValue().getDeclaringClass().implementsInterface(methNode.getDeclaringClass()))) {
                     result.put(methSig.getKey(), methSig.getValue());
                 }
             }

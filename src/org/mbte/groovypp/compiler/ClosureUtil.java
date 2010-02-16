@@ -71,7 +71,8 @@ public class ClosureUtil {
     }
 
     private static boolean objectMethod(MethodNode mn) {
-        return mn.getName().equals("equals") && mn.getReturnType().equals(ClassHelper.boolean_TYPE) && mn.getParameters() != null && mn.getParameters().length == 1;
+        return mn.getName().equals("equals") && mn.getReturnType().equals(ClassHelper.boolean_TYPE) && mn.getParameters() != null && mn.getParameters().length == 1
+             ||mn.getName().equals("clone") && mn.getParameters() != null && mn.getParameters().length == 0;
     }
 
     private static boolean traitMethod(MethodNode mn) {
@@ -112,7 +113,7 @@ public class ClosureUtil {
                 Parameter missingMethodParameter = missingMethodParameters[i];
 
                 ClassNode parameterType = missingMethodParameter.getType();
-                parameterType = TypeUtil.getSubstitutedType(parameterType, baseType.redirect(), baseType);
+                parameterType = TypeUtil.getSubstitutedType(parameterType, missing.getDeclaringClass().redirect(), baseType);
                 if (!TypeUtil.isDirectlyAssignableFrom(TypeUtil.wrapSafely(parameterType), TypeUtil.wrapSafely(closureParameter.getType()))) {
                     if (TypeUtil.isDirectlyAssignableFrom(TypeUtil.wrapSafely(closureParameter.getType()), TypeUtil.wrapSafely(parameterType))) {
                         if (mutations == null)
