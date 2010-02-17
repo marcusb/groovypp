@@ -267,9 +267,11 @@ public class ClassNodeCache {
 
     static void addMethods(Map<String, Object> nameMap, List<MethodNode> nodes, boolean usePrivate) {
         for (MethodNode m : nodes) {
-            if (usePrivate || !m.isPrivate()) {
-                Object list = nameMap.get(m.getName());
-                nameMap.put(m.getName(), addMethodToList(list, m));
+            if ((m.getModifiers() & Opcodes.ACC_BRIDGE) == 0) {
+                if (usePrivate || !m.isPrivate()) {
+                    Object list = nameMap.get(m.getName());
+                    nameMap.put(m.getName(), addMethodToList(list, m));
+                }
             }
         }
     }
