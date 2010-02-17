@@ -4,3 +4,4 @@ org.mbte.groovypp.compiler.TraitASTTransformFinal
 org.mbte.groovypp.compiler.VerificationASTTransform
 
 org.mbte.groovypp.compiler.AsyncASTTransform
+org.mbte.groovypp.compiler.SerialASTTransform

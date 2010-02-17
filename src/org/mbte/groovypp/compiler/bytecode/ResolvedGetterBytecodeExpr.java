@@ -51,7 +51,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     }
 
     private boolean isThisCall() {
-        return object == null || object instanceof VariableExpressionTransformer.This;
+        return object == null || object.isThis();
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {

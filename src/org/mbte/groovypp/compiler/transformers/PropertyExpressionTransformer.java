@@ -85,8 +85,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         type = TypeUtil.wrapSafely(object.getType());
                     }
 
-                    Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
-                            object instanceof VariableExpressionTransformer.This);
+                    Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false, object != null && object.isThis());
                     if (!checkAccessible(prop, exp, type, compiler, object)) return null;
                     return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, true);
                 }
@@ -95,7 +94,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 type = object.getType();
 
                 Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
-                        object instanceof VariableExpressionTransformer.This);
+                        object != null && object.isThis());
                 if (prop == null) {
                     MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
                         if (unboxing != null) {
@@ -152,6 +151,8 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop, false);
             }
 
+            isThis = false;
+
             if (thisType.implementsInterface(TypeUtil.DELEGATING)) {
                 final MethodNode gd = compiler.findMethod(thisType, "getDelegate", ClassNode.EMPTY_ARRAY, false);
                 if (gd != null) {
@@ -170,7 +171,6 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             }
 
             thisType = thisType.getOuterClass();
-            isThis = false;
         }
 
         compiler.addError(MessageFormat.format("Cannot resolve property {0}.{1}",
@@ -257,6 +257,11 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
                 curThis = next;
             }
+        }
+
+        @Override
+        public boolean isThis() {
+            return thisTypeFinal.equals(compiler.classNode);
         }
     }
 }
