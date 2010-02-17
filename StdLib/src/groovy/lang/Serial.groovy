@@ -40,5 +40,5 @@ public @interface Serial {
    /**
     * Names of fields/properties to exclude from serilization
     */
-    String [] exclude () default null
+    String [] exclude ()   
 }
