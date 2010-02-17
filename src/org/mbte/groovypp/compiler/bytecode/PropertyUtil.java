@@ -4,8 +4,9 @@ import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.classgen.Verifier;
+import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
+import org.codehaus.groovy.classgen.Verifier;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -101,6 +102,8 @@ public class PropertyUtil {
         return dynamicOrFail(parent, compiler, propName, object, value);
     }
 
+    public static EmptyStatement NO_CODE = new EmptyStatement();
+
     public static Object resolveGetProperty(ClassNode type, String name, CompilerTransformer compiler, boolean onlyStatic, boolean isSameObject) {
         final FieldNode field = compiler.findField(type, name);
 
@@ -135,7 +138,7 @@ public class PropertyUtil {
         final String setterName = "set" + Verifier.capitalize(name);
         mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE}, false);
         if (mn != null && (!onlyStatic || mn.isStatic())) {
-            final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, null, null);
+            final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, NO_CODE, null);
             res.setDeclaringClass(mn.getDeclaringClass());
             return res;
         }

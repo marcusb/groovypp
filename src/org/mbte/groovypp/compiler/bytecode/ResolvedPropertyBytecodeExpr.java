@@ -16,6 +16,7 @@ import org.objectweb.asm.MethodVisitor;
 public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
     private final PropertyNode propertyNode;
     private final BytecodeExpr object;
+    private CompilerTransformer compiler;
     private final String methodName;
     private final BytecodeExpr bargs;
 
@@ -23,6 +24,7 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
         super(parent, getType(object, propertyNode));
         this.propertyNode = propertyNode;
         this.object = object;
+        this.compiler = compiler;
         this.bargs = bargs == null ? null : compiler.cast(bargs, getType());
 
         if (bargs != null) {
@@ -75,6 +77,9 @@ public class ResolvedPropertyBytecodeExpr extends ResolvedLeftExpr {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, new Parameter[]{new Parameter(paramType, "")});
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
         } else {
+            if (propertyNode.getGetterBlock() == PropertyUtil.NO_CODE) {
+                compiler.addError("Cannot find property '" + propertyNode.getName() + "'", this);
+            }
             methodDescriptor = BytecodeHelper.getMethodDescriptor(propertyNode.getType(), Parameter.EMPTY_ARRAY);
             mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
             cast(TypeUtil.wrapSafely(propertyNode.getType()), TypeUtil.wrapSafely(getType()), mv);
