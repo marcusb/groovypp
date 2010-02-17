@@ -1,34 +1,20 @@
 package org.mbte.groovypp.compiler
 
-import org.codehaus.groovy.transform.GroovyASTTransformation
-import org.codehaus.groovy.transform.ASTTransformation
-import org.codehaus.groovy.control.CompilePhase
-import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.ast.*
-import static org.codehaus.groovy.ast.ClassHelper.make
-import org.objectweb.asm.Opcodes
-
-import groovy.util.concurrent.CallLater
-import groovy.util.concurrent.BindLater
-import java.util.concurrent.Executor
-import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
-import org.codehaus.groovy.ast.expr.DeclarationExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
-import org.codehaus.groovy.syntax.Types
-import org.codehaus.groovy.syntax.Token
-import org.codehaus.groovy.ast.expr.CastExpression
-import org.codehaus.groovy.ast.expr.ClosureExpression
-import org.codehaus.groovy.ast.stmt.ReturnStatement
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.TernaryExpression
-import org.codehaus.groovy.ast.expr.BooleanExpression
-import org.codehaus.groovy.classgen.VariableScopeVisitor
+import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.syntax.SyntaxException
-import org.codehaus.groovy.ast.expr.BinaryExpression
-import org.codehaus.groovy.ast.expr.PropertyExpression
+import org.codehaus.groovy.syntax.Token
+import org.codehaus.groovy.syntax.Types
+import org.codehaus.groovy.transform.ASTTransformation
+import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.mbte.groovypp.compiler.OpenVerifier
+import org.mbte.groovypp.compiler.TypeUtil
+import org.objectweb.asm.Opcodes
+import org.codehaus.groovy.ast.*
+import static org.codehaus.groovy.ast.ClassHelper.make
+import org.codehaus.groovy.ast.expr.*
 
 @Typed
 @GroovyASTTransformation (phase = CompilePhase.CANONICALIZATION)
