@@ -4,7 +4,6 @@ import groovy.lang.EmptyRange;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import static org.codehaus.groovy.ast.ClassHelper.*;
-import static org.codehaus.groovy.ast.ClassHelper.short_TYPE;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -153,7 +152,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         super.visitExpressionStatement(statement);
 
-        final BytecodeExpr be = (BytecodeExpr) statement.getExpression();
+        final BytecodeExpr be = transformSynthetic((BytecodeExpr) statement.getExpression());
         be.visit(mv);
         final ClassNode type = be.getType();
         if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
