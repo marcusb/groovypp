@@ -60,9 +60,8 @@ import groovy.util.concurrent.CallLaterExecutors
 
     void crash (Throwable cause) {
         CallLaterExecutors.getDefaultExecutor().execute {
-            afterCrashed?.call(this$0, cause)
-            def parent = this$0.parent
-            parent?.removeChild(this$0)
+            afterCrashed?.call(this, cause)
+            parent?.removeChild(this)
             config.create(parent).start()
         }
     }
