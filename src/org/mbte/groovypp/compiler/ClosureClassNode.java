@@ -15,6 +15,7 @@ public class ClosureClassNode extends InnerClassNode {
     public ClosureClassNode(MethodNode owner, String name) {
         super(owner.getDeclaringClass(), name, Opcodes.ACC_PRIVATE|Opcodes.ACC_FINAL, ClassHelper.OBJECT_TYPE, ClassNode.EMPTY_ARRAY, null);
         outerMethod = owner;
+        setEnclosingMethod(outerMethod);
     }
 
     public void setDoCallMethod(ClosureMethodNode doCallMethod) {
