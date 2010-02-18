@@ -30,12 +30,29 @@ import org.codehaus.groovy.classgen.VariableScopeVisitor
 @Typed
 @GroovyASTTransformation (phase = CompilePhase.CONVERSION)
 class AsyncASTTransform implements ASTTransformation, Opcodes {
-    static final ClassNode CALL_LATER = make(CallLater)
-    static final ClassNode BIND_LATER = make(BindLater)
-    static final ClassNode LISTENER = make(BindLater.Listener)
-    static final ClassNode EXECUTOR = make(Executor)
+
+    static final boolean RESTRICTED
+
+    static final ClassNode CALL_LATER
+    static final ClassNode BIND_LATER
+    static final ClassNode LISTENER
+    static final ClassNode EXECUTOR
+
+    static {
+        try {
+            CALL_LATER = make(CallLater)
+            BIND_LATER = make(BindLater)
+            LISTENER = make(BindLater.Listener)
+            EXECUTOR = make(Executor)
+            RESTRICTED = false
+        } catch (Throwable t) {
+            RESTRICTED = true
+        }
+    }
 
     void visit(ASTNode[] nodes, SourceUnit source) {
+        if (RESTRICTED)
+            return
 
         List<MethodNode> toProcess = []
 
