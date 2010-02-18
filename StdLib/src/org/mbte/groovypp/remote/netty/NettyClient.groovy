@@ -23,7 +23,7 @@ import java.util.concurrent.Executors
         ClientBootstrap bootstrap = [factory]
         SimpleChannelHandlerEx handler = [
             createConnection: { ctx ->
-                connection = new NettyConnection(channel:ctx.channel, config:config, supervised:this$0)
+                connection = new NettyConnection(channel:ctx.channel, config:config, supervised:this)
             }
         ]
 

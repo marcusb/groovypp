@@ -144,7 +144,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             ClassNode castType = cast.getType();
             final ClassNode exprType = expr.getType().getOuterClass();
             if (TypeUtil.isDirectlyAssignableFrom(castType, exprType)) return expr;
-            return new InnerThisBytecodeExpr(expr, castType, compiler, exprType);
+            ClassNode outer = exprType.getOuterClass();
+            while(!TypeUtil.isDirectlyAssignableFrom(castType, outer)) {
+                outer = outer.getOuterClass();
+            }
+            return new InnerThisBytecodeExpr(expr, outer, compiler, exprType);
         }
 
         if (!TypeUtil.isDirectlyAssignableFrom(cast.getType(), expr.getType())) {
