@@ -7,9 +7,13 @@ import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.MethodVisitor;
 
 public class InnerThisBytecodeExpr extends BytecodeExpr {
+    private final ClassNode innerClass;
     private final ClassNode outerClass;
     private final CompilerTransformer compiler;
-    private ClassNode innerClass;
+
+    public InnerThisBytecodeExpr(ASTNode parent, ClassNode outerClass, CompilerTransformer compiler) {
+        this(parent, outerClass, compiler, compiler.classNode);
+    }
 
     public InnerThisBytecodeExpr(ASTNode parent, ClassNode outerClass, CompilerTransformer compiler, ClassNode innerClass) {
         super(parent, outerClass);
@@ -18,10 +22,14 @@ public class InnerThisBytecodeExpr extends BytecodeExpr {
         this.innerClass = innerClass;
     }
 
+    public boolean isThis() {
+        return innerClass.equals(outerClass);
+    }
+
     protected void compile(MethodVisitor mv) {
         mv.visitVarInsn(ALOAD, 0);
         ClassNode curThis = innerClass;
-        while (!curThis.redirect().equals(outerClass)) {
+        while (!curThis.equals(outerClass)) {
             compiler.context.setOuterClassInstanceUsed(curThis);
             ClassNode next = curThis.getField("this$0").getType();
             mv.visitFieldInsn(GETFIELD, BytecodeHelper.getClassInternalName(curThis), "this$0", BytecodeHelper.getTypeDescription(next));
