@@ -472,6 +472,14 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
                 if (TypeUtil.isDirectlyAssignableFrom(exp.getType(), rtype)) {
                     // c)
+                    final ClassNode castType = exp.getType();
+                    if (castType.getGenericsTypes() == null && castType.redirect().getGenericsTypes() != null) {
+                        // Correect type arguments.
+                        final ClassNode mapped = TypeUtil.mapTypeFromSuper(castType.redirect(), castType.redirect(), rtype);
+                        if (mapped != null) {
+                            exp.setType(mapped);
+                        }
+                    }
                     if (rtype.equals(exp.getType())) {
                         expr.setType(exp.getType()); // important for correct generic signature
                         return expr;
