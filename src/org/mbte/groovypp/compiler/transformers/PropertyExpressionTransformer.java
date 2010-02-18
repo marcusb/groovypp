@@ -3,8 +3,10 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.*;
+import org.mbte.groovypp.compiler.AccessibilityCheck;
+import org.mbte.groovypp.compiler.CompilerTransformer;
+import org.mbte.groovypp.compiler.PresentationUtil;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.InnerThisBytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
@@ -95,7 +97,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 type = object.getType();
 
                 Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false,
-                        object != null && object.isThis());
+                        object.isThis());
                 if (prop == null) {
                     MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
                         if (unboxing != null) {
