@@ -125,12 +125,15 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     while (thisType != null) {
                         foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, false);
                         if (foundMethod == null) {
-                            // Try some property with 'call' method.
-                            final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
-                            if (prop != null) {
-                                final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
-                                if (callMethod != null) {
-                                    return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                            // Groovy does not allow to call 'this.closure()' for closure fields: issue 143.
+                            if (exp.isImplicitThis() || !(thisType instanceof ClosureClassNode)) {
+                                // Try some property with 'call' method.
+                                final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
+                                if (prop != null) {
+                                    final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                                    if (callMethod != null) {
+                                        return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                                    }
                                 }
                             }
 
