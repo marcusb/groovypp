@@ -53,43 +53,19 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 return evaluateArraySubscript(exp, compiler);
 
             case Types.MULTIPLY:
-                return evaluateMathOperation(exp, "multiply", compiler);
-
             case Types.DIVIDE:
-                return evaluateMathOperation(exp, "div", compiler);
-
             case Types.MINUS:
-                return evaluateMathOperation(exp, "minus", compiler);
-
             case Types.PLUS:
-                return evaluateMathOperation(exp, "plus", compiler);
-
             case Types.BITWISE_XOR:
-                return evaluateMathOperation(exp, "xor", compiler);
-
             case Types.BITWISE_AND:
-                return evaluateMathOperation(exp, "and", compiler);
-
             case Types.INTDIV:
-                return evaluateMathOperation(exp, "intdiv", compiler);
-
             case Types.LEFT_SHIFT:
-                return evaluateMathOperation(exp, "leftShift", compiler);
-
             case Types.RIGHT_SHIFT:
-                return evaluateMathOperation(exp, "rightShift", compiler);
-
             case Types.RIGHT_SHIFT_UNSIGNED:
-                return evaluateMathOperation(exp, "rightShiftUnsigned", compiler);
-
             case Types.MOD:
-                return evaluateMathOperation(exp, "mod", compiler);
-
             case Types.BITWISE_OR:
-                return evaluateMathOperation(exp, "or", compiler);
-
             case Types.POWER:
-                return evaluateMathOperation(exp, "power", compiler);
+                return evaluateMathOperation(exp, compiler);
 
             case Types.COMPARE_TO:
                 return evaluateCompareTo(exp, compiler);
@@ -234,18 +210,39 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         return left;
     }
 
-    private Expression evaluateMathOperation(final BinaryExpression be, String method, final CompilerTransformer compiler) {
+    private String getMethod(int token) {
+        switch (token) {
+            case (Types.MULTIPLY): return "multiply";
+            case (Types.DIVIDE): return "div";
+            case (Types.MINUS): return "minus";
+            case (Types.PLUS): return "plus";
+            case (Types.BITWISE_XOR): return "xor";
+            case (Types.BITWISE_AND): return "and";
+            case (Types.BITWISE_OR): return "or";
+            case (Types.INTDIV): return "intdiv";
+            case (Types.LEFT_SHIFT): return "leftShift";
+            case (Types.RIGHT_SHIFT): return "rightShift";
+            case (Types.RIGHT_SHIFT_UNSIGNED): return "rightShiftUnsigned";
+            case (Types.MOD): return "mod";
+            case (Types.POWER): return "power";
+            default:
+                throw new IllegalStateException("Wrong token type");
+        }
+    }
+
+    private Expression evaluateMathOperation(final BinaryExpression be, final CompilerTransformer compiler) {
         final Operands operands = new Operands(be, compiler);
         final BytecodeExpr l = operands.getLeft();
         final BytecodeExpr r = operands.getRight();
 
+        final int tokenType = be.getOperation().getType();
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
-            if (be.getOperation().getType() == Types.POWER)
-                return compiler.cast(callMethod(be, method, compiler, l, r), ClassHelper.double_TYPE);
+            if (tokenType == Types.POWER)
+                return compiler.cast(callMethod(be, getMethod(tokenType), compiler, l, r), ClassHelper.double_TYPE);
 
             ClassNode mathType0 = TypeUtil.getMathType(l.getType(), r.getType());
 
-            if (be.getOperation().getType() == Types.DIVIDE
+            if (tokenType == Types.DIVIDE
                     && (
                     /*mathType0.equals(ClassHelper.int_TYPE) ||
                             mathType0.equals(ClassHelper.long_TYPE) ||*/
@@ -255,10 +252,10 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             final ClassNode mathType = mathType0;
 
             if (mathType == ClassHelper.BigDecimal_TYPE || mathType == ClassHelper.BigInteger_TYPE)
-                return compiler.cast(callMethod(be, method, compiler, l, r), mathType);
+                return compiler.cast(callMethod(be, getMethod(tokenType), compiler, l, r), mathType);
 
             if (mathType != ClassHelper.int_TYPE && mathType != ClassHelper.long_TYPE) {
-                switch (be.getOperation().getType()) {
+                switch (tokenType) {
                     case Types.BITWISE_XOR:
                     case Types.BITWISE_AND:
                     case Types.INTDIV:
@@ -266,7 +263,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     case Types.RIGHT_SHIFT:
                     case Types.RIGHT_SHIFT_UNSIGNED:
                     case Types.BITWISE_OR:
-                        return compiler.cast(callMethod(be, method, compiler, l, r), mathType);
+                        return compiler.cast(callMethod(be, getMethod(tokenType), compiler, l, r), mathType);
                 }
             }
 
@@ -288,7 +285,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 }
             };
         } else {
-            return callMethod(be, method, compiler, l, r);
+            return callMethod(be, getMethod(tokenType), compiler, l, r);
         }
     }
 
@@ -317,15 +314,28 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         return ((ResolvedLeftExpr) left).createAssign(be, right, compiler);
     }
 
-    private Expression evaluateMathOperationAssign(BinaryExpression be, Token method, CompilerTransformer compiler) {
+    private Expression evaluateMathOperationAssign(BinaryExpression be, Token op, CompilerTransformer compiler) {
         Expression left = compiler.transform(be.getLeftExpression());
 
         if (!(left instanceof ResolvedLeftExpr)) {
             compiler.addError("Assignment operator is applicable only to variable or property or array element", be);
             return null;
         }
+        final BytecodeExpr right = (BytecodeExpr) compiler.transform(be.getRightExpression());
 
-        return ((ResolvedLeftExpr) left).createBinopAssign(be, method, (BytecodeExpr) compiler.transform(be.getRightExpression()), compiler);
+        MethodNode lunboxing = TypeUtil.getReferenceUnboxingMethod(left.getType());
+        MethodNode rboxing = TypeUtil.getReferenceBoxingMethod(left.getType(), right.getType());
+        if (lunboxing != null && rboxing != null) {
+            final ResolvedMethodBytecodeExpr oldValue = ResolvedMethodBytecodeExpr.create(be, lunboxing,
+                    (BytecodeExpr) left, new ArgumentListExpression(), compiler);
+            final BinaryExpression binary = new BinaryExpression(oldValue, op, right);
+            binary.setSourcePosition(be);
+            final Expression opApplied = evaluateMathOperation(binary, compiler);
+            return ResolvedMethodBytecodeExpr.create(be, rboxing,
+                    (BytecodeExpr) left, new ArgumentListExpression(new Expression[]{opApplied}), compiler);
+        }
+
+        return ((ResolvedLeftExpr) left).createBinopAssign(be, op, right, compiler);
     }
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
