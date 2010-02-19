@@ -45,6 +45,11 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Creates new list containing given element and then all element of this list
      */
+    abstract FList<T> minus (T element)
+
+    /**
+     * Creates new list containing given element and then all element of this list
+     */
     final FList<T> addAll (Iterable<T> elements) {
         def res = this
         for (el in elements)
@@ -80,6 +85,12 @@ abstract static class FList<T> implements Iterable<T> {
                 remove:{throw new UnsupportedOperationException()}
             ]
         }
+
+        FList<T> minus (T element) {
+            this
+        }
+
+        String toString () { "[]" }
     }
 
     private static class Node<T> extends FList<T> {
@@ -92,6 +103,10 @@ abstract static class FList<T> implements Iterable<T> {
             this.tail = tail
         }
 
+        FList<T> minus (T element) {
+            head == element ? tail : (tail-element) + head
+        }
+
         Iterator<T> iterator () {
             [
                 cur:     (FList<T>)this,
@@ -99,6 +114,21 @@ abstract static class FList<T> implements Iterable<T> {
                 next:    { def that = cur; cur = cur.tail; that.head },
                 remove:  { throw new UnsupportedOperationException() }
             ]
+        }
+
+        String toString () {
+            def sb = new StringBuilder ()
+            sb << "["
+            toString(sb)
+            sb << "]"
+            sb.toString()
+        }
+
+        private void toString (StringBuilder sb) {
+            sb << head
+            sb << ", "
+            if (!tail.empty)
+                ((Node)tail).toString(sb)
         }
     }
 }

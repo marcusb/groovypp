@@ -39,13 +39,17 @@ abstract class FQueue<T> implements Iterable<T> {
                     remove:  { throw new UnsupportedOperationException() }
             ]
         }
+
+        String toString () {
+            "[,[],[]]"
+        }
     }
 
     private static class NonEmptyQueue<T> extends FQueue<T> {
         private final FList<T> input, output
         private final T head
 
-        NonEmptyQueue (T head, FList<T> input, FList<T> output) {
+        NonEmptyQueue (T head, FList<T> output, FList<T> input) {
             super(input.size + output.size + 1)
             this.input  = input
             this.output = output
@@ -78,5 +82,10 @@ abstract class FQueue<T> implements Iterable<T> {
         Iterator<T> iterator () {
             head.singleton().iterator() | output.iterator() | input.reverse(FList.emptyList).iterator()
         }
+
+        String toString () {
+            "[$head,$output,$input]"
+        }
+
     }
 }

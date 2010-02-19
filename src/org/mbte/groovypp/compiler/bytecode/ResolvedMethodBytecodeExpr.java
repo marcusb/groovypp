@@ -168,7 +168,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 delta = 1;
             }
             for (int i = 0; i < length-delta; i++) {
-                paramTypes[i] = i > params.length + delta - 1 ||
+                paramTypes[i] = i > params.length - 1 ||
                             (i == params.length - 1 && params[i].getType().isArray() && !bargs.getExpression(i).getType().isArray()) ?
                         /* varargs case */ params[params.length - 1].getType().getComponentType() :
                         params[i].getType();

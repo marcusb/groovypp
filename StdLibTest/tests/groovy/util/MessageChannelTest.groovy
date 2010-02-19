@@ -1,0 +1,85 @@
+package groovy.util
+
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+
+@Typed class MessageChannelTest extends GroovyTestCase {
+    void testMulti () {
+        Reference count = [10]
+        def multiplexor = new MessageChannel.Multiplexor ()
+        multiplexor.subscribe { int msg ->
+            count = count-msg
+            multiplexor.unsubscribe(this)
+        }{ int msg ->
+            count = count-msg
+        }{ int msg ->
+            count = count-msg
+        }.subscribe { int msg ->
+            count = count-1
+            multiplexor.unsubscribe(this)
+        }
+        multiplexor << 2
+        assertEquals 3, count.get ()
+
+        multiplexor << 5
+        assertEquals (-7, count.get ())
+    }
+
+    void testExecutor () {
+        def cdl = new CountDownLatch(100)
+        CopyOnWriteArrayList results = []
+        MessageChannel.ExecutingChannel channel = { int msg ->
+            println msg
+            results << msg
+            cdl.countDown()
+        }
+
+        for (i in 0..<100)
+            channel << i
+
+        cdl.await(10,TimeUnit.SECONDS)
+
+        assertEquals 0..<100, results
+    }
+
+    void testConcurrentExecutor () {
+        def cdl = new CountDownLatch(100)
+        CopyOnWriteArrayList results = []
+        MessageChannel.ConcurrentlyExecutingChannel channel = [
+          'super': [5],
+          onMessage: { msg ->
+            println msg
+            results << msg
+            cdl.countDown()
+        }]
+
+        for (i in 0..<100)
+            channel << i
+
+        cdl.await(10,TimeUnit.SECONDS)
+
+        assertEquals (0..<100, results.iterator().asList().sort())
+    }
+
+    void testRing () {
+        def pool = Executors.newFixedThreadPool(Runtime.runtime.availableProcessors())
+
+        MessageChannel last
+        CountDownLatch cdl = [50000*500]
+        for (i in 0..<50000) {
+            MessageChannel.ExecutingChannel channel = {
+                last?.post it
+                cdl.countDown()
+            }
+            channel.executor = pool
+            last = channel
+        }
+        for(i in 0..<500)
+            last << "Hi"
+
+        assertTrue(cdl.await(100,TimeUnit.SECONDS))
+    }
+}
