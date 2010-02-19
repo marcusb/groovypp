@@ -106,7 +106,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         return createCall(exp, compiler, args, object, foundMethod);
                     }
                     else {
-                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
+                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
                         if (prop != null) {
                             final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                             if (callMethod != null) {
@@ -126,7 +126,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, false);
                         if (foundMethod == null) {
                             // Try some property with 'call' method.
-                            final Object prop = resolveCallableProperty(compiler, methodName, thisType, compiler.methodNode.isStatic());
+                            final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
                             if (prop != null) {
                                 final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                                 if (callMethod != null) {
