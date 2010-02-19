@@ -169,7 +169,7 @@ public class TypeUtil {
         if (method == null || method.getParameters().length != 1) return null;
         ClassNode paramType = method.getParameters()[0].getType();
         ClassNode substituted = getSubstitutedType(paramType, method.getDeclaringClass(), classNode);
-        if (!isDirectlyAssignableFrom(ClassHelper.getWrapper(substituted), ClassHelper.getWrapper(arg))) return null;
+        if (!isAssignableFrom(ClassHelper.getWrapper(substituted), ClassHelper.getWrapper(arg))) return null;
         return method;
     }
 
