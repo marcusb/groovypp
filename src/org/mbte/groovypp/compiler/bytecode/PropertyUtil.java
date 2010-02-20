@@ -137,7 +137,7 @@ public class PropertyUtil {
 
         final String setterName = "set" + Verifier.capitalize(name);
         mn = compiler.findMethod(type, setterName, new ClassNode[]{TypeUtil.NULL_TYPE}, false);
-        if (mn != null && (!onlyStatic || mn.isStatic())) {
+        if (mn != null && (!onlyStatic || mn.isStatic()) && mn.getReturnType() == ClassHelper.VOID_TYPE) {
             final PropertyNode res = new PropertyNode(name, mn.getModifiers(), mn.getParameters()[0].getType(), mn.getDeclaringClass(), null, NO_CODE, null);
             res.setDeclaringClass(mn.getDeclaringClass());
             return res;
