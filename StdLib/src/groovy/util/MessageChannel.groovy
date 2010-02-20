@@ -147,7 +147,7 @@ import java.util.concurrent.locks.LockSupport
                 def wt = waitingThread
                 if (waitingThread.compareAndSet(wt, wt + thisThread)) {
                     startLock.countDown()
-                    LockSupport.park(thisThread)
+                    LockSupport.park()
                     break
                 }
             }
