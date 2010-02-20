@@ -218,7 +218,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         int op = INVOKEVIRTUAL;
         final String classInternalName;
         final String methodDescriptor;
-        if (methodNode instanceof ClassNodeCache.DGM) {
+        if (methodNode instanceof ClassNodeCache.DGM && !(object instanceof VariableExpressionTransformer.Super)) {
             MethodNode dgm = ((ClassNodeCache.DGM) methodNode).original;
 
             op = INVOKESTATIC;
