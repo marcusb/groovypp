@@ -65,11 +65,17 @@ import java.util.concurrent.Executors
     }
 
     void testRing () {
-        def pool = Executors.newFixedThreadPool(Runtime.runtime.availableProcessors())
+        runRing(new MessageChannel.ChannelExecutor(Runtime.runtime.availableProcessors()))
+    }
 
+    void testRingStd () {
+        runRing(Executors.newFixedThreadPool(Runtime.runtime.availableProcessors()))
+    }
+
+    private void runRing (Executor pool) {
         MessageChannel last
-        CountDownLatch cdl = [50000*500]
-        for (i in 0..<50000) {
+        CountDownLatch cdl = [100000*500]
+        for (i in 0..<100000) {
             MessageChannel.ExecutingChannel channel = {
                 last?.post it
                 cdl.countDown()
