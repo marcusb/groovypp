@@ -1,6 +1,5 @@
 package groovy.supervisors
 
-import groovy.util.concurrent.CallLater
 import groovy.util.concurrent.CallLaterExecutors
 
 @Typed class Supervised<C extends SupervisedConfig> {
@@ -12,10 +11,10 @@ import groovy.util.concurrent.CallLaterExecutors
     DelegatingFunction0<Supervised,?> afterStart
     DelegatingFunction0<Supervised,?> beforeStop
     DelegatingFunction0<Supervised,?> afterStop
-    DelegatingFunction0<Supervised,?> afterChildsCreated
+    DelegatingFunction0<Supervised,?> afterChildrenCreated
     DelegatingFunction1<Supervised,Throwable,?> afterCrashed
 
-    protected List<Supervised> childs
+    protected List<Supervised> children
 
     void setConfig(C config) {
         this.config = config
@@ -25,7 +24,7 @@ import groovy.util.concurrent.CallLaterExecutors
         afterStart         = config?.afterStart?.clone(this)
         beforeStop         = config?.beforeStop?.clone(this)
         afterStop          = config?.afterStop?.clone(this)
-        afterChildsCreated = config?.afterChildsCreated?.clone(this)
+        afterChildrenCreated = config?.afterChildrenCreated?.clone(this)
         afterCrashed       = config?.afterCrashed?.clone(this)
     }
 
@@ -47,15 +46,15 @@ import groovy.util.concurrent.CallLaterExecutors
 
     synchronized void addChild(Supervised child) {
         child.parent = this
-        if (childs == null) {
-            childs = []
+        if (children == null) {
+            children = []
         }
-        childs << child
+        children << child
     }
 
     synchronized void removeChild(Supervised child) {
         child.parent = null
-        childs?.remove(child)
+        children?.remove(child)
     }
 
     void crash (Throwable cause) {
@@ -67,13 +66,13 @@ import groovy.util.concurrent.CallLaterExecutors
     }
 
     synchronized void doStart () {
-        childs?.each { child ->
+        children?.each { child ->
             child.start ()
         }
     }
 
     synchronized void doStop () {
-        childs?.reverse()?.each { child ->
+        children?.reverse()?.each { child ->
             child.stop ()
         }
     }

@@ -65,9 +65,9 @@ class ClusterNode extends Supervised<ClusterNode.Config> {
          * Server connection of the cluster node
          */
         void setServer (ClusterNodeServer.Config server) {
-            if (childs == null)
-                childs = []
-            childs  << server
+            if (children == null)
+                children = []
+            children  << server
         }
     }
 }

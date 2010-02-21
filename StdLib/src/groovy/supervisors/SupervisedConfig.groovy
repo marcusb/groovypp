@@ -3,7 +3,7 @@ package groovy.supervisors
 @Trait abstract class SupervisedConfig {
     int numberOfInstances = 1
 
-    List<SupervisedConfig> childs
+    List<SupervisedConfig> children
 
     Class<Supervised> klazz = Supervised
 
@@ -12,7 +12,7 @@ package groovy.supervisors
     DelegatingFunction0<Supervised,?> afterStart
     DelegatingFunction0<Supervised,?> beforeStop
     DelegatingFunction0<Supervised,?> afterStop
-    DelegatingFunction0<Supervised,?> afterChildsCreated
+    DelegatingFunction0<Supervised,?> afterChildrenCreated
     DelegatingFunction1<Supervised,Throwable,?> afterCrashed
 
     Supervised create(Supervised parent) {
@@ -23,21 +23,21 @@ package groovy.supervisors
 
         afterCreated?.call(monitored)
 
-        childs?.each { childConfig ->
+        children?.each { childConfig ->
             for ( i in 0..<childConfig.numberOfInstances)
                 childConfig.create(monitored)
         }
 
-        afterChildsCreated?.call(monitored)
+        afterChildrenCreated?.call(monitored)
 
         monitored
     }
 
-    void setChilds (List<SupervisedConfig> childs) {
-        if (this.childs == null)
-            this.childs = childs
+    void setChildren (List<SupervisedConfig> children) {
+        if (this.children == null)
+            this.children = children
         else
-            this.childs.addAll(childs)
+            this.children.addAll(children)
     }
 
     Supervised createSupervised() {

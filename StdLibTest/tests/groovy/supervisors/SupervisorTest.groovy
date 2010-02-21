@@ -1,13 +1,12 @@
 package groovy.supervisors
 
-import org.mbte.groovypp.remote.netty.NettyServer
-import org.mbte.groovypp.remote.netty.NettyClient
+import groovy.remote.ClusterNode
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import groovy.remote.ClusterNode
-import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.buffer.DirectChannelBufferFactory
+import org.mbte.groovypp.remote.netty.NettyClient
+import org.mbte.groovypp.remote.netty.NettyServer
 
 @Typed class SupervisorTest extends GroovyTestCase {
     void testMe () {
@@ -16,13 +15,13 @@ import org.jboss.netty.buffer.DirectChannelBufferFactory
 
             afterStop: { println "supervisor stopped" },
 
-            afterChildsCreated: {
-                childs.each { c ->
+            afterChildrenCreated: {
+                children.each { c ->
                     println c
                 }
             },
 
-            childs: [
+            children: [
                 [
                     afterStart: { println "worker started" },
 
@@ -45,7 +44,7 @@ import org.jboss.netty.buffer.DirectChannelBufferFactory
         def start = System.currentTimeMillis()
 
         SupervisedConfig config = [
-            childs : [
+            children : [
                 [
                     server: [
                         port : 8080,
