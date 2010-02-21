@@ -126,9 +126,10 @@ abstract static class FList<T> implements Iterable<T> {
 
         private void toString (StringBuilder sb) {
             sb << head
-            sb << ", "
-            if (!tail.empty)
+            if (!tail.empty) {
+                sb << ", "
                 ((Node)tail).toString(sb)
+            }
         }
     }
 }

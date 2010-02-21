@@ -5,11 +5,14 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import groovy.util.concurrent.ExecutingChannel
+import groovy.util.concurrent.ConcurrentlyExecutingChannel
+import groovy.util.concurrent.ChannelExecutor
 
 @Typed class MessageChannelTest extends GroovyTestCase {
     void testMulti () {
         Reference count = [10]
-        def multiplexor = new MessageChannel.Multiplexor ()
+        def multiplexor = new Multiplexor ()
         multiplexor.subscribe { int msg ->
             count = count-msg
             multiplexor.unsubscribe(this)
@@ -31,7 +34,7 @@ import java.util.concurrent.Executors
     void testExecutor () {
         def cdl = new CountDownLatch(100)
         CopyOnWriteArrayList results = []
-        MessageChannel.ExecutingChannel channel = { int msg ->
+        ExecutingChannel channel = { int msg ->
             println msg
             results << msg
             cdl.countDown()
@@ -48,7 +51,7 @@ import java.util.concurrent.Executors
     void testConcurrentExecutor () {
         def cdl = new CountDownLatch(100)
         CopyOnWriteArrayList results = []
-        MessageChannel.ConcurrentlyExecutingChannel channel = [
+        ConcurrentlyExecutingChannel channel = [
           'super': [5],
           onMessage: { msg ->
             println msg
@@ -65,7 +68,7 @@ import java.util.concurrent.Executors
     }
 
     void testRing () {
-        runRing(new MessageChannel.ChannelExecutor(Runtime.runtime.availableProcessors()))
+        runRing(new ChannelExecutor(Runtime.runtime.availableProcessors()))
     }
 
     void testRingStd () {
@@ -76,7 +79,7 @@ import java.util.concurrent.Executors
         MessageChannel last
         CountDownLatch cdl = [10000*500]
         for (i in 0..<10000) {
-            MessageChannel.ExecutingChannel channel = {
+            ExecutingChannel channel = {
                 last?.post it
                 cdl.countDown()
             }

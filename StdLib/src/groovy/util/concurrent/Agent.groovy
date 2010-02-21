@@ -1,10 +1,7 @@
 package groovy.util.concurrent
 
-@Typed
-public class Agent<T>  {
+@Typed class Agent<T> extends ExecutingChannel<Function1<T,T>> {
     private volatile T ref
-
-    private volatile FQueue<Function1<T,T>> queue = FQueue.emptyQueue
 
     Agent () {}
 
@@ -12,34 +9,11 @@ public class Agent<T>  {
     
     final T get () { ref }
 
-    T apply (Function1<T,T> mutation) {
-        for (;;) {
-            def q = queue
-            def p = q.addLast(mutation)
-            if (queue.compareAndSet(q, p)) {
-                if (p.size () == 1) {
-                    CallLaterExecutors.currentExecutor.callLater {
-                        for (;;) {
-                            def qq = queue
-                            if (!qq.size()) {
-                                break
-                            }
+    void call (Function1<T,T> mutation) {
+        post mutation
+    }
 
-                            def pp = qq.removeFirst ()
-                            if (queue.compareAndSet(qq, pp.second)) {
-                                def m = pp.first
-                                try {
-                                    ref = m(ref)
-                                }
-                                catch (Throwable t) {
-                                    t.printStackTrace(System.err)
-                                }
-                            }
-                        }
-                    }
-                }
-                break
-            }
-        }
+    void onMessage(Function1<T, T> message) {
+        ref = message(ref)
     }
 }
