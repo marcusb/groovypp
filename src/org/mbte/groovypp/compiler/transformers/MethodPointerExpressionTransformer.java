@@ -12,8 +12,6 @@ import java.util.List;
 
 public class MethodPointerExpressionTransformer extends ExprTransformer<MethodPointerExpression> {
     public Expression transform(MethodPointerExpression exp, CompilerTransformer compiler) {
-        final Expression object = compiler.transform(exp.getExpression());
-        final ClassNode type = object.getType();
 
         String methodName;
         if (!(exp.getMethodName() instanceof ConstantExpression) || !(((ConstantExpression) exp.getMethodName()).getValue() instanceof String)) {
@@ -22,9 +20,20 @@ public class MethodPointerExpressionTransformer extends ExprTransformer<MethodPo
         } else {
             methodName = (String) ((ConstantExpression) exp.getMethodName()).getValue();
         }
+
+        final ClassNode type;
+        if (exp.getExpression() instanceof ClassExpression) {
+            type = TypeUtil.wrapSafely(exp.getExpression().getType());
+        } else {
+            type = compiler.transform(exp.getExpression()).getType();
+        }
+
         final Object methods = ClassNodeCache.getMethods(type, methodName);
-        if (!(methods instanceof MethodNode)) {
-            compiler.addError("Multiple methods referenced. Cannot take the pointer", exp);
+        // todo: dynamic dispatch
+        if (methods == null) {
+            compiler.addError("Cannot find method '" + methodName + "'", exp);
+        } else if (!(methods instanceof MethodNode)) {
+            compiler.addError("Multiple methods '" + methodName + "' referenced. Cannot take the pointer", exp);
         }
         final MethodNode method = (MethodNode) methods;
         final Parameter[] methodParameters = method.getParameters();
