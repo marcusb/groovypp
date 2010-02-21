@@ -3,9 +3,6 @@ package groovy.util.concurrent
 @Typed abstract class SchedulingChannel<M> implements MessageChannel<M>, Runnable {
     protected volatile FQueue<M> queue = FQueue.emptyQueue
 
-    SchedulingChannel() {
-    }
-
     MessageChannel<M> post(M message) {
         for (;;) {
             def q = queue

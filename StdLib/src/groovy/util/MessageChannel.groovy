@@ -7,7 +7,7 @@ import groovy.util.concurrent.CallLaterExecutors
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.locks.LockSupport
 import groovy.util.concurrent.SchedulingChannel
-import groovy.util.concurrent.ExecutingChannel
+import groovy.util.concurrent.FairExecutingChannel
 
 @Trait abstract class MessageChannel<T> {
     abstract MessageChannel<T> post (T message)

@@ -2,7 +2,7 @@ package groovy.util.concurrent
 
 @Typed
 abstract class FQueue<T> implements Iterable<T> {
-    final boolean isEmpty () { !size() }
+    abstract boolean isEmpty ()
 
     T getFirst () { throw new NoSuchElementException() }
 
@@ -18,18 +18,15 @@ abstract class FQueue<T> implements Iterable<T> {
 
     static final EmptyQueue emptyQueue = []
 
-    FQueue () {
-    }
-
     abstract int size ()
 
     private static final class EmptyQueue<T> extends FQueue<T> {
         EmptyQueue(){
         }
 
-        NonEmptyQueue<T> addLast (T element)  { [FList.emptyList + element, FList.emptyList] }
+        OneElementQueue<T> addLast (T element)  { [element] }
 
-        NonEmptyQueue<T> addFirst (T element) { [FList.emptyList + element, FList.emptyList] }
+        OneElementQueue<T> addFirst (T element) { [element] }
 
         Iterator<T> iterator () {
             [
@@ -44,35 +41,66 @@ abstract class FQueue<T> implements Iterable<T> {
         }
 
         final int size () { 0 }
+
+        boolean isEmpty () { true }
     }
 
-    private static final class NonEmptyQueue<T> extends FQueue<T> {
+    private static final class OneElementQueue<T> extends FQueue<T> {
+        T head
+
+        OneElementQueue(T head){
+            this.head = head
+        }
+
+        MoreThanOneElementQueue<T> addLast (T element)  { [(FList.emptyList + element) + head, FList.emptyList] }
+
+        MoreThanOneElementQueue<T> addFirst (T element) { [(FList.emptyList + head) + element, FList.emptyList] }
+
+        T getFirst () { head }
+
+        Pair<T, FQueue<T>> removeFirst() {
+            [head, FQueue.emptyQueue]
+        }
+
+        Iterator<T> iterator () {
+            head.singleton().iterator()
+        }
+
+        String toString () {
+            "[$head]".toString()
+        }
+
+        final int size () { 1 }
+
+        boolean isEmpty () { false }
+    }
+
+    private static final class MoreThanOneElementQueue<T> extends FQueue<T> {
         private final FList<T> input, output
 
-        NonEmptyQueue (FList<T> output, FList<T> input) {
+        MoreThanOneElementQueue (FList<T> output, FList<T> input) {
             this.input  = input
             this.output = output
         }
 
-        NonEmptyQueue<T> addLast (T element) {
+        MoreThanOneElementQueue<T> addLast (T element) {
             [output, input + element]
         }
 
-        NonEmptyQueue<T> addFirst (T element) {
+        MoreThanOneElementQueue<T> addFirst (T element) {
             [output + element, input]
         }
 
         T getFirst () { output.head }
 
         Pair<T, FQueue<T>> removeFirst() {
-            if (size () == 1)
-                [output.head, FQueue.emptyQueue]
+            if (size () == 2)
+                [output.head, new OneElementQueue(output.tail.head)]
             else {
-                if(output.size > 1)
-                    [output.head, (NonEmptyQueue<T>)[output.tail, input]]
+                if(output.size > 2)
+                    [output.head, (MoreThanOneElementQueue<T>)[output.tail, input]]
                 else {
-                    FList<T> newOut = input.reverse(FList.emptyList)
-                    [output.head, (NonEmptyQueue<T>)[newOut, FList.emptyList]]
+                    [output.head, (MoreThanOneElementQueue<T>)[input.reverse(FList.emptyList) + output.tail.head, FList.emptyList]]
                 }
             }
         }
@@ -88,5 +116,7 @@ abstract class FQueue<T> implements Iterable<T> {
         final int size () {
             input.size + output.size
         }
+
+        boolean isEmpty () { false }
     }
 }

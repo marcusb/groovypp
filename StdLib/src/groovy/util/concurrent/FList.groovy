@@ -20,13 +20,13 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Element last added to the list
      */
-    T        getHead () { throw new NoSuchElementException() }
+    abstract T getHead ()
 
 
     /**
      * Tail of the list
      */
-    FList<T> getTail () { throw new NoSuchElementException() }
+    abstract FList<T> getTail ()
 
     /**
      * Check is this list empty
@@ -38,9 +38,7 @@ abstract static class FList<T> implements Iterable<T> {
     /**
      * Creates new list containing given element and then all element of this list
      */
-    final FList<T> plus (T element) {
-        new Node<T>(element, this)
-    }
+    abstract FList<T> plus (T element)
 
     /**
      * Creates new list containing given element and then all element of this list
@@ -86,25 +84,61 @@ abstract static class FList<T> implements Iterable<T> {
             ]
         }
 
+        final OneElementList<T> plus (T element) {
+            [element]
+        }
+
         FList<T> minus (T element) {
-            this
+            throw new NoSuchElementException()
         }
 
         String toString () { "[]" }
+
+        public T getHead() {
+            throw new NoSuchElementException()
+        }
+
+        public FList<T> getTail() {
+            throw new NoSuchElementException()
+        }
     }
 
-    private static class Node<T> extends FList<T> {
-        final T        head
-        final FList<T> tail
+    private static class OneElementList<T> extends FList<T> {
+        T head
 
-        Node (T head, FList<T> tail) {
-            super (tail.size+1)
+        OneElementList (T head) {
+            super(1)
             this.head = head
-            this.tail = tail
+        }
+
+        OneElementList (T head, int addSize) {
+            super(addSize+1)
+            this.head = head
+        }
+
+        final MoreThanOneElementList<T> plus(T element) {
+            [element, this]
         }
 
         FList<T> minus (T element) {
             head == element ? tail : (tail-element) + head
+        }
+
+        public Iterator<T> iterator() {
+            head.singleton().iterator()
+        }
+
+        public FList<T> getTail() {
+            emptyList
+        }
+    }
+
+    private static class MoreThanOneElementList<T> extends OneElementList<T> {
+        final FList<T> tail
+
+        MoreThanOneElementList (T head, FList<T> tail) {
+            super (head, tail.size)
+            this.tail = tail
         }
 
         Iterator<T> iterator () {
@@ -128,7 +162,7 @@ abstract static class FList<T> implements Iterable<T> {
             sb << head
             if (!tail.empty) {
                 sb << ", "
-                ((Node)tail).toString(sb)
+                ((MoreThanOneElementList)tail).toString(sb)
             }
         }
     }
