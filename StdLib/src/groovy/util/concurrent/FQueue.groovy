@@ -2,7 +2,7 @@ package groovy.util.concurrent
 
 @Typed
 abstract class FQueue<T> implements Iterable<T> {
-    final boolean isEmpty () { size == 0 }
+    final boolean isEmpty () { !size() }
 
     T getFirst () { throw new NoSuchElementException() }
 
@@ -15,22 +15,21 @@ abstract class FQueue<T> implements Iterable<T> {
     /**
      * Number of elements in the list
      */
-    final int size
 
     static final EmptyQueue emptyQueue = []
 
-    FQueue (int size) {
-        this.size = size
+    FQueue () {
     }
 
-    private static class EmptyQueue<T> extends FQueue<T> {
+    abstract int size ()
+
+    private static final class EmptyQueue<T> extends FQueue<T> {
         EmptyQueue(){
-            super(0)
         }
 
-        NonEmptyQueue<T> addLast (T element)  { [element, FList.emptyList, FList.emptyList] }
+        NonEmptyQueue<T> addLast (T element)  { [FList.emptyList + element, FList.emptyList] }
 
-        NonEmptyQueue<T> addFirst (T element) { [element, FList.emptyList, FList.emptyList] }
+        NonEmptyQueue<T> addFirst (T element) { [FList.emptyList + element, FList.emptyList] }
 
         Iterator<T> iterator () {
             [
@@ -41,51 +40,53 @@ abstract class FQueue<T> implements Iterable<T> {
         }
 
         String toString () {
-            "[,[],[]]"
+            "[[],[]]"
         }
+
+        final int size () { 0 }
     }
 
-    private static class NonEmptyQueue<T> extends FQueue<T> {
+    private static final class NonEmptyQueue<T> extends FQueue<T> {
         private final FList<T> input, output
-        private final T head
 
-        NonEmptyQueue (T head, FList<T> output, FList<T> input) {
-            super(input.size + output.size + 1)
+        NonEmptyQueue (FList<T> output, FList<T> input) {
             this.input  = input
             this.output = output
-            this.head   = head
         }
 
         NonEmptyQueue<T> addLast (T element) {
-            [head, output, input + element]
+            [output, input + element]
         }
 
         NonEmptyQueue<T> addFirst (T element) {
-            [element, output + head, input]
+            [output + element, input]
         }
 
-        T getFirst () { head }
+        T getFirst () { output.head }
 
         Pair<T, FQueue<T>> removeFirst() {
-            if (size == 1)
-                [head, FQueue.emptyQueue]
+            if (size () == 1)
+                [output.head, FQueue.emptyQueue]
             else {
-                if(!output.empty)
-                    [head, (NonEmptyQueue<T>)[output.head, output.tail, input]]
+                if(output.size > 1)
+                    [output.head, (NonEmptyQueue<T>)[output.tail, input]]
                 else {
                     FList<T> newOut = input.reverse(FList.emptyList)
-                    [head, (NonEmptyQueue<T>)[newOut.head, newOut.tail, FList.emptyList]]
+                    [output.head, (NonEmptyQueue<T>)[newOut, FList.emptyList]]
                 }
             }
         }
 
         Iterator<T> iterator () {
-            head.singleton().iterator() | output.iterator() | input.reverse(FList.emptyList).iterator()
+            output.iterator() | input.reverse(FList.emptyList).iterator()
         }
 
         String toString () {
-            "[$head,$output,$input]"
+            "[$output,$input]"
         }
 
+        final int size () {
+            input.size + output.size
+        }
     }
 }

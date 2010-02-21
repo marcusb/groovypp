@@ -74,8 +74,8 @@ import java.util.concurrent.Executors
 
     private void runRing (Executor pool) {
         MessageChannel last
-        CountDownLatch cdl = [100000*500]
-        for (i in 0..<100000) {
+        CountDownLatch cdl = [10000*500]
+        for (i in 0..<10000) {
             MessageChannel.ExecutingChannel channel = {
                 last?.post it
                 cdl.countDown()

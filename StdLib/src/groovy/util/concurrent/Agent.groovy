@@ -17,11 +17,11 @@ public class Agent<T>  {
             def q = queue
             def p = q.addLast(mutation)
             if (queue.compareAndSet(q, p)) {
-                if (p.size == 1) {
+                if (p.size () == 1) {
                     CallLaterExecutors.currentExecutor.callLater {
                         for (;;) {
                             def qq = queue
-                            if (!qq.size) {
+                            if (!qq.size()) {
                                 break
                             }
 

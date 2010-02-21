@@ -59,7 +59,7 @@ import java.util.concurrent.locks.LockSupport
                 def q = queue
                 def newQ = queue.addLast(message)
                 if (queue.compareAndSet(q, newQ)) {
-                    if (q.size < concurrencyLevel)
+                    if (q.size() < concurrencyLevel)
                         schedule ()
                     return this
                 }
@@ -72,7 +72,7 @@ import java.util.concurrent.locks.LockSupport
                 def newQ = queue.removeFirst()
                 if (queue.compareAndSet(q, newQ.second)) {
                     onMessage(newQ.first)
-                    if (q.size > concurrencyLevel)
+                    if (q.size() > concurrencyLevel)
                         schedule ()
                     return
                 }
@@ -157,7 +157,7 @@ import java.util.concurrent.locks.LockSupport
             def thisThread = Thread.currentThread()
             for (;;) {
                 def q = queue
-                if (!q.size) {
+                if (!q.size()) {
                     def wt = waitingThread
                     if (waitingThread.compareAndSet(wt, wt + thisThread)) {
                         LockSupport.park()
@@ -175,7 +175,7 @@ import java.util.concurrent.locks.LockSupport
         public void schedule() {
             for (;;) {
                 def wt = waitingThread
-                if (!wt.size)
+                if (!wt.size())
                     break;
 
                 if (waitingThread.compareAndSet(wt, wt.tail)) {

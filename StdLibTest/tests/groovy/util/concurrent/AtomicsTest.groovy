@@ -60,7 +60,7 @@ public class AtomicsTest extends GroovyTestCase {
 
         cdl.await()
         FQueue q = queue.get()
-        assertEquals n, q.size 
+        assertEquals (n, q.size ())
         def res = q.asList ()
         res.sort()
         assertEquals (0..<n, res)
