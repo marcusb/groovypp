@@ -70,7 +70,13 @@ public class ClassNodeCache {
                 "java.util.Map sort(java.util.Map, groovy.lang.Closure)",
                 "java.util.List sort(java.util.Collection, groovy.lang.Closure)",
                 "java.lang.Object newInstance(java.lang.Class)",
-                "java.lang.Object with(java.lang.Object, groovy.lang.Closure)"
+                "java.lang.Object with(java.lang.Object, groovy.lang.Closure)",
+                "java.util.List collect(java.lang.Object, groovy.lang.Closure)",
+                "java.util.List collect(java.lang.Object, java.util.Collection, groovy.lang.Closure)",
+                "java.util.List collect(java.util.Collection, groovy.lang.Closure)",
+                "java.util.Collection collect(java.util.Collection, java.util.Collection, groovy.lang.Closure)",
+                "java.util.Collection collect(java.util.Map, groovy.lang.Closure)",
+                "java.util.Collection collect(java.util.Map, java.util.Collection, groovy.lang.Closure)"
         )), false);
     }
 

@@ -78,6 +78,24 @@ abstract class Iterations {
     }
 
     /**
+     * Iterates through this object transforming each value into a new value using the
+     * closure as a transformer, returning a list of transformed values.
+     * Example:
+     * <pre class="groovyTestCase">def list = [1, 'a', 1.23, true ]
+     * def types = list.collect { it.class }
+     * assert types == [Integer, String, BigDecimal, Boolean]</pre>
+     *
+     * @param self    the values of the object to transform
+     * @param closure the closure used to transform each element of the collection
+     * @return a Collection of the transformed values
+     */
+    public static <T,R> Collection<R> collect(Iterator<T> self, Collection<R> where = [], Function1<T,R> closure) {
+        for(el in self)
+            where << closure(el)
+        where
+    }
+
+    /**
      * Applies given function to each iterator element. The result of function application is discarded.
      * @param self input iterator.
      * @param op function to be applied.
@@ -115,6 +133,24 @@ abstract class Iterations {
     }
 
     /**
+     * Iterates through this object transforming each value into a new value using the
+     * closure as a transformer, returning a list of transformed values.
+     * Example:
+     * <pre class="groovyTestCase">def list = [1, 'a', 1.23, true ]
+     * def types = list.collect { it.class }
+     * assert types == [Integer, String, BigDecimal, Boolean]</pre>
+     *
+     * @param self    the values of the object to transform
+     * @param closure the closure used to transform each element of the collection
+     * @return a Collection of the transformed values
+     */
+    public static <T,R> Collection<R> collect(Iterable<T> self, Collection<R> where = [], Function1<T,R> closure) {
+        for(el in self)
+            where << closure(el)
+        where
+    }
+
+    /**
      * Applies given function to each array element. The result of function application is discarded.
      * @param self input array.
      * @param op function to be applied.
@@ -124,12 +160,48 @@ abstract class Iterations {
     }
 
     /**
+     * Iterates through this object transforming each value into a new value using the
+     * closure as a transformer, returning a list of transformed values.
+     * Example:
+     * <pre class="groovyTestCase">def list = [1, 'a', 1.23, true ]
+     * def types = list.collect { it.class }
+     * assert types == [Integer, String, BigDecimal, Boolean]</pre>
+     *
+     * @param self    the values of the object to transform
+     * @param closure the closure used to transform each element of the collection
+     * @return a Collection of the transformed values
+     */
+    public static <T,R> Collection<R> collect(T [] self, Collection<R> where = [], Function1<T,R> closure) {
+        for(el in self)
+            where << closure(el)
+        where
+    }
+
+    /**
      * Applies given function to each enumeration element. The result of function application is discarded.
      * @param self input {java.util.Enumeration} object.
      * @param op function to be applied.
      */
     static <T> void each(Enumeration<T> self, Function1<T, Object> op) {
         each(self.iterator(), op)
+    }
+
+    /**
+     * Iterates through this object transforming each value into a new value using the
+     * closure as a transformer, returning a list of transformed values.
+     * Example:
+     * <pre class="groovyTestCase">def list = [1, 'a', 1.23, true ]
+     * def types = list.collect { it.class }
+     * assert types == [Integer, String, BigDecimal, Boolean]</pre>
+     *
+     * @param self    the values of the object to transform
+     * @param closure the closure used to transform each element of the collection
+     * @return a Collection of the transformed values
+     */
+    public static <T,R> Collection<R> collect(Enumeration<T> self, Collection<R> where = [], Function1<T,R> closure) {
+        for(el in self)
+            where << closure(el)
+        where
     }
 
     /**
@@ -146,10 +218,35 @@ abstract class Iterations {
     }
 
     /**
+     * Iterates through this object transforming each value into a new value using the
+     * closure as a transformer, returning a list of transformed values.
+     * Example:
+     * <pre class="groovyTestCase">def list = [1, 'a', 1.23, true ]
+     * def types = list.collect { it.class }
+     * assert types == [Integer, String, BigDecimal, Boolean]</pre>
+     *
+     * @param self    the values of the object to transform
+     * @param closure the closure used to transform each element of the collection
+     * @return a Collection of the transformed values
+     */
+    public static <K,V,R> Collection<R> collect(Map<K,V> self, Collection<R> where = [], Function2<K,V,R> closure) {
+        for(el in self.entrySet())
+            where << closure(el.key, el.value)
+        where
+    }
+
+    /**
      * Default dynamic iteration.
      */
     static <T> T each(T self, Closure closure) {
         return DefaultGroovyMethods.each(self, closure)
+    }
+
+    /**
+     * Default dynamic iteration.
+     */
+    static <T> List collect(T self, Closure closure) {
+        return DefaultGroovyMethods.collect(self, closure)
     }
 
     static <T> BlockingQueue<T> leftShift(BlockingQueue<T> queue, Iterator<T> iter) {
