@@ -12,6 +12,8 @@
     <property name="examples.module.name" value="Examples" />
 
     <property name="version" value="${groovyPPVersion}"/>
+    <property name="install.zip" value="groovy-booster-${version}.zip"/>
+
 
     <property name="compiler.src" location="src" />
     <property name="compiler.tests" location="tests" />
@@ -80,7 +82,8 @@
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
          classpathref="libs"/>
-
+    <taskdef name="gcupload" classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/ant-googlecode-0.0.2.jar"/>
+	
 	<target name="clean">
 		<delete dir="${output.dir}"/>
 
@@ -210,7 +213,7 @@
     </target>
 
     <target name="make.install" depends="test" description="Build installation">
-        <zip destfile="groovy-booster-${version}.zip"
+        <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
             <zipfileset dir="install" prefix=""/>
@@ -227,5 +230,10 @@
 
     <target name="all"
         depends="clean, make.jar" description="Build application, run tests &amp; create jar file" />
-
+	
+    <target name="publish-googlecode" depends="make.install">
+	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
+    	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy Booster ${version}"
+	    labels="Featured" verbose="true"/>
+    </target>
 </project>
