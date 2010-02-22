@@ -76,7 +76,8 @@ public class ClassNodeCache {
                 "java.util.List collect(java.util.Collection, groovy.lang.Closure)",
                 "java.util.Collection collect(java.util.Collection, java.util.Collection, groovy.lang.Closure)",
                 "java.util.Collection collect(java.util.Map, groovy.lang.Closure)",
-                "java.util.Collection collect(java.util.Map, java.util.Collection, groovy.lang.Closure)"
+                "java.util.Collection collect(java.util.Map, java.util.Collection, groovy.lang.Closure)",
+                "java.lang.String toString(java.lang.Object)"
         )), false);
     }
 

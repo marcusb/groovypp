@@ -135,7 +135,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
     public static ClassNode getReturnType(MethodNode methodNode, BytecodeExpr object, TupleExpression bargs, CompilerTransformer compiler) {
         final BytecodeExpr objectCopy = object;
         ClassNode returnType = methodNode.getReturnType();
-        
+
         boolean removeFirstArgAtTheEnd = false;
         if (methodNode instanceof ClassNodeCache.DGM) {
             ClassNodeCache.DGM dgm = (ClassNodeCache.DGM) methodNode;
@@ -218,7 +218,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         int op = INVOKEVIRTUAL;
         final String classInternalName;
         final String methodDescriptor;
-        if (methodNode instanceof ClassNodeCache.DGM && !(object instanceof VariableExpressionTransformer.Super)) {
+        if (methodNode instanceof ClassNodeCache.DGM) {
             MethodNode dgm = ((ClassNodeCache.DGM) methodNode).original;
 
             op = INVOKESTATIC;
@@ -255,9 +255,9 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                 else
                     mv.visitInsn(POP);
             }
-            
+
             ClassNode t = op == INVOKESPECIAL ? object.getType() : methodNode.getDeclaringClass();
-            classInternalName = (t.isArray()) ? BytecodeHelper.getTypeDescription(t) : BytecodeHelper.getClassInternalName(t); 
+            classInternalName = (t.isArray()) ? BytecodeHelper.getTypeDescription(t) : BytecodeHelper.getClassInternalName(t);
             methodDescriptor = BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters());
         }
 
@@ -312,6 +312,8 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         if ((methodNode.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && methodNode.getDeclaringClass() != compiler.classNode) {
             MethodNode delegate = compiler.context.getMethodDelegate(methodNode);
             return new ResolvedMethodBytecodeExpr(parent, delegate, object, bargs, compiler);
+        } else if (methodNode instanceof ClassNodeCache.DGM && object instanceof VariableExpressionTransformer.Super) {
+            compiler.addError("Cannot reference default groovy method '" + methodNode.getName() + "' using 'super'. Call the static method instead.", parent);
         }
         return new ResolvedMethodBytecodeExpr(parent, methodNode, object, bargs, compiler);
     }
