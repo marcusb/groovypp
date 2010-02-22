@@ -470,6 +470,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public BytecodeExpr castToBoolean(final BytecodeExpr be, final ClassNode type) {
+        if (be.getType().equals(ClassHelper.boolean_TYPE))
+            return be;
+
         if (ClassHelper.isPrimitiveType(be.getType())) {
             return new BytecodeExpr(be, type) {
                 protected void compile(MethodVisitor mv) {

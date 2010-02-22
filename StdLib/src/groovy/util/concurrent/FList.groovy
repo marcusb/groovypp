@@ -3,7 +3,7 @@ package groovy.util.concurrent
 /**
  * Simple implementation of one-directional immutable functional list
  */
-@Typed
+@Typed(debug=true)
 abstract static class FList<T> implements Iterable<T> {
     /**
      * Singleton for empty list
@@ -21,7 +21,6 @@ abstract static class FList<T> implements Iterable<T> {
      * Element last added to the list
      */
     abstract T getHead ()
-
 
     /**
      * Tail of the list
@@ -41,9 +40,15 @@ abstract static class FList<T> implements Iterable<T> {
     abstract FList<T> plus (T element)
 
     /**
-     * Creates new list containing given element and then all element of this list
+     * Creates new list containing all elements of this list except given one
      */
-    abstract FList<T> minus (T element)
+    final FList<T> minus (T element, FList<T> accumulated = FList.emptyList) {
+        !size ?
+            accumulated.reverse() :
+            head == element ?
+                tail.addAll(accumulated) :
+                tail.minus(element,accumulated + head)
+    }
 
     /**
      * Creates new list containing given element and then all element of this list
@@ -52,12 +57,13 @@ abstract static class FList<T> implements Iterable<T> {
         def res = this
         for (el in elements)
             res += el
+        res
     }
 
     /**
      * Utility method allowing convinient syntax <code>flist ()</code> for accessing head of the list
      */
-    final T call () { getHead() }
+    final T call () { head }
 
     /**
      * Create reversed copy of the list
@@ -88,10 +94,6 @@ abstract static class FList<T> implements Iterable<T> {
             [element]
         }
 
-        FList<T> minus (T element) {
-            throw new NoSuchElementException()
-        }
-
         String toString () { "[]" }
 
         public T getHead() {
@@ -111,17 +113,13 @@ abstract static class FList<T> implements Iterable<T> {
             this.head = head
         }
 
-        OneElementList (T head, int addSize) {
+        protected OneElementList (T head, int addSize) {
             super(addSize+1)
             this.head = head
         }
 
         final MoreThanOneElementList<T> plus(T element) {
             [element, this]
-        }
-
-        FList<T> minus (T element) {
-            head == element ? tail : (tail-element) + head
         }
 
         public Iterator<T> iterator() {

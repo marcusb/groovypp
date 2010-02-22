@@ -100,13 +100,13 @@ abstract class FQueue<T> implements Iterable<T> {
                 if(output.size > 2)
                     [output.head, (MoreThanOneElementQueue<T>)[output.tail, input]]
                 else {
-                    [output.head, (MoreThanOneElementQueue<T>)[input.reverse(FList.emptyList) + output.tail.head, FList.emptyList]]
+                    [output.head, (MoreThanOneElementQueue<T>)[input.reverse() + output.tail.head, FList.emptyList]]
                 }
             }
         }
 
         Iterator<T> iterator () {
-            output.iterator() | input.reverse(FList.emptyList).iterator()
+            output.iterator() | input.reverse().iterator()
         }
 
         String toString () {

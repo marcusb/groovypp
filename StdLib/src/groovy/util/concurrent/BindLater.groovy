@@ -113,7 +113,7 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
         for (;;) {
             def l = listeners
             if (listeners.compareAndSet(l, null)) {
-                for (el in l.reverse(FList.emptyList)) {
+                for (el in l.reverse()) {
                     if (el instanceof BlockingQueue) {
                         ((BlockingQueue)el).put(this)
                         continue

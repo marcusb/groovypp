@@ -3,12 +3,11 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.TernaryExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.syntax.Types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
 
         if (statement instanceof ReturnStatement) {
             final Expression expr = ((ReturnStatement) statement).getExpression();
-            if (!(expr instanceof TernaryExpression)) return statement;
+            if (!(expr instanceof TernaryExpression || expr instanceof BinaryExpression)) return statement;
             statement = new ExpressionStatement(expr);
         }
 
@@ -77,9 +76,29 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
                 falseExpr.setSourcePosition(t.getFalseExpression());
                 ret = new IfStatement(t.getBooleanExpression(), trueExpr, falseExpr);
                 ret.setSourcePosition(expr);
-                ret = addReturnsIfNeeded(ret, scope);
+                return addReturnsIfNeeded(ret, scope);
             }
             else {
+                if (expr instanceof BinaryExpression) {
+                    BinaryExpression be = (BinaryExpression) expr;
+                    switch(be.getOperation().getType()) {
+                        case Types.LOGICAL_AND: {
+                            TernaryExpression t = new TernaryExpression(new BooleanExpression(be.getLeftExpression()), be.getRightExpression(), ConstantExpression.FALSE);
+                            t.setSourcePosition(be);
+                            ExpressionStatement es = new ExpressionStatement(t);
+                            es.setSourcePosition(t);
+                            return addReturnsIfNeeded(es, scope);
+                        }
+
+                        case Types.LOGICAL_OR: {
+                            TernaryExpression t = new TernaryExpression(new BooleanExpression(be.getLeftExpression()), ConstantExpression.TRUE, be.getRightExpression());
+                            t.setSourcePosition(be);
+                            ExpressionStatement es = new ExpressionStatement(t);
+                            es.setSourcePosition(t);
+                            return addReturnsIfNeeded(es, scope);
+                        }
+                    }
+                }
                 ret = new ReturnStatement(expr);
                 ret.setSourcePosition(expr);
             }
