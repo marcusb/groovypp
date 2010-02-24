@@ -15,6 +15,7 @@ import java.util.Set;
 
 public class SourceUnitContext {
     private int syntheticAccessorNumber = 1979;
+    private int syntheticReceiverNumber = 1979;
     public Map<FieldNode, MethodNode> generatedFieldGetters = new HashMap<FieldNode, MethodNode>();
     public Map<FieldNode, MethodNode> generatedFieldSetters = new HashMap<FieldNode, MethodNode>();
     public Map<MethodNode, MethodNode> generatedMethodDelegates = new HashMap<MethodNode, MethodNode>();
@@ -125,5 +126,9 @@ public class SourceUnitContext {
 
     public boolean isSelfInitialized(FieldNode node) {
         return selfInitializedFields.contains(node);
+    }
+
+    public String getNextSyntheticReceiverName() {
+        return "$receiver" + (syntheticReceiverNumber++);
     }
 }
