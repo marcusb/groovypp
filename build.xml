@@ -82,6 +82,7 @@
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
          classpathref="libs"/>
+
     <taskdef name="gcupload" classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/ant-googlecode-0.0.2.jar"/>
 	
 	<target name="clean">
