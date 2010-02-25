@@ -380,17 +380,21 @@ y''' == 'x\\ny'
         void innerNormalizationFileRoundTrip(String s) {
             def f = File.createTempFile("groovy.StringTest", ".txt")
 
-            def sd = s.denormalize()
-            f.write(sd)
-            assert sd == f.text
+            try {
+              def sd = s.denormalize()
+              f.write(sd)
+              assert sd == f.text
 
-            f.write(s);
-            assert s == f.text
+              f.write(s);
+              assert s == f.text
 
-            def rt = (s.denormalize()).normalize()
-            assert s.normalize() == rt
+              def rt = (s.denormalize()).normalize()
+              assert s.normalize() == rt
 
-            if (!s.contains('\\r')) assert s == rt
+              if (!s.contains('\\r')) assert s == rt
+            } finally {
+              f.delete();
+            }
         }
 
         @Typed
