@@ -234,7 +234,7 @@
 	
     <target name="publish-googlecode" depends="make.install">
 	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
-    	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy Booster ${version}"
+    	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"
 	    labels="Featured" verbose="true"/>
     </target>
 </project>
