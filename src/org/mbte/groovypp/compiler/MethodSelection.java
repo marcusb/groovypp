@@ -64,7 +64,7 @@ public class MethodSelection {
         // -1 means a mismatch
         if (c == null) return -1;
         // 0 means a direct match
-        if (c == interfaceClass) return 0;
+        if (c.redirect() == interfaceClass) return 0;
         ClassNode[] interfaces = c.getInterfaces();
         int max = -1;
         for (ClassNode anInterface : interfaces) {
@@ -120,34 +120,31 @@ public class MethodSelection {
         } else if (arguments.length == 1 && arguments[0] == null) {
             answer = chooseMostGeneralMethodWith1NullParam(methods);
         } else {
-            Object matchingMethods = null;
+            List<MethodNode> matchingMethods = new ArrayList<MethodNode>();
 
             final int len = methods.size;
             Object data[] = methods.getArray();
+            boolean isValidExactFound = false;
             for (int i = 0; i != len; ++i) {
-                Object method = data[i];
+                MethodNode method = (MethodNode) data[i];
 
-                // making this false helps find matches
-                if (isValidMethod(((MethodNode) method).getParameters(), arguments, type, ((MethodNode) method).getDeclaringClass())) {
-                    if (matchingMethods == null)
-                        matchingMethods = method;
-                    else if (matchingMethods instanceof ArrayList)
-                        ((ArrayList) matchingMethods).add(method);
-                    else {
-                        ArrayList arr = new ArrayList(4);
-                        arr.add(matchingMethods);
-                        arr.add(method);
-                        matchingMethods = arr;
+                if (isValidMethod(method.getParameters(), arguments, type, method.getDeclaringClass())) {
+                    if (isValidExactMethod(arguments, method.getParameters(), type, method.getDeclaringClass())) {
+                        if (!isValidExactFound) matchingMethods.clear();
+                        isValidExactFound = true;
+                    } else {
+                        if (isValidExactFound) continue;
                     }
+                    matchingMethods.add(method);
                 }
             }
-            if (matchingMethods == null) {
-                return null;
-            } else if (!(matchingMethods instanceof ArrayList)) {
-                return matchingMethods;
-            }
-            return chooseMostSpecificParams(methodName, (List<MethodNode>) matchingMethods, arguments);
 
+            if (matchingMethods.size() == 0) {
+                return null;
+            } else if (matchingMethods.size() == 1) {
+                return matchingMethods.get(0);
+            }
+            return chooseMostSpecificParams(methodName, matchingMethods, arguments);
         }
         if (answer != null) {
             return answer;
@@ -164,18 +161,17 @@ public class MethodSelection {
             MethodNode method = iter.next();
             Parameter[] paramTypes = method.getParameters();
             long dist = calculateParameterDistance(arguments, paramTypes);
-            if (dist == 0) return method;
             int indirectCount = getIndirectlyAssignableParamsCount(paramTypes, arguments);
             if (matches.size() == 0) {
                 matches.add(method);
                 matchesDistance = dist;
                 matchesIndirect = indirectCount;
-            } else if (dist < matchesDistance || (dist == matchesDistance && indirectCount < matchesIndirect)) {
+            } else if (indirectCount < matchesIndirect || (indirectCount == matchesIndirect && dist < matchesDistance)) {
                 matchesDistance = dist;
                 matchesIndirect = indirectCount;
                 matches.clear();
                 matches.add(method);
-            } else if (dist == matchesDistance && indirectCount == matchesIndirect) {
+            } else if (indirectCount == matchesIndirect && dist == matchesDistance) {
                 matches.add(method);
             }
 
@@ -195,11 +191,18 @@ public class MethodSelection {
         for (int i = 0; i < params.length - 1; i++) {
             if (!isAssignableDirectly(params[i].getType(), args[i])) res++;
         }
-        if (params.length == args.length && isAssignableOrInference(params[params.length -1].getType(),
+        final ClassNode lastParamType = params[params.length - 1].getType();
+        if (params.length == args.length && isAssignableOrInference(lastParamType,
                 args[params.length -1])) {
-            if (!isAssignableDirectly(params[params.length -1].getType(), args[params.length -1])) res++;
+            if (!isAssignableDirectly(lastParamType, args[params.length -1])) res++;
         } else if (args.length > params.length) {
-            ClassNode last = params[params.length - 1].getType().getComponentType();
+            ClassNode last;
+            if (lastParamType.isArray()) {
+                last = lastParamType.getComponentType();
+            } else {
+                last = TypeUtil.getSubstitutedType(ClassHelper.LIST_TYPE.getGenericsTypes()[0].getType(),
+                        ClassHelper.LIST_TYPE, lastParamType);
+            }
             for (int i =  params.length - 1; i < args.length;  i++) {
                 if (!isAssignableDirectly(last, args[i])) {
                     res++;
@@ -215,8 +218,18 @@ public class MethodSelection {
         if (param == ClassHelper.boolean_TYPE) {
             return arg == ClassHelper.boolean_TYPE;
         }
-        if (ClassHelper.isPrimitiveType(param) && ClassHelper.isPrimitiveType(arg)) return true;
-        return TypeUtil.isDirectlyAssignableFrom(param.redirect(), arg.redirect());
+
+        if (getPrimitiveIndex(param) >= 0 && getPrimitiveIndex(arg) >= 0) return true;
+
+        // We cannot argue about closure assignability here.
+        if (arg.implementsInterface(TypeUtil.TCLOSURE) || arg.redirect() == TypeUtil.TCLOSURE_NULL) {
+            return true;
+        }
+
+        if (arg.implementsInterface(TypeUtil.TLIST)) arg = TypeUtil.ARRAY_LIST_TYPE;
+        if (arg.implementsInterface(TypeUtil.TMAP)) arg = TypeUtil.LINKED_HASH_MAP_TYPE;
+
+        return TypeUtil.isDirectlyAssignableFrom(TypeUtil.wrapSafely(param), TypeUtil.wrapSafely(arg));
     }
 
     private static long calculateParameterDistance(ClassNode argument, ClassNode parameter) {
@@ -516,7 +529,7 @@ public class MethodSelection {
         final int size = arguments.length;
         final int paramMinus1 = pt.length - 1;
 
-        if (pt.length == size && isValidExactMethod(arguments, pt, accessType, declaringClass)) {
+        if (isValidExactMethod(arguments, pt, accessType, declaringClass)) {
             return true;
         }
 
@@ -530,6 +543,7 @@ public class MethodSelection {
     }
 
     private static boolean isValidExactMethod(ClassNode[] arguments, Parameter[] pt, ClassNode accessType, ClassNode declaringClass) {
+        if (pt.length != arguments.length) return false;
         // lets check the parameter types match
         int size = pt.length;
         for (int i = 0; i < size; i++) {
