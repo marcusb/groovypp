@@ -1,0 +1,8 @@
+package groovy
+
+class GppTest extends GroovyShellTestCase {
+    void testMe () {
+        for (i in 0..<5)
+            println i
+    }
+}

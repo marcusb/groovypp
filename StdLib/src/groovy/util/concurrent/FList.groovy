@@ -3,7 +3,7 @@ package groovy.util.concurrent
 /**
  * Simple implementation of one-directional immutable functional list
  */
-@Typed(debug=true)
+@Typed
 abstract static class FList<T> implements Iterable<T> {
     /**
      * Singleton for empty list

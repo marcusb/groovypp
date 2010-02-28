@@ -31,6 +31,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         ModuleNode module = (ModuleNode) nodes[0];
         List<ClassNode> toProcess = new LinkedList<ClassNode>();
+        final boolean forceTyped = source.getName().endsWith(".gpp");
         for (ClassNode classNode : module.getClasses()) {
             boolean process = false;
             boolean typed = false;
@@ -42,6 +43,11 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                     typed = true;
                     ann.getClassNode().setRedirect(TypeUtil.TYPED);
                 }
+            }
+
+            if (forceTyped && !typed) {
+                typed = true;
+                classNode.addAnnotation(new AnnotationNode(TypeUtil.TYPED));
             }
 
             if (process) {
