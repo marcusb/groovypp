@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
-  <component name="BuildJarSettings">
-    <containerInfo>
-      <containerElement type="module" name="StdLib">
-        <attribute name="method" value="1" />
-        <attribute name="URI" value="/" />
-      </containerElement>
-    </containerInfo>
-    <setting name="jarUrl" value="file://$MODULE_DIR$/StdLib.jar" />
-    <setting name="buildJar" value="true" />
-    <setting name="mainClass" value="" />
-  </component>
-  <component name="FacetManager">
-    <facet type="Groovy" name="Groovy">
-      <configuration />
-    </facet>
-  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -24,8 +8,8 @@
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT" level="project" />
+    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Groovypp" />
     <orderEntry type="module-library">
       <library>

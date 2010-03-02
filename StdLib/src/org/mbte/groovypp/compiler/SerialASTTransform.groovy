@@ -9,7 +9,6 @@ import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
-import org.mbte.groovypp.compiler.OpenVerifier
 import org.mbte.groovypp.compiler.TypeUtil
 import org.objectweb.asm.Opcodes
 import org.codehaus.groovy.ast.*
@@ -32,8 +31,6 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
 
             if (!classNode.implementsInterface(EXTERNALIZABLE))
                 continue;
-
-            new OpenVerifier().visitClass(classNode);
 
             def hasDefConstructor = false
             for(constructor in classNode.declaredConstructors) {

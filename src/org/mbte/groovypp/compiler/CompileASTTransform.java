@@ -61,16 +61,12 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             classNode = (ClassNode) parent;
             TypePolicy classPolicy = getPolicy(classNode, source, TypePolicy.DYNAMIC);
 
-            addMetaClassField(classNode);
-
             allMethods(source, toProcess, classNode, classPolicy);
         } else if (parent instanceof PackageNode) {
             TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
             for (ClassNode clazz : source.getAST().getClasses()) {
                 if (clazz instanceof ClosureClassNode) continue;
                 if (isAnnotated(clazz)) continue;
-
-                addMetaClassField(clazz);
 
                 allMethods(source, toProcess, clazz, modulePolicy);
 
@@ -135,15 +131,6 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         return false;
     }
 
-    private void addMetaClassField(ClassNode node) {
-        if (node.isInterface()) return;
-        FieldNode meta = node.getDeclaredField("metaClass");
-        // Add 'metaClass' field to prevent from verifier injection with unwanted initialization.
-        if (meta == null) {
-            node.addField("metaClass", ACC_PRIVATE | ACC_TRANSIENT | ACC_SYNTHETIC, ClassHelper.METACLASS_TYPE, null);
-        }
-    }
-
     private void allMethods(SourceUnit source, Map<MethodNode, TypePolicy> toProcess, ClassNode classNode, TypePolicy classPolicy) {
         for (MethodNode mn : classNode.getMethods()) {
             if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
@@ -167,8 +154,6 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         while (inners.hasNext()) {
             InnerClassNode node = inners.next();
             TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
-
-            addMetaClassField(node);
 
             allMethods(source, toProcess, node, innerClassPolicy);        }
     }

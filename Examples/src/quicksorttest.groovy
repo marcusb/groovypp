@@ -1,4 +1,4 @@
-@Typed(debug=true)  
+@Typed  
 package test
 
 void swap(int[] a, int i, int j) {

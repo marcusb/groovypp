@@ -10,8 +10,11 @@ import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
+import org.codehaus.groovy.syntax.SyntaxException;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -29,7 +32,6 @@ import java.util.Map;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
-
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         ModuleNode module = (ModuleNode) nodes[0];
         for (ClassNode classNode : module.getClasses()) {
@@ -42,6 +44,19 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             if (classNode instanceof InnerClassNode && classNode.getName().endsWith("$TraitImpl")) {
                 continue;
             }
+
+            VolatileFieldUpdaterTransform.addUpdaterForVolatileFields(classNode);
+            try {
+                 new OpenVerifier().visitClass(classNode);
+             }
+             catch (MultipleCompilationErrorsException err) {
+                 throw err;
+             }
+             catch (Throwable t) {
+                 int line = classNode.getLineNumber();
+                 int col = classNode.getColumnNumber();
+                 source.getErrorCollector().addError(new SyntaxErrorMessage(new SyntaxException(t.getMessage() + '\n', line, col), source), true);
+             }
 
             improveAbstractMethods(classNode);
         }

@@ -25,13 +25,14 @@ class ThreadRingGroovy {
     static final CountDownLatch cdl = new CountDownLatch(1);
 
     public static void main(String[] args) throws InterruptedException {
-        long start = System.currentTimeMillis();
-        int n = Integer.parseInt(args[0]);
-        ThreadRingGroovy ring = new ThreadRingGroovy(n);
-        Node node = ring.start(MAX_NODES);
+        def start = System.currentTimeMillis();
+        def n = Integer.parseInt(args[0]);
+        def ring = new ThreadRingGroovy(n);
+        def node = ring.start(MAX_NODES);
         node.sendMessage(new TokenMessage(1,0));
         cdl.await();
-        System.out.println(n + ": " + (System.currentTimeMillis()-start));
+        long end = System.currentTimeMillis() - start
+        System.out.println("$n:$end")
     }
 
     public ThreadRingGroovy(int n) {
@@ -39,7 +40,7 @@ class ThreadRingGroovy {
     }
 
     public Node start(int n) {
-        Node[] nodes = spawnNodes(n);
+        def nodes = spawnNodes(n);
         connectNodes(n, nodes);
         return nodes[0];
     }
@@ -78,16 +79,16 @@ class ThreadRingGroovy {
     }
 
     private class Node implements Runnable {
-        private int nodeId;
-        private Node nextNode;
+        private int nodeId
+        private Node nextNode
         private LinkedBlockingQueue<TokenMessage> queue = []
-        private boolean isActive = false;
-        private int counter;
+        private boolean isActive
+        private int counter
 
         public Node(int id, Node nextNode) {
-            this.nodeId = id;
-            this.nextNode = nextNode;
-            this.counter = 0;
+            this.nodeId = id
+            this.nextNode = nextNode
+            this.counter = 0
         }
 
         public void connect(Node node) {
@@ -108,7 +109,6 @@ class ThreadRingGroovy {
                     if (m.isStop) {
                         int nextValue = m.value+1;
                         if (nextValue == MAX_NODES) {
-//                            System.out.println("last one");
                             executor.shutdown();
                             cdl.countDown();
                         } else {
@@ -116,7 +116,6 @@ class ThreadRingGroovy {
                             nextNode.sendMessage(m);
                         }
                         isActive = false;
-//                        System.out.println("ending node "+nodeId);
                     } else {
                         if (m.value == N) {
                             System.out.println(nodeId);

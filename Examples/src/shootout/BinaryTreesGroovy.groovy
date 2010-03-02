@@ -36,8 +36,6 @@ class BinaryTreesGroovy {
 @Typed
 private static class TreeNode
 {
-    MetaClass getMetaClass () {}
-    
     private TreeNode left, right;
     private int item;
 
