@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.Opcodes;
@@ -19,6 +20,7 @@ public class SourceUnitContext {
     public Map<FieldNode, MethodNode> generatedFieldGetters = new HashMap<FieldNode, MethodNode>();
     public Map<FieldNode, MethodNode> generatedFieldSetters = new HashMap<FieldNode, MethodNode>();
     public Map<MethodNode, MethodNode> generatedMethodDelegates = new HashMap<MethodNode, MethodNode>();
+    private Map<MethodNode, Integer> generatedSuperMethodAccessorNumbers = new HashMap<MethodNode, Integer>();
 
     private Set<ClassNode> outerClassInstanceUsers = new HashSet<ClassNode>();
     private Set<FieldNode> selfInitializedFields = new HashSet<FieldNode>();
@@ -111,6 +113,42 @@ public class SourceUnitContext {
         }
         return delegate;
     }
+
+    public MethodNode getSuperMethodDelegate(MethodNode superMethod, ClassNode placeClass) {
+        Integer num = generatedSuperMethodAccessorNumbers.get(superMethod);
+        if (num == null) {
+            num = syntheticAccessorNumber++;
+            generatedSuperMethodAccessorNumbers.put(superMethod, num);
+        }
+        String name = "delegate" + num;
+        final ClassNode declaringClass = superMethod.getDeclaringClass();
+        final Parameter[] superParams = superMethod.getParameters();
+        Parameter[] params = new Parameter[superParams.length];
+        for (int i = 0; i < params.length; i++) {
+            ClassNode type = TypeUtil.mapTypeFromSuper(superParams[i].getType(), declaringClass, placeClass);
+            params[i] = new Parameter(type, superParams[i].getName());
+        }
+        MethodNode delegate = placeClass.getMethod(name, superParams);
+        if (delegate == null) {
+
+            Expression[] exprs = new Expression[superParams.length];
+            for (int i = 0; i < exprs.length; i++) {
+                exprs[i] = new VariableExpression(params[i]);
+            }
+            Expression argList = new ArgumentListExpression(exprs);
+            ClassNode ret = TypeUtil.mapTypeFromSuper(superMethod.getReturnType(), declaringClass, placeClass);
+            final MethodCallExpression call = new MethodCallExpression(new VariableExpression("super", ClassHelper.DYNAMIC_TYPE),
+                    superMethod.getName(), argList);
+            final Statement statement = ret != ClassHelper.VOID_TYPE ? new ReturnStatement(call) : new ExpressionStatement(call);
+            delegate = new MethodNode(name, superMethod.getModifiers(), ret, params, new ClassNode[0],
+                    statement);
+            delegate.setDeclaringClass(placeClass);
+            placeClass.addMethod(delegate);
+            ClassNodeCache.clearCache(placeClass);
+        }
+        return delegate;
+    }
+
 
     public void setOuterClassInstanceUsed(ClassNode node) {
         outerClassInstanceUsers.add(node);

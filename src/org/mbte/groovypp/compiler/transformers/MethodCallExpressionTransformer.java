@@ -84,15 +84,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             return createCall(exp, compiler, args, null, foundMethod);
         } else {
             if (exp.getObjectExpression() instanceof VariableExpression &&
-                    ((VariableExpression) exp.getObjectExpression()).getName().equals("this")) {
+                (((VariableExpression) exp.getObjectExpression()).isThisExpression() ||
+                ((VariableExpression) exp.getObjectExpression()).isSuperExpression())) {
                 ClassNode thisType = compiler.methodNode.getDeclaringClass();
-                if (thisType instanceof ClosureClassNode &&
-                        thisType.isDerivedFrom(ClassHelper.CLOSURE_TYPE) &&
-                        methodName.equals("call"))
-                    // We have a closure recursive call,
-                    // let's forget about 'call' and deal with 'doCall' instead.
-                    methodName = "doCall";
-
                 if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
                     foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, true);
 
@@ -120,15 +114,24 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                             return createCall(exp, compiler, args, object, foundMethod);
                         }
                     }
-                }
-                else {
+                } else {
+                    if (thisType instanceof ClosureClassNode &&
+                        thisType.isDerivedFrom(ClassHelper.CLOSURE_TYPE) &&
+                        methodName.equals("call"))
+                    // We have a closure recursive call,
+                    // let's forget about 'call' and deal with 'doCall' instead.
+                    methodName = "doCall";
+
+                    boolean isSuper = ((VariableExpression) exp.getObjectExpression()).isSuperExpression();
+
                     while (thisType != null) {
-                        foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, false);
+                        ClassNode declaringType = isSuper ? thisType.getSuperClass() : thisType;
+                        foundMethod = findMethodWithClosureCoercion(declaringType, methodName, argTypes, compiler, false);
                         if (foundMethod == null) {
                             // Groovy does not allow to call 'this.closure()' for closure fields: issue 143.
-                            if (exp.isImplicitThis() || !(thisType instanceof ClosureClassNode)) {
+                            if (exp.isImplicitThis() || !(thisType instanceof ClosureClassNode) || isSuper) {
                                 // Try some property with 'call' method.
-                                final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
+                                final Object prop = resolveCallableProperty(compiler, methodName, declaringType, false);
                                 if (prop != null) {
                                     final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                                     if (callMethod != null) {
@@ -164,12 +167,25 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                     compiler.addError("Cannot reference an instance method from static context", exp);
                                     return null;
                                 }
-                                object = createThisFetchingObject(exp, compiler, thisType);
+
+                                if (isSuper) {
+                                    if (thisType != compiler.classNode) {
+                                        // super call to outer class' super method needs to be proxied.
+                                        foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
+                                        object = createThisFetchingObject(exp, compiler, thisType);
+                                    } else {
+                                        object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                                    }
+                                } else {
+                                    object = createThisFetchingObject(exp, compiler, thisType);
+                                }
                             }
 
+                            // 'super' access is always permitted.
+                            final ClassNode accessType = isSuper ? null : declaringType;
                             if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                                    foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
-                                return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
+                                    foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
+                                return dynamicOrError(exp, compiler, methodName, declaringType, argTypes, "Cannot access method ");
                             }
 
                             return createCall(exp, compiler, args, object, foundMethod);
@@ -264,7 +280,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
                 }
 
-                // 'super' access is always permitted. 
+                // 'super' access is always permitted.
                 final ClassNode accessType = object instanceof VariableExpressionTransformer.Super ? null : type;
                 if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
                         foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
