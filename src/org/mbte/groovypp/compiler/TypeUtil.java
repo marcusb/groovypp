@@ -192,6 +192,7 @@ public class TypeUtil {
     }
 
     public static boolean isConvertibleFrom(ClassNode t1, ClassNode t2) {
+        if (t1.isArray() && t2.isArray()) return isConvertibleFrom(t1.getComponentType(), t2.getComponentType());
         if (t1 instanceof ClosureClassNode) {
             if ("groovy.lang.Closure".equals(t2.getName())) return true;
         }  else if (t2 instanceof ClosureClassNode) {
@@ -199,14 +200,15 @@ public class TypeUtil {
         }
         t1 = wrapSafely(t1);
         t2 = wrapSafely(t2);
-        return (t1.isInterface() && t2.isInterface()) || isAssignableFrom(t1, t2) ||
+        return (t1.isInterface() || t2.isInterface()) || isAssignableFrom(t1, t2) ||
                 areTypesDirectlyConvertible(t1, t2);
     }
 
     public static boolean areTypesDirectlyConvertible(ClassNode t1, ClassNode t2) {
+        if (t1.isArray() && t2.isArray()) return areTypesDirectlyConvertible(t1.getComponentType(), t2.getComponentType());
         t1 = wrapSafely(t1);
         t2 = wrapSafely(t2);
-        return (t1.isInterface() && t2.isInterface()) || isDirectlyAssignableFrom(t1, t2) ||
+        return (t1.isInterface() || t2.isInterface()) || isDirectlyAssignableFrom(t1, t2) ||
                 isDirectlyAssignableFrom(t2, t1);
     }
 
