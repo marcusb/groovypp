@@ -6,7 +6,6 @@ import java.util.concurrent.Executor
     protected final int concurrencyLevel;
 
     ConcurrentlyExecutingChannel(int concurrencyLevel = Integer.MAX_VALUE, Executor executor = CallLaterExecutors.currentExecutor) {
-        super(executor)
         this.concurrencyLevel = concurrencyLevel
     }
 

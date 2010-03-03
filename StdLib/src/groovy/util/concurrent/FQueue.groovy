@@ -12,6 +12,10 @@ abstract class FQueue<T> implements Iterable<T> {
 
     abstract FQueue<T> addFirst (T element)
 
+    FQueue<T> plus (T element) {
+        addLast(element)
+    }
+
     /**
      * Number of elements in the list
      */

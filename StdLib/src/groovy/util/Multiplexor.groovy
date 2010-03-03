@@ -34,4 +34,8 @@ import groovy.util.concurrent.FList
         }
         this
     }
+
+    static Multiplexor<M> of (MessageChannel<M> ... channels) {
+        new Multiplexor().subscribe(channels)
+    }
 }

@@ -1,6 +1,5 @@
-package shootout
+@Typed package shootout
 
-@Typed
 class BinaryTreesGroovy {
 	private final static int minDepth = 4
 
@@ -33,8 +32,7 @@ class BinaryTreesGroovy {
 	}
 }
 
-@Typed
-private static class TreeNode
+class TreeNode
 {
     private TreeNode left, right;
     private int item;

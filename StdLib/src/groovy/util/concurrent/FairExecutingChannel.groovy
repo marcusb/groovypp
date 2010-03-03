@@ -2,20 +2,34 @@ package groovy.util.concurrent
 
 import java.util.concurrent.Executor
 
-@Typed abstract static class FairExecutingChannel<M> extends SchedulingChannel<M>  {
+@Typed abstract static class FairExecutingChannel<M> extends QueuedChannel<M> implements Runnable {
     Executor executor
 
-    FairExecutingChannel() {
-        this.executor = CallLaterExecutors.getCurrentExecutor()
+    void run () {
+        for (;;) {
+            def q = queue
+            def removed = q.removeFirst()
+            if (q.size() == 1) {
+                if (queue.compareAndSet(q, busyEmptyQueue)) {
+                    onMessage removed.first
+                    if (!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
+                        executor.execute this
+                    }
+                    break
+                }
+            }
+            else {
+                if (queue.compareAndSet(q, removed.second)) {
+                    onMessage removed.first
+                    executor.execute this
+                    break
+                }
+            }
+        }
     }
 
-    FairExecutingChannel(Executor executor) {
-        this.executor = executor
+    protected void signalPost(FQueue<M> oldQueue, FQueue<M> newQueue) {
+        if (oldQueue !== busyEmptyQueue && newQueue.size() == 1)
+            executor.execute this
     }
-
-    void schedule () {
-        executor.execute this
-    }
-
-    abstract void onMessage(M message)
 }
