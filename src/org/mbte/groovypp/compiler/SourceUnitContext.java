@@ -140,8 +140,8 @@ public class SourceUnitContext {
             final MethodCallExpression call = new MethodCallExpression(new VariableExpression("super", ClassHelper.DYNAMIC_TYPE),
                     superMethod.getName(), argList);
             final Statement statement = ret != ClassHelper.VOID_TYPE ? new ReturnStatement(call) : new ExpressionStatement(call);
-            delegate = new MethodNode(name, superMethod.getModifiers(), ret, params, new ClassNode[0],
-                    statement);
+            final int modifiers = superMethod.getModifiers() & ~Opcodes.ACC_ABSTRACT;
+            delegate = new MethodNode(name, modifiers, ret, params, new ClassNode[0], statement);
             delegate.setDeclaringClass(placeClass);
             placeClass.addMethod(delegate);
             ClassNodeCache.clearCache(placeClass);
