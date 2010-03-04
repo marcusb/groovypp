@@ -2,7 +2,7 @@ package groovy.util.concurrent
 
 import java.util.concurrent.Executor
 
-@Typed abstract static class FairExecutingChannel<M> extends QueuedChannel<M> implements Runnable {
+@Typed abstract class FairExecutingChannel<M> extends QueuedChannel<M> implements Runnable {
     Executor executor
 
     void run () {

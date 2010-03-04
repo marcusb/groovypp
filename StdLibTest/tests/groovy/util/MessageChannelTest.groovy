@@ -3,19 +3,35 @@ package groovy.util
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import groovy.util.concurrent.FairExecutingChannel
-import groovy.util.concurrent.ConcurrentlyExecutingChannel
 import groovy.util.concurrent.ChannelExecutor
 import java.util.concurrent.ExecutorService
 import groovy.util.concurrent.FQueue
-import groovy.util.concurrent.FairExecutingChannel
-import groovy.util.concurrent.NonfairExecutingChannel
 import groovy.util.concurrent.NonfairExecutingChannel
 import groovy.util.concurrent.CallLaterExecutors
 
 @Typed class MessageChannelTest extends GroovyTestCase {
+
+    void testAfter () {
+        Reference one = [0], two = [-1], count = [0]
+        MessageChannel c = { int m -> one += m + count; count = count+1 }
+        c = c.addAfter{ int m -> two += count + m; count = count +1 }
+        c << 1
+        assertEquals 1, one.get()
+        assertEquals 1, two.get()
+        assertEquals 2, count.get()
+    }
+
+    void testBefore () {
+        Reference one = [0], two = [-1], count = [0]
+        MessageChannel c = { int m -> one += m + count; count = count+1 }
+        c = c.addBefore{ int m -> two += count + m; count = count +1 }
+        c << 1
+        assertEquals 2, one.get()
+        assertEquals 0, two.get()
+        assertEquals 2, count.get()
+    }
 
     void testQueue () {
         FQueue q = FQueue.emptyQueue
