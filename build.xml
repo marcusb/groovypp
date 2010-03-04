@@ -6,6 +6,8 @@
 
     <property file="build.properties"/>
     <property name="output.dir" location="out" />
+	<property name="deploy.lib.dir" location="install/lib" />
+	<property name="stagingDirectory" value="${output.dir}/staging"/>
     <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
     <property name="stdlibtest.module.name" value="StdLibTest" />
@@ -32,6 +34,7 @@
 	<property name="test.reports" location="${output.dir}/test-reports"/>
 
 	<property name="jar.name" location="${output.dir}/${app.name}.jar"/>
+	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all.jar"/>
 	<property name="target.jvm" value="5" />
 
 	<path id="libs">
@@ -79,11 +82,17 @@
         <pathelement location="${compiler.test.output}"/>
     </path>
 
+	<path id="jarjar.classpath">
+		<pathelement location="lib/jarjar-1.0.jar"/>
+	</path>
+
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
          classpathref="libs"/>
 
     <taskdef name="gcupload" classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/ant-googlecode-0.0.2.jar"/>
+	
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath"/>
 	
 	<target name="clean">
 		<delete dir="${output.dir}"/>
@@ -198,6 +207,70 @@
         </jar>
     </target>
 
+    <target name="make.embeddable.jar" depends="make.jar"
+        description="Build embeddable application jar file">
+        <delete dir="${stagingDirectory}" quiet="true"/>
+        <mkdir dir="${stagingDirectory}"/>
+        <mkdir dir="${stagingDirectory}/groovy"/>
+        <mkdir dir="${stagingDirectory}/cli"/>
+        <mkdir dir="${stagingDirectory}/netty"/>
+
+        <copy toDir="${stagingDirectory}">
+            <fileset dir="${deploy.lib.dir}">
+                <include name="antlr*.jar"/>
+                <include name="asm*.jar"/>
+
+                <exclude name="asm-attr*.jar"/>
+                <exclude name="asm-util*.jar"/>
+                <exclude name="asm-analysis*.jar"/>
+            </fileset>
+            <fileset dir="out">
+                <include name="groovypp.jar"/>
+            </fileset>
+        </copy>
+
+        <unzip dest="${stagingDirectory}/groovy">
+            <patternset>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </patternset>
+            <globmapper from="META-INF/LICENSE.txt" to="META-INF/GROOVY-LICENSE.txt"/>
+            <fileset dir="${deploy.lib.dir}">
+                <include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+            </fileset>
+        </unzip>
+        <unzip dest="${stagingDirectory}/cli">
+            <patternset>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </patternset>
+            <globmapper from="META-INF/LICENSE.txt" to="META-INF/CLI-LICENSE.txt"/>
+            <fileset dir="${deploy.lib.dir}">
+                <include name="commons-cli-*.jar"/>
+            </fileset>
+        </unzip>
+        <unzip dest="${stagingDirectory}/netty">
+            <patternset>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </patternset>
+            <mapper>
+                <globmapper from="META-INF/LICENSE.txt" to="META-INF/NETTY-LICENSE.txt"/>
+                <globmapper from="META-INF/COPYRIGHT.txt" to="META-INF/NETTY-COPYRIGHT.txt"/>
+			</mapper>
+            <fileset dir="${deploy.lib.dir}">
+                <include name="netty-*.jar"/>
+            </fileset>
+        </unzip>
+
+        <jarjar jarfile="${embeddable.jar.name}">
+            <zipgroupfileset dir="${stagingDirectory}" includes="*.jar" />
+            <fileset dir="${stagingDirectory}/groovy" />
+            <fileset dir="${stagingDirectory}/cli" />
+            <fileset dir="${stagingDirectory}/netty" />
+            <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
+            <rule pattern="org.objectweb.**" result="groovyjarjarasm.@1"/>
+            <rule pattern="org.apache.commons.cli.**" result="groovyjarjarcommonscli.@1"/>
+        </jarjar>
+    </target>
+
     <target name="releaseinfo">
         <copy file="${compiler.src}/META-INF/groovypp-release-info.properties" 
             todir="${compiler.prod.output}/META-INF" overwrite="true">
@@ -213,12 +286,13 @@
         </replace>
     </target>
 
-    <target name="make.install" depends="test" description="Build installation">
+    <target name="make.install" depends="test,make.embeddable.jar" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
             <zipfileset dir="install" prefix=""/>
             <zipfileset file="${jar.name}" prefix="lib"/>
+			<zipfileset file="${embeddable.jar.name}" prefix="lib"/>
             <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlib.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
