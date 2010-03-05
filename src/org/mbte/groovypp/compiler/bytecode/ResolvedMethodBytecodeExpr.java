@@ -235,10 +235,15 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             classInternalName = ((ClassNodeCache.DGM) methodNode).callClassInternalName;
             methodDescriptor = ((ClassNodeCache.DGM) methodNode).descr;
         } else {
+            boolean optimizedSpecial = false;
             if (methodNode.isStatic())
                 op = INVOKESTATIC;
             else if (methodNode.getDeclaringClass().isInterface())
                 op = INVOKEINTERFACE;
+            else if ((methodNode.getModifiers() & (ACC_PRIVATE)) != 0) {
+                op = INVOKESPECIAL;
+                optimizedSpecial = true;
+            }
 
             if (object != null) {
                 if (object instanceof VariableExpressionTransformer.Super || object instanceof VariableExpressionTransformer.ThisSpecial) {
@@ -256,7 +261,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
                     mv.visitInsn(POP);
             }
 
-            ClassNode t = op == INVOKESPECIAL ? object.getType() : methodNode.getDeclaringClass();
+            ClassNode t = op == INVOKESPECIAL && !optimizedSpecial ? object.getType() : methodNode.getDeclaringClass();
             classInternalName = (t.isArray()) ? BytecodeHelper.getTypeDescription(t) : BytecodeHelper.getClassInternalName(t);
             methodDescriptor = BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters());
         }
