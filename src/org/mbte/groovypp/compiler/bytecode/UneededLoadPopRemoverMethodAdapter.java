@@ -143,7 +143,6 @@ public class UneededLoadPopRemoverMethodAdapter extends UneededDupStoreRemoverMe
         switch (opcode) {
             case CHECKCAST:
                 load = new Checkcast(desc);
-//                super.visitTypeInsn(opcode, desc);
                 return;
 
             default:
