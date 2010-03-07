@@ -20,14 +20,7 @@ class BinaryTreesGroovy {
 		TreeNode longLivedTree = TreeNode.bottomUpTree(0,maxDepth)
 
 		for (int depth=minDepth; depth<=maxDepth; depth+=2){
-		    int iterations = 1 << (maxDepth - depth + minDepth)
-            check = 0;
-            for (int i=1; i<=iterations; i++){
-                check += (TreeNode.bottomUpTree(i,depth)).itemCheck();
-                check += (TreeNode.bottomUpTree(-i,depth)).itemCheck();
-            }
-
-            System.out.println("${iterations*2}\t trees of depth $depth\t check: $check")
+            TreeNode.iterateDepth(maxDepth, depth)
 		}
 		System.out.println("long lived tree of depth $maxDepth\t check: ${longLivedTree.itemCheck()}")
 
@@ -43,31 +36,28 @@ class BinaryTreesGroovy {
             this.item = item;
         }
 
-        private static TreeNode bottomUpTree(int item, int depth){
-            if (depth){
-                return new TreeNode(
-                        bottomUpTree(2*item-1, depth-1)
-                        , bottomUpTree(2*item, depth-1)
-                        , item
-                );
-            }
-            else {
-                return new TreeNode(item);
-            }
-        }
-
         TreeNode(TreeNode left, TreeNode right, int item){
             this.left = left;
             this.right = right;
             this.item = item;
         }
 
+        private static TreeNode bottomUpTree(int item, int depth){
+            depth ? [bottomUpTree(2*item-1, depth-1), bottomUpTree(2*item, depth-1), item] : [item]
+        }
+
         private int itemCheck(){
-            // if necessary deallocate here
-            if (left==null)
-                return item;
-            else return item + left.itemCheck() - right.itemCheck();
+            left ? item + left.itemCheck() - right.itemCheck() : item
+        }
+
+        static iterateDepth (int maxDepth, int depth) {
+            int iterations = 1 << (maxDepth - depth + minDepth)
+            int check = 0
+            for (int i=1; i<=iterations; i++){
+                check += bottomUpTree(i,depth).itemCheck() +  bottomUpTree(-i,depth).itemCheck()
+            }
+
+            System.out.println("${iterations*2}\t trees of depth $depth\t check: $check")
         }
     }
 }
-

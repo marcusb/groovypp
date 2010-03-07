@@ -11,7 +11,6 @@ abstract class Calculation<V> extends BindLater<V> implements Future<V>, Runnabl
             }
             catch (Throwable ex) {
                 setException(ex)
-                ex.printStackTrace System.err
             }
         }
         super.get()

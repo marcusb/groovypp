@@ -15,14 +15,14 @@ import java.util.concurrent.Executor
                     if (!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
                         executor.execute this
                     }
-                    break
+                    return
                 }
             }
             else {
                 if (queue.compareAndSet(q, removed.second)) {
                     onMessage removed.first
                     executor.execute this
-                    break
+                    return
                 }
             }
         }

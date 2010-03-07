@@ -2,7 +2,7 @@ package groovy.util
 
 import groovy.util.concurrent.FList
 
-@Typed class Multiplexor<M> implements MessageChannel<M> {
+@Typed class Multiplexor<M> extends MessageChannel<M> {
     private volatile FList<MessageChannel<M>> listeners = FList.emptyList
 
     Multiplexor<M> subscribe(MessageChannel<M> channel) {
@@ -28,11 +28,10 @@ import groovy.util.concurrent.FList
         }
     }
 
-    final Multiplexor<M> post(M message) {
+    final void post(M message) {
         listeners.each { channel ->
             channel.post message
         }
-        this
     }
 
     static Multiplexor<M> of (MessageChannel<M> ... channels) {

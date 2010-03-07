@@ -1,32 +1,45 @@
 package groovy.util
 
-@Trait abstract class MessageChannel<T> {
-    abstract MessageChannel<T> post (T message)
+import groovy.util.concurrent.BindLater
 
-    MessageChannel<T> leftShift (T msg) {
-        post msg
+@Typed abstract class MessageChannel<T> {
+    abstract void post (T message)
+
+    static <M extends ReplyRequired, R> void sendAndContinue(MessageChannel<M> channel, M message, MessageChannel<R> replyTo) {
+        message.replyTo = replyTo
+        channel.post(message)
     }
 
-    MessageChannel<T> addBefore(MessageChannel<T> other) {
+    static <M extends ReplyRequired, R> Object sendAndWait(MessageChannel<M> channel, M message) {
+        def binder = new BindLater()
+        channel.sendAndContinue(message) { reply ->
+            binder.set(reply)
+        }
+        binder.get()
+    }
+
+    final MessageChannel<T> leftShift (T message) {
+        post message
+        this
+    }
+
+    final MessageChannel<T> addBefore(MessageChannel<T> other) {
         def that = this;
-        { msg ->
-            other.post(msg)
-             that.post(msg)
+        { message ->
+            other.post message
+             that.post message
         }
     }
 
-    MessageChannel<T> addAfter(MessageChannel<T> other) {
+    final MessageChannel<T> addAfter(MessageChannel<T> other) {
         def that = this;
-        { msg ->
-             that.post(msg) 
-            other.post(msg)
+        { message ->
+             that.post message
+            other.post message
         }
     }
 
-    /**
-    * Convinience method to be create channel from closure
-    */
-//    static <T> MessageChannel<T> channel(MessageChannel<T> channel) {
-//        channel
-//    }
+    static class ReplyRequired {
+        MessageChannel replyTo
+    }
 }
