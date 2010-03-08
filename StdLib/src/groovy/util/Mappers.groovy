@@ -170,15 +170,6 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     flatMap(self, {it})
   }
 
-  /**
-   * Flattens the input @link{Iterable}.
-   * @param self input Iterable, e.g. List<List>.
-   * @return flattened iterator.
-   */
-  static <T> Iterator<T> flatten(Iterable<Iterable<T>> self) {
-    flatMap(self, {it})
-  }
-
   static <T, R> Iterator<R> mapConcurrently(Iterator<T> self,
                                             Executor executor,
                                             boolean ordered,
