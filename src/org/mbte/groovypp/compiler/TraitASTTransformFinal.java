@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author 2008-2009 Copyright (C) MBTE Sweden AB. All Rights Reserved.
  */
-@GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
+@GroovyASTTransformation(phase = CompilePhase.INSTRUCTION_SELECTION)
 public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         ModuleNode module = (ModuleNode) nodes[0];
@@ -47,7 +47,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
 
             VolatileFieldUpdaterTransform.addUpdaterForVolatileFields(classNode);
             try {
-                 new OpenVerifier().visitClass(classNode);
+                new OpenVerifier().visitClass(classNode);
              }
              catch (MultipleCompilationErrorsException err) {
                  throw err;

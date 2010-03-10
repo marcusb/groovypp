@@ -535,7 +535,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                             l2.visit(mv);
                             box(l2.getType(), mv);
                         }
-
+                        else
                         if (leftNull) {
                             r2.visit(mv);
                             box(r2.getType(), mv);

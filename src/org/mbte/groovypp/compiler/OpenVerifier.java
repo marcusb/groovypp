@@ -28,6 +28,11 @@ class OpenVerifier extends Verifier {
         ClassNodeCache.clearCache(method.getDeclaringClass());
     }
 
+    public void visitProperty(PropertyNode node) {
+        super.visitProperty(node);
+        node.setGetterBlock(null);
+        node.setSetterBlock(null);
+    }
 
     protected void addInitialization(ClassNode node, ConstructorNode constructorNode) {
         if (constructorNode.getCode() instanceof BytecodeSequence)
@@ -62,5 +67,8 @@ class OpenVerifier extends Verifier {
         }
 
         node.addField("metaClass", ACC_PRIVATE | ACC_TRANSIENT | ACC_SYNTHETIC, ClassHelper.METACLASS_TYPE, null).setSynthetic(true);
+    }
+
+    protected void addTimeStamp(ClassNode node) {
     }
 }

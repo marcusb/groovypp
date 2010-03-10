@@ -15,17 +15,44 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
     private boolean visited;
 
     public void add(VariableExpression ve, ClassNode type) {
-        if (ve.getAccessedVariable() == null)
-            return;
-
         if (defVars == null)
             defVars = new IdentityHashMap<Variable, ClassNode>();
 
-        defVars.put(ve.getAccessedVariable(), type);
+        if (ve.getAccessedVariable() != null)
+            defVars.put(ve.getAccessedVariable(), type);
+        else {
+            boolean done = false;
+            for (Map.Entry<Variable,ClassNode> variable : defVars.entrySet()) {
+                if (variable.getKey().getName().equals(ve.getName())) {
+                    variable.setValue(type);
+                    done = true;
+                    break;
+                }
+            }
+
+            if (!done) {
+                defVars.put(ve, type);
+            }
+        }
     }
 
     public ClassNode get(VariableExpression ve) {
-        return defVars == null ? ClassHelper.OBJECT_TYPE : defVars.get(ve.getAccessedVariable());
+        if (defVars == null)
+            return ClassHelper.OBJECT_TYPE;
+        else {
+            final Variable accessed = ve.getAccessedVariable();
+            if (accessed != null)
+                return defVars.get(accessed);
+            else {
+                for (Map.Entry<Variable,ClassNode> variable : defVars.entrySet()) {
+                    if (variable.getKey().getName().equals(ve.getName())) {
+                        return variable.getValue();
+                    }
+                }
+
+                return null;
+            }
+        }
     }
 
     public ClassNode get(Variable ve) {

@@ -3,16 +3,17 @@ package groovy.util
 import groovy.util.concurrent.BindLater
 
 @Typed abstract class MessageChannel<T> {
+
     abstract void post (T message)
 
-    static <M extends ReplyRequired, R> void sendAndContinue(MessageChannel<M> channel, M message, MessageChannel<R> replyTo) {
+    static <M extends ReplyRequiringMessage, R> void request(MessageChannel<M> channel, M message, MessageChannel<R> replyTo) {
         message.replyTo = replyTo
         channel.post(message)
     }
 
-    static <M extends ReplyRequired, R> Object sendAndWait(MessageChannel<M> channel, M message) {
+    static <M extends ReplyRequiringMessage, R> Object requestAndWait(MessageChannel<M> channel, M message) {
         def binder = new BindLater()
-        channel.sendAndContinue(message) { reply ->
+        channel.request(message) { reply ->
             binder.set(reply)
         }
         binder.get()
@@ -39,7 +40,7 @@ import groovy.util.concurrent.BindLater
         }
     }
 
-    static class ReplyRequired {
+    static class ReplyRequiringMessage {
         MessageChannel replyTo
     }
 }

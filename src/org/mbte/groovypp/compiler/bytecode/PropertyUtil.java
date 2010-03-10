@@ -14,6 +14,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class PropertyUtil {
+    public static final Object GET_MAP = new Object ();
+
     public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
         if (prop instanceof MethodNode) {
             MethodNode method = (MethodNode) prop;
@@ -70,6 +72,10 @@ public class PropertyUtil {
                     mv.visitInsn(ARRAYLENGTH);
                 }
             };
+        }
+
+        if (prop == GET_MAP) {
+            return new ResolvedLeftMapExpr(exp, object, propName);
         }
 
         return dynamicOrFail(exp.getProperty(), compiler, propName, object, null);
@@ -143,6 +149,10 @@ public class PropertyUtil {
             return res;
         }
 
+        if (!onlyStatic && !isSameObject && type.implementsInterface(ClassHelper.MAP_TYPE)) {
+            return GET_MAP;
+        }
+        
         return null;
     }
 

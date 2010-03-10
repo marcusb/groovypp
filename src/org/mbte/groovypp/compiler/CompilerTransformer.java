@@ -544,8 +544,8 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
     }
 
-    public BytecodeExpr castToString(final BytecodeExpr be, final ClassNode type) {
-        if (be.getType().equals(TypeUtil.NULL_TYPE))
+    public BytecodeExpr castToString(final BytecodeExpr be) {
+        if (be.getType().equals(TypeUtil.NULL_TYPE) || be.getType().equals(ClassHelper.STRING_TYPE))
             return be;
         
         MethodCallExpression safeCall = new MethodCallExpression(new BytecodeExpr(be, TypeUtil.wrapSafely(be.getType())) {

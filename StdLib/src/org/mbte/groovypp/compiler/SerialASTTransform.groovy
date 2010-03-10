@@ -33,7 +33,8 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
                 continue;
 
             def hasDefConstructor = false
-            for(constructor in classNode.declaredConstructors) {
+            def declaredConstructors = classNode.declaredConstructors
+            for(constructor in declaredConstructors) {
                 if (!constructor.parameters.length && constructor.public) {
                     hasDefConstructor = true
                     break
@@ -41,7 +42,13 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
             }
 
             if (!hasDefConstructor) {
-                source.addError(new SyntaxException("Class implementing java.io.Externalizable must have public no-arg constructor", classNode.lineNumber, classNode.columnNumber))
+                if (!declaredConstructors?.empty)
+                    source.addError(new SyntaxException("Class implementing java.io.Externalizable must have public no-arg constructor", classNode.lineNumber, classNode.columnNumber))
+                else {
+                    ConstructorNode constructor = [ACC_PUBLIC, null]
+                    constructor.synthetic = true
+                    classNode.addConstructor(constructor)
+                }
             }
 
             def readMethod = classNode.getDeclaredMethod("readExternal", readExternalParams)

@@ -130,7 +130,7 @@
 	</target>
 
     <!-- STDLIB -->
-    <target name="compile.stdlib" depends="compile.compiler" description="compiles stdlib">
+    <target name="compile.stdlib" depends="compile.tests.compiler" description="compiles stdlib">
         <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}"
             destdir="${stdlib.prod.output}">
         </groovyc >
@@ -143,7 +143,7 @@
         </copy>
     </target>
 
-    <target name="compile.tests.stdlib"  depends="compile.stdlib,compile.tests.compiler">
+    <target name="compile.tests.stdlib"  depends="compile.stdlib">
         <groovyc classpathref="compile.compiler.tests.classpath" srcdir="${stdlib.tests}" fork="yes"
             destdir="${stdlib.test.output}" verbose="true">
         </groovyc >
