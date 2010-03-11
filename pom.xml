@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns              = "http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
+                               http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovypp</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <name>Groovy++</name>
+
+
+    <properties>
+        <repo>http://groovypp.artifactoryonline.com/groovypp</repo>
+    </properties>
+
+
+    <distributionManagement>
+        <repository>
+            <id>libs-releases-local</id>
+            <url>${repo}/libs-releases-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>libs-snapshots-local</id>
+            <url>${repo}/libs-snapshots-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>libs-releases</id>
+            <url>${repo}/libs-releases</url>
+        </repository>
+        <repository>
+            <id>libs-snapshots</id>
+            <url>${repo}/libs-snapshots</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>plugins-releases</id>
+            <url>${repo}/plugins-releases</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>plugins-snapshots</id>
+            <url>${repo}/plugins-snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+    <build>
+        <plugins>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Attaching artifacts                                                          -->
+            <!-- http://mojo.codehaus.org/build-helper-maven-plugin/                          -->
+            <!-- http://mojo.codehaus.org/build-helper-maven-plugin/attach-artifact-mojo.html -->
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifact</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.basedir}/out/groovypp.jar</file>
+                                    <classifier>groovypp</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
