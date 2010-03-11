@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import groovy.util.concurrent.FairExecutingChannel
-import groovy.util.concurrent.ChannelExecutor
 import java.util.concurrent.ExecutorService
 import groovy.util.concurrent.FQueue
 import groovy.util.concurrent.NonfairExecutingChannel
@@ -114,18 +113,10 @@ import groovy.util.concurrent.CallLaterExecutors
     }
 
     void testRingFair () {
-        runRingFair(new ChannelExecutor(Runtime.runtime.availableProcessors()))
-    }
-
-    void testRingFairStd () {
         runRingFair(Executors.newFixedThreadPool(Runtime.runtime.availableProcessors()))
     }
 
     void testRingNonFair () {
-        runRingNonFair(new ChannelExecutor(Runtime.runtime.availableProcessors()))
-    }
-
-    void testRingNonFairStd () {
         runRingNonFair(Executors.newFixedThreadPool(Runtime.runtime.availableProcessors()))
     }
 
