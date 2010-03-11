@@ -4,7 +4,6 @@ class BinaryTreesGroovy {
 	private final static int minDepth = 4
 
 	public static void main(String[] args){
-
         long millis = System.currentTimeMillis ()
 
 		int n = 0
