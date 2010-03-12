@@ -111,7 +111,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method " + methodName + "() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
@@ -173,7 +173,7 @@ public class ResolvedArrayBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method " + methodName + "() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 

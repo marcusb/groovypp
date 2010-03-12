@@ -1,15 +1,15 @@
 package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
-import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.PresentationUtil;
-import org.mbte.groovypp.compiler.transformers.VariableExpressionTransformer;
+import org.mbte.groovypp.compiler.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final MethodNode methodNode;
@@ -131,7 +131,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method " + methodName + "() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
@@ -202,7 +202,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
             String methodName = type == Types.PLUS_PLUS ? "next" : "previous";
             final MethodNode methodNode = compiler.findMethod(vtype, methodName, ClassNode.EMPTY_ARRAY, false);
             if (methodNode == null) {
-                compiler.addError("Cannot find method next() for type " + PresentationUtil.getText(vtype), exp);
+                compiler.addError("Cannot find method " + methodName + "() for type " + PresentationUtil.getText(vtype), exp);
                 return null;
             }
 
