@@ -107,7 +107,7 @@
 		<mkdir dir="${test.reports}"/>
 	</target>
 
-	<target name="compile.compiler" depends="clean, releaseinfo" description="compiles compiler source files">
+	<target name="compile.compiler" depends="releaseinfo" description="compiles compiler source files">
 		<javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
 			destdir="${compiler.prod.output}" target="${target.jvm}"
 			debug="yes" debuglevel="lines,vars,source" includeantruntime="no"/>
@@ -163,7 +163,7 @@
         </groovyc >
     </target>
 
-    <target  name="test" depends="clean,make.jar,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
+    <target  name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-ea"/>
@@ -301,10 +301,6 @@
 
         </zip>
     </target>
-
-
-    <target name="all"
-        depends="clean, make.jar" description="Build application, run tests &amp; create jar file" />
 	
     <target name="publish-googlecode" depends="make.install">
 	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
