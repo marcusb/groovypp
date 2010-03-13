@@ -6,19 +6,19 @@
     
     <servers>
         <server>
-          <id>groovypp</id>
-          <username>deployer</username>
-          <password>6b5qj3NGLo</password>
+            <id>groovypp</id>
+            <username>deployer</username>
+            <password>\{DESede\}Lhd9VC3N4hzp0bOomfgFVg==</password>
         </server>
         <server>
             <id>libs-snapshots-local</id>
             <username>deployer</username>
-            <password>6b5qj3NGLo</password>
+            <password>\{DESede\}Lhd9VC3N4hzp0bOomfgFVg==</password>
         </server>
         <server>
             <id>libs-releases-local</id>
             <username>deployer</username>
-            <password>6b5qj3NGLo</password>
+            <password>\{DESede\}Lhd9VC3N4hzp0bOomfgFVg==</password>
         </server>
     </servers>
 
