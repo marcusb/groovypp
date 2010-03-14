@@ -1,5 +1,6 @@
 package org.mbte.groovypp.compiler.transformers;
 
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -339,7 +340,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
     }
 
     private Expression evaluateArraySubscript(final BinaryExpression bin, CompilerTransformer compiler) {
-        BytecodeExpr object = (BytecodeExpr) compiler.transformToGround(bin.getLeftExpression());
+        final BytecodeExpr object = (BytecodeExpr) compiler.transformToGround(bin.getLeftExpression());
 
         final BytecodeExpr indexExp = (BytecodeExpr) compiler.transform(bin.getRightExpression());
         if (object.getType().isArray() && TypeUtil.isAssignableFrom(int_TYPE, indexExp.getType()))
@@ -352,9 +353,9 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), object.getType());
                     getter = compiler.findMethod(t, "getAt", new ClassNode[]{indexExp.getType()}, false);
                     if (getter != null) {
-                        object = ResolvedMethodBytecodeExpr.create(bin, unboxing, object,
+                        BytecodeExpr object1 = ResolvedMethodBytecodeExpr.create(bin, unboxing, object,
                                 new ArgumentListExpression(), compiler);
-                        return new ResolvedArrayLikeBytecodeExpr(bin, object, indexExp, getter, compiler);
+                        return new ResolvedArrayLikeBytecodeExpr(bin, object1, indexExp, getter, compiler);
                     }
                 }
             } else {
@@ -367,8 +368,12 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                 return compiler.transform(mce);
             }
 
-            compiler.addError("Cannot find method 'getAt' for type: " + PresentationUtil.getText(object.getType()), bin);
-            return null;
+            if (compiler.policy == TypePolicy.STATIC) {
+                compiler.addError("Cannot find method 'getAt' for type: " + PresentationUtil.getText(object.getType()), bin);
+                return null;
+            } else {
+                return callMethod(bin, "getAt", compiler, object, indexExp);
+            }
         }
     }
 
