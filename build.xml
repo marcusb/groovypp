@@ -8,6 +8,8 @@
     <property name="output.dir" location="out" />
 	<property name="deploy.lib.dir" location="install/lib" />
 	<property name="stagingDirectory" value="${output.dir}/staging"/>
+	<property name="output.instrumented.dir" value="${output.dir}/instrumented"/>
+
     <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
     <property name="stdlibtest.module.name" value="StdLibTest" />
@@ -32,6 +34,7 @@
     <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
     <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
 	<property name="test.reports" location="${output.dir}/test-reports"/>
+	<property name="cobertura.report.dir" location="${output.dir}/cobertura"/>
 
 	<property name="jar.name" location="${output.dir}/${app.name}.jar"/>
 	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all.jar"/>
@@ -93,6 +96,15 @@
     <taskdef name="gcupload" classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/ant-googlecode-0.0.2.jar"/>
 	
 	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath"/>
+	
+	<taskdef resource="tasks.properties">
+		<classpath>
+			<fileset dir="${deploy.lib.dir}">
+				<include name="asm*.jar"/>
+			</fileset>
+			<fileset dir="lib/cobertura"/>
+		</classpath>
+	</taskdef>
 	
 	<target name="clean">
 		<delete dir="${output.dir}"/>
@@ -163,13 +175,15 @@
         </groovyc >
     </target>
 
-    <target  name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
+    <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-ea"/>
 
             <classpath>
-                <path>
+            	<fileset dir="lib/cobertura"/>
+            	<pathelement location="${output.instrumented.dir}"/>
+            	<path>
                     <fileset dir="install/lib" includes="*.jar"/>
                     <fileset file="${jar.name}"/>
                 </path>
@@ -198,7 +212,18 @@
     		</fileset>
     		<report todir="${test.reports}"/>
     	</junitreport>
+	<cobertura-report destdir="${cobertura.report.dir}" format="xml">
+		<fileset dir="${compiler.src}"/>
+		<fileset dir="${stdlib.src}"/>
+	</cobertura-report>
     </target>
+	
+	<target name="coverage-instrument" depends="compile.compiler, compile.stdlib">
+		<cobertura-instrument todir="${output.instrumented.dir}">
+			<fileset dir="${compiler.prod.output}/"/>
+			<fileset dir="${stdlib.prod.output}/"/>
+		</cobertura-instrument>
+	</target>
 
     <target name="make.jar" depends="clean,compile.examples,releaseinfo" description="Build application jar file">
         <jar destfile="${jar.name}" >
