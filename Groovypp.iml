@@ -15,6 +15,9 @@
     <facet type="Groovy" name="Groovy">
       <configuration />
     </facet>
+    <facet type="Groovy" name="Groovy">
+      <configuration />
+    </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="true">
     <exclude-output />
@@ -46,6 +49,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT" level="project" />
   </component>
   <component name="copyright">

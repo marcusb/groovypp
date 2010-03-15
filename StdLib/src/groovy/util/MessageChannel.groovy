@@ -1,6 +1,7 @@
 package groovy.util
 
 import groovy.util.concurrent.BindLater
+import java.util.concurrent.Executor
 
 @Typed abstract class MessageChannel<T> {
 
@@ -37,6 +38,30 @@ import groovy.util.concurrent.BindLater
         { message ->
              that.post message
             other.post message
+        }
+    }
+
+    final MessageChannel<T> filter(Function1<T,Boolean> filter) {
+        def that = this;
+        { message ->
+            if (filter(message))
+                that.post(message)
+        }
+    }
+
+    final <R> MessageChannel<R> map(Function1<T,R> mapping) {
+        def that = this;
+        { message ->
+            that.post(mapping(message))
+        }
+    }
+
+    final MessageChannel<T> async(Executor executor) {
+        def that = this;
+        { message ->
+            executor.execute {
+                that.post(message)
+            }
         }
     }
 
