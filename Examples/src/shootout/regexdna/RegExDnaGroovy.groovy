@@ -1,4 +1,4 @@
-package shootout.regexdna.groovy
+package shootout.regexdna
 
 import java.io.BufferedReader;
 import java.io.IOException;

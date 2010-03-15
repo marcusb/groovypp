@@ -61,7 +61,7 @@ public class revcomp {
 		}
 		buf.reverse();
 		long total = System.currentTimeMillis() - start;
-		System.out.println("Total: " + total);
+		System.out.println("[Revcomp-Java Benchmark Result: " + total + "]");
 	}
 }
 

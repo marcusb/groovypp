@@ -1,4 +1,4 @@
-package shootout;
+package shootout.spectralnorm;
 
 /*
 The Computer Language Benchmarks Game
@@ -24,7 +24,8 @@ public class SpectralNorm
 
         final long millis = System.currentTimeMillis();
         System.out.println (formatter.format (spectralnormGame (n)) );
-        System.out.println(System.currentTimeMillis()-millis);
+	    long total = System.currentTimeMillis() - millis;
+        System.out.println("[SpectralNorm-Java Benchmark Result: " + total + "]");
     }
 
 

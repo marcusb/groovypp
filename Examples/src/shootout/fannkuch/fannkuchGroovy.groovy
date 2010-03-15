@@ -1,4 +1,4 @@
-package shootout;
+package shootout.fannkuch;
 
 /*
 * The Computer Language Benchmarks Game
@@ -25,7 +25,8 @@ public final class FannkuchGroovy implements Runnable
         FannkuchGroovy f = new FannkuchGroovy(x);
         long millis = System.currentTimeMillis();
         System.out.format("Pfannkuchen(%d) = %d\n", x, f.fank_game());
-        System.out.println("Elapsed: " + (System.currentTimeMillis() - millis));
+	    long total = System.currentTimeMillis() - millis;
+	    System.out.println("[Fannkuch-Groovy Benchmark Result: " + total + "]");
     }
 
     public FannkuchGroovy(int N)

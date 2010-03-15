@@ -1,4 +1,4 @@
-package shootout;
+package shootout.fannkuch;
 
 /*
 * The Computer Language Benchmarks Game
@@ -12,22 +12,24 @@ package shootout;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class fannkuch implements Runnable
+public final class Fannkuch implements Runnable
 {
     private final int n;
     private final int[] flip_max_arr;
     private final AtomicInteger remain_task = new AtomicInteger(0);
 
-    public static void main(String[] args)
+	public static void main(String[] args)
     {
         int x = (args.length > 0) ? Integer.parseInt(args[0]) : 7;
-        fannkuch f = new fannkuch(x);
+        Fannkuch f = new Fannkuch(x);
         long millis = System.currentTimeMillis();
         System.out.format("Pfannkuchen(%d) = %d\n", x, f.fank_game());
-        System.out.println("Elapsed: " + (System.currentTimeMillis() - millis));
+	    long total = System.currentTimeMillis() - millis;
+
+        System.out.println("[Fannkuch-Java Benchmark Result: " + total + "]");
     }
 
-    public fannkuch(int N)
+    public Fannkuch(int N)
     {
         n = N;
         // hold flip_count result for each swap index

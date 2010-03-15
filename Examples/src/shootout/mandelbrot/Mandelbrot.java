@@ -1,4 +1,4 @@
-package shootout;
+package shootout.mandelbrot;
 /* The Computer Language Benchmarks Game
    http://shootout.alioth.debian.org/
 
@@ -15,23 +15,26 @@ public final class Mandelbrot
 {
     public static void main(String[] args) throws Exception
     {
-        int size = 200;
+        int size = 10000;
         if (args.length >= 1)
             size = Integer.parseInt(args[0]);
 
-        System.out.format("P4\n%d %d\n", size, size);
+//        System.out.format("P4\n%d %d\n", size, size);
         long millis = System.currentTimeMillis();
         int width_bytes = size /8 +1;
         byte[][] output_data = new byte[size][width_bytes];
         int[] bytes_per_line = new int[size];
 
         Compute(size, output_data, bytes_per_line);
-        System.out.println("elapsed: "+ (System.currentTimeMillis() - millis));
+	    long total = System.currentTimeMillis() - millis;
+        System.out.println("[Mandelbrot-Java Benchmark Result: " + total + "]");
 
+/*
         BufferedOutputStream ostream = new BufferedOutputStream(System.out);
         for (int i = 0; i < size; i++)
             ostream.write(output_data[i], 0, bytes_per_line[i]);
         ostream.close();
+*/
     }
 
     private static final void Compute(final int N, final byte[][] output, final int[] bytes_per_line)

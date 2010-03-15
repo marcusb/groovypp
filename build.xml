@@ -89,6 +89,22 @@
 		<pathelement location="lib/jarjar-1.0.jar"/>
 	</path>
 
+	<path id="groovypp.runtime.classpath">
+		<pathelement location="${jar.name}"/>
+		<fileset dir="install/lib">
+			<include name="antlr*.jar"/>
+			<include name="asm*.jar"/>
+			<include name="netty-*.jar"/>
+			<include name="commons-cli-*.jar"/>
+			<include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+
+			<exclude name="asm-attr*.jar"/>
+			<exclude name="asm-util*.jar"/>
+			<exclude name="asm-analysis*.jar"/>
+		</fileset>
+	</path>
+
+
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
          classpathref="libs"/>
@@ -326,7 +342,68 @@
 
         </zip>
     </target>
-	
+
+	<target name="check.groovypp.jar">
+	    <available file="${jar.name}" property="groovypp.jar.present"/>
+	</target>
+
+	<macrodef name="run.benchmark">
+		<attribute name="className" default="NOT SET"/>
+		<sequential >
+			<echo message="==== Running @{className} ====" />
+			<java classname="@{className}" fork="true">
+				<classpath>
+					<path refid="groovypp.runtime.classpath" />
+					<pathelement path="${examples.prod.output}" />
+				</classpath>
+				<jvmarg value="-server"/>
+				<jvmarg value="-Xmx512m"/>
+			</java>
+		</sequential>
+	</macrodef>
+
+	<!--, clean, compile.examples-->
+	<target name="run.benchmarks" depends="check.groovypp.jar">
+		<fail message="No groovypp.jar. Please build one first" unless="groovypp.jar.present"/>
+		<echo message="Running benchmarks" />
+		<record name="benchmarks.txt" action="start" />
+		
+		<run.benchmark className="shootout.bintrees.BinaryTrees" />
+		<run.benchmark className="shootout.bintrees.BinaryTreesGroovy" />
+
+		<run.benchmark className="shootout.fannkuch.Fannkuch" />
+		<run.benchmark className="shootout.fannkuch.FannkuchGroovy" />
+
+
+		<run.benchmark className="shootout.knucleotide.KNucleotide" />
+		<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" />
+
+
+		<run.benchmark className="shootout.mandelbrot.Mandelbrot" />
+		<run.benchmark className="shootout.mandelbrot.MandelbrotGroovy" />
+
+
+		<run.benchmark className="shootout.spectralnorm.SpectralNorm" />
+		<run.benchmark className="shootout.spectralnorm.SpectralNormGroovy" />
+
+
+		<run.benchmark className="shootout.threadring.ThreadRing" />
+		<run.benchmark className="shootout.threadring.ThreadRingGroovy" />
+
+
+		<run.benchmark className="shootout.fasta.fasta" />
+		<run.benchmark className="shootout.fasta.FastaGroovy" />
+
+		<run.benchmark className="shootout.nbody.nbody" />
+		<run.benchmark className="shootout.nbody.NbodyGroovy" />
+
+		<run.benchmark className="shootout.pidigits.pidigits" />
+		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" />
+		<record name="benchmarks.txt" action="stop" />
+
+		<run.benchmark className="shootout.BenchmarkResultPrinter" />
+	</target>
+
     <target name="publish-googlecode" depends="make.install">
 	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
     	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"

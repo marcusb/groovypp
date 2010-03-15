@@ -8,11 +8,11 @@ class NbodyGroovy {
       for (int i=0; i<65; ++i) NbodyGroovy.program_main(args,false);
       NbodyGroovy.program_main(args,true);
 	  long total = System.currentTimeMillis() - start;
-	   System.out.println(total);
+	   System.out.println("[NBody-Groovy Benchmark Result: " + total + "]");
    }
 
     public static void program_main(String[] args, boolean isWarm) {
-	    int n = 1000000;
+	    int n = 10000;
 
 
 	    try {

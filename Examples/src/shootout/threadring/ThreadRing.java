@@ -1,4 +1,4 @@
-package shootout;
+package shootout.threadring;
 
 /**
  * The Computer Language Benchmarks Game
@@ -25,12 +25,17 @@ public class ThreadRing {
 
     public static void main(String[] args) throws InterruptedException {
         long start = System.currentTimeMillis();
-        int n = Integer.parseInt(args[0]);
+	    int n = 500;
+	    try {
+            n = Integer.parseInt(args[0]);
+	    } catch (Exception e) {}
         ThreadRing ring = new ThreadRing(n);
         Node node = ring.start(MAX_NODES);
         node.sendMessage(new TokenMessage(1,0));
         cdl.await();
-        System.out.println(n + ": " + (System.currentTimeMillis()-start));
+
+	    long total = System.currentTimeMillis() - start;
+        System.out.println("[ThreadRing-Java Benchmark Result: " + total + "]");
     }
 
     public ThreadRing(int n) {

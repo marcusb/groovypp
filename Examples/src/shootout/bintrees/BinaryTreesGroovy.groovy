@@ -1,12 +1,13 @@
-@Typed(debug=true) package shootout
+package shootout.bintrees
 
+@Typed
 class BinaryTreesGroovy {
 	private final static int minDepth = 4
 
 	public static void main(String[] args){
         long millis = System.currentTimeMillis ()
 
-		int n = 0
+		int n = 20
 
 		if (args.length > 0) n = Integer.parseInt(args[0])
 
@@ -23,7 +24,8 @@ class BinaryTreesGroovy {
 		}
 		System.out.println("long lived tree of depth $maxDepth\t check: ${longLivedTree.itemCheck()}")
 
-        System.out.println System.currentTimeMillis() - millis
+        long total = System.currentTimeMillis() - millis;
+		println ("[Woooo Binary Trees-Groovy Benchmark Result: " + total + "]");
 	}
 
     private static class TreeNode
@@ -50,7 +52,7 @@ class BinaryTreesGroovy {
         }
 
         static iterateDepth (int maxDepth, int depth) {
-            int iterations = 1 << (maxDepth - depth + minDepth)
+            int iterations = 1 << (maxDepth - depth + BinaryTreesGroovy.minDepth)
             int check = 0
             for (int i=1; i<=iterations; i++){
                 check += bottomUpTree(i,depth).itemCheck() +  bottomUpTree(-i,depth).itemCheck()

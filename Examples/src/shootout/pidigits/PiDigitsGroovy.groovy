@@ -1,4 +1,4 @@
-package shootout.pidigits;
+package shootout.pidigits
 
 /**
  * The Computer Language Benchmarks Game
@@ -9,18 +9,15 @@ package shootout.pidigits;
  Data Parallel adaptation by Sassa NF
  */
 
-import java.math.BigInteger;
-
-public class pidigits {
+public class PiDigitsGroovy {
 	static final int L = 10;
 
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 		long start = System.currentTimeMillis();
 		int n = 2500;
 		try {
 			n = Integer.parseInt(args[0]);
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 		int j = 0;
 
 		PiDigitSpigot digits = new PiDigitSpigot();
@@ -34,13 +31,12 @@ public class pidigits {
 				for (int i = n; i < L; i++) System.out.print(" ");
 				j += n;
 			}
-			System.out.print("\t:");
-			System.out.println(j);
+			System.out.print("\t:"); System.out.println(j);
 			n -= L;
 		}
 
 		long total = System.currentTimeMillis() - start;
-		System.out.println("[PiDigits-Java Benchmark Result: " + total + "]");
+		System.out.println("[PiDigits-Groovy Benchmark Result: " + total + "]");
 	}
 
 	static class PiDigitSpigot {
@@ -55,11 +51,9 @@ public class pidigits {
 		public int next() {
 			int y = digit();
 			if (isSafe(y)) {
-				z = produce(y);
-				return y;
+				z = produce(y); return y;
 			} else {
-				z = consume(x.next());
-				return next();
+				z = consume(x.next()); return next();
 			}
 		}
 
@@ -128,15 +122,11 @@ public class pidigits {
 
 		public Transformation compose(Transformation a) {
 			return new Transformation(
-					q.multiply(a.q)
-					, (q.multiply(a.r)).add((r.multiply(a.t)))
-					, (s.multiply(a.q)).add((t.multiply(a.s)))
-					, (s.multiply(a.r)).add((t.multiply(a.t)))
+					q.multiply(a.q), (q.multiply(a.r)).add((r.multiply(a.t))), (s.multiply(a.q)).add((t.multiply(a.s))), (s.multiply(a.r)).add((t.multiply(a.t)))
 			);
 		}
 	}
 }
-
 
 
 

@@ -1,4 +1,4 @@
-package shootout.revcomp.groovy
+package shootout.revcomp
 
 @Typed
 class RevCompGroovy {
@@ -60,7 +60,7 @@ class RevCompGroovy {
 		}
 		buf.reverse();
 		long total = System.currentTimeMillis() - start;
-		System.out.println("Total: " + total);
+		System.out.println("[Revcomp-Groovy Benchmark Result: " + total + "]");
 	}
 	
 }

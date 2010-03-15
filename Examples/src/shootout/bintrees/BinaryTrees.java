@@ -1,4 +1,4 @@
-package shootout;
+package shootout.bintrees;
 
 public class BinaryTrees {
 
@@ -7,7 +7,7 @@ public class BinaryTrees {
 	public static void main(String[] args){
         final long millis = System.currentTimeMillis();
 
-        int n = 0;
+        int n = 20;
 		if (args.length > 0) n = Integer.parseInt(args[0]);
 
 		int maxDepth = (minDepth + 2 > n) ? minDepth + 2 : n;
@@ -30,7 +30,8 @@ public class BinaryTrees {
 		}
 		System.out.println("long lived tree of depth " + maxDepth + "\t check: "+ longLivedTree.itemCheck());
 
-        System.out.println(System.currentTimeMillis() - millis);
+        long total = System.currentTimeMillis() - millis;
+		System.out.println("[Binary Trees-Java Benchmark Result: " + total + "]");
 	}
 
 

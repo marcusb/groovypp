@@ -1,4 +1,4 @@
-package shootout;
+package shootout.spectralnorm;
 
 /*
 The Computer Language Benchmarks Game
@@ -27,7 +27,8 @@ public class SpectralNormGroovy
 
         System.out.println (formatter.format (spectralnormGame (n)) );
 
-        println System.currentTimeMillis() - millis
+        def total = System.currentTimeMillis() - millis
+	    println "[SpectralNorm-Groovy Benchmark Result: " + total + "]"
     }
 
 
@@ -75,10 +76,9 @@ public class SpectralNormGroovy
 
         return Math.sqrt (vBv/vv);
     }
-}
 
-@Typed
-class Approximate extends Thread
+
+static class Approximate extends Thread
 {
     static CyclicBarrier barrier;
 
@@ -171,3 +171,6 @@ class Approximate extends Thread
         }
     }
 }
+
+}
+

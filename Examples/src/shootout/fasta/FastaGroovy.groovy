@@ -79,11 +79,11 @@ class FastaGroovy {
 	    index = 0;
 	    int m = 0;
 	    String descStr = ">" + id + " " + desc + '\n';
-	    writer.write(descStr.getBytes());
+//	    writer.write(descStr.getBytes());
 	    while (n > 0) {
 	        if (n < LINE_LENGTH) m = n;  else m = LINE_LENGTH;
 	        if(BUFFER_SIZE - index < m){
-	            writer.write(bbuffer, 0, index);
+//	            writer.write(bbuffer, 0, index);
 	            index = 0;
 	        }
 	        for (int i = 0; i < m; i++) {
@@ -92,7 +92,7 @@ class FastaGroovy {
 	        bbuffer[index++] = (char)'\n';
 	        n -= LINE_LENGTH;
 	    }
-	    if(index != 0) writer.write(bbuffer, 0, index);
+//	    if(index != 0) writer.write(bbuffer, 0, index);
 	}
 
 	static final void makeRepeatFasta(String id, String desc, String alu, int n, OutputStream writer) throws IOException
@@ -102,11 +102,11 @@ class FastaGroovy {
 	    int k = 0;
 	    int kn = ALUB.length;
 	    String descStr = ">" + id + " " + desc + '\n';
-	    writer.write(descStr.getBytes());
+//	    writer.write(descStr.getBytes());
 	    while (n > 0) {
 	        if (n < LINE_LENGTH) m = n; else m = LINE_LENGTH;
 	        if(BUFFER_SIZE - index < m){
-	            writer.write(bbuffer, 0, index);
+//	            writer.write(bbuffer, 0, index);
 	            index = 0;
 	        }
 	        for (int i = 0; i < m; i++) {
@@ -117,27 +117,25 @@ class FastaGroovy {
 	        bbuffer[index++] = (char)'\n';
 	        n -= LINE_LENGTH;
 	    }
-	    if(index != 0) writer.write(bbuffer, 0, index);
+//	    if(index != 0) writer.write(bbuffer, 0, index);
 	}
-
-
 
 	public static void main(String[] args) {
 		long start = System.currentTimeMillis();
-
 		makeCumulative(HomoSapiens);
 		makeCumulative(IUB);
-		int n = 2500000;
+		int n = 25000;
 		if (args.length > 0)
 		    n = Integer.parseInt(args[0]);
 		OutputStream out = System.out;
 		makeRepeatFasta("ONE", "Homo sapiens alu", ALU, n * 2, out);
 		makeRandomFasta("TWO", "IUB ambiguity codes", IUB, n * 3, out);
 		makeRandomFasta("THREE", "Homo sapiens frequency", HomoSapiens, n * 5, out);
-		long end = (System.currentTimeMillis() - start)/1000;
-		println ("Total: " + end);
+		long total = System.currentTimeMillis() - start;
+		println ("[Fasta-Groovy Benchmark Result: " + total + "]");
 	}
 
+	@Typed
 	public static class Frequency {
 	    public byte c;
 	    public double p;

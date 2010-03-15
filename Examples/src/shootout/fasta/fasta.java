@@ -84,11 +84,11 @@ class fasta {
         index = 0;
         int m = 0;
         String descStr = ">" + id + " " + desc + '\n';
-        writer.write(descStr.getBytes());
+//        writer.write(descStr.getBytes());
         while (n > 0) {
             if (n < LINE_LENGTH) m = n;  else m = LINE_LENGTH;
             if(BUFFER_SIZE - index < m){
-                writer.write(bbuffer, 0, index);
+//                writer.write(bbuffer, 0, index);
                 index = 0;
             }
             for (int i = 0; i < m; i++) {
@@ -97,7 +97,7 @@ class fasta {
             bbuffer[index++] = '\n';
             n -= LINE_LENGTH;
         }
-        if(index != 0) writer.write(bbuffer, 0, index);
+//        if(index != 0) writer.write(bbuffer, 0, index);
     }
 
     static final void makeRepeatFasta(String id, String desc, String alu, int n, OutputStream writer) throws IOException
@@ -107,11 +107,11 @@ class fasta {
         int k = 0;
         int kn = ALUB.length;
         String descStr = ">" + id + " " + desc + '\n';
-        writer.write(descStr.getBytes());
+//        writer.write(descStr.getBytes());
         while (n > 0) {
             if (n < LINE_LENGTH) m = n; else m = LINE_LENGTH;
             if(BUFFER_SIZE - index < m){
-                writer.write(bbuffer, 0, index);
+//                writer.write(bbuffer, 0, index);
                 index = 0;
             }
             for (int i = 0; i < m; i++) {
@@ -122,22 +122,22 @@ class fasta {
             bbuffer[index++] = '\n';
             n -= LINE_LENGTH;
         }
-        if(index != 0) writer.write(bbuffer, 0, index);
+//        if(index != 0) writer.write(bbuffer, 0, index);
     }
 
     public static void main(String[] args) throws IOException {
 	    long start = System.currentTimeMillis();
         makeCumulative(HomoSapiens);
         makeCumulative(IUB);
-        int n = 2500000;
+        int n = 25000;
         if (args.length > 0)
             n = Integer.parseInt(args[0]);
         OutputStream out = System.out;
         makeRepeatFasta("ONE", "Homo sapiens alu", ALU, n * 2, out);
         makeRandomFasta("TWO", "IUB ambiguity codes", IUB, n * 3, out);
         makeRandomFasta("THREE", "Homo sapiens frequency", HomoSapiens, n * 5, out);
-        long total = (System.currentTimeMillis() - start)/1000;
-	    System.out.println("Total: " + total);
+        long total = System.currentTimeMillis() - start;
+	    System.out.println("[Fasta-Java Benchmark Result: " + total + "]");
     }
 
     public static class frequency {

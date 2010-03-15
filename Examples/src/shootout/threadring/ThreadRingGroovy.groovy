@@ -1,4 +1,4 @@
-package shootout;
+package shootout.threadring;
 
 /**
  * The Computer Language Benchmarks Game
@@ -26,13 +26,18 @@ class ThreadRingGroovy {
 
     public static void main(String[] args) throws InterruptedException {
         def start = System.currentTimeMillis();
-        def n = Integer.parseInt(args[0]);
+	    int n = 500;
+	    try {
+            n = Integer.parseInt(args[0]);
+		} catch (Exception e) {}
         def ring = new ThreadRingGroovy(n);
         def node = ring.start(MAX_NODES);
         node.sendMessage(new TokenMessage(1,0));
         cdl.await();
-        long end = System.currentTimeMillis() - start
-        System.out.println("$n:$end")
+        long total = System.currentTimeMillis() - start
+        System.out.println("$n:$total")
+
+	    println "[ThreadRing-Groovy Benchmark Result: " + total + "]"
     }
 
     public ThreadRingGroovy(int n) {
