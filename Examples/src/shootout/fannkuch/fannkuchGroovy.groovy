@@ -13,192 +13,174 @@ package shootout.fannkuch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Typed
-public final class FannkuchGroovy implements Runnable
-{
-    private final int n;
-    private final int[] flip_max_arr;
-    private final AtomicInteger remain_task = new AtomicInteger(0);
+class FannkuchGroovy implements Runnable {
+	private final int n
+	private final int[] flip_max_arr
+	private final AtomicInteger remain_task = new AtomicInteger(0)
 
-    public static void main(String[] args)
-    {
-        int x = (args.length > 0) ? Integer.parseInt(args[0]) : 7;
-        FannkuchGroovy f = new FannkuchGroovy(x);
-        long millis = System.currentTimeMillis();
-        System.out.format("Pfannkuchen(%d) = %d\n", x, f.fank_game());
-	    long total = System.currentTimeMillis() - millis;
-	    System.out.println("[Fannkuch-Groovy Benchmark Result: " + total + "]");
-    }
+	static void main(String[] args) {
+		int x = (args.length > 0) ? Integer.parseInt(args[0]) : 7
+		FannkuchGroovy f = new FannkuchGroovy(x)
+		long millis = System.currentTimeMillis()
+		System.out.format("Pfannkuchen(%d) = %d\n", x, f.fank_game())
+		long total = System.currentTimeMillis() - millis
+		println "[Fannkuch-Groovy Benchmark Result: $total ]"
+	}
 
-    public FannkuchGroovy(int N)
-    {
-        n = N;
-        // hold flip_count result for each swap index
-        flip_max_arr = new int[n];
-    }
+	FannkuchGroovy(int N) {
+		n = N
+		// hold flip_count result for each swap index
+		flip_max_arr = new int[n]
+	}
 
-    private final int fank_game()
-    {
-        Thread[] th = new Thread[Runtime.getRuntime().availableProcessors()];
-        for (int i = 0; i < th.length; i++)
-        {
-            th[i] = new Thread(this);
-            th[i].start();
-        }
+	private final int fank_game() {
+		Thread[] th = new Thread[Runtime.getRuntime().availableProcessors()]
+		for (int i = 0; i < th.length; i++) {
+			th[i] = new Thread(this)
+			th[i].start()
+		}
 
-        print_30_permut();
+		print_30_permut()
 
-        for (Thread t : th)
-        {
-            try {
-                t.join();
-            }
-            catch (InterruptedException ie)
-            {   }
-        }
+		for (Thread t: th) {
+			try {
+				t.join()
+			}
+			catch (InterruptedException ie) { }
+		}
 
-        int mx = 0;
-        for (int i : flip_max_arr)
-            if (mx < i)
-                mx = i;
-        return mx;
-    }
+		int mx = 0
+		for (int i: flip_max_arr)
+			if (mx < i)
+				mx = i
+		mx
+	}
 
-    // In order to divide tasks 'equally' for many threads, permut generation
-    // strategy is different than that of original single thread.
-    // this function will 'correctly' print first 30 permutations
-    private final void print_30_permut()
-    {
-        // declare and initialize
-        final int[] permutation = new int[n];
-        for ( int i = 0; i < n; i++ )
-        {
-            permutation[i] = i;
-            System.out.print((1 + i));
-        }
-        System.out.println();
+	// In order to divide tasks 'equally' for many threads, permut generation
+	// strategy is different than that of original single thread.
+	// this function will 'correctly' print first 30 permutations
 
-        final int[] perm_remain = new int[n];
-        for ( int i = 1; i <= n; i++ )
-            perm_remain[i -1] = i;
+	private final void print_30_permut() {
+		// declare and initialize
+		final int[] permutation = new int[n]
+		for (int i = 0; i < n; i++) {
+			permutation[i] = i
+//			System.out.print((1 + i))
+		}
+//		println ""
 
-        int numPermutationsPrinted = 1;
-        for ( int pos_right = 2; pos_right <= n; pos_right++ )
-        {
-            int pos_left = pos_right -1;
-            for(boolean cont = true; cont; cont = pos_left < pos_right)
-            {
-                // rotate down perm[0..prev] by one
-                next_perm(permutation, pos_left);
+		final int[] perm_remain = new int[n]
+		for (int i = 1; i <= n; i++)
+			perm_remain[i - 1] = i
 
-                if (--perm_remain[pos_left] > 0)
-                {
-                    if (numPermutationsPrinted++ < 30)
-                    {
-                        for (int i = 0; i < n; ++i)
-                            System.out.print((1 + permutation[i]));
-                        System.out.println();
-                    }
-                    else
-                        return;
+		int numPermutationsPrinted = 1
+		for (int pos_right = 2; pos_right <= n; pos_right++) {
+			int pos_left = pos_right - 1
+			for (boolean cont = true; cont; cont = pos_left < pos_right) {
+				// rotate down perm[0..prev] by one
+				next_perm(permutation, pos_left)
 
-                    for ( ; pos_left != 1; --pos_left)
-                        perm_remain[pos_left -1] = pos_left;
-                }
-                else
-                    ++pos_left;
-            };
-        }
-    }
+				if (--perm_remain[pos_left] > 0) {
+					if (numPermutationsPrinted++ < 30) {
+/*
+						for (int i = 0; i < n; ++i)
+							print (1 + permutation[i])
+						println ""
+*/
+					}
+					else
+						return
 
-    public void run()
-    {
-        final int[] permutation = new int[n];
-        final int[] perm_remain = new int[n];
-        final int[] perm_flip = new int[n];
+					for (; pos_left != 1; --pos_left)
+						perm_remain[pos_left - 1] = pos_left
+				}
+				else
+					++pos_left
+			}
+		}
+	}
 
-        int pos_right;
-        while ((pos_right = remain_task.getAndIncrement()) < (n - 1))
-        {
-            int flip_max = 0;
+	void run() {
+		final int[] permutation = new int[n]
+		final int[] perm_remain = new int[n]
+		final int[] perm_flip = new int[n]
 
-            for (int i = 0; i < n - 1; i++)
-                permutation[i] = i;
+		int pos_right
+		while ((pos_right = remain_task.getAndIncrement()) < (n - 1)) {
+			int flip_max = 0
 
-            permutation[pos_right] = (n - 1);
-            permutation[n - 1] = (pos_right);
+			for (int i = 0; i < n - 1; i++)
+				permutation[i] = i
 
-            for (int i = 1; i <= n; i++)
-                perm_remain[i - 1] = i;
+			permutation[pos_right] = (n - 1)
+			permutation[n - 1] = (pos_right)
 
-            int pos_left = n - 2;
-            while (pos_left < n - 1)
-            {
-                // rotate down perm[0..r] by one
-                next_perm(permutation, pos_left);
+			for (int i = 1; i <= n; i++)
+				perm_remain[i - 1] = i
 
-                if (--perm_remain[pos_left] > 0)
-                {
-                    for (; pos_left != 1; --pos_left)
-                        perm_remain[pos_left - 1] = pos_left;
+			int pos_left = n - 2
+			while (pos_left < n - 1) {
+				// rotate down perm[0..r] by one
+				next_perm(permutation, pos_left)
 
-                    if ((permutation[0] != 0) && (permutation[n - 1] != (n - 1)))
-                    {
-                        System.arraycopy(permutation, 0, perm_flip, 0, n);
-                        int flipcount = count_flip(perm_flip);
-                        if (flip_max < flipcount)
-                            flip_max = flipcount;
-                    }
-                }
-                else
-                    pos_left++;
-            }
+				if (--perm_remain[pos_left] > 0) {
+					for (; pos_left != 1; --pos_left)
+						perm_remain[pos_left - 1] = pos_left
 
-            // update max_flip foreach flipping position
-            flip_max_arr[pos_right] = flip_max;
-        }
-    }
+					if ((permutation[0] != 0) && (permutation[n - 1] != (n - 1))) {
+						System.arraycopy(permutation, 0, perm_flip, 0, n)
+						int flipcount = count_flip(perm_flip)
+						if (flip_max < flipcount)
+							flip_max = flipcount
+					}
+				}
+				else
+					pos_left++
+			}
 
+			// update max_flip foreach flipping position
+			flip_max_arr[pos_right] = flip_max
+		}
+	}
 
-    // Take a permut array, continuously flipping until first element is '1'
-    // Return flipping times
-    private static final int count_flip(final int[] perm_flip)
-    {
-        // cache first element, avoid swapping perm[0] and perm[k]
-        int v0 = perm_flip[0];
-        int tmp;
+	// Take a permut array, continuously flipping until first element is '1'
+	// Return flipping times
 
-        int flip_count = 0;
-        while (true)
-        {
-            int i = 1, j = v0 - 1
-            for (; i < j;)
-            {
-                tmp = perm_flip[i];
-                perm_flip[i] = perm_flip[j];
-                perm_flip[j] = tmp;
-                ++i
-                --j
-            }
+	private static final int count_flip(final int[] perm_flip) {
+		// cache first element, avoid swapping perm[0] and perm[k]
+		int v0 = perm_flip[0]
+		int tmp
 
-            tmp = perm_flip[v0];
-            perm_flip[v0] = v0;
-            v0 = tmp;
+		int flip_count = 0
+		while (true) {
+			int i = 1, j = v0 - 1
+			for (; i < j;) {
+				tmp = perm_flip[i]
+				perm_flip[i] = perm_flip[j]
+				perm_flip[j] = tmp
+				++i
+				--j
+			}
 
-            flip_count++;
-            if (!v0) break;
-        }; // first element == '1' ?
+			tmp = perm_flip[v0]
+			perm_flip[v0] = v0
+			v0 = tmp
 
-        return flip_count;
-    }
+			flip_count++
+			if (!v0) break
+		}; // first element == '1' ?
 
-    // Return next permut, by rotating elements [0 - position] one 'step'
-    // next_perm('1234', 2) -> '2314'
-    private static final void next_perm(final int[] permutation, int position)
-    {
-        int perm0 = permutation[0];
+		return flip_count
+	}
 
-        for (int i = 0; i < position; ++i)
-            permutation[i] = permutation[i + 1];
-        permutation[position] = perm0;
-    }
+	// Return next permut, by rotating elements [0 - position] one 'step'
+	// next_perm('1234', 2) -> '2314'
+
+	private static final void next_perm(final int[] permutation, int position) {
+		int perm0 = permutation[0]
+
+		for (int i = 0; i < position; ++i)
+			permutation[i] = permutation[i + 1]
+		permutation[position] = perm0
+	}
 }

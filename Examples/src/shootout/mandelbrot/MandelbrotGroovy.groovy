@@ -16,19 +16,19 @@ class MandelbrotGroovy
 {
     public static void main(String[] args) throws Exception
     {
-        int size = 10000
+        def size = 10000
         if (args.length >= 1)
             size = Integer.parseInt(args[0])
 
 //        System.out.format("P4\n%d %d\n", size, size)
         long millis = System.currentTimeMillis()
-        int width_bytes = size /8 +1
+        def width_bytes = size /8 + 1
         def output_data = new byte[size][width_bytes]
         def bytes_per_line = new int[size]
 
-        Compute(size, output_data, bytes_per_line)
+        compute(size, output_data, bytes_per_line)
 	    long total = System.currentTimeMillis() - millis;
-        System.out.println("[Mandelbrot-Groovy Benchmark Result: " + total + "]")
+        println "[Mandelbrot-Groovy Benchmark Result: $total]"
 
 /*
         BufferedOutputStream ostream = new BufferedOutputStream(System.out)
@@ -38,7 +38,7 @@ class MandelbrotGroovy
 */
     }
 
-    private static final void Compute(final int N, final byte[][] output, final int[] bytes_per_line)
+    private static final void compute(final int N, final byte[][] output, final int[] bytes_per_line)
     {
         final def inverse_N = 2.0d / N
         final def current_line = new AtomicInteger(0)

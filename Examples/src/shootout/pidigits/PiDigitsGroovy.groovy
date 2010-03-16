@@ -9,121 +9,135 @@ package shootout.pidigits
  Data Parallel adaptation by Sassa NF
  */
 
-public class PiDigitsGroovy {
-	static final int L = 10;
+@Typed
+class PiDigitsGroovy {
+	static final int L = 10
 
-	public static void main(String[] args) {
-		long start = System.currentTimeMillis();
-		int n = 2500;
-		try {
-			n = Integer.parseInt(args[0]);
-		} catch (Exception e) {}
-		int j = 0;
+	static void main(String[] args) {
+		def start = System.currentTimeMillis()
+		def n = 2500;
 
-		PiDigitSpigot digits = new PiDigitSpigot();
+		if (args.length >= 1)
+		    n = Integer.parseInt(args[0])
+
+		int j = 0
+
+		PiDigitSpigot digits = new PiDigitSpigot()
 
 		while (n > 0) {
 			if (n >= L) {
-				for (int i = 0; i < L; i++) System.out.print(digits.next());
-				j += L;
+				for (int i = 0; i < L; i++)
+					digits.next()
+//					print digits.next()
+				j += L
 			} else {
-				for (int i = 0; i < n; i++) System.out.print(digits.next());
-				for (int i = n; i < L; i++) System.out.print(" ");
-				j += n;
+				for (int i = 0; i < n; i++)
+					digits.next()
+//					print digits.next()
+//
+//				for (int i = n; i < L; i++)
+//					print " "
+				j += n
 			}
-			System.out.print("\t:"); System.out.println(j);
-			n -= L;
+//			print "\t:"
+//			println j
+			n -= L
 		}
 
-		long total = System.currentTimeMillis() - start;
-		System.out.println("[PiDigits-Groovy Benchmark Result: " + total + "]");
+		def total = System.currentTimeMillis() - start
+		println "[PiDigits-Groovy Benchmark Result: $total ]"
 	}
 
 	static class PiDigitSpigot {
-		Transformation z, x, inverse;
+		Transformation z, x, inverse
 
-		public PiDigitSpigot() {
-			z = new Transformation(1, 0, 0, 1);
-			x = new Transformation(0, 0, 0, 0);
-			inverse = new Transformation(0, 0, 0, 0);
+		PiDigitSpigot() {
+			z = new Transformation(1, 0, 0, 1)
+			x = new Transformation(0, 0, 0, 0)
+			inverse = new Transformation(0, 0, 0, 0)
 		}
 
-		public int next() {
-			int y = digit();
+		int next() {
+			def y = digit()
 			if (isSafe(y)) {
-				z = produce(y); return y;
+				z = produce(y)
+				return y
 			} else {
-				z = consume(x.next()); return next();
+				z = consume(x.next())
+				return next()
 			}
 		}
 
-		public int digit() {
-			return z.extract(3);
+		int digit() {
+			z.extract(3)
 		}
 
-		public boolean isSafe(int digit) {
-			return digit == z.extract(4);
+		boolean isSafe(int digit) {
+			digit == z.extract(4)
 		}
 
-		public Transformation produce(int i) {
-			return (inverse.qrst(10, -10 * i, 0, 1)).compose(z);
+		Transformation produce(int i) {
+			(inverse.qrst(10, -10 * i, 0, 1)).compose(z)
 		}
 
-		public Transformation consume(Transformation a) {
-			return z.compose(a);
+		Transformation consume(Transformation a) {
+			z.compose(a)
 		}
 	}
 
 
 	static class Transformation {
-		BigInteger q, r, s, t;
-		int k;
+		BigInteger q, r, s, t
+		int k
 
-		public Transformation(int q, int r, int s, int t) {
-			this.q = BigInteger.valueOf(q);
-			this.r = BigInteger.valueOf(r);
-			this.s = BigInteger.valueOf(s);
-			this.t = BigInteger.valueOf(t);
-			k = 0;
+		Transformation(int q, int r, int s, int t) {
+			this.q = BigInteger.valueOf(q)
+			this.r = BigInteger.valueOf(r)
+			this.s = BigInteger.valueOf(s)
+			this.t = BigInteger.valueOf(t)
+			k = 0
 		}
 
-		public Transformation(BigInteger q, BigInteger r, BigInteger s, BigInteger t) {
-			this.q = q;
-			this.r = r;
-			this.s = s;
-			this.t = t;
-			k = 0;
+		Transformation(BigInteger q, BigInteger r, BigInteger s, BigInteger t) {
+			this.q = q
+			this.r = r
+			this.s = s
+			this.t = t
+			k = 0
 		}
 
 		public Transformation next() {
-			k++;
-			q = BigInteger.valueOf(k);
-			r = BigInteger.valueOf(4 * k + 2);
-			s = BigInteger.valueOf(0);
-			t = BigInteger.valueOf(2 * k + 1);
-			return this;
+			k++
+			q = BigInteger.valueOf(k)
+			r = BigInteger.valueOf(4 * k + 2)
+			s = BigInteger.valueOf(0)
+			t = BigInteger.valueOf(2 * k + 1)
+			this
 		}
 
-		public int extract(int j) {
-			BigInteger bigj = BigInteger.valueOf(j);
-			BigInteger numerator = (q.multiply(bigj)).add(r);
-			BigInteger denominator = (s.multiply(bigj)).add(t);
-			return (numerator.divide(denominator)).intValue();
+		int extract(int j) {
+			BigInteger bigj = BigInteger.valueOf(j)
+			BigInteger numerator = (q.multiply(bigj)).add(r)
+			BigInteger denominator = (s.multiply(bigj)).add(t)
+			return (numerator.divide(denominator)).intValue()
 		}
 
-		public Transformation qrst(int q, int r, int s, int t) {
-			this.q = BigInteger.valueOf(q);
-			this.r = BigInteger.valueOf(r);
-			this.s = BigInteger.valueOf(s);
-			this.t = BigInteger.valueOf(t);
-			k = 0;
-			return this;
+		Transformation qrst(int q, int r, int s, int t) {
+			this.q = BigInteger.valueOf(q)
+			this.r = BigInteger.valueOf(r)
+			this.s = BigInteger.valueOf(s)
+			this.t = BigInteger.valueOf(t)
+			k = 0
+			this
 		}
 
-		public Transformation compose(Transformation a) {
-			return new Transformation(
-					q.multiply(a.q), (q.multiply(a.r)).add((r.multiply(a.t))), (s.multiply(a.q)).add((t.multiply(a.s))), (s.multiply(a.r)).add((t.multiply(a.t)))
-			);
+		Transformation compose(Transformation a) {
+			new Transformation(
+					q.multiply(a.q),
+					(q.multiply(a.r)).add((r.multiply(a.t))),
+					(s.multiply(a.q)).add((t.multiply(a.s))),
+					(s.multiply(a.r)).add((t.multiply(a.t)))
+			)
 		}
 	}
 }

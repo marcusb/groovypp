@@ -24,52 +24,52 @@ class ThreadRingGroovy {
 
     static final CountDownLatch cdl = new CountDownLatch(1);
 
-    public static void main(String[] args) throws InterruptedException {
-        def start = System.currentTimeMillis();
-	    int n = 500;
-	    try {
-            n = Integer.parseInt(args[0]);
-		} catch (Exception e) {}
-        def ring = new ThreadRingGroovy(n);
-        def node = ring.start(MAX_NODES);
-        node.sendMessage(new TokenMessage(1,0));
-        cdl.await();
+    static void main(String[] args) throws InterruptedException {
+        def start = System.currentTimeMillis()
+	    int n = 500
+
+	    if (args.length > 0) n = Integer.parseInt(args[0])
+		
+        def ring = new ThreadRingGroovy(n)
+        def node = ring.start(MAX_NODES)
+        node.sendMessage(new TokenMessage(1,0))
+        cdl.await()
         long total = System.currentTimeMillis() - start
         System.out.println("$n:$total")
 
 	    println "[ThreadRing-Groovy Benchmark Result: " + total + "]"
     }
 
-    public ThreadRingGroovy(int n) {
-        N = n;
+    ThreadRingGroovy(int n) {
+        N = n
     }
 
-    public Node start(int n) {
-        def nodes = spawnNodes(n);
-        connectNodes(n, nodes);
-        return nodes[0];
+    Node start(int n) {
+        def nodes = spawnNodes(n)
+        connectNodes(n, nodes)
+        nodes[0]
     }
 
     private Node[] spawnNodes(int n) {
         executor = Executors.newFixedThreadPool(MAX_THREADS);
-        Node[] nodes = new Node[n+1];
+        Node[] nodes = new Node[n+1]
         for (int i = 0; i < n ; i++) {
-            nodes[i] = new Node(i+1, null);
+            nodes[i] = new Node(i+1, null)
         }
-        return nodes;
+        nodes
     }
 
-    public void connectNodes(int n, Node[] nodes) {
-        nodes[n] = nodes[0];
+    void connectNodes(int n, Node[] nodes) {
+        nodes[n] = nodes[0]
         for (i in 0..<n) {
-            nodes[i].connect(nodes[i+1]);
+            nodes[i].connect(nodes[i+1])
         }
     }
 
     private static class TokenMessage {
-        int nodeId;
-        volatile int value;
-        boolean isStop;
+        int nodeId
+        volatile int value
+        boolean isStop
 
         public TokenMessage(int nodeId, int value) {
             this.nodeId = nodeId
@@ -106,28 +106,27 @@ class ThreadRingGroovy {
             executor.execute(this);
         }
 
-
-        public void run() {
+        void run() {
             if (isActive) {
                 try {
-                    TokenMessage m = queue.take();
+                    TokenMessage m = queue.take()
                     if (m.isStop) {
-                        int nextValue = m.value+1;
+                        int nextValue = m.value+1
                         if (nextValue == MAX_NODES) {
-                            executor.shutdown();
-                            cdl.countDown();
+                            executor.shutdown()
+                            cdl.countDown()
                         } else {
-                            m.value = nextValue;
-                            nextNode.sendMessage(m);
+                            m.value = nextValue
+                            nextNode.sendMessage(m)
                         }
-                        isActive = false;
+                        isActive = false
                     } else {
                         if (m.value == N) {
-                            System.out.println(nodeId);
-                            nextNode.sendMessage(new TokenMessage(nodeId, 0, true));
+                            System.out.println(nodeId)
+                            nextNode.sendMessage(new TokenMessage(nodeId, 0, true))
                         } else {
-                            m.value = m.value + 1;
-                            nextNode.sendMessage(m);
+                            m.value = m.value + 1
+                            nextNode.sendMessage(m)
                         }
                     }
                 } catch (InterruptedException ie) {

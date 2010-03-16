@@ -73,9 +73,9 @@ public final class Fannkuch implements Runnable
         for ( int i = 0; i < n; i++ )
         {
             permutation[i] = i;
-            System.out.print((1 + i));
+//            System.out.print((1 + i));
         }
-        System.out.println();
+//        System.out.println();
 
         final int[] perm_remain = new int[n];
         for ( int i = 1; i <= n; i++ )
@@ -94,9 +94,9 @@ public final class Fannkuch implements Runnable
                 {
                     if (numPermutationsPrinted++ < 30)
                     {
-                        for (int i = 0; i < n; ++i)
-                            System.out.print((1 + permutation[i]));
-                        System.out.println();
+//                        for (int i = 0; i < n; ++i)
+//                            System.out.print((1 + permutation[i]));
+//                        System.out.println();
                     }
                     else
                         return;
