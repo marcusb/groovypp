@@ -5,6 +5,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
@@ -107,5 +108,13 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
 
     public static Iterator<String> iterator(String self) {
         return DefaultGroovyMethods.toList(self).iterator();
+    }
+
+    public static void print(Writer self, Object value) {
+        DefaultGroovyMethods.print(self, value);
+    }
+
+    public static void println(Writer self, Object value) {
+        DefaultGroovyMethods.println(self, value);
     }
 }

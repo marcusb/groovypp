@@ -203,8 +203,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     }
 
     public MethodNode findMethod(ClassNode type, String methodName, ClassNode[] args, boolean staticOnly) {
-        Object methods = ClassNodeCache.getMethods(type, methodName);
-        final Object res = MethodSelection.chooseMethod(methodName, methods, type, args, classNode, staticOnly);
+        Object methods = staticOnly ? ClassNodeCache.getStaticMethods(type, methodName) :
+                ClassNodeCache.getMethods(type, methodName);
+        final Object res = MethodSelection.chooseMethod(methodName, methods, type, args, classNode);
         if (res instanceof MethodNode)
             return (MethodNode) res;
 
@@ -229,7 +230,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         }
 
         if (candidates != null) {
-            final Object r = MethodSelection.chooseMethod(methodName, candidates, type, args, classNode, staticOnly);
+            final Object r = MethodSelection.chooseMethod(methodName, candidates, type, args, classNode);
             if (r instanceof MethodNode)
                 return (MethodNode) r;
         }
@@ -284,7 +285,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 //            args = newArgs;
 //        }
 
-        final Object res = MethodSelection.chooseMethod("<init>", methods, type, args, classNode, false);
+        final Object res = MethodSelection.chooseMethod("<init>", methods, type, args, classNode);
         if (res instanceof MethodNode)
             return (MethodNode) res;
         return null;

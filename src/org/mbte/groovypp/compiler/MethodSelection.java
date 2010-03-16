@@ -82,10 +82,10 @@ public class MethodSelection {
         return Math.max(max, superClassMax);
     }
 
-    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode type, ClassNode[] arguments, ClassNode contextClass, boolean staticOnly) {
+    public static Object chooseMethod(String methodName, Object methodOrList, ClassNode type, ClassNode[] arguments, ClassNode contextClass) {
         if (methodOrList instanceof MethodNode) {
             final MethodNode mn = (MethodNode) methodOrList;
-            if ((!staticOnly || mn.isStatic()) && isValidMethod(mn.getParameters(), arguments, type, mn.getDeclaringClass())) {
+            if (isValidMethod(mn.getParameters(), arguments, type, mn.getDeclaringClass())) {
                 return methodOrList;
             }
             return null;
@@ -97,7 +97,7 @@ public class MethodSelection {
         if (methodCount > 1 && contextClass != null) {
             for (int i = 0; i < methodCount; i++) {
                 final MethodNode methodNode = (MethodNode) methods.get(i);
-                if (methodNode == null || (staticOnly && !methodNode.isStatic()) || !AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(), contextClass, null)) {
+                if (methodNode == null || !AccessibilityCheck.isAccessible(methodNode.getModifiers(), methodNode.getDeclaringClass(), contextClass, null)) {
                     methodCount--;
                     methods.remove(i--);
                 }
@@ -619,7 +619,7 @@ public class MethodSelection {
                 if (!method.isPublic()) array.remove(i);
             }
         }
-        final Object selected = chooseMethod(methodName, methodOrList, classToTransformFrom, args, null, false);
+        final Object selected = chooseMethod(methodName, methodOrList, classToTransformFrom, args, null);
         return selected instanceof MethodNode ? (MethodNode)selected : null;
     }
 

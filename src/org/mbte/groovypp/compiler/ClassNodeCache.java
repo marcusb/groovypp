@@ -9,6 +9,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.vmplugin.v5.PluginDefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.mbte.groovypp.runtime.ArraysMethods;
+import org.mbte.groovypp.runtime.DefaultGroovyPPStaticMethods;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.ref.SoftReference;
@@ -22,6 +23,7 @@ public class ClassNodeCache {
     public static class ClassNodeInfo {
         Map<String, Object> methods;
         Map<String, Object> fields;
+        Map<String, Object> staticMethods;
         public FastArray constructors;
 
         List<MethodNode> isOneMethodAbstract;
@@ -38,6 +40,7 @@ public class ClassNodeCache {
 
     static {
         initDgm(DefaultGroovyPPMethods.class, false);
+        initDgm(DefaultGroovyPPStaticMethods.class, true);
         initDgm(DefaultGroovyStaticMethods.class, true);
         initDgm(ArraysMethods.class, false);
         addGlobalDGM();
@@ -75,7 +78,9 @@ public class ClassNodeCache {
                 "java.util.Collection collect(java.util.Collection, java.util.Collection, groovy.lang.Closure)",
                 "java.util.Collection collect(java.util.Map, groovy.lang.Closure)",
                 "java.util.Collection collect(java.util.Map, java.util.Collection, groovy.lang.Closure)",
-                "java.lang.String toString(java.lang.Object)"
+                "java.lang.String toString(java.lang.Object)",
+                "void print(java.lang.Object, java.lang.Object)",
+                "void println(java.lang.Object, java.lang.Object)"
         )), false);
     }
 
@@ -166,43 +171,57 @@ public class ClassNodeCache {
     }
 
     public static synchronized Object getMethods(ClassNode type, String methodName) {
-//        type = castPrimitiveArray (type);
 
         final ClassNodeInfo info = getClassNodeInfo(type.redirect());
 
-        Map<String, Object> nameMap = info.methods;
-        if (nameMap == null) {
-            nameMap = new HashMap<String, Object>();
-            info.methods = nameMap;
+        if (info.methods == null) {
+            fillMethodsMaps(type, info);
+        }
+        return info.methods.get(methodName);
+    }
 
-            final Set<ClassNode> ifaces = getAllInterfaces(type);
-            for (ClassNode node : ifaces) {
-                addMethods(nameMap, node.getMethods(), true);
-            }
+    public static synchronized Object getStaticMethods(ClassNode type, String methodName) {
 
-            for (ClassNode cn : getSuperClassesAndSelf(type)) {
-                addMethods(nameMap, cn.getMethods(), cn == type);
+        final ClassNodeInfo info = getClassNodeInfo(type.redirect());
 
-                final List<MethodNode> list = dgmMethods.get(cn);
-                if (list != null) {
-                    addMethods(nameMap, list, true);
-                }
-            }
+        if (info.staticMethods == null) {
+            fillMethodsMaps(type, info);
+        }
+        return info.staticMethods.get(methodName);
+    }
 
-            for (ClassNode node : ifaces) {
-                final List<MethodNode> list = dgmMethods.get(node);
-                if (list != null) {
-                    addMethods(nameMap, list, true);
-                }
-            }
+    private static void fillMethodsMaps(ClassNode type, ClassNodeInfo info) {
+        Map<String, Object> methodsMap = new HashMap<String, Object>();
+        Map<String, Object> staticMethodsMap = new HashMap<String, Object>();
 
-            if (type.isArray()) {
-                final MethodNode cloneNode = new MethodNode("clone", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
-                cloneNode.setDeclaringClass(type);
-                addMethods(nameMap, Collections.singletonList(cloneNode), true);
+        final Set<ClassNode> ifaces = getAllInterfaces(type);
+        for (ClassNode node : ifaces) {
+            addMethods(methodsMap, staticMethodsMap, node.getMethods(), true);
+        }
+
+        for (ClassNode cn : getSuperClassesAndSelf(type)) {
+            addMethods(methodsMap, staticMethodsMap, cn.getMethods(), cn == type);
+
+            final List<MethodNode> list = dgmMethods.get(cn);
+            if (list != null) {
+                addMethods(methodsMap, staticMethodsMap, list, true);
             }
         }
-        return nameMap.get(methodName);
+
+        for (ClassNode node : ifaces) {
+            final List<MethodNode> list = dgmMethods.get(node);
+            if (list != null) {
+                addMethods(methodsMap, staticMethodsMap, list, true);
+            }
+        }
+
+        if (type.isArray()) {
+            final MethodNode cloneNode = new MethodNode("clone", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, null);
+            cloneNode.setDeclaringClass(type);
+            addMethods(methodsMap, staticMethodsMap, Collections.singletonList(cloneNode), true);
+        }
+        info.methods = methodsMap;
+        info.staticMethods = staticMethodsMap;
     }
 
     private static List<ClassNode> getSuperClassesAndSelf(ClassNode classNode) {
@@ -270,12 +289,17 @@ public class ClassNodeCache {
         }
     }
 
-    static void addMethods(Map<String, Object> nameMap, List<MethodNode> nodes, boolean usePrivate) {
-        for (MethodNode m : nodes) {
+    static void addMethods(Map<String, Object> nameMap,
+                           Map<String, Object> staticMethodsMap,
+                           List<MethodNode> methods,
+                           boolean usePrivate) {
+        for (MethodNode m : methods) {
             if ((m.getModifiers() & Opcodes.ACC_BRIDGE) == 0) {
                 if (usePrivate || !m.isPrivate()) {
-                    Object list = nameMap.get(m.getName());
-                    nameMap.put(m.getName(), addMethodToList(list, m));
+                    nameMap.put(m.getName(), addMethodToList(nameMap.get(m.getName()), m));
+                    if (m.isStatic()) {
+                        staticMethodsMap.put(m.getName(), addMethodToList(staticMethodsMap.get(m.getName()), m));
+                    }
                 }
             }
         }
@@ -379,20 +403,15 @@ public class ClassNodeCache {
 
     private static boolean isMatchingMethod(MethodNode aMethod, MethodNode method) {
         if (aMethod.equals(method)) return true;
+
         Parameter[] params1 = aMethod.getParameters();
         Parameter[] params2 = method.getParameters();
-        if (params1.length != params2.length) {
-            return false;
-        }
+        if (params1.length != params2.length) return false;
 
-        boolean matches = true;
         for (int i = 0; i < params1.length; i++) {
-            if (!params1[i].getType().equals(params2[i].getType())) {
-                matches = false;
-                break;
-            }
+            if (!params1[i].getType().equals(params2[i].getType())) return false;
         }
-        return matches;
+        return true;
     }
 
     private static int findMatchingMethod(FastArray list, MethodNode method) {
@@ -436,24 +455,6 @@ public class ClassNodeCache {
                 list.add(mn);
             }
         }
-    }
-
-    private static ClassNode castPrimitiveArray(ClassNode type) {
-        int isArray = 0;
-        ClassNode substitue = type;
-        while (substitue.isArray()) {
-            substitue = substitue.getComponentType();
-            isArray++;
-        }
-
-        if (!ClassHelper.isPrimitiveType(substitue))
-            return type;
-
-        substitue = TypeUtil.wrapSafely(substitue);
-        while (isArray-- > 0) {
-            substitue = substitue.makeArray();
-        }
-        return substitue;
     }
 
     private static DGM createDGM(Class klazz, MethodNode method, ClassNode declaringClass, ClassNode[] exs, Parameter[] params, boolean isStatic) {
