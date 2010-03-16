@@ -8,14 +8,11 @@ import org.objectweb.asm.Opcodes;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 class DebugMethodAdapter{
 
-    private static HashMap<Integer,String> map = new HashMap<Integer,String>();
+    private static Map<Integer,String> map = new HashMap<Integer,String>();
 
     static {
         final CachedField[] cachedFields = ReflectionCache.getCachedClass(Opcodes.class).getFields();
@@ -28,7 +25,7 @@ class DebugMethodAdapter{
     }
 
     static MethodVisitor create(final MethodVisitor mv, final int debug) {
-        final Set codes = new HashSet();
+        final Set<String> codes = new HashSet<String>();
         codes.addAll(Arrays.asList("visitVarInsn", "visitMethodInsn", "visitInsn", "visitJumpInsn", "visitTypeInsn", "visitFieldInsn", "visitIntInsn"));
         final char[] debugTab = new char[debug];
         Arrays.fill(debugTab, '\t');
@@ -36,20 +33,19 @@ class DebugMethodAdapter{
         return (MethodVisitor) Proxy.newProxyInstance(DebugMethodAdapter.class.getClassLoader(), new Class[]{MethodVisitor.class}, new InvocationHandler(){
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() != Class.class) {
-                    System.out.print(tab + method.getName() + "(");
+                    DebugContext.outputStream.print(tab + method.getName() + "(");
                     for (int i = 0; i < args.length; i++) {
-                        Object arg = args[i];
                         if (i == 0 && codes.contains(method.getName())) {
-                          System.out.print(map.get((Integer)args[i]) + ", ");
+                            DebugContext.outputStream.print(map.get((Integer)args[i]) + ", ");
                         }
                         else {
                           if (i == 0 && method.getName().equals("visitLdcInsn"))
-                             System.out.print("(" + args[i].getClass().getName() + ")" + args[i] + ", ");
+                             DebugContext.outputStream.print("(" + args[i].getClass().getName() + ")" + args[i] + ", ");
                           else
-                             System.out.print(args[i] + ", ");
+                             DebugContext.outputStream.print(args[i] + ", ");
                         }
                     }
-                    System.out.println(")");
+                    DebugContext.outputStream.println(")");
                 }
                 return method.invoke(mv, args);
             }

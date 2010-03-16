@@ -7,7 +7,6 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.control.SourceUnit;
-import org.mbte.groovypp.compiler.bytecode.UneededBoxingRemoverMethodAdapter;
 import org.mbte.groovypp.compiler.bytecode.UneededLoadPopRemoverMethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 
@@ -46,10 +45,10 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
                 policy, baseClosureName);
 //
         if (debug != -1)
-            System.out.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ")");
+            DebugContext.outputStream.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ")");
         compiler.execute();
         if (debug != -1)
-            System.out.println("------------");
+            DebugContext.outputStream.println("------------");
     }
 
     public static void replaceMethodCode(SourceUnit source, SourceUnitContext context, MethodNode methodNode, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
