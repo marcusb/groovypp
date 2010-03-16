@@ -63,7 +63,7 @@ public class MethodPointerExpressionTransformer extends ExprTransformer<MethodPo
                 final Expression receiver;
                 if (object != null) {
                     object.visit(mv);
-                    final String receiverName = compiler.context.getNextSyntheticReceiverName();
+                    final String receiverName = compiler.context.getNextTempVarName();
                     final VariableExpression var = new VariableExpression(receiverName, type);
                     var.setClosureSharedVariable(true);
                     compiler.compileStack.defineVariable(var, true);
