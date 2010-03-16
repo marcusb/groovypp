@@ -5,14 +5,14 @@ public class Issue179Test extends GroovyShellTestCase {
         shell.evaluate """
           @Typed package p
           class A {
-            static def foo() {}
+            static def foo() {"Afoo"}
           }
 
           class B extends A {
-            def foo() {}
+            def foo() {"Bfoo"}
             static def bar() { foo() }
           }
-          B.bar()
+          assert "Afoo" == B.bar()
         """
     }
 }
