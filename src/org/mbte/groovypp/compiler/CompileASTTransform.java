@@ -95,7 +95,8 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             if (!anns.isEmpty()) {
                 final AnnotationNode ann = anns.get(0);
                 final Expression localMember = ann.getMember("debug");
-                localDebug = localMember != null && localMember instanceof ConstantExpression && ((ConstantExpression) localMember).getValue().equals(Boolean.TRUE);
+                if (localMember != null)
+                    localDebug = localMember instanceof ConstantExpression && ((ConstantExpression) localMember).getValue().equals(Boolean.TRUE);
             }
 
             if ((mn.getModifiers() & Opcodes.ACC_BRIDGE) != 0 || mn.isAbstract())

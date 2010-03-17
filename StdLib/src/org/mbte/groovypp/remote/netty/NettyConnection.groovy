@@ -3,18 +3,17 @@ package org.mbte.groovypp.remote.netty
 import groovy.remote.RemoteConnection
 import org.jboss.netty.channel.Channel
 import groovy.supervisors.Supervised
+import groovy.remote.RemoteMessage
 
-@Typed static class NettyConnection<S extends Supervised> extends RemoteConnection {
+@Typed static class NettyConnection extends RemoteConnection {
     protected Channel channel
 
-    protected S supervised
-
-    public void send(Object msg) {
-        channel.write(msg)
+    protected void doSend(RemoteMessage msg) {
+        channel?.write(msg)
     }
 
-    public void onException(Throwable cause) {
-        super.onException(cause);
-        supervised?.crash (cause)
+    protected void disconnect() {
+        channel?.disconnect()
+        channel = null
     }
 }

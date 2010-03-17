@@ -4,6 +4,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
@@ -46,7 +47,10 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(),
-                propName, right.getType(), compiler, isThisCall());
+                propName, getType(), compiler, isThisCall());
+        final CastExpression cast = new CastExpression(getType(), right);
+        cast.setSourcePosition(right);
+        right = (BytecodeExpr) compiler.transform(cast);
         return PropertyUtil.createSetProperty(parent, compiler, propName, object, right, prop);
     }
 

@@ -598,34 +598,41 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             BytecodeExpr option = (BytecodeExpr) transformToGround(caseStatement.getExpression());
 
             if (!ClassHelper.isPrimitiveType(option.getType()) || !ClassHelper.isPrimitiveType(cond.getType())) {
-                BytecodeExpr.box(cond.getType(), mv);
+                if (!ClassHelper.isPrimitiveType(cond.getType()) && caseStatement.getExpression() instanceof ClassExpression) {
+                    BytecodeExpr.box(cond.getType(), mv);
+                    mv.visitTypeInsn(INSTANCEOF, BytecodeHelper.getClassInternalName(caseStatement.getExpression().getType()));
+                    mv.visitJumpInsn(IFNE, codeLabels[i]);
+                }
+                else {
+                    BytecodeExpr.box(cond.getType(), mv);
 
-                option.visit(mv);
-                BytecodeExpr.box(option.getType(), mv);
+                    option.visit(mv);
+                    BytecodeExpr.box(option.getType(), mv);
 
-                Label next = i == caseCount - 1 ? defaultLabel : condLabels[i + 1];
+                    Label next = i == caseCount - 1 ? defaultLabel : condLabels[i + 1];
 
-                Label notNull = new Label();
-                mv.visitInsn(DUP);
-                mv.visitJumpInsn(IFNONNULL, notNull);
-                mv.visitJumpInsn(IF_ACMPEQ, codeLabels[i]);
-                mv.visitJumpInsn(GOTO, next);
+                    Label notNull = new Label();
+                    mv.visitInsn(DUP);
+                    mv.visitJumpInsn(IFNONNULL, notNull);
+                    mv.visitJumpInsn(IF_ACMPEQ, codeLabels[i]);
+                    mv.visitJumpInsn(GOTO, next);
 
-                mv.visitLabel(notNull);
+                    mv.visitLabel(notNull);
 
-                final BytecodeExpr caseValue = new BytecodeExpr(option, TypeUtil.wrapSafely(option.getType())) {
-                    protected void compile(MethodVisitor mv) {
-                    }
-                };
+                    final BytecodeExpr caseValue = new BytecodeExpr(option, TypeUtil.wrapSafely(option.getType())) {
+                        protected void compile(MethodVisitor mv) {
+                        }
+                    };
 
-                final BytecodeExpr switchValue = new BytecodeExpr(cond, TypeUtil.wrapSafely(cond.getType())) {
-                    protected void compile(MethodVisitor mv) {
-                        mv.visitInsn(SWAP);
-                    }
-                };
-                MethodCallExpression exp = new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue));
-                exp.setSourcePosition(caseValue);
-                transformLogical(exp, codeLabels[i], true).visit(mv);
+                    final BytecodeExpr switchValue = new BytecodeExpr(cond, TypeUtil.wrapSafely(cond.getType())) {
+                        protected void compile(MethodVisitor mv) {
+                            mv.visitInsn(SWAP);
+                        }
+                    };
+                    MethodCallExpression exp = new MethodCallExpression(caseValue, "isCase", new ArgumentListExpression(switchValue));
+                    exp.setSourcePosition(caseValue);
+                    transformLogical(exp, codeLabels[i], true).visit(mv);
+                }
             }
             else {
                 option.visit(mv);

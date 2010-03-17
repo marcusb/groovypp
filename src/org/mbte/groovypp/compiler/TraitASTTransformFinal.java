@@ -64,12 +64,14 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
 
     private void makeImplementationMethodsStatic(final ClassNode classNode, final SourceUnit source) {
         for (final MethodNode methodNode : classNode.getMethods()) {
-            if (methodNode.isStatic() || methodNode.isSynthetic())
+            if (methodNode.isStatic() || methodNode.isSynthetic() || methodNode.isAbstract())
                 continue;
+
+            final Parameter[] parameters = methodNode.getParameters();
 
             methodNode.setModifiers(methodNode.getModifiers() | Opcodes.ACC_STATIC);
             methodNode.getVariableScope().setInStaticContext(true);
-            final VariableExpression self = new VariableExpression(methodNode.getParameters()[0]);
+            final VariableExpression self = new VariableExpression(parameters[0]);
             final String propNameCapitalized = getPropertyNameCapitalized(methodNode);
 
             ClassCodeExpressionTransformer thisToSelf = new ClassCodeExpressionTransformer() {
@@ -107,6 +109,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             return;
 
         List<MethodNode> abstractMethods = getAbstractMethods(classNode);
+        boolean addInit = false;
         if (abstractMethods != null) {
             for (final MethodNode method : abstractMethods) {
                 List<AnnotationNode> list = method.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
@@ -144,8 +147,10 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                         if (klazzField == null) {
                             classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
                             final MethodNode initMethod = klazz.getType().getMethod("__init_" + fieldName, new Parameter[]{new Parameter(method.getDeclaringClass(), "$self")});
-                            if (initMethod != null)
+                            if (initMethod != null) {
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
+                                addInit = true;
+                            }
                         }
 
                         createGetterSetter(classNode, method, fieldType, parameters, getter, fieldName);
@@ -167,6 +172,11 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                     }
                 }
             }
+        }
+
+        if (addInit) {
+            new OpenVerifier().addInitialization(classNode);
+            classNode.getObjectInitializerStatements().clear();
         }
     }
 

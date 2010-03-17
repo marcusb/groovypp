@@ -5,6 +5,13 @@ import groovy.util.concurrent.FList
 @Typed class Multiplexor<M> extends MessageChannel<M> {
     private volatile FList<MessageChannel<M>> listeners = FList.emptyList
 
+    Multiplexor() {
+    }
+
+    Multiplexor(MessageChannel<M> channel) {
+        subscribe(channel)
+    }
+
     Multiplexor<M> subscribe(MessageChannel<M> channel) {
         for (;;) {
             def l = listeners

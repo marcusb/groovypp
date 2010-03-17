@@ -1,13 +1,9 @@
 package groovy.remote
 
-import java.util.concurrent.CopyOnWriteArraySet
-import groovy.supervisors.Supervised
-import groovy.supervisors.SupervisedConfig
-
 /**
  * Local node in the claster
  */
-class ClusterNode extends Supervised<ClusterNode.Config> {
+@Typed class ClusterNode {
     /**
      * Unique id of this node over cluster
      */
@@ -15,31 +11,27 @@ class ClusterNode extends Supervised<ClusterNode.Config> {
 
     private volatile long nextObjectId
 
-    protected long allocateObjectId () {
+    private ClusterNodeServer server
+
+    MessageChannel mainActor
+
+    Multiplexor<CommunicationEvent> communicationEvents = []
+
+    void setServer(ClusterNodeServer server) {
+        server.clusterNode = this
+        this.server = server
+    }
+
+    protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
     }
 
-    private final CopyOnWriteArraySet<MessageListener> messageListeners = []
-
-    /**
-     * Add message listener to the cluster node
-     */
-    ClusterNode addMessageListener (MessageListener listener) {
-        messageListeners.add(listener)
+    void start () {
+        server.start ()
     }
 
-    /**
-     * Remove message listener from the cluster node
-     */
-    ClusterNode removeMessageListener (MessageListener listener) {
-        messageListeners.remove(listener)
-    }
-
-    /**
-     * Listener for communication messages
-     */
-    abstract static class MessageListener {
-        abstract void onMessage (RemoteNode from, Object message)
+    void stop () {
+        server.stop ()
     }
 
     /**
@@ -54,20 +46,53 @@ class ClusterNode extends Supervised<ClusterNode.Config> {
 
         protected ClusterNode clusterNode
 
-        abstract void onDiscoveryEvent (DiscoveryEventType eventType, RemoteNode node)
+        abstract void onDiscoveryEvent (DiscoveryEventType eventType, RemoteClusterNode node)
     }
 
-    /**
-     * Configuration of the cluster node
-     */
-    @Trait abstract static class Config implements SupervisedConfig {
-        /**
-         * Server connection of the cluster node
-         */
-        void setServer (ClusterNodeServer.Config server) {
-            if (children == null)
-                children = []
-            children  << server
+    void onConnect(RemoteClusterNode remoteNode) {
+        communicationEvents << new ClusterNode.CommunicationEvent.Connected(remoteNode:remoteNode)
+    }
+
+    void onDisconnect(RemoteConnection connection) {
+        communicationEvents << new ClusterNode.CommunicationEvent.Disconnected(connection:connection)
+    }
+
+    void onMessage(RemoteClusterNode remoteNode, RemoteMessage message) {
+        switch(message) {
+            case RemoteClusterNode.ToMainActor:
+                    mainActor?.post(((RemoteClusterNode.ToMainActor)message).payLoad)
+                break;
+        }
+    }
+
+    void onException(RemoteConnection connection, Throwable cause) {
+        cause.printStackTrace()
+    }
+
+    static class CommunicationEvent {
+        static class TryingConnect extends CommunicationEvent{
+            UUID uuid
+            String address
+
+            String toString () {
+                "trying to connect to $uuid @ $address"
+            }
+        }
+
+        static class Connected extends CommunicationEvent{
+            RemoteClusterNode remoteNode
+
+            String toString () {
+                "connected to ${remoteNode.remoteId}"
+            }
+        }
+
+        static class Disconnected extends CommunicationEvent{
+            RemoteConnection connection
+
+            String toString () {
+                "disconnected from ${connection}"
+            }
         }
     }
 }

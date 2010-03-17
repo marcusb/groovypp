@@ -34,6 +34,10 @@ class OpenVerifier extends Verifier {
         node.setSetterBlock(null);
     }
 
+    protected void addInitialization(ClassNode node) {
+        super.addInitialization(node);
+    }
+
     protected void addInitialization(ClassNode node, ConstructorNode constructorNode) {
         if (constructorNode.getCode() instanceof BytecodeSequence)
             return;

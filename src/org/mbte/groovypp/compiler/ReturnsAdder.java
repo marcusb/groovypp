@@ -172,10 +172,7 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
     // This creates a return statement which has its source position after the last statement in the method.
     private ReturnStatement createSyntheticReturnStatement() {
         ReturnStatement returnStatement = new ReturnStatement(ConstantExpression.NULL);
-        returnStatement.setLineNumber(methodNode.getLastLineNumber());
-        returnStatement.setColumnNumber(methodNode.getLastColumnNumber());
-        returnStatement.setLastLineNumber(methodNode.getLastLineNumber());
-        returnStatement.setLastColumnNumber(methodNode.getLastColumnNumber());
+        returnStatement.setSourcePosition(methodNode);
         return returnStatement;
     }
 
@@ -191,6 +188,11 @@ public abstract class ReturnsAdder extends ClassCodeExpressionTransformer  {
                 } else if(defaultCase) {
                     return addReturnsIfNeeded(statement, scope);
                 }
+            }
+        }
+        else {
+            if (defaultCase && statement instanceof EmptyStatement) {
+                return addReturnsIfNeeded(statement, scope);
             }
         }
         return statement;

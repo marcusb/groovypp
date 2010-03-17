@@ -1,6 +1,6 @@
 package groovy.remote
 
-class RemoteMessage implements Externalizable {
+@Typed class RemoteMessage implements Externalizable {
     /**
      * Id of remote node
      */

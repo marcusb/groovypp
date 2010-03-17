@@ -8,10 +8,11 @@ class CompileStdLibTest extends GroovyFileSystemCompilerTestCase {
     void testCompile () {
         def finder = new FileNameFinder ()
         
-        String [] names = finder.getFileNames("./StdLib/src/", "**/*.groovy")
+        def names = finder.getFileNames("./StdLib/src/", "**/*.groovy")
+        names.addAll(finder.getFileNames("./StdLib/src/", "**/*.java"))
         names.each {
             println it
         }
-        compiler.compile (names)
+        compiler.compile (names as String[])
     }
 }

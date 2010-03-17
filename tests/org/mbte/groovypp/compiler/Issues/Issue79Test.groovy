@@ -6,7 +6,7 @@ class Issue79Test extends GroovyShellTestCase {
     void testMe()
     {
         shell.evaluate """
-        @Typed(debug = true) package p
+        @Typed package p
         { -> assert false }
         println "bye"
         """

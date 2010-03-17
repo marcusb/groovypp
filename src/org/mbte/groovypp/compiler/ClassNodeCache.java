@@ -69,6 +69,7 @@ public class ClassNodeCache {
                 "java.lang.String eachMatch(java.lang.String, java.lang.String, groovy.lang.Closure)",
                 "java.lang.String eachMatch(java.lang.String, java.util.regex.Pattern, groovy.lang.Closure)",
                 "java.util.Map sort(java.util.Map, groovy.lang.Closure)",
+                "java.util.Map sort(java.util.Map, java.util.Comparator)",
                 "java.util.List sort(java.util.Collection, groovy.lang.Closure)",
                 "java.lang.Object newInstance(java.lang.Class)",
                 "java.lang.Object with(java.lang.Object, groovy.lang.Closure)",

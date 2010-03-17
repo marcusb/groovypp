@@ -1,44 +1,44 @@
 package groovy.remote
 
 @Typed abstract class RemoteConnection {
-    ClusterNode clusterNode
-
-    Config config
+    ClusterNode       clusterNode
+    RemoteClusterNode remoteNode
 
     void onConnect () {
-        onConnect?.call()
+        send(new RemoteMessage.Identity())
     }
 
     void onDisconnect () {
-        onDisconnect?.call()
+        clusterNode.onDisconnect(this)
     }
 
-    void onMessage (Object msg) {
-        onMessage?.call(msg)
+    void onMessage (Object message) {
+        RemoteMessage msg = message
+        if (!remoteNode) {
+            if (msg instanceof RemoteMessage.Identity) {
+                remoteNode = new RemoteClusterNode(this, msg.senderNodeId)
+                clusterNode.onConnect(remoteNode)
+            }
+            else {
+                throw new RuntimeException("protocol error: $msg.senderNodeId")
+            }
+        }
+        else {
+            clusterNode.onMessage(remoteNode, msg)
+        }
     }
 
     void onException (Throwable cause) {
-        onException?.call(cause)
+        disconnect()
+        clusterNode.onException(this, cause)
     }
 
-    void setConfig(Config config) {
-        onConnect    = config?.onConnect?.clone(this)
-        onDisconnect = config?.onDisconnect?.clone(this)
-        onMessage    = config?.onMessage?.clone(this)
-        onException  = config?.onException?.clone(this)
+    final void send(RemoteMessage msg) {
+        msg.senderNodeId = clusterNode.id
+        doSend (msg)
     }
 
-    abstract void send(Object msg)
+    protected abstract void doSend(RemoteMessage msg)
 
-    DelegatingFunction0<RemoteConnection,?>               onConnect
-    DelegatingFunction0<RemoteConnection,?>               onDisconnect
-    DelegatingFunction1<RemoteConnection,Object,?>        onMessage
-    DelegatingFunction1<RemoteConnection,Throwable,?>     onException
-
-    @Trait abstract class Config {
-        DelegatingFunction0<RemoteConnection,?>               onConnect
-        DelegatingFunction0<RemoteConnection,?>               onDisconnect
-        DelegatingFunction1<RemoteConnection,Object,?>        onMessage
-        DelegatingFunction1<RemoteConnection,Throwable,?>     onException
-    }
+    protected abstract void disconnect()
 }
