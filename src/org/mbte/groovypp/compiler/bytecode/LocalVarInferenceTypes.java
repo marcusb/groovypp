@@ -75,13 +75,7 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
 
 
     public void jumpFrom(LocalVarInferenceTypes cur) {
-        if (visited) {
-            // jump back - we need to check for conflict
-            // TODO(ven): remove this code when we are sure we don't need it.
-            if (cur.defVars == null) {
-                throw new RuntimeException("Shouldn't happen");
-            }
-        } else {
+        if (!visited) {
             if (defVars == null) {
                 // we are 1st time here - just init
                 if (cur.defVars != null)
@@ -97,6 +91,8 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
                             defVars.put(e.getKey(), TypeUtil.commonType(e.getValue(), oldType));
                     }
             }
+        } else {
+            // jump back - all is checked, nothing too be done at this point.
         }
     }
 

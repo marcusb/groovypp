@@ -141,6 +141,10 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         String name = statement.getLabel();
         Label breakLabel = compileStack.getNamedBreakLabel(name);
+        if (breakLabel == null) {
+            addError("Illegal break label '" + name + "'", statement);
+        }
+
         compileStack.applyFinallyBlocks(breakLabel, true);
 
         mv.visitJumpInsn(GOTO, breakLabel);
@@ -741,6 +745,9 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         String name = statement.getLabel();
         Label continueLabel = compileStack.getContinueLabel();
         if (name != null) continueLabel = compileStack.getNamedContinueLabel(name);
+        if (continueLabel == null) {
+            addError("Illegal continue label '" + name + "'", statement);
+        }
         compileStack.applyFinallyBlocks(continueLabel, false);
         mv.visitJumpInsn(GOTO, continueLabel);
     }

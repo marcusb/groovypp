@@ -302,7 +302,7 @@ public class CompilerStack implements Opcodes {
     }
 
     /**
-     * Should be called when decending into a loop that does
+     * Should be called when descending into a loop that does
      * not define a scope. Creates a element for the state stack
      * so pop has to be called later
      */
@@ -311,32 +311,14 @@ public class CompilerStack implements Opcodes {
         initLoopLabels(labelName);
     }
 
-    /**
-     * Used for <code>break foo</code> inside a loop to end the
-     * execution of the marked loop. This method will return the
-     * break label of the loop if there is one found for the name.
-     * If not, the current break label is returned.
-     */
     protected Label getNamedBreakLabel(String name) {
-    	Label label = getBreakLabel();
-    	Label endLabel = null;
-        if (name!=null) endLabel = namedLoopBreakLabel.get(name);
-    	if (endLabel!=null) label = endLabel;
-        return label;
+        if (name!=null) return namedLoopBreakLabel.get(name);
+        return getBreakLabel();
     }
 
-    /**
-     * Used for <code>continue foo</code> inside a loop to continue
-     * the execution of the marked loop. This method will return
-     * the break label of the loop if there is one found for the
-     * name. If not, getLabel is used.
-     */
     protected Label getNamedContinueLabel(String name) {
-    	Label label = getLabel(name);
-    	Label endLabel = null;
-        if (name!=null) endLabel = namedLoopContinueLabel.get(name);
-    	if (endLabel!=null) label = endLabel;
-        return label;
+        if (name!=null) return namedLoopContinueLabel.get(name);
+        return getContinueLabel();
     }
 
     /**
