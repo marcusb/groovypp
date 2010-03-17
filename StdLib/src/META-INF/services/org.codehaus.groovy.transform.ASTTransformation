@@ -1,5 +1,7 @@
 org.mbte.groovypp.compiler.TraitASTTransform
 org.mbte.groovypp.compiler.TraitASTTransformFinal
 
-# org.mbte.groovypp.compiler.AsyncASTTransform
+org.mbte.groovypp.compiler.AsyncASTTransform
 org.mbte.groovypp.compiler.SerialASTTransform
+
+#files:gpp

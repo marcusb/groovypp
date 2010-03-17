@@ -169,7 +169,6 @@
         	includeantruntime="no">
             <javac sourcepath="${stdlib.src}"/>
         </groovyc >
-        <delete file="${compiler.prod.output}/META-INF/services/org.codehaus.groovy.transform.ASRTransformation"/>
     </target>
 
     <target name="compile.tests.stdlib"  depends="compile.stdlib">
