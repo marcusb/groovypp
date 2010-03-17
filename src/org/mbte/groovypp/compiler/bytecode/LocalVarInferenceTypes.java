@@ -13,8 +13,11 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
 
     IdentityHashMap<Variable, ClassNode> defVars;
     private boolean visited;
+    LocalVarInferenceTypes parentScopeInference;
 
-    public void add(VariableExpression ve, ClassNode type) {
+    // Return false if the inference is illegal. Currently this only happens if the var is reassigned to incompatible
+    // type inside the loop.
+    public boolean add(VariableExpression ve, ClassNode type) {
         if (defVars == null)
             defVars = new IdentityHashMap<Variable, ClassNode>();
 
@@ -34,6 +37,17 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
                 defVars.put(ve, type);
             }
         }
+
+        if (parentScopeInference != null && parentScopeInference.defVars != null) {
+            final ClassNode oldType = parentScopeInference.defVars.get(ve.getAccessedVariable());
+            if (oldType != null) {
+                if (!TypeUtil.isDirectlyAssignableFrom(oldType, type)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public ClassNode get(VariableExpression ve) {
@@ -59,35 +73,14 @@ public class LocalVarInferenceTypes extends BytecodeLabelInfo {
         return defVars == null ? ClassHelper.OBJECT_TYPE : defVars.get(ve);
     }
 
-    public void addWeak(VariableExpression ve, ClassNode type) {
-        if (ve.getAccessedVariable() == null)
-            return;
-
-        final ClassNode oldType = defVars.get(ve.getAccessedVariable());
-        if (oldType == null) {
-            defVars.put(ve.getAccessedVariable(), type);
-        } else {
-            if (oldType != TypeUtil.NULL_TYPE) {
-                if (TypeUtil.isDirectlyAssignableFrom(oldType, type))
-                    defVars.put(ve.getAccessedVariable(), type);
-            }
-        }
-    }
-
 
     public void jumpFrom(LocalVarInferenceTypes cur) {
         if (visited) {
             // jump back - we need to check for conflict
-            if (cur.defVars != null)
-                for (Map.Entry<Variable, ClassNode> e : cur.defVars.entrySet()) {
-                    final ClassNode oldType = defVars.get(e.getKey());
-                    if (oldType != null) {
-                        if (!TypeUtil.isDirectlyAssignableFrom(oldType, e.getValue()))
-                            throw new RuntimeException("Illegal type inference for variable '" + e.getKey().getName() + "'");
-                    }
-                }
-            else
+            // TODO(ven): remove this code when we are sure we don't need it.
+            if (cur.defVars == null) {
                 throw new RuntimeException("Shouldn't happen");
+            }
         } else {
             if (defVars == null) {
                 // we are 1st time here - just init

@@ -16,14 +16,12 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
     final MethodNode methodNode;
     final SourceUnit su;
     Statement code;
-    private final TypePolicy policy;
     final StaticCompiler compiler;
 
     public StaticMethodBytecode(MethodNode methodNode, SourceUnitContext context, SourceUnit su, Statement code, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         this.methodNode = methodNode;
         this.su = su;
         this.code = code;
-        this.policy = policy;
 
         MethodVisitor mv = createStorage();
         if (debug != -1) {
@@ -34,12 +32,11 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
                 throw new RuntimeException(t);
             }
         }
-        mv = new UneededLoadPopRemoverMethodAdapter(mv);
         compiler = new StaticCompiler(
                 su,
                 context,
                 this,
-                mv,
+                new UneededLoadPopRemoverMethodAdapter(mv),
                 compileStack,
                 debug,
                 policy, baseClosureName);

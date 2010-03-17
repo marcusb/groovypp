@@ -33,7 +33,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     ClassNode calculatedReturnType = TypeUtil.NULL_TYPE;
     private Label startLabel = new Label ();
 
-    public StaticCompiler(SourceUnit su, SourceUnitContext context, StaticMethodBytecode methodBytecode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
+    public StaticCompiler(SourceUnit su, SourceUnitContext context, StaticMethodBytecode methodBytecode, StackAwareMethodAdapter mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName) {
         super(su, methodBytecode.methodNode.getDeclaringClass(), methodBytecode.methodNode, mv, compileStack, debug, policy, baseClosureName, context);
         this.methodBytecode = methodBytecode;
         shouldImproveReturnType = methodNode.getName().equals("doCall");
@@ -100,7 +100,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         final ClassNode type = be.getType();
 
         if (type == ClassHelper.Boolean_TYPE) {
-            be.unbox(ClassHelper.boolean_TYPE, mv);
+            BytecodeExpr.unbox(ClassHelper.boolean_TYPE, mv);
         } else {
             if (ClassHelper.isPrimitiveType(type)) {
                 // unwrapper - primitive
@@ -156,7 +156,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         be.visit(mv);
         final ClassNode type = be.getType();
         if (type != ClassHelper.VOID_TYPE && type != ClassHelper.void_WRAPPER_TYPE) {
-            be.pop(type, mv);
+            BytecodeExpr.pop(type, mv);
         }
     }
 
@@ -188,7 +188,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         final int iteratorIdx = compileStack.defineTemporaryVariable(
                 "iterator", ClassHelper.make(Iterator.class), true);
 
-        mv.visitLabel(continueLabel);
+        mv.startLoopVisitLabel(continueLabel);
         mv.visitVarInsn(ALOAD, iteratorIdx);
         mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "hasNext", "()Z");
         mv.visitJumpInsn(IFEQ, breakLabel);
@@ -223,11 +223,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (!(loopExpr.get(0) instanceof EmptyExpression)) {
             final BytecodeExpr initExpression = (BytecodeExpr) transform(loopExpr.get(0));
             initExpression.visit(mv);
-            initExpression.pop(initExpression.getType(), mv);
+            BytecodeExpr.pop(initExpression.getType(), mv);
         }
 
         Label cond = new Label();
-        mv.visitLabel(cond);
+        mv.startLoopVisitLabel(cond);
 
         if (!(loopExpr.get(1) instanceof EmptyExpression)) {
             final BytecodeExpr binaryExpression = transformLogical(loopExpr.get(1), breakLabel, false);
@@ -282,6 +282,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     private void visitForLoopWithArray(ForStatement forLoop, BytecodeExpr coll) {
+        visitStatement(forLoop);
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
         ClassNode type = coll.getType().getComponentType();
         forLoop.getVariable().setType(type);
@@ -294,7 +295,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitInsn(ICONST_0);
         int idx = compileStack.defineTemporaryVariable("$idx$", ClassHelper.int_TYPE, true);
 
-        mv.visitLabel(continueLabel);
+        mv.startLoopVisitLabel(continueLabel);
         mv.visitVarInsn(ILOAD, idx);
         mv.visitVarInsn(ALOAD, array);
         mv.visitInsn(ARRAYLENGTH);
@@ -331,6 +332,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     private void visitForLoopWithIntRange(ForStatement forLoop, BytecodeExpr coll) {
+        visitStatement(forLoop);
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
         forLoop.getVariable().setType(ClassHelper.int_TYPE);
 
@@ -363,7 +365,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         int thisEnd = compileStack.defineTemporaryVariable("$thisEnd$", ClassHelper.int_TYPE, true);
         Register it = compileStack.defineVariable(forLoop.getVariable(), false);
 
-        mv.visitLabel(continueLabel);
+        mv.startLoopVisitLabel(continueLabel);
 
         mv.visitVarInsn(ILOAD, otherEnd);
         mv.visitVarInsn(ILOAD, thisEnd);
@@ -552,7 +554,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         final BytecodeExpr be = transformLogical(loop.getBooleanExpression().getExpression(), breakLabel, false);
 
-        mv.visitLabel(continueLabel);
+        mv.startLoopVisitLabel(continueLabel);
         be.visit(mv);
 
         loop.getLoopBlock().visit(this);
@@ -857,6 +859,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     public LocalVarInferenceTypes getLocalVarInferenceTypes() {
-        return ((UneededBoxingRemoverMethodAdapter) mv).getLocalVarInferenceTypes();
+        return mv.getLocalVarInferenceTypes();
     }
 }

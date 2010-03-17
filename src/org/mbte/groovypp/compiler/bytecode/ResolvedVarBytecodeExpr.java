@@ -35,7 +35,9 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
             right = compiler.transformSynthetic(right);
             
             vtype = right.getType();
-            compiler.getLocalVarInferenceTypes().add(ve, vtype);
+            if (!compiler.getLocalVarInferenceTypes().add(ve, vtype)) {
+                compiler.addError("IIlegal inference inside the loop. Consider making the variable's type explicit.", ve);
+            }
         } else {
             vtype = ve.getType();
             right = compiler.cast(right, vtype);

@@ -129,13 +129,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             if (one != null && doCall != null) {
                 ClosureUtil.makeOneMethodClass(expr.getType(), cast.getType(), one, doCall, compiler);
 
-                if (cast.getExpression() instanceof VariableExpression) {
-                    VariableExpression ve = (VariableExpression) cast.getExpression();
-                    if (ve.isDynamicTyped()) {
-                        compiler.getLocalVarInferenceTypes().addWeak(ve, expr.getType());
-                    }
-                }
-
                 return expr;
             }
         }
@@ -494,13 +487,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                     }
                 } else {
                     // d
-                    if (exp.getExpression() instanceof VariableExpression) {
-                        VariableExpression ve = (VariableExpression) exp.getExpression();
-                        if (ve.isDynamicTyped()) {
-                            compiler.getLocalVarInferenceTypes().addWeak(ve, expr.getType());
-                        }
-                    }
-
                     if (!TypeUtil.isConvertibleFrom(exp.getType(), rtype)) {
                         compiler.addError("Cannot convert " + PresentationUtil.getText(rtype) +
                                 " to " + PresentationUtil.getText(exp.getType()), exp);

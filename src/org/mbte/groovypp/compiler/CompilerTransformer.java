@@ -16,6 +16,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.util.FastArray;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
 import org.mbte.groovypp.compiler.bytecode.LocalVarTypeInferenceState;
+import org.mbte.groovypp.compiler.bytecode.StackAwareMethodAdapter;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
@@ -32,7 +33,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
     public final CompilerStack compileStack;
     public final ClassNode classNode;
-    protected final MethodVisitor mv;
+    protected final StackAwareMethodAdapter mv;
     public final int debug;
     public final TypePolicy policy;
     private static final ClassNode USE = ClassHelper.make(Use.class);
@@ -42,7 +43,9 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
     private final String baseClosureName;
     public SourceUnitContext context;
 
-    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode, MethodVisitor mv, CompilerStack compileStack, int debug, TypePolicy policy, String baseClosureName, SourceUnitContext context) {
+    public CompilerTransformer(SourceUnit source, ClassNode classNode, MethodNode methodNode,
+                               StackAwareMethodAdapter mv, CompilerStack compileStack, int debug,
+                               TypePolicy policy, String baseClosureName, SourceUnitContext context) {
         super(source, methodNode);
         this.classNode = classNode;
         this.mv = mv;

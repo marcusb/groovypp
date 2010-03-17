@@ -6,6 +6,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.IdentityHashMap;
+import java.util.Stack;
 
 public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, LocalVarTypeInferenceState {
 
@@ -22,7 +23,18 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
     private LocalVarInferenceTypes curInference = new LocalVarInferenceTypes();
     private static final LocalVarInferenceTypes AFTER_GOTO = new LocalVarInferenceTypes();
 
-    protected void jumpToLabel(int opcode, Label label) {
+    public Stack<LocalVarInferenceTypes> loopInferences = new Stack<LocalVarInferenceTypes>();
+
+    {
+        loopInferences.push(AFTER_GOTO);
+    }
+
+    public void startLoopVisitLabel(Label label) {
+        loopInferences.push(getLabelInfo(label));
+        visitLabel(label);
+    }
+
+    private void jumpToLabel(int opcode, Label label) {
         final LocalVarInferenceTypes li = getLabelInfo(label);
         li.initFromStack(stack);
 
@@ -31,16 +43,19 @@ public class StackAwareMethodAdapter extends MethodAdapter implements Opcodes, L
         if (opcode == GOTO) {
             stack.clear();
             curInference = AFTER_GOTO;
+
+            if (li.equals(loopInferences.peek())) loopInferences.pop();
         }
     }
 
-    protected void comeToLabel(Label label) {
+    private void comeToLabel(Label label) {
         final LocalVarInferenceTypes li = getLabelInfo(label);
         li.initFromStack(stack);
 
         if (curInference != AFTER_GOTO)
             li.comeFrom(curInference);
 //        System.out.println("// " + li.defVars);
+        li.parentScopeInference = loopInferences.peek();
         curInference = li;
     }
 
