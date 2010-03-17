@@ -5,14 +5,20 @@ import org.mbte.groovypp.compiler.DebugContext
 public class Issue175Test extends GroovyShellTestCase {
   void testMe() {
         def baos = new ByteArrayOutputStream()
-        DebugContext.outputStream = new PrintStream(baos)
-        shell.evaluate """
-          @Typed(debug = true)
-          static def foo() {
-            print "foo"
-          }
-          foo()
-        """
+        def oldStream = DebugContext.outputStream
+        try {
+          DebugContext.outputStream = new PrintStream(baos)
+          shell.evaluate """
+            @Typed(debug = true)
+            static def foo() {
+              print "foo"
+            }
+            foo()
+          """
+        } finally {
+          DebugContext.outputStream = oldStream
+        }
+
         assert baos.toString().indexOf("forName") < 0
     }
 }
