@@ -2,6 +2,8 @@ package groovy.util
 
 import groovy.util.concurrent.BindLater
 import java.util.concurrent.Executor
+import groovy.util.concurrent.FairExecutingChannel
+import groovy.util.concurrent.NonfairExecutingChannel
 
 @Typed abstract class MessageChannel<T> {
 
@@ -56,12 +58,23 @@ import java.util.concurrent.Executor
         }
     }
 
-    final MessageChannel<T> async(Executor executor) {
+    final MessageChannel<T> async(Executor executor, boolean fair = false) {
         def that = this;
-        { message ->
-            executor.execute {
-                that.post(message)
-            }
+        if (fair) {
+            (FairExecutingChannel)[
+                executor:executor,
+                onMessage: { message ->
+                   that.post(message)
+                }
+            ]
+        }
+        else {
+            (NonfairExecutingChannel)[
+                executor:executor,
+                onMessage: { message ->
+                   that.post(message)
+                }
+            ]
         }
     }
 

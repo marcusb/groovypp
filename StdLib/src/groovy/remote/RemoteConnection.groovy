@@ -1,5 +1,7 @@
 package groovy.remote
 
+import java.nio.channels.ClosedChannelException
+
 @Typed abstract class RemoteConnection {
     ClusterNode       clusterNode
     RemoteClusterNode remoteNode
@@ -30,7 +32,8 @@ package groovy.remote
 
     void onException (Throwable cause) {
         disconnect()
-        clusterNode.onException(this, cause)
+        if (!(cause instanceof IOException))
+            clusterNode.onException(this, cause)
     }
 
     final void send(RemoteMessage msg) {

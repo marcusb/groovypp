@@ -33,6 +33,10 @@ import org.jboss.netty.channel.ChannelEvent
         conn.onDisconnect()
     }
 
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) {
+        super.channelClosed(ctx, e);
+    }
+
     void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         RemoteConnection conn = ctx.attachment
         conn.onMessage(e.message)

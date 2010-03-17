@@ -10,12 +10,4 @@ package groovy.remote
     * First message send by client when connected to the server
     */
     static class Identity extends RemoteMessage {}
-
-    void writeExternal(ObjectOutput out) {
-        out.writeObject(senderNodeId);
-    }
-
-    void readExternal(ObjectInput input) {
-        senderNodeId = input.readObject()
-    }
 }

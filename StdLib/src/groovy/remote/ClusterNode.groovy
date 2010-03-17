@@ -1,5 +1,7 @@
 package groovy.remote
 
+import groovy.util.concurrent.CallLaterExecutors
+
 /**
  * Local node in the claster
  */
@@ -69,6 +71,10 @@ package groovy.remote
         cause.printStackTrace()
     }
 
+    void setMainActor(MessageChannel actor) {
+        mainActor = actor.async(CallLaterExecutors.defaultExecutor)
+    }
+
     static class CommunicationEvent {
         static class TryingConnect extends CommunicationEvent{
             UUID uuid
@@ -91,7 +97,7 @@ package groovy.remote
             RemoteConnection connection
 
             String toString () {
-                "disconnected from ${connection}"
+                "disconnected from ${connection.remoteNode.remoteId}"
             }
         }
     }
