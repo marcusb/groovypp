@@ -13,6 +13,7 @@ import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
 import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.text.MessageFormat;
 
@@ -143,8 +144,9 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
         ClassNode thisType = compiler.classNode;
         boolean isThis = true;
+        boolean onlyStatic = false;
         while (thisType != null) {
-            Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler, false, isThis);
+            Object prop = PropertyUtil.resolveGetProperty(thisType, propName, compiler, onlyStatic, isThis);
             if (prop != null) {
                 boolean isStatic = PropertyUtil.isStatic(prop);
                 if (!isStatic && exp.isStatic()) return null;
@@ -161,7 +163,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 if (gd != null) {
                     final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler);
                     final ResolvedMethodBytecodeExpr delegate = ResolvedMethodBytecodeExpr.create(exp, gd, innerThis, ArgumentListExpression.EMPTY_ARGUMENTS, compiler);
-                    prop = PropertyUtil.resolveGetProperty(delegate.getType(), propName, compiler, false, false);
+                    prop = PropertyUtil.resolveGetProperty(delegate.getType(), propName, compiler, onlyStatic, false);
                     if (prop != null) {
                         boolean isStatic = PropertyUtil.isStatic(prop);
                         if (!isStatic && exp.isStatic()) return null;
@@ -173,6 +175,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 }
             }
 
+            onlyStatic |= (thisType.getModifiers() & Opcodes.ACC_STATIC) != 0;
             thisType = thisType.getOuterClass();
         }
 

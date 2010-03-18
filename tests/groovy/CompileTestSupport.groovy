@@ -1,15 +1,18 @@
 package groovy
 
 import org.codehaus.groovy.control.CompilationFailedException
-import static org.junit.Assert.fail;
+import static org.junit.Assert.fail
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 
 public class CompileTestSupport {
   static void shouldNotCompile(String script) {
     GroovyShell shell = new GroovyShell();
     try {
       shell.evaluate (script)
-    } catch (CompilationFailedException e) {
+    } catch (MultipleCompilationErrorsException e) {
       return;
+    } catch (CompilationFailedException e) {
+      fail("Unknown error occured while compiling");
     }
     fail("Given code fragment should not compile");
   }
