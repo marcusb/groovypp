@@ -20,10 +20,10 @@ public class Issue132Test extends GroovyShellTestCase {
   }
   """
         } catch (MultipleCompilationErrorsException e) {
+          assert e.message.contains ("IIlegal inference inside the loop. Consider making the variable's type explicit.")
         }
     }
 
-/*
   void testWeirdShouldNotHappen() {
         shell.evaluate """
 @Typed
@@ -40,5 +40,4 @@ int xx() {
 xx()
 """
     }
-*/
 }
