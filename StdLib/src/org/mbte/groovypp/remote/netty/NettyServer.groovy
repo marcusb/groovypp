@@ -10,6 +10,7 @@ import groovy.remote.ClusterNodeServer
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
 import groovy.remote.ClusterNode
+import groovy.util.concurrent.CallLaterExecutors
 
 @Typed class NettyServer extends ClusterNodeServer {
     int port
@@ -58,7 +59,10 @@ import groovy.remote.ClusterNode
     }
 
     private void startBroadcast() {
-        broadcast = [clusterNode.id, (InetSocketAddress)serverChannel.getLocalAddress()]
+        broadcast = new Broadcast()
+        broadcast.uid = clusterNode.id
+        broadcast.address = (InetSocketAddress)serverChannel.getLocalAddress()
+        broadcast.executor = CallLaterExecutors.currentExecutor
         broadcast.start ()
     }
 
@@ -74,10 +78,6 @@ import groovy.remote.ClusterNode
     HashMap<UUID,NettyClient> clients = [:]
 
     class Broadcast extends BroadcastDiscovery {
-        Broadcast (UUID uid, InetSocketAddress address) {
-            super (uid, address)
-        }
-
         protected void onDiscovery(UUID uuid, SocketAddress address) {
             if (uuid > getUid()) {
                 synchronized(clients) {

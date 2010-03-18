@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 @Typed class ClusterTest extends GroovyTestCase {
     void testStartStop () {
-        int n = 5
+        int n = 12
         def stopCdl = new CountDownLatch(n)
         def connectCdl = new CountDownLatch(n*(n-1))
         def disconnectCdl = new CountDownLatch(n*(n-1))
@@ -42,8 +42,8 @@ import java.util.concurrent.TimeUnit
             }
             cluster.start()
         }
-        assertTrue(connectCdl.await(20,TimeUnit.SECONDS))
-        assertTrue(disconnectCdl.await(20,TimeUnit.SECONDS))
-        assertTrue(stopCdl.await(20,TimeUnit.SECONDS))
+        assertTrue(connectCdl.await(60,TimeUnit.SECONDS))
+        assertTrue(disconnectCdl.await(60,TimeUnit.SECONDS))
+        assertTrue(stopCdl.await(60,TimeUnit.SECONDS))
     }
 }
