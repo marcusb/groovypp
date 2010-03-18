@@ -56,21 +56,22 @@ class NbodyGroovy {
 			for (int i = 0; i < bodies.length; ++i) {
 				Body iBody = bodies[i]
 				for (int j = i + 1; j < bodies.length; ++j) {
-					double dx = iBody.x - bodies[j].x
-					double dy = iBody.y - bodies[j].y
-					double dz = iBody.z - bodies[j].z
+					Body jBody = bodies[j]
+                    double dx = iBody.x - jBody.x
+					double dy = iBody.y - jBody.y
+					double dz = iBody.z - jBody.z
 
 					double dSquared = dx * dx + dy * dy + dz * dz
 					double distance = Math.sqrt(dSquared)
 					double mag = dt / (dSquared * distance)
 
-					iBody.vx -= dx * bodies[j].mass * mag
-					iBody.vy -= dy * bodies[j].mass * mag
-					iBody.vz -= dz * bodies[j].mass * mag
+					iBody.vx -= dx * jBody.mass * mag
+					iBody.vy -= dy * jBody.mass * mag
+					iBody.vz -= dz * jBody.mass * mag
 
-					bodies[j].vx += dx * iBody.mass * mag
-					bodies[j].vy += dy * iBody.mass * mag
-					bodies[j].vz += dz * iBody.mass * mag
+					jBody.vx += dx * iBody.mass * mag
+					jBody.vy += dy * iBody.mass * mag
+					jBody.vz += dz * iBody.mass * mag
 				}
 			}
 

@@ -348,9 +348,10 @@
 	</target>
 
 	<macrodef name="run.benchmark">
-		<attribute name="className" default="NOT SET"/>
+		<attribute name="className"/>
+        <attribute name="benchmarkArgs"/>
 		<sequential >
-			<echo message="==== Running @{className} ====" />
+			<echo message="==== Running @{className} @{benchmarkArgs} ====" />
 			<java classname="@{className}" fork="true">
 				<classpath>
 					<path refid="groovypp.runtime.classpath" />
@@ -358,6 +359,7 @@
 				</classpath>
 				<jvmarg value="-server"/>
 				<jvmarg value="-Xmx512m"/>
+                <arg value="@{benchmarkArgs}"/>
 			</java>
 		</sequential>
 	</macrodef>
@@ -368,40 +370,36 @@
 		<echo message="Running benchmarks" />
 		<record name="benchmarks.txt" action="start" />
 		
-		<run.benchmark className="shootout.bintrees.BinaryTrees" />
-		<run.benchmark className="shootout.bintrees.BinaryTreesGroovy" />
+		<run.benchmark className="shootout.bintrees.BinaryTrees" benchmarkargs="20"/>
+		<run.benchmark className="shootout.bintrees.BinaryTreesGroovy" benchmarkargs="20"/>
 
-		<run.benchmark className="shootout.fannkuch.Fannkuch" />
-		<run.benchmark className="shootout.fannkuch.FannkuchGroovy" />
+        <run.benchmark className="shootout.fasta.fasta" benchmarkargs="25000000"/>
+        <run.benchmark className="shootout.fasta.FastaGroovy" benchmarkargs="25000000"/>
 
+        <run.benchmark className="shootout.threadring.ThreadRing" benchmarkargs="5000000"/>
+        <run.benchmark className="shootout.threadring.ThreadRingGroovy" benchmarkargs="5000000"/>
 
-		<run.benchmark className="shootout.knucleotide.KNucleotide" />
-		<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" />
+        <run.benchmark className="shootout.spectralnorm.SpectralNorm" benchmarkargs="5500"/>
+        <run.benchmark className="shootout.spectralnorm.SpectralNormGroovy" benchmarkargs="5500"/>
 
+		<run.benchmark className="shootout.fannkuch.Fannkuch" benchmarkargs="12"/>
+		<run.benchmark className="shootout.fannkuch.FannkuchGroovy" benchmarkargs="12"/>
 
-		<run.benchmark className="shootout.mandelbrot.Mandelbrot" />
-		<run.benchmark className="shootout.mandelbrot.MandelbrotGroovy" />
+		<!--<run.benchmark className="shootout.knucleotide.KNucleotide" benchmarkargs=""/>-->
+		<!--<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" benchmarkargs=""/>-->
 
+		<run.benchmark className="shootout.mandelbrot.Mandelbrot" benchmarkargs="16000"/>
+		<run.benchmark className="shootout.mandelbrot.MandelbrotGroovy" benchmarkargs="16000"/>
 
-		<run.benchmark className="shootout.spectralnorm.SpectralNorm" />
-		<run.benchmark className="shootout.spectralnorm.SpectralNormGroovy" />
+		<run.benchmark className="shootout.nbody.nbody" benchmarkargs="500000"/>
+		<run.benchmark className="shootout.nbody.NbodyGroovy" benchmarkargs="500000"/>
 
+		<run.benchmark className="shootout.pidigits.pidigits" benchmarkargs="10000"/>
+		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" benchmarkargs="10000"/>
 
-		<run.benchmark className="shootout.threadring.ThreadRing" />
-		<run.benchmark className="shootout.threadring.ThreadRingGroovy" />
-
-
-		<run.benchmark className="shootout.fasta.fasta" />
-		<run.benchmark className="shootout.fasta.FastaGroovy" />
-
-		<run.benchmark className="shootout.nbody.nbody" />
-		<run.benchmark className="shootout.nbody.NbodyGroovy" />
-
-		<run.benchmark className="shootout.pidigits.pidigits" />
-		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" />
 		<record name="benchmarks.txt" action="stop" />
 
-		<run.benchmark className="shootout.BenchmarkResultPrinter" />
+		<run.benchmark className="shootout.BenchmarkResultPrinter" benchmarkargs=""/>
 	</target>
 
     <target name="publish-googlecode" depends="make.install">

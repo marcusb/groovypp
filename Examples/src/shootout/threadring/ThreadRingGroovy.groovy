@@ -35,7 +35,6 @@ class ThreadRingGroovy {
         node.sendMessage(new TokenMessage(1,0))
         cdl.await()
         long total = System.currentTimeMillis() - start
-        System.out.println("$n:$total")
 
 	    println "[ThreadRing-Groovy Benchmark Result: " + total + "]"
     }

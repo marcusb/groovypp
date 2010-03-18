@@ -97,7 +97,7 @@ import groovy.util.concurrent.CallLaterExecutors
             RemoteConnection connection
 
             String toString () {
-                "disconnected from ${connection.remoteNode.remoteId}"
+                "disconnected from ${connection.remoteNode?.remoteId}"
             }
         }
     }

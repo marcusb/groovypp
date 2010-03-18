@@ -19,7 +19,6 @@ abstract class FQueue<T> implements Iterable<T> {
     /**
      * Number of elements in the list
      */
-
     static final EmptyQueue emptyQueue = []
 
     abstract int size ()
