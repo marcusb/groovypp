@@ -369,7 +369,7 @@
 		<fail message="No groovypp.jar. Please build one first" unless="groovypp.jar.present"/>
 		<echo message="Running benchmarks" />
 		<record name="benchmarks.txt" action="start" />
-		
+
 		<run.benchmark className="shootout.bintrees.BinaryTrees" benchmarkargs="20"/>
 		<run.benchmark className="shootout.bintrees.BinaryTreesGroovy" benchmarkargs="20"/>
 
@@ -385,8 +385,10 @@
 		<run.benchmark className="shootout.fannkuch.Fannkuch" benchmarkargs="12"/>
 		<run.benchmark className="shootout.fannkuch.FannkuchGroovy" benchmarkargs="12"/>
 
-		<!--<run.benchmark className="shootout.knucleotide.KNucleotide" benchmarkargs=""/>-->
-		<!--<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" benchmarkargs=""/>-->
+<!--
+		<run.benchmark className="shootout.knucleotide.KNucleotide" benchmarkargs=""/>
+		<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" benchmarkargs=""/>
+-->
 
 		<run.benchmark className="shootout.mandelbrot.Mandelbrot" benchmarkargs="16000"/>
 		<run.benchmark className="shootout.mandelbrot.MandelbrotGroovy" benchmarkargs="16000"/>
@@ -396,6 +398,33 @@
 
 		<run.benchmark className="shootout.pidigits.pidigits" benchmarkargs="10000"/>
 		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" benchmarkargs="10000"/>
+
+		<run.benchmark className="shootout.pidigits.pidigits" benchmarkargs="10000"/>
+		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" benchmarkargs="10000"/>
+
+		<run.benchmark className="shootout.chameneos.ChameneosRedux" benchmarkargs="60000"/>
+		<run.benchmark className="shootout.chameneos.ChameneosReduxGroovy" benchmarkargs="60000"/>
+
+		<!-- forwardning input to the file -->
+		<java classname="shootout.revcomp.revcomp" fork="true">
+			<classpath>
+				<path refid="groovypp.runtime.classpath" />
+				<pathelement path="${examples.prod.output}" />
+			</classpath>
+			<jvmarg value="-server"/>
+			<jvmarg value="-Xmx512m"/>
+			<redirector input="${examples.src}/shootout/revcomp-input.txt" />
+		</java>
+
+		<java classname="shootout.revcomp.RevCompGroovy" fork="true">
+			<classpath>
+				<path refid="groovypp.runtime.classpath" />
+				<pathelement path="${examples.prod.output}" />
+			</classpath>
+			<jvmarg value="-server"/>
+			<jvmarg value="-Xmx512m"/>
+			<redirector input="${examples.src}/shootout/revcomp-input.txt" />
+		</java>
 
 		<record name="benchmarks.txt" action="stop" />
 
