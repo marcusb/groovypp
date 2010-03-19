@@ -4,8 +4,6 @@ package shootout.meteor;/* The Computer Language Benchmarks Game
 */
 
 
-import java.util.*;
-
 public final class meteor
 {
     static final int X = 0;
@@ -801,6 +799,7 @@ public final class meteor
         if (args.length > 2)
             System.exit(-1); // spec says this is an error;
 
+		long start = System.currentTimeMillis();
         initGlobals();
         Board b = new Board();
         Piece.genAllOrientations();
@@ -810,5 +809,7 @@ public final class meteor
         System.out.println(b.m_nSoln + " solutions found\n");
         System.out.println(b.m_minSoln);
         System.out.println(b.m_maxSoln);
+		long total = System.currentTimeMillis() - start;
+		System.out.println("[Meteor-Java Benchmark Result: " + total + "]");
     }
 }

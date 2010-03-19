@@ -388,6 +388,9 @@
 <!--
 		<run.benchmark className="shootout.knucleotide.KNucleotide" benchmarkargs=""/>
 		<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" benchmarkargs=""/>
+
+		<run.benchmark className="shootout.meteor.meteor" benchmarkargs="2098"/>
+		<run.benchmark className="shootout.meteor.MeteorGroovy" benchmarkargs="2098"/>		
 -->
 
 		<run.benchmark className="shootout.mandelbrot.Mandelbrot" benchmarkargs="16000"/>
@@ -399,13 +402,10 @@
 		<run.benchmark className="shootout.pidigits.pidigits" benchmarkargs="10000"/>
 		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" benchmarkargs="10000"/>
 
-		<run.benchmark className="shootout.pidigits.pidigits" benchmarkargs="10000"/>
-		<run.benchmark className="shootout.pidigits.PiDigitsGroovy" benchmarkargs="10000"/>
-
 		<run.benchmark className="shootout.chameneos.ChameneosRedux" benchmarkargs="60000"/>
 		<run.benchmark className="shootout.chameneos.ChameneosReduxGroovy" benchmarkargs="60000"/>
 
-		<!-- forwardning input to the file -->
+
 		<java classname="shootout.revcomp.revcomp" fork="true">
 			<classpath>
 				<path refid="groovypp.runtime.classpath" />
