@@ -175,8 +175,8 @@ class ChameneosReduxGroovy {
 	public static void main(String[] args){
 		def start = System.currentTimeMillis()
 	    for (int i=0; i<65; ++i)
-		    ChameneosRedux.program_main(args,false)
-	    ChameneosRedux.program_main(args,true)
+		    program_main(args,false)
+	    program_main(args,true)
 		def total = System.currentTimeMillis() - start
 		println "[Chameneos Redux-Groovy Benchmark Result: $total ]"
 	}
