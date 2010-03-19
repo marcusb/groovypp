@@ -250,7 +250,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 ClassNode [] newArgs = new ClassNode [argTypes.length+1];
                                 System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
                                 newArgs [0] = obj.getObject().getType();
-                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
+                                MethodNode updaterMethod = findMethodWithClosureCoercion(updater.getType(), methodName, newArgs, compiler, false);
                                 if (updaterMethod != null) {
                                     ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
                                     ((TupleExpression)args).getExpressions().add(0, obj.getObject());

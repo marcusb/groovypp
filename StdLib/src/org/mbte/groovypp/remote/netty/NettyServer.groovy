@@ -13,6 +13,17 @@ import groovy.remote.ClusterNode
 import groovy.util.concurrent.CallLaterExecutors
 
 @Typed class NettyServer extends ClusterNodeServer {
+
+    private static InetAddress GROUP;
+    static {
+        try {
+            GROUP = InetAddress.getByName("230.0.0.239");
+        } catch (UnknownHostException ignored) {
+            GROUP = null;
+        }
+    }
+    private static final int PORT = 4238;
+
     int port
 
     final NioServerSocketChannelFactory serverFactory = [
@@ -21,21 +32,21 @@ import groovy.util.concurrent.CallLaterExecutors
     ]
 
     final NioClientSocketChannelFactory clientFactory =[
-            Executors.newCachedThreadPool(),
-            Executors.newCachedThreadPool()
+        Executors.newCachedThreadPool(),
+        Executors.newCachedThreadPool()
     ]
 
     private Channel serverChannel
     private Broadcast broadcast
 
-    void start() {
+    protected void doStartup() {
         startServer()
         startBroadcast ()
     }
 
-    void stop () {
-        stopBroadcast()
+    protected void doShutdown () {
         stopServer()
+        super.doShutdown()
     }
 
     private void startServer() {
@@ -54,25 +65,22 @@ import groovy.util.concurrent.CallLaterExecutors
         bootstrap.pipeline.addLast("object.decoder", new ObjectDecoder())
         bootstrap.pipeline.addLast("handler", handler)
 
-        // Bind and start to accept incoming connections.
+        // Bind and startup to accept incoming connections.
         serverChannel = bootstrap.bind(new InetSocketAddress(port))
     }
 
     private void startBroadcast() {
         broadcast = new Broadcast()
+        broadcast.group = GROUP
+        broadcast.port = PORT
         broadcast.uid = clusterNode.id
         broadcast.address = (InetSocketAddress)serverChannel.getLocalAddress()
-        broadcast.executor = CallLaterExecutors.currentExecutor
-        broadcast.start ()
+        broadcast.startup ()
     }
 
     private void stopServer() {
         serverChannel?.close()
         serverFactory.releaseExternalResources()
-    }
-
-    private void stopBroadcast() {
-        broadcast.stop()
     }
 
     HashMap<UUID,NettyClient> clients = [:]

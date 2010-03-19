@@ -1,0 +1,92 @@
+package org.mbte.groovypp.remote.netty;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.UUID
+import groovy.util.concurrent.SupervisedChannel;
+
+class BroadcastDiscovery extends SupervisedChannel {
+    UUID uid
+    InetSocketAddress address
+
+    InetAddress group
+    int port
+
+    Multiplexor<Discovery> listeners = []
+
+    static class Discovery {
+        UUID uuid
+        SocketAddress address
+    }
+
+    void doStartup() {
+        listeners.subscribe(this)
+
+        BroadcastThread.Sender sender = [
+            group:group,
+            port:port,
+            dataToTransmit: createDataToTransmit()
+        ]
+        startChild (sender)
+
+        BroadcastThread.Receiver receiver = [
+            group:group,
+            port:port,
+            messageTransform: { byte [] buf -> listeners.post(transformReceivedData(buf)) }
+        ]
+        startChild (receiver)
+    }
+
+    protected void doOnMessage(Object message) {
+        switch(message) {
+            case Discovery:
+                Discovery dicovery = message
+                onDiscovery(dicovery.uuid, dicovery.address)
+            break
+
+            default:
+                super.doOnMessage(message)
+        }
+    }
+
+    protected void onDiscovery(final UUID uuid, final SocketAddress address) {
+    }
+
+    private static final long MAGIC = 0x23982392L;
+
+    private byte [] createDataToTransmit() {
+        def out = new ByteArrayOutputStream();
+        def stream = new DataOutputStream(out);
+
+        stream.writeLong(MAGIC);
+        stream.writeLong(uid.getMostSignificantBits());
+        stream.writeLong(uid.getLeastSignificantBits());
+        stream.writeInt(address.getPort());
+        def addrBytes = address.getAddress().getAddress();
+        stream.writeInt(addrBytes.length);
+        stream.write(addrBytes);
+        stream.close();
+        out.toByteArray()
+    }
+
+    private Discovery transformReceivedData (byte [] buf ) {
+        def input = new DataInputStream(new ByteArrayInputStream(buf))
+        if (input.readLong() == MAGIC) {
+            def uuid = new UUID(input.readLong(), input.readLong())
+            def port = input.readInt()
+            def addrLen = input.readInt()
+            def addrBuf = new byte [addrLen]
+            input.read(addrBuf)
+            new Discovery(uuid:uuid, address:new InetSocketAddress(InetAddress.getByAddress(addrBuf), port))
+        }
+    }
+}

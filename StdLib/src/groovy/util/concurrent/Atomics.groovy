@@ -8,14 +8,28 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReferenceArray
 import java.util.concurrent.atomic.AtomicIntegerArray
 import java.util.concurrent.atomic.AtomicLongArray
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
+import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
-@Typed
-public class Atomics {
+/**
+ * Operations on atomic primitives
+ */
+@Typed class Atomics {
     static <S> S apply (AtomicReference<S> self, Function1<S,S> mutation) {
         for (;;) {
             def s = self.get()
             def newState = mutation(s)
             if (self.compareAndSet(s, newState))
+                return newState
+        }
+    }
+
+    static <T,S> S apply (AtomicReferenceFieldUpdater<T,S> self, T obj, Function1<S,S> mutation) {
+        for (;;) {
+            def s = self.get(obj)
+            def newState = mutation(s)
+            if (self.compareAndSet(obj, s, newState))
                 return newState
         }
     }
@@ -47,6 +61,15 @@ public class Atomics {
         }
     }
 
+    static <T> int apply (AtomicIntegerFieldUpdater<T> self, T obj, Function1<Integer,Integer> mutation) {
+        for (;;) {
+            def s = self.get(obj)
+            def newState = mutation(s)
+            if (self.compareAndSet(obj, s, newState))
+                return newState
+        }
+    }
+
     static int apply (AtomicIntegerArray self, int index, Function1<Integer,Integer> mutation) {
         for (;;) {
             def s = self.get(index)
@@ -61,6 +84,15 @@ public class Atomics {
             def s = self.get()
             def newState = mutation(s)
             if (self.compareAndSet(s, newState))
+                return newState
+        }
+    }
+
+    static <T> long apply (AtomicLongFieldUpdater self, T obj, Function1<Long,Long> mutation) {
+        for (;;) {
+            def s = self.get(obj)
+            def newState = mutation(s)
+            if (self.compareAndSet(obj, s, newState))
                 return newState
         }
     }
@@ -88,14 +120,29 @@ public class Atomics {
         state.compareAndSet(s, mutation(s))
     }
 
+    static <T,S> boolean tryApply (AtomicReferenceFieldUpdater<T,S> state, T obj, Function1<S,S> mutation) {
+        def s = state.get(obj)
+        state.compareAndSet(obj, s, mutation(s))
+    }
+
     static boolean tryApply (AtomicInteger state, Function1<Integer,Integer> mutation) {
         def s = state.get()
         state.compareAndSet(s, mutation(s))
     }
 
+    static <T> boolean tryApply (AtomicIntegerFieldUpdater<T> state, T obj, Function1<Integer,Integer> mutation) {
+        def s = state.get(obj)
+        state.compareAndSet(obj, s, mutation(s))
+    }
+
     static boolean tryApply (AtomicLong state, Function1<Long,Long> mutation) {
         def s = state.get()
         state.compareAndSet(s, mutation(s))
+    }
+
+    static <T> boolean tryApply (AtomicLongFieldUpdater<T> state, T obj, Function1<Long,Long> mutation) {
+        def s = state.get(obj)
+        state.compareAndSet(obj, s, mutation(s))
     }
 
     static boolean tryApply (AtomicBoolean state, Function1<Boolean,Boolean> mutation) {

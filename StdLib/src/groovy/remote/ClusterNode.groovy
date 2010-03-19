@@ -1,11 +1,13 @@
 package groovy.remote
 
 import groovy.util.concurrent.CallLaterExecutors
+import groovy.util.concurrent.SupervisedChannel
 
 /**
  * Local node in the claster
  */
-@Typed class ClusterNode {
+@Typed class ClusterNode extends SupervisedChannel {
+
     /**
      * Unique id of this node over cluster
      */
@@ -20,7 +22,7 @@ import groovy.util.concurrent.CallLaterExecutors
     Multiplexor<CommunicationEvent> communicationEvents = []
 
     void setServer(ClusterNodeServer server) {
-        server.clusterNode = this
+        server.owner = this
         this.server = server
     }
 
@@ -28,12 +30,13 @@ import groovy.util.concurrent.CallLaterExecutors
         nextObjectId.incrementAndGet ()
     }
 
-    void start () {
-        server.start ()
+    void doStartup () {
+        server.startup ()
     }
 
-    void stop () {
-        server.stop ()
+    void doShutdown () {
+        super.doShutdown()
+        server = null
     }
 
     /**
