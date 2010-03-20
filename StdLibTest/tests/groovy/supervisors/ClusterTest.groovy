@@ -4,7 +4,7 @@ import groovy.remote.ClusterNode
 import org.mbte.groovypp.remote.netty.NettyServer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import org.mbte.groovypp.remote.netty.MulticastDiscovery
+import org.mbte.groovypp.remote.netty.NettyClientConnector
 
 @Typed class ClusterTest extends GroovyTestCase {
     void testStartStop () {
@@ -18,7 +18,7 @@ import org.mbte.groovypp.remote.netty.MulticastDiscovery
                     startupChild(new NettyServer(connectionPort: 8000 + 2*i))
                     startupChild(new NettyServer(connectionPort: 8000 + 2*i+1))
 
-                    startupChild(new MulticastDiscovery())
+                    startupChild(new NettyClientConnector())
                 }
             ]
             cluster.communicationEvents.subscribe { msg ->

@@ -9,15 +9,41 @@ import org.jboss.netty.handler.codec.serialization.ObjectDecoder
 import java.util.concurrent.Executors
 import groovy.util.concurrent.SupervisedChannel
 
-@Typed class MulticastDiscovery extends BroadcastThread.Receiver {
+@Typed class NettyClientConnector extends SupervisedChannel {
     NioClientSocketChannelFactory clientFactory
 
     ClusterNode clusterNode
 
-    MulticastDiscovery () {
-        messageTransform = { byte [] buf ->
-            def msg = InetDiscoveryInfo.fromBytes(buf)
-            if (msg) {
+    public void doStartup() {
+        super.doStartup()
+
+        if (!clusterNode) {
+            if(owner instanceof ClusterNode)
+                clusterNode = (ClusterNode)owner
+            else
+                throw new IllegalStateException("NettyClientConnector requires clusterNode")
+        }
+
+        clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
+
+        if (clusterNode.multicastGroup && clusterNode.multicastPort) {
+            startupChild(new BroadcastThread.Receiver([
+                    multicastGroup: clusterNode.multicastGroup,
+                    multicastPort: clusterNode.multicastPort,
+                    messageTransform: { byte [] buf -> InetDiscoveryInfo.fromBytes(buf) }
+            ]))
+        }
+    }
+
+    public void doShutdown() {
+        clients.clear ()
+        clientFactory.releaseExternalResources()
+    }
+
+    protected void doOnMessage(Object message) {
+        switch(message) {
+            case InetDiscoveryInfo:
+                InetDiscoveryInfo msg = message
                 if (msg.clusterId > clusterNode.id) {
                     synchronized(clients) {
                         if(!clients.containsKey(msg.clusterId)) {
@@ -30,27 +56,15 @@ import groovy.util.concurrent.SupervisedChannel
                         }
                     }
                 }
-            }
+                break;
+
+            default:
+                super.doOnMessage(message)
         }
     }
 
-    public void doStartup() {
-        super.doStartup()
-
-        if (!clusterNode) {
-            if(owner instanceof ClusterNode)
-                clusterNode = (ClusterNode)owner
-            else
-                throw new IllegalStateException("MulticastDiscovery requires clusterNode")
-        }
-        multicastGroup = clusterNode.multicastGroup
-        multicastPort  = clusterNode.multicastPort
-
-        clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
-    }
-
-    public void doShutdown() {
-        clientFactory.releaseExternalResources()
+    protected boolean interested(Object message) {
+        message instanceof InetDiscoveryInfo || super.interested(message)
     }
 
     private HashMap<UUID,NettyClient> clients = [:]

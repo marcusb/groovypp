@@ -35,9 +35,9 @@ import groovy.util.concurrent.SupervisedChannel
         bootstrap.setOption("child.keepAlive", true)
 
         SimpleChannelHandlerEx handler = [
-                createConnection: {ctx ->
-                    new NettyConnection(channel: ctx.channel, clusterNode:clusterNode)
-                }
+            createConnection: {ctx ->
+                new NettyConnection(channel: ctx.channel, clusterNode:clusterNode)
+            }
         ]
 
         bootstrap.pipeline.addLast("object.encoder", new ObjectEncoder())
