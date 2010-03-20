@@ -7,9 +7,6 @@ import java.util.concurrent.TimeUnit
 import org.mbte.groovypp.remote.netty.MulticastDiscovery
 
 @Typed class ClusterTest extends GroovyTestCase {
-    private static InetAddress GROUP = InetAddress.getByAddress(230,0,0,239)
-    private static final int PORT = 4238;
-
     void testStartStop () {
         def n = 10
         def stopCdl = new CountDownLatch(n)
@@ -18,20 +15,10 @@ import org.mbte.groovypp.remote.netty.MulticastDiscovery
         for(i in 0..<n) {
             ClusterNode cluster = [
                 doStartup: {
-                    NettyServer server = [
-                            multicastGroup:GROUP,
-                            multicastPort:PORT,
-                            connectionPort: 8000 + i,
-                            clusterNode:this
-                    ]
-                    startupChild(server)
+                    startupChild(new NettyServer(connectionPort: 8000 + 2*i))
+                    startupChild(new NettyServer(connectionPort: 8000 + 2*i+1))
 
-                    MulticastDiscovery discovery = [
-                            multicastGroup:GROUP,
-                            multicastPort:PORT,
-                            clusterNode:this
-                    ]
-                    startupChild(discovery)
+                    startupChild(new MulticastDiscovery())
                 }
             ]
             cluster.communicationEvents.subscribe { msg ->

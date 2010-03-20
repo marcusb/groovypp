@@ -86,7 +86,7 @@ import groovy.util.concurrent.FList
         throw message.cause
     }
 
-    protected final void crash(Throwable cause) {
+    final void crash(Throwable cause) {
         for(c in childs)
             c.shutdown ()
         if(owner)

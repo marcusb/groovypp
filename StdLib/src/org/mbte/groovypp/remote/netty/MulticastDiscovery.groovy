@@ -12,9 +12,6 @@ import groovy.util.concurrent.SupervisedChannel
 @Typed class MulticastDiscovery extends BroadcastThread.Receiver {
     NioClientSocketChannelFactory clientFactory
 
-    InetAddress multicastGroup
-    int         multicastPort
-
     ClusterNode clusterNode
 
     MulticastDiscovery () {
@@ -38,8 +35,18 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     public void doStartup() {
-        clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
         super.doStartup()
+
+        if (!clusterNode) {
+            if(owner instanceof ClusterNode)
+                clusterNode = (ClusterNode)owner
+            else
+                throw new IllegalStateException("MulticastDiscovery requires clusterNode")
+        }
+        multicastGroup = clusterNode.multicastGroup
+        multicastPort  = clusterNode.multicastPort
+
+        clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
     }
 
     public void doShutdown() {

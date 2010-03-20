@@ -8,12 +8,18 @@ import groovy.util.concurrent.SupervisedChannel
  */
 @Typed class ClusterNode extends SupervisedChannel {
 
+    private static InetAddress GROUP = InetAddress.getByAddress(230,0,0,239)
+    private static final int PORT = 4238;
+
     /**
      * Unique id of this node over cluster
      */
     final UUID id = UUID.randomUUID()
 
     private volatile long nextObjectId
+
+    InetAddress multicastGroup = GROUP
+    int         multicastPort  = PORT
 
     MessageChannel mainActor
 

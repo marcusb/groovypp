@@ -21,7 +21,6 @@ import groovy.util.concurrent.SupervisedChannel
             }
             catch(Throwable t) {
                 stopped = true
-                t.printStackTrace()
                 crash(t)
             }
             socket.close()
@@ -33,7 +32,6 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     static class Sender extends BroadcastThread {
-
         long    sleepPeriod = 1000L
         byte [] dataToTransmit
 

@@ -12,9 +12,6 @@ import groovy.util.concurrent.SupervisedChannel
 @Typed class NettyServer extends SupervisedChannel {
     int connectionPort
 
-    InetAddress multicastGroup
-    int         multicastPort
-
     ClusterNode clusterNode
     NioServerSocketChannelFactory serverFactory
 
@@ -22,6 +19,13 @@ import groovy.util.concurrent.SupervisedChannel
 
     protected void doStartup() {
         super.doStartup()
+
+        if (!clusterNode) {
+            if(owner instanceof ClusterNode)
+                clusterNode = (ClusterNode)owner
+            else
+                throw new IllegalStateException("NettyServer requires clusterNode")
+        }
 
         serverFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
 
@@ -43,10 +47,10 @@ import groovy.util.concurrent.SupervisedChannel
         // Bind and startup to accept incoming connections.
         serverChannel = bootstrap.bind(new InetSocketAddress(InetAddress.getLocalHost(), connectionPort))
 
-        if (multicastGroup && multicastPort)
+        if (clusterNode.multicastGroup && clusterNode.multicastPort)
             startupChild (new BroadcastThread.Sender([
-                    multicastGroup: multicastGroup,
-                    multicastPort:  multicastPort,
+                    multicastGroup: clusterNode.multicastGroup,
+                    multicastPort:  clusterNode.multicastPort,
                     dataToTransmit: InetDiscoveryInfo.toBytes(clusterNode.id, (InetSocketAddress)serverChannel.getLocalAddress())
             ]))
     }
