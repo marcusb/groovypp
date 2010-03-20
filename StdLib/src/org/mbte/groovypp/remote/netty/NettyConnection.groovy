@@ -9,9 +9,6 @@ import groovy.remote.RemoteMessage
     protected Channel channel
     private Timer timer
 
-    NettyConnection() {
-    }
-
     protected void doSend(RemoteMessage msg) {
         channel?.write(msg)
     }
@@ -29,10 +26,11 @@ import groovy.remote.RemoteMessage
         }, 0L, 1000L)
     }
 
-    protected void disconnect() {
+    public void onDisconnect() {
         timer?.cancel()
         timer = null
         channel?.close()
         channel = null
+        super.onDisconnect()
     }
 }

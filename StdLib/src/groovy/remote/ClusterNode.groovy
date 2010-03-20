@@ -15,28 +15,12 @@ import groovy.util.concurrent.SupervisedChannel
 
     private volatile long nextObjectId
 
-    private ClusterNodeServer server
-
     MessageChannel mainActor
 
     Multiplexor<CommunicationEvent> communicationEvents = []
 
-    void setServer(ClusterNodeServer server) {
-        server.owner = this
-        this.server = server
-    }
-
     protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
-    }
-
-    void doStartup () {
-        server.startup ()
-    }
-
-    void doShutdown () {
-        super.doShutdown()
-        server = null
     }
 
     /**
@@ -75,7 +59,7 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     void setMainActor(MessageChannel actor) {
-        mainActor = actor.async(CallLaterExecutors.defaultExecutor)
+        mainActor = actor.async(CallLaterExecutors.currentExecutor)
     }
 
     static class CommunicationEvent {

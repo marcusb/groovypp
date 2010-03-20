@@ -23,7 +23,7 @@ import groovy.util.concurrent.FList
 
     final void startup () {
         if (owner)
-            owner.startChild(this)
+            owner.startupChild(this)
         else {
             if (!executor)
                 executor = CallLaterExecutors.currentExecutor
@@ -33,19 +33,19 @@ import groovy.util.concurrent.FList
 
     final void shutdown () {
         if (owner)
-            owner.stopChild(this)
+            owner.shutdownChild(this)
         else
             post(Shutdown.instance)
     }
 
-    protected final void startChild(SupervisedChannel child, Executor executor = null) {
+    final void startupChild(SupervisedChannel child, Executor executor = null) {
         child.owner = this
         childs.apply{ it + child }
         child.executor = executor ? executor : (child.executor ? child.executor : this.executor)
         child.post(Startup.instance)
     }
 
-    protected final void stopChild(SupervisedChannel child) {
+    final void shutdownChild(SupervisedChannel child) {
         childs.apply{ it - child }
         child.post(Shutdown.instance)
     }
@@ -66,13 +66,14 @@ import groovy.util.concurrent.FList
                 break
 
             case Shutdown:
-                childs*.shutdown ()
+                for(c in childs)
+                    c.shutdown ()
                 doShutdown ()
                 break
 
             case ChildCrashed:
                 def crash = (ChildCrashed) message
-                stopChild(crash.who)
+                shutdownChild(crash.who)
                 onChildCrashed(crash)
                 break
         }
@@ -86,10 +87,31 @@ import groovy.util.concurrent.FList
     }
 
     protected final void crash(Throwable cause) {
-        childs*.shutdown ()
+        for(c in childs)
+            c.shutdown ()
         if(owner)
             owner.post(new ChildCrashed(who:this, cause:cause))
         else
             throw cause
+    }
+
+    final void post (Object message, boolean recursive, boolean including) {
+        if (including)
+            post(message)
+
+        for(c in childs)
+            c.post(message)
+    }
+
+    final getRootSupervisor () {
+        owner ? owner.getRootSupervisor() : this
+    }
+
+    protected boolean interested(Object message) {
+        message && (
+            message instanceof Startup  ||
+            message instanceof Shutdown ||
+            message instanceof ChildCrashed
+        )
     }
 }

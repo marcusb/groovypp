@@ -3,21 +3,21 @@ package org.mbte.groovypp.remote.netty;
 import groovy.util.concurrent.SupervisedChannel
 
 @Typed abstract class BroadcastThread extends SupervisedChannel {
-    InetAddress group
-    int         port
+    InetAddress multicastGroup
+    int         multicastPort
 
     private MulticastSocket socket
     private volatile boolean stopped
 
-    abstract void loopAction ()
+    protected abstract void doLoopAction ()
 
     void doStartup() {
         executor.execute {
             try {
-                socket = new MulticastSocket(port);
-                socket.joinGroup(group);
+                socket = new MulticastSocket(multicastPort)
+                socket.joinGroup(multicastGroup)
                 while (!stopped)
-                    loopAction ()
+                    doLoopAction ()
             }
             catch(Throwable t) {
                 stopped = true
@@ -33,11 +33,12 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     static class Sender extends BroadcastThread {
+
         long    sleepPeriod = 1000L
         byte [] dataToTransmit
 
-        void loopAction () {
-            socket.send ([dataToTransmit, dataToTransmit.length, group, port])
+        void doLoopAction () {
+            socket.send ([dataToTransmit, dataToTransmit.length, multicastGroup, multicastPort])
             Thread.currentThread().sleep(sleepPeriod);
         }
     }
@@ -45,7 +46,7 @@ import groovy.util.concurrent.SupervisedChannel
     static class Receiver extends BroadcastThread {
         Function1<byte[],?> messageTransform
 
-        void loopAction () {
+        void doLoopAction () {
             def buffer = new byte [512]
             def packet = new DatagramPacket(buffer, buffer.length)
             socket.receive(packet)

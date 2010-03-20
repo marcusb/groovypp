@@ -7,15 +7,19 @@ package groovy.util.concurrent
     protected static final FQueue busyEmptyQueue = FQueue.emptyQueue + null
 
     final void post(M message) {
-        for (;;) {
-            def oldQueue = queue
-            def newQueue = (oldQueue === busyEmptyQueue ? FQueue.emptyQueue : oldQueue) + message
-            if (queue.compareAndSet(oldQueue, newQueue)) {
-                signalPost(oldQueue, newQueue)
-                return 
+        if (interested(message)) {
+            for (;;) {
+                def oldQueue = queue
+                def newQueue = (oldQueue === busyEmptyQueue ? FQueue.emptyQueue : oldQueue) + message
+                if (queue.compareAndSet(oldQueue, newQueue)) {
+                    signalPost(oldQueue, newQueue)
+                    return
+                }
             }
         }
     }
+
+    protected boolean interested (M message) { true }
 
     protected abstract void signalPost (FQueue<M> oldQueue, FQueue<M> newQueue)
 

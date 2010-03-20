@@ -4,8 +4,12 @@ import groovy.remote.ClusterNode
 import org.mbte.groovypp.remote.netty.NettyServer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.mbte.groovypp.remote.netty.MulticastDiscovery
 
 @Typed class ClusterTest extends GroovyTestCase {
+    private static InetAddress GROUP = InetAddress.getByAddress(230,0,0,239)
+    private static final int PORT = 4238;
+
     void testStartStop () {
         def n = 10
         def stopCdl = new CountDownLatch(n)
@@ -13,7 +17,22 @@ import java.util.concurrent.TimeUnit
         def disconnectCdl = new CountDownLatch(n*(n-1))
         for(i in 0..<n) {
             ClusterNode cluster = [
-                    server: [port: 8000 + i] as NettyServer,
+                doStartup: {
+                    NettyServer server = [
+                            multicastGroup:GROUP,
+                            multicastPort:PORT,
+                            connectionPort: 8000 + i,
+                            clusterNode:this
+                    ]
+                    startupChild(server)
+
+                    MulticastDiscovery discovery = [
+                            multicastGroup:GROUP,
+                            multicastPort:PORT,
+                            clusterNode:this
+                    ]
+                    startupChild(discovery)
+                }
             ]
             cluster.communicationEvents.subscribe { msg ->
                 println "${cluster.id} $msg"
