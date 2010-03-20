@@ -45,13 +45,14 @@ import groovy.util.concurrent.SupervisedChannel
         bootstrap.pipeline.addLast("handler", handler)
 
         // Bind and startup to accept incoming connections.
-        serverChannel = bootstrap.bind(new InetSocketAddress(InetAddress.getLocalHost(), connectionPort))
+        def address = new InetSocketAddress(InetAddress.getLocalHost(), connectionPort)
+        serverChannel = bootstrap.bind(address)
 
         if (clusterNode.multicastGroup && clusterNode.multicastPort)
             startupChild (new BroadcastThread.Sender([
                     multicastGroup: clusterNode.multicastGroup,
                     multicastPort:  clusterNode.multicastPort,
-                    dataToTransmit: InetDiscoveryInfo.toBytes(clusterNode.id, (InetSocketAddress)serverChannel.getLocalAddress())
+                    dataToTransmit: InetDiscoveryInfo.toBytes(clusterNode.id, address)
             ]))
     }
 
