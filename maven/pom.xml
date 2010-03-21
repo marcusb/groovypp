@@ -29,6 +29,7 @@
         </snapshotRepository>
     </distributionManagement>
 
+
     <repositories>
         <repository>
             <id>libs-releases</id>
@@ -40,6 +41,7 @@
         </repository>
     </repositories>
 
+    
     <pluginRepositories>
         <pluginRepository>
             <id>plugins-releases</id>
