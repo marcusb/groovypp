@@ -160,6 +160,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         }
 
                         if (foundMethod != null) {
+                            // 'super' access is always permitted.
+                            final ClassNode accessType = isSuper ? null : declaringType;
+                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                    foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
+                                return dynamicOrError(exp, compiler, methodName, declaringType, argTypes, "Cannot access method ");
+                            }
+
+
                             if (foundMethod.isStatic())
                                 object = null;
                             else {
@@ -177,15 +185,13 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                         object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                                     }
                                 } else {
+                                    if (thisType != compiler.classNode && thisType != foundMethod.getDeclaringClass() &&
+                                            !foundMethod.isPublic()) {
+                                        // super call to outer class' super method needs to be proxied.
+                                        foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
+                                    }
                                     object = createThisFetchingObject(exp, compiler, thisType);
                                 }
-                            }
-
-                            // 'super' access is always permitted.
-                            final ClassNode accessType = isSuper ? null : declaringType;
-                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                                    foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
-                                return dynamicOrError(exp, compiler, methodName, declaringType, argTypes, "Cannot access method ");
                             }
 
                             return createCall(exp, compiler, args, object, foundMethod);
