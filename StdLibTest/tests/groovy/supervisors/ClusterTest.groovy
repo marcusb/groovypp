@@ -27,7 +27,7 @@ import org.mbte.groovypp.remote.netty.NettyClientConnector
             cluster.communicationEvents.subscribe { msg ->
                 switch (msg) {
                     case ClusterNode.CommunicationEvent.Connected:
-                        ((ClusterNode.CommunicationEvent.Connected)msg).remoteNode << "Hello!"
+                        msg.remoteNode << "Hello!"
                         connectCdl.countDown()
                     break
                     case ClusterNode.CommunicationEvent.Disconnected:

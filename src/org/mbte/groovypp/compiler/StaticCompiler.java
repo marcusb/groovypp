@@ -572,6 +572,52 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     public void visitSwitch(SwitchStatement statement) {
         visitStatement(statement);
 
+        List caseStatements = statement.getCaseStatements();
+
+        if (statement.getExpression() instanceof VariableExpression) {
+            final VariableExpression ve = (VariableExpression) statement.getExpression();
+
+            if(!ve.getName().equals("this")) {
+                for (Iterator iter = caseStatements.iterator(); iter.hasNext(); ) {
+                    CaseStatement caseStatement = (CaseStatement) iter.next();
+                    final Expression option = caseStatement.getExpression();
+                    if (option instanceof ClassExpression) {
+                        final BlockStatement newCode = new BlockStatement();
+                        final VariableExpression newVar = new VariableExpression(ve.getName(), option.getType());
+                        final DeclarationExpression newVarDecl = new DeclarationExpression(
+                                newVar,
+                                Token.newSymbol(Types.EQUAL, -1, -1),
+                                ve
+                        );
+                        newVarDecl.setSourcePosition(caseStatement);
+                        newCode.addStatement(
+                                new ExpressionStatement(
+                                        newVarDecl
+                                )
+                        );
+                        newCode.addStatement(caseStatement.getCode());
+                        caseStatement.setCode(newCode);
+                        newCode.visit(new ClassCodeExpressionTransformer() {
+                            @Override
+                            public Expression transform(Expression exp) {
+                                if (exp instanceof VariableExpression) {
+                                    VariableExpression vexp = (VariableExpression) exp;
+                                    if (vexp.getName().equals(ve.getName())) {
+                                        vexp.setAccessedVariable(newVar);
+                                    }
+                                }
+                                return super.transform(exp);
+                            }
+
+                            protected SourceUnit getSourceUnit() {
+                                return su;
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
         BytecodeExpr cond = (BytecodeExpr) transform(statement.getExpression());
         cond.visit(mv);
 
@@ -580,7 +626,6 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         int switchVariableIndex = compileStack.defineTemporaryVariable("switch", cond.getType(), true);
 
-        List caseStatements = statement.getCaseStatements();
         int caseCount = caseStatements.size();
         Label[] codeLabels = new Label[caseCount];
         Label[] condLabels = new Label[caseCount + 1];

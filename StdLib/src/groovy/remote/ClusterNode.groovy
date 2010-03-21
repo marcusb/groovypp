@@ -8,9 +8,6 @@ import groovy.util.concurrent.SupervisedChannel
  */
 @Typed class ClusterNode extends SupervisedChannel {
 
-    private static InetAddress GROUP = InetAddress.getByAddress(230,0,0,239)
-    private static final int PORT = 4238;
-
     /**
      * Unique id of this node over cluster
      */
@@ -18,8 +15,8 @@ import groovy.util.concurrent.SupervisedChannel
 
     private volatile long nextObjectId
 
-    InetAddress multicastGroup = GROUP
-    int         multicastPort  = PORT
+    InetAddress multicastGroup = InetAddress.getByAddress(230,0,0,239)
+    int         multicastPort  = 4238
 
     MessageChannel mainActor
 
@@ -27,21 +24,6 @@ import groovy.util.concurrent.SupervisedChannel
 
     protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
-    }
-
-    /**
-     * Listener for discovery events
-     */
-    abstract static class DiscoveryListener {
-        enum DiscoveryEventType {
-            JOINED,
-            LEFT,
-            CRASHED
-        }
-
-        protected ClusterNode clusterNode
-
-        abstract void onDiscoveryEvent (DiscoveryEventType eventType, RemoteClusterNode node)
     }
 
     void onConnect(RemoteClusterNode remoteNode) {
@@ -55,7 +37,7 @@ import groovy.util.concurrent.SupervisedChannel
     void onMessage(RemoteClusterNode remoteNode, RemoteMessage message) {
         switch(message) {
             case RemoteClusterNode.ToMainActor:
-                    mainActor?.post(((RemoteClusterNode.ToMainActor)message).payLoad)
+                    mainActor?.post(message.payLoad)
                 break;
         }
     }

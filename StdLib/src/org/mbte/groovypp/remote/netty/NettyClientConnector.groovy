@@ -40,10 +40,9 @@ import groovy.util.concurrent.SupervisedChannel
         clientFactory.releaseExternalResources()
     }
 
-    protected void doOnMessage(Object message) {
-        switch(message) {
+    protected void doOnMessage(Object msg) {
+        switch(msg) {
             case InetDiscoveryInfo:
-                InetDiscoveryInfo msg = message
                 if (msg.clusterId > clusterNode.id) {
                     synchronized(clients) {
                         if(!clients.containsKey(msg.clusterId)) {
@@ -59,7 +58,7 @@ import groovy.util.concurrent.SupervisedChannel
                 break;
 
             default:
-                super.doOnMessage(message)
+                super.doOnMessage(msg)
         }
     }
 
