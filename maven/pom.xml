@@ -14,7 +14,7 @@
 
     <properties>
         <repo>http://groovypp.artifactoryonline.com/groovypp</repo>
-        <file>${project.basedir}/settings.xml</file> <!-- Overridden in child modules -->
+        <file>${project.basedir}/pom.xml</file> <!-- Overridden in child modules -->
     </properties>
 
 
