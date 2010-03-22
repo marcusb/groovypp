@@ -5,17 +5,17 @@
                                http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.codehaus.groovy</groupId>
+    <groupId>org.mbte.groovypp</groupId>
     <artifactId>groovypp-all</artifactId>
-    <version>0.1.19</version>
+    <version>@version@</version>
     <name>Groovy++: groovypp-all</name>
     <packaging>pom</packaging>
 
 
     <parent>
-        <groupId>org.codehaus.groovy</groupId>
+        <groupId>org.mbte.groovypp</groupId>
         <artifactId>groovypp-main</artifactId>
-        <version>0.1.19</version>
+        <version>@version@</version>
     </parent>
 
 
