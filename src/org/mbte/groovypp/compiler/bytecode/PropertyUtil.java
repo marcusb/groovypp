@@ -16,14 +16,14 @@ import org.objectweb.asm.Opcodes;
 public class PropertyUtil {
     public static final Object GET_MAP = new Object ();
 
-    public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop) {
+    public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, ClassNode type, final BytecodeExpr object, Object prop) {
         if (prop instanceof MethodNode) {
             MethodNode method = (MethodNode) prop;
             if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
                 MethodNode delegate = compiler.context.getMethodDelegate(method);
-                new ResolvedGetterBytecodeExpr(exp, delegate, object, compiler, propName);
+                new ResolvedGetterBytecodeExpr(exp, delegate, object, compiler, propName, type);
             }
-            return new ResolvedGetterBytecodeExpr(exp, method, object, compiler, propName);
+            return new ResolvedGetterBytecodeExpr(exp, method, object, compiler, propName, type);
         }
 
         if (prop instanceof PropertyNode) {
@@ -34,7 +34,7 @@ public class PropertyUtil {
             FieldNode field = (FieldNode) prop;
             if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
                 MethodNode getter = compiler.context.getFieldGetter(field);
-                return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, compiler);
+                return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, compiler, type);
             }
             return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
         }
@@ -78,7 +78,7 @@ public class PropertyUtil {
             return new ResolvedLeftMapExpr(exp, object, propName);
         }
 
-        return dynamicOrFail(exp.getProperty(), compiler, propName, object, null);
+        return dynamicOrFail(exp.getProperty(), compiler, propName, type, object, null);
     }
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
@@ -105,7 +105,8 @@ public class PropertyUtil {
             return new ResolvedFieldBytecodeExpr(parent, field, object, value, compiler);
         }
 
-        return dynamicOrFail(parent, compiler, propName, object, value);
+        final ClassNode type = object != null ? object.getType() : compiler.classNode;
+        return dynamicOrFail(parent, compiler, propName, type, object, value);
     }
 
     public static EmptyStatement NO_CODE = new EmptyStatement();
@@ -173,9 +174,8 @@ public class PropertyUtil {
         return field;
     }
 
-    private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value) {
+    private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, ClassNode type, BytecodeExpr object, BytecodeExpr value) {
         if (compiler.policy == TypePolicy.STATIC) {
-            final ClassNode type = object != null ? object.getType() : compiler.classNode;
             compiler.addError("Cannot find property " + propName + " of class " + PresentationUtil.getText(type), exp);
             return null;
         } else

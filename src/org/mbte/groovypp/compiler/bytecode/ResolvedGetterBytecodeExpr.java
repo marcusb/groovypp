@@ -18,15 +18,17 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final BytecodeExpr object;
     private CompilerTransformer compiler;
     private String propName;
+    private ClassNode qualType;
     private final BytecodeExpr getter;
     private static final ArgumentListExpression EMPTY_ARGS = new ArgumentListExpression();
 
-    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler, String propName) {
+    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler, String propName, ClassNode qualType) {
         super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS, compiler));
         this.methodNode = methodNode;
         this.object = object;
         this.compiler = compiler;
         this.propName = propName;
+        this.qualType = qualType;
         getter = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
@@ -73,8 +75,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
-        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass() /*todo original class*/,
-                propName, transformedOp.getType(), compiler,
+        Object prop = PropertyUtil.resolveSetProperty(qualType, propName, transformedOp.getType(), compiler,
                 isThisCall());
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, propName, fakeObject, transformedOp, prop);
 
@@ -108,7 +109,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 methodNode,
                 fakeObject,
-                compiler, propName);
+                compiler, propName, qualType);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -174,7 +175,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 methodNode,
                 fakeObject,
-                compiler, propName);
+                compiler, propName, qualType);
 
         BytecodeExpr incDec;
         if (TypeUtil.isNumericalType(vtype) && !vtype.equals(TypeUtil.Number_TYPE)) {
@@ -241,8 +242,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     public static class Accessor extends ResolvedGetterBytecodeExpr {
         private FieldNode fieldNode;
 
-        public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler) {
-            super(parent, methodNode, object, compiler, fieldNode.getName());
+        public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler, ClassNode qualType) {
+            super(parent, methodNode, object, compiler, fieldNode.getName(), qualType);
             this.fieldNode = fieldNode;
         }
 

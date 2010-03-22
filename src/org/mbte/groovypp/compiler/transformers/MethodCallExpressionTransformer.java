@@ -69,7 +69,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     if (prop != null) {
                         final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                         if (callMethod != null) {
-                            return createCallMethodCall(exp, compiler, methodName, args, null, prop, callMethod);
+                            return createCallMethodCall(exp, compiler, methodName, args, null, prop, callMethod, type);
                         }
                     }
                     return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
@@ -104,7 +104,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                         if (prop != null) {
                             final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                             if (callMethod != null) {
-                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, thisType);
                             }
                         }
 
@@ -135,7 +135,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                                 if (prop != null) {
                                     final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                                     if (callMethod != null) {
-                                        return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod);
+                                        return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, declaringType);
                                     }
                                 }
                             }
@@ -222,7 +222,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     if (prop != null) {
                         final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                         if (callMethod != null) {
-                            return createCallMethodCall(exp, compiler, methodName, args, object, prop, callMethod);
+                            return createCallMethodCall(exp, compiler, methodName, args, object, prop, callMethod, type);
                         }
                     }
                 }
@@ -298,11 +298,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
     }
 
-    private Expression createCallMethodCall(MethodCallExpression exp, CompilerTransformer compiler, String methodName, Expression args, BytecodeExpr object, Object prop, MethodNode callMethod) {
+    private Expression createCallMethodCall(MethodCallExpression exp, CompilerTransformer compiler, String methodName, Expression args, BytecodeExpr object, Object prop, MethodNode callMethod, ClassNode type) {
         PropertyExpression propertyExpression = new PropertyExpression(
                 exp.getObjectExpression(), methodName);
         object = PropertyUtil.createGetProperty(propertyExpression, compiler, methodName,
-                object, prop);
+                type, object, prop);
         return createCall(exp, compiler, args, object, callMethod);
     }
 

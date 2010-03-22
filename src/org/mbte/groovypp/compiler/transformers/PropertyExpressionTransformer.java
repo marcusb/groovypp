@@ -56,14 +56,14 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 type = ClassHelper.CLASS_Type;
                 object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
                 if (!checkAccessible(prop, exp, type, compiler, object)) return null;
-                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, type, object, prop);
             }
             else {
                 type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
                 prop = PropertyUtil.resolveGetProperty(type, propName, compiler, true, false);
                 object = null;
                 if (!checkAccessible(prop, exp, type, compiler, object)) return null;
-                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, type, object, prop);
             }
         } else {
             if (exp.getObjectExpression() instanceof VariableExpression &&
@@ -91,7 +91,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
                     Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false, object != null && object.isThis());
                     if (!checkAccessible(prop, exp, type, compiler, object)) return null;
-                    return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                    return PropertyUtil.createGetProperty(exp, compiler, propName, type, object, prop);
                 }
             } else {
                 object = (BytecodeExpr) compiler.transformToGround(exp.getObjectExpression());
@@ -111,7 +111,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         }
                 }
                 if (!checkAccessible(prop, exp, type, compiler, object)) return null;
-                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, type, object, prop);
             }
         }
     }
@@ -153,7 +153,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 object = isStatic ? null : new InnerThisBytecodeExpr(exp, thisType, compiler);
                 if (!checkAccessible(prop, exp, thisType, compiler, object)) return null;
 
-                return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                return PropertyUtil.createGetProperty(exp, compiler, propName, thisType, object, prop);
             }
 
             isThis = false;
@@ -170,7 +170,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         object = isStatic ? null : delegate;
                         if (!checkAccessible(prop, exp, delegate.getType(), compiler, object)) return null;
 
-                        return PropertyUtil.createGetProperty(exp, compiler, propName, object, prop);
+                        return PropertyUtil.createGetProperty(exp, compiler, propName, delegate.getType(), object, prop);
                     }
                 }
             }
