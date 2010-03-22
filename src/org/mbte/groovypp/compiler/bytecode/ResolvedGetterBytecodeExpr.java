@@ -73,7 +73,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
-        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, transformedOp.getType(), compiler,
+        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass() /*todo original class*/,
+                propName, transformedOp.getType(), compiler,
                 isThisCall());
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, propName, fakeObject, transformedOp, prop);
 
