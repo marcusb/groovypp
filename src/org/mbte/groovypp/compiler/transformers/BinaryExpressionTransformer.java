@@ -116,11 +116,11 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
             case Types.MATCH_REGEX:
 				return evaluateMatchRegexp(exp, compiler);
 
-/*
-            case Types.KEYWORD_IN:
-	            compiler.addError("Operation: " + exp.getOperation() + " not supported", exp);
-	            return null;
-*/
+            case Types.KEYWORD_IN: {
+                final BytecodeExpr left = (BytecodeExpr) compiler.transform(exp.getLeftExpression());
+                final BytecodeExpr right = (BytecodeExpr) compiler.transform(exp.getRightExpression());
+                return callMethod(exp, "isCase", compiler, right, left);
+            }
 
             default: {
                 compiler.addError("Operation: " + exp.getOperation() + " not supported", exp);

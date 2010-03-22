@@ -189,6 +189,10 @@ class Filters extends DefaultGroovyMethodsSupport {
     false
   }
 
+  static boolean isCase(Iterator self, Object obj) {
+    self.any { obj == it }
+  }
+
   /**
    * Checks if there are elements that satisfy the input condition.
    * @param self the map to take elements from.
