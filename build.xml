@@ -110,9 +110,9 @@
          classpathref="libs"/>
 
     <taskdef name="gcupload" classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/ant-googlecode-0.0.2.jar"/>
-	
+
 	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath"/>
-	
+
 	<taskdef resource="tasks.properties">
 		<classpath>
 			<fileset dir="${deploy.lib.dir}">
@@ -121,7 +121,7 @@
 			<fileset dir="lib/cobertura"/>
 		</classpath>
 	</taskdef>
-	
+
 	<target name="clean">
 		<delete dir="${output.dir}"/>
 
@@ -233,7 +233,7 @@
 		<fileset dir="${stdlib.src}"/>
 	</cobertura-report>
     </target>
-	
+
 	<target name="coverage-instrument" depends="compile.compiler, compile.stdlib">
 		<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
@@ -313,7 +313,7 @@
     </target>
 
     <target name="releaseinfo">
-        <copy file="${compiler.src}/META-INF/groovypp-release-info.properties" 
+        <copy file="${compiler.src}/META-INF/groovypp-release-info.properties"
             todir="${compiler.prod.output}/META-INF" overwrite="true">
         </copy>
         <tstamp>
@@ -321,7 +321,7 @@
             <format property="release.time" pattern="hh:mm aa"/>
         </tstamp>
         <replace file="${compiler.prod.output}/META-INF/groovypp-release-info.properties">
-          <replacefilter token="##ImplementationVersion##" value="${groovyPPVersion}"/>   
+          <replacefilter token="##ImplementationVersion##" value="${groovyPPVersion}"/>
           <replacefilter token="##BuildDate##" value="${release.date}"/>
           <replacefilter token="##BuildTime##" value="${release.time}"/>
         </replace>
@@ -341,6 +341,16 @@
             <zipfileset dir="${stdlib.src}" prefix="booster/stdlib"/>
 
         </zip>
+
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!-- Replacing @version@ tokens in Maven POM files       -->
+        <!-- http://ant.apache.org/manual/CoreTasks/replace.html -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <replace dir      = "maven"
+                 includes = "**/pom.xml"
+                 token    = "@version@"
+                 value    = "${version}"
+                 summary  = "true"/>
     </target>
 
 	<target name="check.groovypp.jar">
@@ -390,7 +400,7 @@
 		<run.benchmark className="shootout.knucleotide.KNucleotideGroovy" benchmarkargs=""/>
 
 		<run.benchmark className="shootout.meteor.meteor" benchmarkargs="2098"/>
-		<run.benchmark className="shootout.meteor.MeteorGroovy" benchmarkargs="2098"/>		
+		<run.benchmark className="shootout.meteor.MeteorGroovy" benchmarkargs="2098"/>
 -->
 
 		<run.benchmark className="shootout.mandelbrot.Mandelbrot" benchmarkargs="16000"/>
