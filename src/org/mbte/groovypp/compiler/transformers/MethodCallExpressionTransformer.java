@@ -302,7 +302,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         PropertyExpression propertyExpression = new PropertyExpression(
                 exp.getObjectExpression(), methodName);
         object = PropertyUtil.createGetProperty(propertyExpression, compiler, methodName,
-                object, prop, true);
+                object, prop);
         return createCall(exp, compiler, args, object, callMethod);
     }
 

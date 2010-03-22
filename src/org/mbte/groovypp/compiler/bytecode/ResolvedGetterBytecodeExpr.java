@@ -16,23 +16,21 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     private final MethodNode methodNode;
 
     private final BytecodeExpr object;
-    private final boolean needsObjectIfStatic;
     private CompilerTransformer compiler;
     private String propName;
     private final BytecodeExpr getter;
     private static final ArgumentListExpression EMPTY_ARGS = new ArgumentListExpression();
 
-    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler, String propName) {
+    public ResolvedGetterBytecodeExpr(ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler, String propName) {
         super(parent, ResolvedMethodBytecodeExpr.getReturnType(methodNode, object, EMPTY_ARGS, compiler));
         this.methodNode = methodNode;
         this.object = object;
-        this.needsObjectIfStatic = needsObjectIfStatic;
         this.compiler = compiler;
         this.propName = propName;
         getter = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
-                methodNode.isStatic() && !needsObjectIfStatic ? null : object,
+                object,
                 EMPTY_ARGS, compiler);
         setType(getter.getType());
     }
@@ -59,7 +57,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createBinopAssign(ASTNode parent, Token method, BytecodeExpr right, CompilerTransformer compiler) {
-        final BytecodeExpr fakeObject = new BytecodeExpr(object, object.getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
@@ -68,18 +66,18 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         BytecodeExpr get = ResolvedMethodBytecodeExpr.create(
                 parent,
                 methodNode,
-                methodNode.isStatic() && !needsObjectIfStatic ? null : fakeObject,
+                fakeObject,
                 EMPTY_ARGS, compiler);
 
         final BinaryExpression op = new BinaryExpression(get, method, right);
         op.setSourcePosition(parent);
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
-        Object prop = PropertyUtil.resolveSetProperty(object.getType(), propName, transformedOp.getType(), compiler,
+        Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, transformedOp.getType(), compiler,
                 isThisCall());
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, propName, fakeObject, transformedOp, prop);
 
-        return new BytecodeExpr(parent, propExpr.getType()) {
+        return object == null ? propExpr : new BytecodeExpr(parent, propExpr.getType()) {
             protected void compile(MethodVisitor mv) {
                 object.visit(mv);
                 mv.visitInsn(DUP);
@@ -109,7 +107,6 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 methodNode,
                 fakeObject,
-                needsObjectIfStatic,
                 compiler, propName);
 
         BytecodeExpr incDec;
@@ -176,7 +173,6 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
                 exp,
                 methodNode,
                 fakeObject,
-                needsObjectIfStatic,
                 compiler, propName);
 
         BytecodeExpr incDec;
@@ -244,8 +240,8 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
     public static class Accessor extends ResolvedGetterBytecodeExpr {
         private FieldNode fieldNode;
 
-        public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, boolean needsObjectIfStatic, CompilerTransformer compiler) {
-            super(parent, methodNode, object, needsObjectIfStatic, compiler, fieldNode.getName());
+        public Accessor(FieldNode fieldNode, ASTNode parent, MethodNode methodNode, BytecodeExpr object, CompilerTransformer compiler) {
+            super(parent, methodNode, object, compiler, fieldNode.getName());
             this.fieldNode = fieldNode;
         }
 

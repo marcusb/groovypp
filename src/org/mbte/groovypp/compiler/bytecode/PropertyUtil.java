@@ -16,14 +16,14 @@ import org.objectweb.asm.Opcodes;
 public class PropertyUtil {
     public static final Object GET_MAP = new Object ();
 
-    public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop, boolean needsObjectIfStatic) {
+    public static BytecodeExpr createGetProperty(final PropertyExpression exp, final CompilerTransformer compiler, String propName, final BytecodeExpr object, Object prop) {
         if (prop instanceof MethodNode) {
             MethodNode method = (MethodNode) prop;
             if ((method.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && method.getDeclaringClass() != compiler.classNode) {
                 MethodNode delegate = compiler.context.getMethodDelegate(method);
-                new ResolvedGetterBytecodeExpr(exp, delegate, object, needsObjectIfStatic, compiler, propName);
+                new ResolvedGetterBytecodeExpr(exp, delegate, object, compiler, propName);
             }
-            return new ResolvedGetterBytecodeExpr(exp, method, object, needsObjectIfStatic, compiler, propName);
+            return new ResolvedGetterBytecodeExpr(exp, method, object, compiler, propName);
         }
 
         if (prop instanceof PropertyNode) {
@@ -34,7 +34,7 @@ public class PropertyUtil {
             FieldNode field = (FieldNode) prop;
             if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
                 MethodNode getter = compiler.context.getFieldGetter(field);
-                return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, needsObjectIfStatic, compiler);
+                return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, compiler);
             }
             return new ResolvedFieldBytecodeExpr(exp, field, object, null, compiler);
         }
