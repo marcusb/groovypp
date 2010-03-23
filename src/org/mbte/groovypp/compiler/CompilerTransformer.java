@@ -225,11 +225,12 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 
         if (candidates == null) {
             final CompileUnit compileUnit = classNode.getCompileUnit();
-            for (ModuleNode moduleNode : compileUnit.getModules()) {
-                for (ClassNode category : moduleNode.getClasses()) {
-                    candidates = findCategoryMethod(category, methodName, type, args, candidates);
+            if (compileUnit != null)
+                for (ModuleNode moduleNode : compileUnit.getModules()) {
+                    for (ClassNode category : moduleNode.getClasses()) {
+                        candidates = findCategoryMethod(category, methodName, type, args, candidates);
+                    }
                 }
-            }
         }
 
         if (candidates != null) {

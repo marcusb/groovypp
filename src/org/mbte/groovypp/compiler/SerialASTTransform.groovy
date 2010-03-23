@@ -32,7 +32,7 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
         }
     }
 
-    private void processClass (ClassNode classNode, SourceUnit source) {
+    public static void processClass (ClassNode classNode, SourceUnit source) {
         for( c in classNode.innerClasses)
             processClass(c, source)
         
@@ -52,7 +52,7 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
             if (!declaredConstructors?.empty)
                 source.addError(new SyntaxException("Class implementing java.io.Externalizable must have public no-arg constructor", classNode.lineNumber, classNode.columnNumber))
             else {
-                ConstructorNode constructor = [ACC_PUBLIC, null]
+                ConstructorNode constructor = [Opcodes.ACC_PUBLIC, null]
                 constructor.synthetic = true
                 classNode.addConstructor(constructor)
             }
@@ -66,7 +66,7 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
         }
     }
 
-    private def addReadWriteExternal(ClassNode classNode) {
+    private static def addReadWriteExternal(ClassNode classNode) {
         def readCode = new BlockStatement()
         def writeCode = new BlockStatement()
 
@@ -76,7 +76,7 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
         }
 
         for (f in classNode.fields) {
-            if (f.static || (f.modifiers & ACC_TRANSIENT) != 0)
+            if (f.static || (f.modifiers & Opcodes.ACC_TRANSIENT) != 0)
                 continue
 
             def tname = f.type.name
@@ -113,10 +113,10 @@ class SerialASTTransform implements ASTTransformation, Opcodes {
             ))
         }
 
-        def readMethod = classNode.addMethod("readExternal", ACC_PUBLIC, ClassHelper.VOID_TYPE, readExternalParams, ClassNode.EMPTY_ARRAY, readCode)
+        def readMethod = classNode.addMethod("readExternal", Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, readExternalParams, ClassNode.EMPTY_ARRAY, readCode)
         readMethod.addAnnotation(new AnnotationNode(TypeUtil.TYPED))
 
-        def writeMethod = classNode.addMethod("writeExternal", ACC_PUBLIC, ClassHelper.VOID_TYPE, writeExternalParams, ClassNode.EMPTY_ARRAY, writeCode)
+        def writeMethod = classNode.addMethod("writeExternal", Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, writeExternalParams, ClassNode.EMPTY_ARRAY, writeCode)
         writeMethod.addAnnotation(new AnnotationNode(TypeUtil.TYPED))
     }
 }

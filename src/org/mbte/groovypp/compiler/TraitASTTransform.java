@@ -36,10 +36,11 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
             boolean process = false;
             boolean typed = false;
             for (AnnotationNode ann : classNode.getAnnotations()) {
-                if (ann.getClassNode().getNameWithoutPackage().equals("Trait")) {
+                final String withoutPackage = ann.getClassNode().getNameWithoutPackage();
+                if (withoutPackage.equals("Trait")) {
                     process = true;
                 }
-                if (ann.getClassNode().getNameWithoutPackage().equals("Typed")) {
+                if (withoutPackage.equals("Typed")) {
                     typed = true;
                     ann.getClassNode().setRedirect(TypeUtil.TYPED);
                 }

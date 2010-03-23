@@ -55,6 +55,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
              catch (Throwable t) {
                  int line = classNode.getLineNumber();
                  int col = classNode.getColumnNumber();
+                 t.printStackTrace();
                  source.getErrorCollector().addError(new SyntaxErrorMessage(new SyntaxException(t.getMessage() + '\n', line, col), source), true);
              }
 

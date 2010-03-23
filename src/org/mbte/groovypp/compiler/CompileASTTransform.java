@@ -65,13 +65,13 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         } else if (parent instanceof PackageNode) {
             TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
             for (ClassNode clazz : source.getAST().getClasses()) {
-                if (clazz instanceof ClosureClassNode) continue;
-                if (isAnnotated(clazz)) continue;
+                if (clazz instanceof InnerClassNode) continue;
+//                if (isAnnotated(clazz)) continue;
 
                 allMethods(source, toProcess, clazz, modulePolicy);
 
                 // Prevent further passes trying to compile one again.
-                clazz.addAnnotation((AnnotationNode) nodes[0]);
+//                clazz.addAnnotation((AnnotationNode) nodes[0]);
             }
         } else {
             int line = parent.getLineNumber();
