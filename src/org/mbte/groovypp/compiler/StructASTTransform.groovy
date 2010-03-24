@@ -26,6 +26,7 @@ class StructASTTransform implements ASTTransformation, Opcodes {
     static final ClassNode ASTRUCT = make(AbstractStruct)
     static final ClassNode ABUILDER = make(AbstractStruct.Builder)
     static final ClassNode STRING_BUILDER = make(StringBuilder)
+    static final ClassNode APPLYOP = make(AbstractStruct.ApplyOp)
 
     void visit(ASTNode[] nodes, SourceUnit source) {
         ModuleNode module = nodes[0]
@@ -106,10 +107,72 @@ class StructASTTransform implements ASTTransformation, Opcodes {
             }
 
             addToString (classNode)
+
+            addApplyMethod(builderClassNode, classNode)
         }
 
         for( c in classNode.innerClasses)
             processClass(c, source)
+    }
+
+    private void addApplyMethod(InnerClassNode builderClassNode, ClassNode classNode) {
+//    static T apply (T $self = null, ApplyOp<B> op) {
+//        def builder = T.newBuilder(this)
+//        op.delegate = builder
+//        op.call ()
+//        builder.build ()
+//    }
+//
+        def code = new BlockStatement()
+        code.addStatement(
+                new ExpressionStatement(
+                        new DeclarationExpression(
+                                new VariableExpression("\$builder"),
+                                Token.newSymbol(Types.ASSIGN,-1,-1),
+                                new StaticMethodCallExpression(
+                                        classNode,
+                                        "newBuilder",
+                                        new ArgumentListExpression(new VariableExpression("\$self"))
+                                )
+                        )
+                )
+        )
+        code.addStatement(
+                new ExpressionStatement(
+                        new BinaryExpression(
+                                new PropertyExpression(new VariableExpression("\$op"), "delegate"),
+                                Token.newSymbol(Types.ASSIGN,-1,-1),
+                                new VariableExpression("\$builder")
+                        )
+                )
+        )
+        code.addStatement(
+                new ExpressionStatement(
+                        new MethodCallExpression(
+                                new VariableExpression("\$op"),
+                                "call",
+                                new ArgumentListExpression()
+                        )
+                )
+        )
+        code.addStatement(
+                new ExpressionStatement(
+                        new MethodCallExpression(
+                                new VariableExpression("\$builder"),
+                                "build",
+                                new ArgumentListExpression()
+                        )
+                )
+        )
+
+        classNode.addMethod(
+                "apply",
+                Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC,
+                classNode,
+                [[classNode, "\$self", ConstantExpression.NULL], [TypeUtil.withGenericTypes(APPLYOP, builderClassNode), "\$op"]],
+                [],
+                code
+        )
     }
 
     GenericsType [] builderGenericTypes(ClassNode classNode) {
@@ -190,6 +253,19 @@ class StructASTTransform implements ASTTransformation, Opcodes {
     }
 
     void addFieldMethods(FieldNode fieldNode, ClassNode classNode, InnerClassNode innerClassNode) {
+        classNode.addMethod(
+            "get" + Verifier.capitalize(fieldNode.name),
+            Opcodes.ACC_PUBLIC,
+            fieldNode.type,
+            [],
+            [], new ExpressionStatement(
+                new PropertyExpression(
+                    VariableExpression.THIS_EXPRESSION,
+                    fieldNode.name
+                )
+            )
+        )
+
         innerClassNode.addMethod(
             "get" + Verifier.capitalize(fieldNode.name),
             Opcodes.ACC_PUBLIC,
@@ -277,6 +353,7 @@ class StructASTTransform implements ASTTransformation, Opcodes {
             }
         }
 
+
         classNode.addMethod(
                 "toString",
                 Opcodes.ACC_PUBLIC,
@@ -287,3 +364,83 @@ class StructASTTransform implements ASTTransformation, Opcodes {
         )
     }
 }
+
+//class StructTest<A> extends AbstractStruct {
+//    private int x, y
+//    private A inner
+//
+//    StructTest () {
+//    }
+//
+//    StructTest (int x, int y) {
+//        this.x = x
+//        this.x = y
+//    }
+//
+//    static Builder newBuilder(StructTest<A> self = null) {
+//        new Builder(self)
+//    }
+//
+//    int getX ()   { x }
+//    int getY ()   { y }
+//    A getInner () { inner }
+//
+//    String toString() { "[x:$x, y:$y, inner:$inner]" }
+//
+//    int hashCode () {
+//        int h = 1
+//        h = 31*h + x
+//        h = 31*h + y
+//        h = 31*h + inner?.hashCode ()
+//        h
+//    }
+//
+//    boolean equals (Object o) {
+//        if (o instanceof StructTest) {
+//            StructTest other = o
+//            other.x == x && other.y == y && other.inner == inner
+//        }
+//    }
+//
+//    static class Builder<T extends StructTest,A> extends AbstractStruct.Builder<T> {
+//        Builder (T obj = null) {
+//            super(obj != null ? (T)obj.clone() : new StructTest())
+//        }
+//
+//        int  getX ()      { obj.x     }
+//        void setX (int x) { obj.x = x }
+//
+//        int  getY ()      { obj.y     }
+//        void setY (int x) { obj.y = y }
+//
+//        A    getInner ()        { obj.inner }
+//        void setInner (A inner) { obj.inner = inner }
+//    }
+//
+//    static class StringTupleTest extends StructTest<String> {
+//        static class Builder<T extends StringTupleTest> extends StructTest.Builder<T,String> {
+//            Builder (T obj = null) {
+//                super(obj != null ? (T)obj.clone() : new StringTupleTest())
+//            }
+//        }
+//
+//        static Builder newInstance() {
+//            new Builder()
+//        }
+//
+//        Builder builder () {
+//            new Builder(this)
+//        }
+//    }
+//
+//    static void main (String [] args ) {
+//        def b = StringTupleTest.newInstance()
+//        b.x = 1
+//        b.y = 2
+//        b.inner = "mama"
+//        println "$b ${b.inner.toUpperCase()}"
+//
+//        def o = b.build()
+//        println o
+//    }
+//}

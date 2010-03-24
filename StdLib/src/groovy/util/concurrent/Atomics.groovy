@@ -16,10 +16,11 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater
  * Operations on atomic primitives
  */
 @Typed class Atomics {
-    static <S> S apply (AtomicReference<S> self, Function1<S,S> mutation) {
+    static <S> S apply (AtomicReference<S> self, DelegatingFunction0<S,S> mutation) {
         for (;;) {
             def s = self.get()
-            def newState = mutation(s)
+            mutation.delegate = s
+            def newState = mutation()
             if (self.compareAndSet(s, newState))
                 return newState
         }

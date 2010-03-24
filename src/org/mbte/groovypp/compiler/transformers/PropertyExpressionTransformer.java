@@ -41,8 +41,15 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
 
         String propName;
         if (!(originalProperty instanceof ConstantExpression) || !(((ConstantExpression) originalProperty).getValue() instanceof String)) {
-            compiler.addError("Non-static property name", exp);
-            return null;
+            if (originalProperty instanceof ClosureExpression) {
+                final MethodCallExpression mce = new MethodCallExpression(exp.getObjectExpression(), "apply", new ArgumentListExpression(originalProperty));
+                mce.setSourcePosition(exp);
+                return compiler.transform(mce);
+            }
+            else {
+                compiler.addError("Non-static property name", exp);
+                return null;
+            }
         } else {
             propName = (String) ((ConstantExpression) originalProperty).getValue();
         }

@@ -29,6 +29,11 @@ class CallLaterExecutors {
         future
     }
 
+    static <T> BindLater<T> apply (Executor executor, CallLater<T> future) {
+        executor.execute future
+        future
+    }
+
     static void execute (Executor executor, Runnable...run) {
         for(r in run)
             executor.execute r

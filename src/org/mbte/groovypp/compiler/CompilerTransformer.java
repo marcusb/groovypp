@@ -174,7 +174,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             if (mn.isStatic()) {
                 final Parameter[] parameters = mn.getParameters();
                 if (parameters.length > 0 && TypeUtil.isDirectlyAssignableFrom(parameters[0].getType(), objectType)) {
-                    candidates = createDGM(mn);
+                    candidates = ClassNodeCache.createDGM(mn);
                 }
             }
         } else {
@@ -187,14 +187,14 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
                     if (parameters.length > 0) {
                         if (TypeUtil.isDirectlyAssignableFrom(parameters[0].getType(), objectType)) {
                             if (candidates == null)
-                                candidates = createDGM(mn);
+                                candidates = ClassNodeCache.createDGM(mn);
                             else if (candidates instanceof FastArray) {
-                                ((FastArray) candidates).add(createDGM(mn));
+                                ((FastArray) candidates).add(ClassNodeCache.createDGM(mn));
                             } else {
                                 MethodNode _1st = (MethodNode) candidates;
                                 candidates = new FastArray(2);
                                 ((FastArray) candidates).add(_1st);
-                                ((FastArray) candidates).add(createDGM(mn));
+                                ((FastArray) candidates).add(ClassNodeCache.createDGM(mn));
                             }
                         }
                     }
@@ -212,55 +212,40 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         if (res instanceof MethodNode)
             return (MethodNode) res;
 
-        Object candidates = findCategoryMethod(classNode, methodName, type, args, null);
-        final List<AnnotationNode> list = classNode.getAnnotations(USE);
-        for (AnnotationNode annotationNode : list) {
-            final Expression member = annotationNode.getMember("value");
-            if (member instanceof ClassExpression) {
-                ClassExpression expression = (ClassExpression) member;
-                final ClassNode category = expression.getType();
-                candidates = findCategoryMethod(category, methodName, type, args, candidates);
-            }
-        }
+        if (!staticOnly) {
+            Object candidates = findCategoryMethod(type, methodName, type, args, null);
 
-        if (candidates == null) {
-            final CompileUnit compileUnit = classNode.getCompileUnit();
-            if (compileUnit != null)
-                for (ModuleNode moduleNode : compileUnit.getModules()) {
-                    for (ClassNode category : moduleNode.getClasses()) {
+            if (candidates == null) {
+                candidates = findCategoryMethod(classNode, methodName, type, args, candidates);
+                final List<AnnotationNode> list = classNode.getAnnotations(USE);
+                for (AnnotationNode annotationNode : list) {
+                    final Expression member = annotationNode.getMember("value");
+                    if (member instanceof ClassExpression) {
+                        ClassExpression expression = (ClassExpression) member;
+                        final ClassNode category = expression.getType();
                         candidates = findCategoryMethod(category, methodName, type, args, candidates);
                     }
                 }
-        }
+            }
 
-        if (candidates != null) {
-            final Object r = MethodSelection.chooseMethod(methodName, candidates, type, args, classNode);
-            if (r instanceof MethodNode)
-                return (MethodNode) r;
+            if (candidates == null) {
+                final CompileUnit compileUnit = classNode.getCompileUnit();
+                if (compileUnit != null)
+                    for (ModuleNode moduleNode : compileUnit.getModules()) {
+                        for (ClassNode category : moduleNode.getClasses()) {
+                            candidates = findCategoryMethod(category, methodName, type, args, candidates);
+                        }
+                    }
+            }
+
+            if (candidates != null) {
+                final Object r = MethodSelection.chooseMethod(methodName, candidates, type, args, classNode);
+                if (r instanceof MethodNode)
+                    return (MethodNode) r;
+            }
         }
 
         return null;
-    }
-
-    private static ClassNodeCache.DGM createDGM(MethodNode method) {
-        final Parameter[] pp = method.getParameters();
-        Parameter params[] = pp.length > 1 ? new Parameter[pp.length - 1] : Parameter.EMPTY_ARRAY;
-        for (int j = 0; j != params.length; ++j)
-            params[j] = new Parameter(pp[j + 1].getType(), "$" + j);
-
-        ClassNodeCache.DGM mn = new ClassNodeCache.DGM(
-                method.getName(),
-                Opcodes.ACC_PUBLIC,
-                method.getReturnType(),
-                params,
-                method.getExceptions(),
-                null);
-        mn.setDeclaringClass(pp[0].getType());
-        mn.callClassInternalName = BytecodeHelper.getClassInternalName(method.getDeclaringClass());
-        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getParameters());
-        mn.setGenericsTypes(method.getGenericsTypes());
-        mn.original = method;
-        return mn;
     }
 
     public PropertyNode findProperty(ClassNode type, String property) {

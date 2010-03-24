@@ -20,6 +20,27 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class ClassNodeCache {
+    public static DGM createDGM(MethodNode method) {
+        final Parameter[] pp = method.getParameters();
+        Parameter params[] = pp.length > 1 ? new Parameter[pp.length - 1] : Parameter.EMPTY_ARRAY;
+        for (int j = 0; j != params.length; ++j)
+            params[j] = new Parameter(pp[j + 1].getType(), "$" + j);
+
+        DGM mn = new DGM(
+                method.getName(),
+                Opcodes.ACC_PUBLIC,
+                method.getReturnType(),
+                params,
+                method.getExceptions(),
+                null);
+        mn.setDeclaringClass(pp[0].getType());
+        mn.callClassInternalName = BytecodeHelper.getClassInternalName(method.getDeclaringClass());
+        mn.descr = BytecodeHelper.getMethodDescriptor(method.getReturnType(), method.getParameters());
+        mn.setGenericsTypes(method.getGenericsTypes());
+        mn.original = method;
+        return mn;
+    }
+
     public static class ClassNodeInfo {
         Map<String, Object> methods;
         Map<String, Object> fields;
@@ -300,6 +321,11 @@ public class ClassNodeCache {
                     nameMap.put(m.getName(), addMethodToList(nameMap.get(m.getName()), m));
                     if (m.isStatic()) {
                         staticMethodsMap.put(m.getName(), addMethodToList(staticMethodsMap.get(m.getName()), m));
+                        if (m.getParameters().length > 0) {
+                            if (m.getParameters()[0].getType().equals(m.getDeclaringClass())) {
+                                nameMap.put(m.getName(), addMethodToList(nameMap.get(m.getName()), createDGM(m)));
+                            }
+                        }
                     }
                 }
             }
