@@ -64,7 +64,7 @@ package groovy.lang
 
             println "created \$person"
 
-            users.{ put(person.userName, person) }
+            users.apply{ u -> u.put(person.userName, person) }
 
             executor.{
               def newPerson = users['user'+i].{
@@ -72,7 +72,7 @@ package groovy.lang
               }
 
               // atomic apply
-              users.{ put(person.userName, newPerson) }
+              users.apply{ u -> u.put(person.userName, newPerson) }
 
               println "updated: \$newPerson"
               cdl.countDown ()
