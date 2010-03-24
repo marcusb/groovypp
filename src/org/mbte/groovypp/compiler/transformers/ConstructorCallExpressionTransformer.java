@@ -25,6 +25,13 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         MethodNode constructor;
         ClassNode type = exp.getType();
 
+        if (type.redirect().getOuterClass() != null) {
+            // TODO: qualified new?
+            if (compiler.methodNode.isStatic() && (type.getModifiers() & Opcodes.ACC_STATIC) == 0) {
+                compiler.addError("Cannot create a non-static class '" + type.getName() + "' from static method", exp);
+            }
+        }
+
         rewriteThis0 (exp, compiler);
 
         if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
