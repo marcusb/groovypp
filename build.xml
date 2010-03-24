@@ -327,7 +327,19 @@
         </replace>
     </target>
 
-    <target name="make.install" depends="test,make.embeddable.jar" description="Build installation">
+    <target name="update.poms" if="updatePoms">
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!-- Replacing @version@ tokens in Maven POM files       -->
+        <!-- http://ant.apache.org/manual/CoreTasks/replace.html -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <replace dir      = "maven"
+                 includes = "**/pom.xml"
+                 token    = "@version@"
+                 value    = "${version}"
+                 summary  = "true"/>
+    </target>
+
+    <target name="make.install" depends="test, make.embeddable.jar, update.poms" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
@@ -339,18 +351,7 @@
             <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
             <zipfileset dir="${examples.src}" prefix="booster/examples"/>
             <zipfileset dir="${stdlib.src}" prefix="booster/stdlib"/>
-
         </zip>
-
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <!-- Replacing @version@ tokens in Maven POM files       -->
-        <!-- http://ant.apache.org/manual/CoreTasks/replace.html -->
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <replace dir      = "maven"
-                 includes = "**/pom.xml"
-                 token    = "@version@"
-                 value    = "${version}"
-                 summary  = "true"/>
     </target>
 
 	<target name="check.groovypp.jar">
