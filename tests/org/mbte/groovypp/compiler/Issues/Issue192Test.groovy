@@ -17,7 +17,7 @@ public class Issue192Test extends GroovyShellTestCase {
   }
   """
         } catch (MultipleCompilationErrorsException e) {
-          assert e.message.contains ('Cannot create a non-static class \'Test$A\' from static method')
+          assert e.message.contains ('No enclosing instance passed in constructor call of a non-static inner class')
         }
     }
 }

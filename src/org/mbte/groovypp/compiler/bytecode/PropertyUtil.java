@@ -78,7 +78,7 @@ public class PropertyUtil {
             return new ResolvedLeftMapExpr(exp, object, propName);
         }
 
-        return dynamicOrFail(exp.getProperty(), compiler, propName, type, object, null);
+        return dynamicOrFail(exp.getProperty(), compiler, propName, type, object, null, "find");
     }
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {
@@ -106,7 +106,7 @@ public class PropertyUtil {
         }
 
         final ClassNode type = object != null ? object.getType() : compiler.classNode;
-        return dynamicOrFail(parent, compiler, propName, type, object, value);
+        return dynamicOrFail(parent, compiler, propName, type, object, value, "assign");
     }
 
     public static EmptyStatement NO_CODE = new EmptyStatement();
@@ -158,7 +158,8 @@ public class PropertyUtil {
     }
 
     public static Object resolveSetProperty(ClassNode type, String name, ClassNode arg, CompilerTransformer compiler, boolean isSameObject) {
-        final FieldNode field = compiler.findField(type, name);
+        FieldNode field = compiler.findField(type, name);
+
         final String setterName = "set" + Verifier.capitalize(name);
         MethodNode mn = compiler.findMethod(type, setterName, new ClassNode[]{arg}, false);
         if (mn != null && mn.getReturnType() == ClassHelper.VOID_TYPE) {
@@ -167,16 +168,20 @@ public class PropertyUtil {
         }
 
         final PropertyNode pnode = type.getProperty(name);
-        if (pnode != null) {
+        if (pnode != null && (pnode.getModifiers() & Opcodes.ACC_FINAL) == 0) {
             return pnode;
         }
 
+        if (field != null && (field.getModifiers() & Opcodes.ACC_FINAL) != 0) {
+            if (field.getDeclaringClass() != compiler.classNode || !(compiler.methodNode instanceof ConstructorNode))
+                return null;
+        }
         return field;
     }
 
-    private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, ClassNode type, BytecodeExpr object, BytecodeExpr value) {
+    private static BytecodeExpr dynamicOrFail(ASTNode exp, CompilerTransformer compiler, String propName, ClassNode type, BytecodeExpr object, BytecodeExpr value, String cause) {
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError("Cannot find property " + propName + " of class " + PresentationUtil.getText(type), exp);
+            compiler.addError("Cannot " + cause + " property " + propName + " of class " + PresentationUtil.getText(type), exp);
             return null;
         } else
             return createDynamicCall(exp, propName, object, value);
