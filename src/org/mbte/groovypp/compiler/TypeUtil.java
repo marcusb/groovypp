@@ -200,16 +200,19 @@ public class TypeUtil {
         }
         t1 = wrapSafely(t1);
         t2 = wrapSafely(t2);
-        return (t1.isInterface() || t2.isInterface()) || isAssignableFrom(t1, t2) ||
-                areTypesDirectlyConvertible(t1, t2);
+        return isAssignableFrom(t1, t2) || canHaveCommonSubtype(t1, t2) || areTypesDirectlyConvertible(t1, t2);
+    }
+
+    private static boolean canHaveCommonSubtype(ClassNode t1, ClassNode t2) {
+        return (t1.isInterface() && (t2.getModifiers() & Opcodes.ACC_FINAL) == 0) ||
+               (t2.isInterface() && (t1.getModifiers() & Opcodes.ACC_FINAL) == 0);
     }
 
     public static boolean areTypesDirectlyConvertible(ClassNode t1, ClassNode t2) {
         if (t1.isArray() && t2.isArray()) return areTypesDirectlyConvertible(t1.getComponentType(), t2.getComponentType());
         t1 = wrapSafely(t1);
         t2 = wrapSafely(t2);
-        return (t1.isInterface() || t2.isInterface()) || isDirectlyAssignableFrom(t1, t2) ||
-                isDirectlyAssignableFrom(t2, t1);
+        return isDirectlyAssignableFrom(t1, t2) || isDirectlyAssignableFrom(t2, t1) || canHaveCommonSubtype(t1, t2);
     }
 
     private static boolean implementsInterface(ClassNode type, ClassNode type1) {
