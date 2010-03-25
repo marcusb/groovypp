@@ -1,6 +1,6 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue74Test extends GroovyTestCase {
     void testDuplicateTyped1 () {
@@ -42,14 +42,6 @@ public class Issue74Test extends GroovyTestCase {
     }
     
     private runAndVerifyError(script) {
-        try {
-            GroovyShell shell = new GroovyShell()
-            shell.evaluate(script)
-            fail('Compilation should have failed as script has duplicate Typed annotation specified')
-          } catch (MultipleCompilationErrorsException e) {
-              def error = e.errorCollector.errors[0].cause
-              assertTrue error.message.contains('Duplicate @Typed annotation found') 
-              assertTrue error.line > 0 && error.column > 0
-          }
+      shouldNotCompile(script, 'Duplicate @Typed annotation found')
     }
 }

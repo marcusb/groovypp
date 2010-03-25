@@ -1,11 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue105Test extends GroovyShellTestCase {
     void testMe () {
-       try {
-         shell.evaluate """
+       shouldNotCompile """
            @Typed package p
 
            def user = null
@@ -16,9 +15,5 @@ public class Issue105Test extends GroovyShellTestCase {
            class User {Address address}
 
         """
-       } catch (MultipleCompilationErrorsException e) {
-         def error = e.errorCollector.errors[0].cause
-         assertTrue error.line > 0 && error.column > 0
-       }
     }
 }

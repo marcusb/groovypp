@@ -1,7 +1,5 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
-
 public class Issue197Test extends GroovyShellTestCase {
     void testImplicitThisPassingInInstanceInitBlock() {
         try {
