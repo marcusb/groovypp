@@ -1,11 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue192Test extends GroovyShellTestCase {
   void testMe() {
-        try {
-          shell.evaluate """
+        shouldNotCompile("""
   @Typed
   class Test {
       static main(args) {
@@ -15,9 +14,7 @@ public class Issue192Test extends GroovyShellTestCase {
           A() {}
       }
   }
-  """
-        } catch (MultipleCompilationErrorsException e) {
-          assert e.message.contains ('No enclosing instance passed in constructor call of a non-static inner class')
-        }
+  """,
+  'No enclosing instance passed in constructor call of a non-static inner class')
     }
 }

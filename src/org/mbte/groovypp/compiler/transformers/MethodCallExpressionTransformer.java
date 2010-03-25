@@ -408,7 +408,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
 
     private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName, ClassNode type, ClassNode[] argTypes, final String msg) {
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError(msg + getMethodDescr(type, methodName, argTypes), exp.getMethod());
+            final Expression anchor = exp.getMethod().getLineNumber() >= 0 ? exp.getMethod() : exp;
+            compiler.addError(msg + getMethodDescr(type, methodName, argTypes), anchor);
             return null;
         } else
             return createDynamicCall(exp, compiler);

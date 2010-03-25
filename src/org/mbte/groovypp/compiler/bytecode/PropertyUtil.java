@@ -3,6 +3,7 @@ package org.mbte.groovypp.compiler.bytecode;
 import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -78,7 +79,8 @@ public class PropertyUtil {
             return new ResolvedLeftMapExpr(exp, object, propName);
         }
 
-        return dynamicOrFail(exp.getProperty(), compiler, propName, type, object, null, "find");
+        final Expression anchor = exp.isImplicitThis() ? exp : exp.getProperty();
+        return dynamicOrFail(anchor, compiler, propName, type, object, null, "find");
     }
 
     public static BytecodeExpr createSetProperty(ASTNode parent, CompilerTransformer compiler, String propName, BytecodeExpr object, BytecodeExpr value, Object prop) {

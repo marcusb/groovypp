@@ -47,7 +47,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                 return compiler.transform(mce);
             }
             else {
-                compiler.addError("Non-static property name", exp);
+                compiler.addError("Non-static property name", originalProperty);
                 return null;
             }
         } else {

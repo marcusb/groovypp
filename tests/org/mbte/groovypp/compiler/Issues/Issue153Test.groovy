@@ -1,11 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue153Test extends GroovyShellTestCase {
     void testNotOKSetterReturningObject() {
-        try {
-            shell.evaluate """
+        shouldNotCompile("""
                 @Typed package test
                 
                 class Test{
@@ -18,12 +17,8 @@ public class Issue153Test extends GroovyShellTestCase {
                 class Helper {
                     public setProp(String s) { }
                 }
-            """
-            fail('Compilation should have failed as setter setProp() does not return void')
-          } catch (MultipleCompilationErrorsException e) {
-              def error = e.errorCollector.errors[0].cause
-              assertTrue error.message.contains('Cannot find property prop') 
-          }
+            """,
+           'Cannot find property prop')
     }
 
   void testOKSetterReturningVoid() {

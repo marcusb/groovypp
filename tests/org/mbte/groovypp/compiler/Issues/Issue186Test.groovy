@@ -1,11 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue186Test extends GroovyShellTestCase {
     void testConstructorCallOnAnInterface() {
-        try {
-          shell.evaluate """
+        shouldNotCompile("""
             @Typed package dummy
             
             class Test186 {
@@ -16,9 +15,7 @@ public class Issue186Test extends GroovyShellTestCase {
             
             interface I186 {}
 
-          """
-        } catch (MultipleCompilationErrorsException e) {
-            assert e.message.contains ("You cannot create an instance from the abstract interface")
-        }
+          """,
+         "You cannot create an instance from the abstract interface")
     }
 }

@@ -1,12 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
 import static groovy.CompileTestSupport.shouldNotCompile
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 public class Issue132Test extends GroovyShellTestCase {
     void testIllegalCycleInference() {
-        try {
-          shell.evaluate """
+          shouldNotCompile("""
   @Typed class Test {
       static main(args) {
           def a = 1
@@ -18,10 +16,8 @@ public class Issue132Test extends GroovyShellTestCase {
           }
       }
   }
-  """
-        } catch (MultipleCompilationErrorsException e) {
-          assert e.message.contains ("IIlegal inference inside the loop. Consider making the variable's type explicit.")
-        }
+  """,
+  "IIlegal inference inside the loop. Consider making the variable's type explicit.")
     }
 
   void testWeirdShouldNotHappen() {

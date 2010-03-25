@@ -1,11 +1,10 @@
 package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import static groovy.CompileTestSupport.shouldNotCompile
 
 public class Issue190Test extends GroovyShellTestCase {
   void testMe() {
-        try {
-          shell.evaluate """
+        shouldNotCompile("""
   @Typed package p
 
   class Test {
@@ -14,9 +13,7 @@ public class Issue190Test extends GroovyShellTestCase {
       }
   }
   enum Alpha { A, B }
-  """
-        } catch (MultipleCompilationErrorsException e) {
-          assert e.message.contains("Cannot find property C of class Alpha")
-        }
+  """,
+  "Cannot find property C of class Alpha")
     }
 }
