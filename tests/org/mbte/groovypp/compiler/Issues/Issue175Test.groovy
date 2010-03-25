@@ -9,7 +9,7 @@ public class Issue175Test extends GroovyShellTestCase {
         try {
           DebugContext.outputStream = new PrintStream(baos)
           shell.evaluate """
-            @Typed
+            @Typed(debug=true)  // We check for debug output below!!!
             static def foo() {
               print "foo"
             }
