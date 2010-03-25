@@ -865,15 +865,19 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             castCollection(expr, type, mv);
         } else {
             if (TypeUtil.isNumericalType(type) && !type.equals(TypeUtil.Number_TYPE)) {
-                Label nullLabel = new Label(), doneLabel = new Label();
-                mv.visitInsn(DUP);
-                mv.visitJumpInsn(IFNULL, nullLabel);
-                unbox(getUnwrapper(type), mv);
-                box(getUnwrapper(type), mv);
-                mv.visitJumpInsn(GOTO, doneLabel);
-                mv.visitLabel(nullLabel);
-                checkCast(type, mv);
-                mv.visitLabel(doneLabel);
+            	if(TypeUtil.isBigDecimal(type) || TypeUtil.isBigInteger(type)) {
+            		checkCast(type, mv);
+            	} else {
+                    Label nullLabel = new Label(), doneLabel = new Label();
+                    mv.visitInsn(DUP);
+                    mv.visitJumpInsn(IFNULL, nullLabel);
+                    unbox(getUnwrapper(type), mv);
+                    box(getUnwrapper(type), mv);
+                    mv.visitJumpInsn(GOTO, doneLabel);
+                    mv.visitLabel(nullLabel);
+                    checkCast(type, mv);
+                    mv.visitLabel(doneLabel);
+            	}
             } else {
                 if (expr != TypeUtil.NULL_TYPE) {
                     if (type.equals(STRING_TYPE)) {

@@ -3,7 +3,7 @@ package groovy.remote
 /**
  * Remode node in the claster
  */
-@Typed(debug=true) class RemoteClusterNode extends MessageChannel<Serializable> {
+@Typed class RemoteClusterNode extends MessageChannel<Serializable> {
    final RemoteConnection connection
 
    final UUID remoteId
@@ -17,7 +17,7 @@ package groovy.remote
         connection.send(new ToMainActor(payLoad:message))
    }
 
-   @Typed(debug=true) public static class ToMainActor extends RemoteMessage {
+   @Typed public static class ToMainActor extends RemoteMessage {
         Serializable payLoad
    }
 }

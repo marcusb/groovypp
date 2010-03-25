@@ -191,6 +191,8 @@
         </groovyc >
     </target>
 
+    <target name="clean-test" depends="clean,test" description="run unit tests"/>
+    
     <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
