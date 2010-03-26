@@ -780,7 +780,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         visitStatement(ts);
 
         super.visitThrowStatement(ts);
-        ((BytecodeExpr) ts.getExpression()).visit(mv);
+        final BytecodeExpr thrown = (BytecodeExpr) ts.getExpression();
+        if (!TypeUtil.isDirectlyAssignableFrom(TypeUtil.THROWABLE, thrown.getType())) {
+            addError("Only java.lang.Throwable objects may be thrown", thrown);
+        }
+        thrown.visit(mv);
         mv.visitInsn(ATHROW);
     }
 
