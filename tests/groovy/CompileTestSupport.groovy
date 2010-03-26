@@ -11,7 +11,6 @@ public class CompileTestSupport {
       new GroovyShell().parse(script)
     } catch (MultipleCompilationErrorsException e) {
       assert e.message.contains(messageFragment)
-      println e.errorCollector.errors[0].class
       def error = e.errorCollector.errors[0].cause
       if (error instanceof SyntaxException) {
         assert error.startLine > 0 && error.startColumn > 0
