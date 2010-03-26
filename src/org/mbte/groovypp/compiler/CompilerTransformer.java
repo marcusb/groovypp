@@ -568,12 +568,6 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         };
     }
 
-    public boolean samePackage(FieldNode fieldNode) {
-        PackageNode accessPackage = classNode.getPackage();
-        PackageNode fieldPackage = fieldNode.getDeclaringClass().getPackage();
-        return (accessPackage == null && fieldPackage == null) || (accessPackage != null && accessPackage.getName().equals(fieldPackage.getName()));
-    }
-
     public ClassNode getCollectionType(ClassNode type) {
         final GenericsType[] generics = TypeUtil.getSubstitutedType(TypeUtil.ITERABLE, TypeUtil.ITERABLE, type).getGenericsTypes();
         if (generics == null) return ClassHelper.OBJECT_TYPE;

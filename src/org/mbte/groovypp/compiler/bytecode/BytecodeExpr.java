@@ -977,6 +977,19 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     }
 
     private static void castString(ClassNode expr, ClassNode type, MethodVisitor mv) {
+        if (TypeUtil.isNumericalType(type) || type == Character_TYPE || type == char_TYPE) {
+            mv.visitInsn(DUP);
+            final Label nonempty = new Label();
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "isEmpty", "()Z");
+            mv.visitJumpInsn(IFEQ, nonempty);
+            mv.visitTypeInsn(NEW, "java/lang/ClassCastException");
+            mv.visitInsn(DUP);
+            mv.visitLdcInsn("Cannot cast object '' with class 'java.lang.String' to class '" + type.getName() + "'");
+            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/ClassCastException", "<init>", "(Ljava/lang/String;)V");
+            mv.visitInsn(ATHROW);
+            mv.visitLabel(nonempty);
+        }
+
         if (TypeUtil.isNumericalType(type)) {
             mv.visitInsn(ICONST_0);
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
