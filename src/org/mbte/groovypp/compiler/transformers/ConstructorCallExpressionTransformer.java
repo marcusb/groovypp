@@ -1,6 +1,7 @@
 package org.mbte.groovypp.compiler.transformers;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.syntax.Token;
@@ -13,6 +14,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class ConstructorCallExpressionTransformer extends ExprTransformer<ConstructorCallExpression> {
     private static final ClassNode[] MAP_ARGS = new ClassNode[]{TypeUtil.LINKED_HASH_MAP_TYPE};
@@ -24,6 +26,15 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         MethodNode constructor;
         ClassNode type = exp.getType();
+
+        if (type instanceof InnerClassNode) {
+            InnerClassNode innerClassNode = (InnerClassNode) type;
+
+            if (innerClassNode.isAnonymous()) {
+                if(!improveWhatInnerClassVisitorDid(innerClassNode, exp, compiler))
+                    return null;
+            }
+        }
 
         rewriteThis0 (exp, compiler);
 
@@ -154,6 +165,98 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         return null;
     }
 
+    private boolean improveWhatInnerClassVisitorDid(InnerClassNode innerClassNode, ConstructorCallExpression exp, CompilerTransformer compiler) {
+        // here we should fix constructor parameter types InnerClassVisitor did with constructor
+        // and add compile class itself
+        final ClassNode superClass = innerClassNode.getSuperClass();
+
+        final ConstructorNode constructorNode = innerClassNode.getDeclaredConstructors().get(0);
+        final VariableScope scope = innerClassNode.getVariableScope();
+
+        final boolean isStatic = (superClass.getModifiers() & ACC_STATIC) != 0;
+        if (!isStatic && compiler.methodNode.getVariableScope().isInStaticContext()) {
+            compiler.addError("Can not instantiate non-static inner class " + superClass.getName() + " in static context", exp);
+            return false;
+        }
+
+        int additional = 1 + scope.getReferencedLocalVariablesCount();
+        TupleExpression te = (TupleExpression) exp.getArguments();
+
+        // remove all added parameters
+        for (int i = 0; i != additional; ++i) {
+            te.getExpressions().remove(0);
+        }
+
+        if (!isStatic) {
+            te.getExpressions().add(0, VariableExpression.THIS_EXPRESSION);
+        }
+
+        final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
+        final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
+
+        final MethodNode constr = findConstructorWithClosureCoercion(superClass, argTypes, compiler);
+        if (constr == null) {
+            compiler.addError("Cannot find constructor", exp);
+            return false;
+        }
+
+        final ArgumentListExpression superArgs = new ArgumentListExpression();
+        if (!isStatic) {
+            superArgs.getExpressions().add(new VariableExpression("p$0"));
+        }
+
+        final Parameter[] superParams = constr.getParameters();
+        for(int i = 0; i != superParams.length; ++i) {
+            superArgs.getExpressions().add(new VariableExpression("p$"+(i+additional)));
+        }
+
+        BlockStatement code = (BlockStatement) constructorNode.getCode();
+        code.getStatements().remove(0);
+        code.getStatements().add(0, 
+                new ExpressionStatement(
+                        new ConstructorCallExpression(ClassNode.SUPER, superArgs)
+                )
+        );
+
+        final Parameter[] params = constructorNode.getParameters();
+
+        if (isStatic) {
+            te.getExpressions().add(0, VariableExpression.THIS_EXPRESSION);
+        }
+
+        int pCount = 0;
+        for (Iterator it=scope.getReferencedLocalVariablesIterator(); it.hasNext();) {
+            pCount++;
+
+            org.codehaus.groovy.ast.Variable var = (org.codehaus.groovy.ast.Variable) it.next();
+            final ClassNode vtype = compiler.transform(new VariableExpression(var)).getType();
+
+            params[pCount].setType(vtype);
+            innerClassNode.getField(var.getName()).setType(vtype);
+
+            te.getExpressions().add(pCount, new VariableExpression(var));
+        }
+
+        for(int i = 0; i != superParams.length; ++i) {
+            params[additional+i] = new Parameter(superParams[i].getType(), "p$" + (i+additional));
+        }
+
+        ClassNodeCache.clearCache(innerClassNode);
+        return true;
+    }
+
+    private void addIinitField(BlockStatement code, String field, String variable) {
+        code.addStatement(
+                new ExpressionStatement(
+                        new BinaryExpression(
+                                new PropertyExpression(VariableExpression.THIS_EXPRESSION, field),
+                                Token.newSymbol(Types.ASSIGN, -1, -1),
+                                new VariableExpression(variable)
+                        )
+                )
+        );
+    }
+
     private void rewriteThis0(ConstructorCallExpression exp, CompilerTransformer compiler) {
         if (!(exp.getType().redirect() instanceof InnerClassNode)) return;
         InnerClassNode inner = (InnerClassNode) exp.getType().redirect();
@@ -201,10 +304,22 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
     }
 
     private Expression transformSpecial(ConstructorCallExpression exp, CompilerTransformer compiler) {
-        final Expression newArgs = compiler.transform(exp.getArguments());
+        final ClassNode type = exp.isSuperCall() ? compiler.classNode.getSuperClass() : compiler.classNode;
+        Expression args = exp.getArguments();
+
+//        if (type instanceof InnerClassNode) {
+//            if((type.getModifiers() & ACC_STATIC) == 0) {
+//                if (!(args instanceof TupleExpression)) {
+//                    args = new TupleExpression(args);
+//                }
+//                ((TupleExpression)args).getExpressions().add(0, new VariableExpression(compiler.methodNode.getParameters()[0]));
+//            }
+//        }
+
+        final Expression newArgs = compiler.transform(args);
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        MethodNode constructor = compiler.findConstructor(exp.isSuperCall() ? compiler.classNode.getSuperClass() : compiler.classNode, argTypes);
+        MethodNode constructor = compiler.findConstructor(type, argTypes);
         if (constructor != null) {
             return ResolvedMethodBytecodeExpr.create(exp, constructor,
                     exp.isSuperCall() ?

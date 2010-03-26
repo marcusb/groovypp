@@ -3,10 +3,7 @@ package org.mbte.groovypp.compiler;
 import groovy.lang.TypePolicy;
 import groovy.lang.Typed;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.control.CompilePhase;
@@ -38,23 +35,14 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         Map<MethodNode, TypePolicy> toProcess = new LinkedHashMap<MethodNode, TypePolicy>();
         final ClassNode classNode;
 
-        if (parent instanceof ConstructorNode) {
+        if (parent instanceof MethodNode) {
             TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
             TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
 
             classNode = parent.getDeclaringClass();
             if (methodPolicy != TypePolicy.DYNAMIC) {
-                toProcess.put((MethodNode) parent, methodPolicy);
-            }
-
-        } else if (parent instanceof MethodNode) {
-            TypePolicy classPolicy = getPolicy(parent.getDeclaringClass(), source, TypePolicy.DYNAMIC);
-            TypePolicy methodPolicy = getPolicy(parent, source, classPolicy);
-
-            final MethodNode mn = (MethodNode) parent;
-            classNode = mn.getDeclaringClass();
-            if (methodPolicy != TypePolicy.DYNAMIC) {
-                toProcess.put(mn, methodPolicy);
+                final MethodNode mn = (MethodNode) parent;
+                addMethodToProcessingQueue(source, toProcess, methodPolicy, mn);
             }
 
         } else if (parent instanceof ClassNode) {
@@ -66,12 +54,8 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             TypePolicy modulePolicy = getPolicy(parent, source, TypePolicy.DYNAMIC);
             for (ClassNode clazz : source.getAST().getClasses()) {
                 if (clazz instanceof InnerClassNode) continue;
-//                if (isAnnotated(clazz)) continue;
 
                 allMethods(source, toProcess, clazz, modulePolicy);
-
-                // Prevent further passes trying to compile one again.
-//                clazz.addAnnotation((AnnotationNode) nodes[0]);
             }
         } else {
             int line = parent.getLineNumber();
@@ -121,15 +105,24 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
         for (MethodNode node : context.generatedMethodDelegates.values()) {
             StaticMethodBytecode.replaceMethodCode(source, context, node, new CompilerStack(null), -1, TypePolicy.STATIC, "Neverused");
         }
-        return;
     }
 
-    private boolean isAnnotated(ClassNode clazz) {
-        while (clazz != null) {
-            if(!clazz.getAnnotations(COMPILE_TYPE).isEmpty()) return true;
-            clazz = clazz.getOuterClass();
-        }
-        return false;
+    private void addMethodToProcessingQueue(final SourceUnit source, final Map<MethodNode, TypePolicy> toProcess, final TypePolicy methodPolicy, MethodNode mn) {
+        final Statement code = mn.getCode();
+        if (code == null)
+            return;
+
+        toProcess.put(mn, methodPolicy);
+        code.visit(new CodeVisitorSupport(){
+            @Override
+            public void visitConstructorCallExpression(ConstructorCallExpression call) {
+                final ClassNode type = call.getType();
+                if (type instanceof InnerClassNode && ((InnerClassNode)type).isAnonymous()) {
+                    allMethods(source, toProcess, type, methodPolicy);
+                }
+                super.visitConstructorCallExpression(call);
+            }
+        });
     }
 
     private void allMethods(SourceUnit source, Map<MethodNode, TypePolicy> toProcess, ClassNode classNode, TypePolicy classPolicy) {
@@ -137,23 +130,25 @@ public class CompileASTTransform implements ASTTransformation, Opcodes {
             if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
                 TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
                 if (methodPolicy != TypePolicy.DYNAMIC) {
-                    toProcess.put(mn, methodPolicy);
+                    addMethodToProcessingQueue(source, toProcess, methodPolicy, mn);
                 }
             }
         }
 
         for (MethodNode mn : classNode.getDeclaredConstructors()) {
-            if (!mn.isAbstract() && (mn.getModifiers() & ACC_SYNTHETIC) == 0) {
-                TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
-                if (methodPolicy != TypePolicy.DYNAMIC) {
-                    toProcess.put(mn, methodPolicy);
-                }
+            TypePolicy methodPolicy = getPolicy(mn, source, classPolicy);
+            if (methodPolicy != TypePolicy.DYNAMIC) {
+                addMethodToProcessingQueue(source, toProcess, methodPolicy, mn);
             }
         }
 
         Iterator<InnerClassNode> inners = classNode.getInnerClasses();
         while (inners.hasNext()) {
             InnerClassNode node = inners.next();
+
+            if (node.isAnonymous()) // method compilation will take care
+                continue;
+
             TypePolicy innerClassPolicy = getPolicy(node, source, classPolicy);
 
             allMethods(source, toProcess, node, innerClassPolicy);        }
