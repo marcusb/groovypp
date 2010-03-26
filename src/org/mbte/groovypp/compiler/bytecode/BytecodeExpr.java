@@ -568,6 +568,10 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
      * @param name
      */
     public static String formatNameForClassLoading(String name) {
+        if (name == null) {
+            return "java.lang.Object;";
+        }
+
         if (name.equals("int")
                 || name.equals("long")
                 || name.equals("short")
@@ -579,10 +583,6 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 || name.equals("void")
                 ) {
             return name;
-        }
-
-        if (name == null) {
-            return "java.lang.Object;";
         }
 
         if (name.startsWith("[")) {
