@@ -192,7 +192,7 @@
     </target>
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
-    
+
     <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
@@ -329,19 +329,20 @@
         </replace>
     </target>
 
-    <target name="update.poms" if="updatePoms">
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <!-- Replacing @version@ tokens in Maven POM files       -->
-        <!-- http://ant.apache.org/manual/CoreTasks/replace.html -->
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <replace dir      = "maven"
-                 includes = "**/pom.xml"
-                 token    = "@version@"
-                 value    = "${version}"
-                 summary  = "true"/>
+    <target name="update.poms">
+        <delete      dir      = "${output.dir}/maven"/>
+        <copy        toDir    = "${output.dir}/maven"
+                     verbose  = "true">
+            <fileset dir      = "maven"
+                     includes = "**/pom.xml"/>
+            <filterset>
+                <filter token = "version"
+                        value = "${version}"/>
+            </filterset>
+        </copy>
     </target>
 
-    <target name="make.install" depends="test, make.embeddable.jar, update.poms" description="Build installation">
+    <target name="make.install" depends="test, make.embeddable.jar" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
