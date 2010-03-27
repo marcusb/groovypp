@@ -32,6 +32,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
         ModuleNode module = (ModuleNode) nodes[0];
         List<ClassNode> toProcess = new LinkedList<ClassNode>();
         final boolean forceTyped = source.getName().endsWith(".gpp");
+        AnnotationNode pkgTypedAnn = getTypedAnnotation(module.getPackage());
         for (ClassNode classNode : module.getClasses()) {
             boolean process = false;
             boolean typed = false;
@@ -48,13 +49,13 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
             if (forceTyped && !typed) {
                 typed = true;
-                classNode.addAnnotation(new AnnotationNode(TypeUtil.TYPED));
+                classNode.addAnnotation(pkgTypedAnn != null ? pkgTypedAnn : new AnnotationNode(TypeUtil.TYPED));
             }
 
             if (process) {
                 toProcess.add(classNode);
                 if (!typed) {
-                    classNode.addAnnotation(new AnnotationNode(TypeUtil.TYPED));
+                    classNode.addAnnotation(pkgTypedAnn != null ? pkgTypedAnn : new AnnotationNode(TypeUtil.TYPED));
                 }
             }
         }
@@ -75,7 +76,7 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
 
             InnerClassNode innerClassNode = new InnerClassNode(classNode, fullName, ACC_PUBLIC|ACC_STATIC|ACC_ABSTRACT, ClassHelper.OBJECT_TYPE, new ClassNode[]{classNode}, null);
             AnnotationNode typedAnn = new AnnotationNode(TypeUtil.TYPED);
-            final Expression member = classNode.getAnnotations(TypeUtil.TYPED).get(0).getMember("debug");
+            final Expression member = getTypedAnnotation(classNode).getMember("debug");
             if (member != null && member instanceof ConstantExpression && ((ConstantExpression)member).getValue().equals(Boolean.TRUE))
                 typedAnn.addMember("debug", ConstantExpression.TRUE);
             innerClassNode.addAnnotation(typedAnn);
@@ -201,6 +202,19 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
         }
     }
 
+    private AnnotationNode getTypedAnnotation(AnnotatedNode node) {
+    	AnnotationNode pkgTyped = null;
+    	if(node != null) {
+        	for (AnnotationNode ann : node.getAnnotations()) {
+                final String withoutPackage = ann.getClassNode().getNameWithoutPackage();
+                if (withoutPackage.equals("Typed")) {
+                	pkgTyped = ann;
+                }
+        	}
+    	}
+    	return pkgTyped;
+    }
+    
     private void addFieldAnnotation(InnerClassNode innerClassNode, FieldNode fieldNode, MethodNode getter) {
         AnnotationNode value = new AnnotationNode(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
         value.addMember("value", new ClassExpression(innerClassNode));

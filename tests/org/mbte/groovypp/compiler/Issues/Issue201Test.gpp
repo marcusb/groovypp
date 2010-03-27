@@ -1,0 +1,17 @@
+@Typed(TypePolicy.MIXED)
+package org.mbte.groovypp.compiler.Issues
+
+class Issue201Test extends GroovyShellTestCase {
+    void testMixedModeSpecifiedOnPackageInAGPPFile() {
+        Issue201 test = new Issue201()
+        assert test.foo() == 'foo,[]'
+        assert test.foo("Roshan", 1) == 'foo,[Roshan, 1]'
+        assert test.bar == 'bar'
+    }
+}
+
+class Issue201 { 
+    def invokeMethod(String method, Object args) {method + "," + args}
+ 
+    def getProperty(String property){property} 
+}
