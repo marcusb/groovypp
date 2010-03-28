@@ -43,7 +43,12 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
 //
         if (debug != -1)
             DebugContext.outputStream.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ")");
-        compiler.execute();
+        try {
+            compiler.execute();
+        }
+        catch (Throwable t) {
+            clear ();
+        }
         if (debug != -1)
             DebugContext.outputStream.println("------------");
     }

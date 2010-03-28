@@ -37,4 +37,8 @@ public class StoredBytecodeInstruction extends BytecodeInstruction {
             }
         });
     }
+
+    void clear () {
+        operations.clear();
+    }
 }
