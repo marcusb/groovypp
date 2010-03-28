@@ -1,4 +1,4 @@
-package org.mbte.groovypp.compiler.bytecode;
+package org.mbte.groovypp.compiler.asm;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;

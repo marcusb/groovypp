@@ -2,43 +2,23 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.classgen.BytecodeInstruction;
 import org.objectweb.asm.MethodVisitor;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.mbte.groovypp.compiler.asm.*;
 
 public class StoredBytecodeInstruction extends BytecodeInstruction {
 
-    private final List operations = new ArrayList();
+    private final StoringMethodVisitor storage = new StoringMethodVisitor ();
 
     public void visit(MethodVisitor mv) {
-        for (Iterator it = operations.iterator(); it.hasNext(); ) {
-            Method m = (Method) it.next();
-            Object [] args = (Object[]) it.next();
-            try {
-                m.invoke(mv, args);
-            } catch (IllegalAccessException e) {
-            } catch (InvocationTargetException e) {
-            }
-        }
-        operations.clear();
+        for(AsmInstr op : storage.operations)
+            op.visit(mv);
+        storage.operations.clear();
     }
 
     public MethodVisitor createStorage() {
-        return (MethodVisitor) Proxy.newProxyInstance(StoredBytecodeInstruction.class.getClassLoader(), new Class[]{MethodVisitor.class}, new InvocationHandler(){
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                operations.add(method);
-                operations.add(args);
-                return null;
-            }
-        });
+        return storage;
     }
 
     void clear () {
-        operations.clear();
+        storage.operations.clear();
     }
 }

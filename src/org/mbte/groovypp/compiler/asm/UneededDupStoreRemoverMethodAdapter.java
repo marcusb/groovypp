@@ -1,8 +1,7 @@
-package org.mbte.groovypp.compiler.bytecode;
+package org.mbte.groovypp.compiler.asm;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.mbte.groovypp.compiler.CompilerStack;
 
 public class UneededDupStoreRemoverMethodAdapter extends UneededBoxingRemoverMethodAdapter {
     private int dupCode;

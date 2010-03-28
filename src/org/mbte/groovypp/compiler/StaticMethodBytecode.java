@@ -7,7 +7,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeSequence;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.control.SourceUnit;
-import org.mbte.groovypp.compiler.bytecode.UneededLoadPopRemoverMethodAdapter;
+import org.mbte.groovypp.compiler.asm.UneededLoadPopRemoverMethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;

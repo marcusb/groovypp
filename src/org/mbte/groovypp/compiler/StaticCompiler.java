@@ -761,7 +761,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         finallyPart.run();
         mv.visitJumpInsn(GOTO, synchronizedEnd);
-        ((StackAwareMethodAdapter) mv).startExceptionBlock(); // exception variable
+        mv.startExceptionBlock(); // exception variable
         mv.visitLabel(catchAll);
         finallyPart.run();
         mv.visitInsn(ATHROW);
@@ -842,7 +842,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
             final Label catchStart = new Label();
             mv.visitLabel(catchStart);
 
-            ((StackAwareMethodAdapter) mv).startExceptionBlock();
+            mv.startExceptionBlock();
 
             // create exception variable and store the exception
             compileStack.pushState();
@@ -878,7 +878,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         // start a block catching any Exception
         final Label catchAny = new Label();
         mv.visitLabel(catchAny);
-        ((StackAwareMethodAdapter) mv).startExceptionBlock();
+        mv.startExceptionBlock();
         //store exception
         mv.visitVarInsn(ASTORE, anyExceptionIndex);
         finallyStatement.visit(this);
