@@ -25,26 +25,16 @@ class BinaryTreesGroovy {
 		System.out.println("long lived tree of depth $maxDepth\t check: ${longLivedTree.itemCheck()}")
 
         long total = System.currentTimeMillis() - millis;
-		println ("[Woooo Binary Trees-Groovy Benchmark Result: " + total + "]");
+		println ("[Binary Trees-Groovy Benchmark Result: " + total + "]");
 	}
 
     private static class TreeNode
     {
-        private TreeNode left, right
-        private int item
-
-        TreeNode(int item){
-            this.item = item;
-        }
-
-        TreeNode(TreeNode left, TreeNode right, int item){
-            this.left = left;
-            this.right = right;
-            this.item = item;
-        }
+        TreeNode left, right
+        int item
 
         private static TreeNode bottomUpTree(int item, int depth){
-            depth ? [bottomUpTree(2*item-1, depth-1), bottomUpTree(2*item, depth-1), item] : [item]
+            depth ? [left:bottomUpTree(2*item-1, depth-1), right:bottomUpTree(2*item, depth-1), item:item] : [item:item]
         }
 
         private int itemCheck(){
