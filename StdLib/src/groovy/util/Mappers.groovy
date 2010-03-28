@@ -97,7 +97,6 @@ public class Mappers extends DefaultGroovyMethodsSupport {
    * @return @link{java.util.Map} associating keys to lists of elements in the original collection,
    * matching that key.
    */
-  @Typed(debug = true)
   static <T, K> Map<K, List<T>> groupBy(Collection<T> self, Function1<T, K> op) {
     def answer = (Map<K, List<T>>) [:]
     for (T element: self) {
@@ -119,7 +118,6 @@ public class Mappers extends DefaultGroovyMethodsSupport {
      * @return @link{java.util.Map} associating keys to lists of elements in the original collection,
      * matching that key.
      */
-    @Typed
     static <T, K> Map<K, List<T>> groupBy(Iterator<T> self, Function1<T, K> op) {
       def answer = (Map<K, List<T>>) [:]
       for (element in self) {
