@@ -4,9 +4,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.mbte.groovypp.compiler.CompilerTransformer;
@@ -35,10 +33,36 @@ public class ResolvedArrayLikeBytecodeExpr extends ResolvedLeftExpr {
         getterExpr.visit(mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, final CompilerTransformer compiler) {
         if (!checkSetter(parent, compiler)) return null;
 
-        return ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, right), compiler);
+        if (setter.getReturnType().equals(ClassHelper.VOID_TYPE)) {
+            final ClassNode type = setter.getParameters()[1].getType();
+            Expression cast = new CastExpression(type, right);
+            cast.setSourcePosition(right);
+            final BytecodeExpr finalCast = (BytecodeExpr) compiler.transform(cast);
+
+            final int [] v = new int [1];
+            BytecodeExpr value = new BytecodeExpr(right, type) {
+                protected void compile(MethodVisitor mv) {
+                    finalCast.visit(mv);
+                    dup(type, mv);
+                    v [0] = compiler.compileStack.defineTemporaryVariable("$result", finalCast.getType(), true);
+                }
+            };
+
+            final ResolvedMethodBytecodeExpr call = ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, value), compiler);
+            return new BytecodeExpr(parent, type) {
+                protected void compile(MethodVisitor mv) {
+                    call.visit(mv);
+                    load(type, v[0], mv);
+                    compiler.compileStack.removeVar(v[0]);
+                }
+            };
+        }
+        else {
+            return ResolvedMethodBytecodeExpr.create(parent, setter, array, new ArgumentListExpression(index, right), compiler);
+        }
     }
 
     private boolean checkSetter(ASTNode exp, CompilerTransformer compiler) {
