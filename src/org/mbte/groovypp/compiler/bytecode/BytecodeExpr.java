@@ -861,8 +861,8 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             castString(expr, type, mv);
         } else if (expr.equals(TypeUtil.Number_TYPE)) {
             castNumber(expr, type, mv);
-        } else if (expr.implementsInterface(TypeUtil.COLLECTION_TYPE)) {
-            castCollection(expr, type, mv);
+        } else if (expr.implementsInterface(TypeUtil.COLLECTION_TYPE) && type.isArray()) {
+            castArrayToCollection(expr, type, mv);
         } else {
             if (TypeUtil.isNumericalType(type) && !type.equals(TypeUtil.Number_TYPE)) {
             	if(TypeUtil.isBigDecimal(type) || TypeUtil.isBigInteger(type)) {
@@ -951,7 +951,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         }
     }
 
-    private static void castCollection(ClassNode expr, ClassNode type, MethodVisitor mv) {
+    private static void castArrayToCollection(ClassNode expr, ClassNode type, MethodVisitor mv) {
         if (type.isArray()) {
             if (!ClassHelper.isPrimitiveType(type.getComponentType())) {
                 mv.visitInsn(DUP);
