@@ -48,6 +48,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
         }
         catch (Throwable t) {
             clear ();
+            throw new RuntimeException(t);
         }
         if (debug != -1)
             DebugContext.outputStream.println("------------");
