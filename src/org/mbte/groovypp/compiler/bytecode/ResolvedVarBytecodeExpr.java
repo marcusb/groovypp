@@ -30,17 +30,17 @@ public class ResolvedVarBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
-        final ClassNode vtype;
         if (ve.isDynamicTyped()) {
             right = compiler.transformSynthetic(right);
-            
-            vtype = right.getType();
-            if (!compiler.getLocalVarInferenceTypes().add(ve, vtype)) {
-                compiler.addError("IIlegal inference inside the loop. Consider making the variable's type explicit.", ve);
-            }
         } else {
-            vtype = ve.getType();
-            right = compiler.cast(right, vtype);
+            if (!TypeUtil.isDirectlyAssignableFrom(ve.getType(), right.getType())) {
+                right = compiler.cast(right, ve.getType());
+            }
+        }
+
+        final ClassNode vtype = right.getType();
+        if (!compiler.getLocalVarInferenceTypes().add(ve, vtype)) {
+            compiler.addError("IIlegal inference inside the loop. Consider making the variable's type explicit.", ve);
         }
 
         final BytecodeExpr finalRight = right;

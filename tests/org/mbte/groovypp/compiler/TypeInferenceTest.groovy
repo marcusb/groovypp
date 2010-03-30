@@ -105,7 +105,7 @@ new A().m ()
     def res = shell.evaluate("""
 @Typed
 def m () {
-   Collection x = [1, 2, 3]
+   Collection<Object> x = [1, 2, 3]
    x.leftShift(4)
    x = x + 5
 

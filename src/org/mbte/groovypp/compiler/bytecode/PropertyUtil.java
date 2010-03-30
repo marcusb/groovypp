@@ -206,6 +206,7 @@ public class PropertyUtil {
     }
 
     public static ClassNode getPropertyType(Object prop) {
+        if (prop == GET_MAP) return ClassHelper.OBJECT_TYPE;
         if (prop instanceof FieldNode) return ((FieldNode) prop).getType();
         if(prop instanceof PropertyNode) return ((PropertyNode) prop).getType();
         return ((MethodNode) prop).getReturnType();

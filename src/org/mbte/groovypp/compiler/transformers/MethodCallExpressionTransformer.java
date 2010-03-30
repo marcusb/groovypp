@@ -219,8 +219,6 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 if (foundMethod == null) {
                     // Try some property with 'call' method.
                     Object prop = resolveCallableProperty(compiler, methodName, type, false);
-                    if (prop == PropertyUtil.GET_MAP)
-                        prop = null;
                     if (prop != null) {
                         final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                         if (callMethod != null) {
