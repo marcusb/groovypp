@@ -348,7 +348,7 @@
 
             <zipfileset dir="install" prefix=""/>
             <zipfileset file="${jar.name}" prefix="lib"/>
-			<zipfileset file="${embeddable.jar.name}" prefix="lib"/>
+			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
             <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlib.tests}" prefix="booster/tests"/>
             <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
