@@ -37,7 +37,7 @@
 	<property name="cobertura.report.dir" location="${output.dir}/cobertura"/>
 
 	<property name="jar.name" location="${output.dir}/${app.name}.jar"/>
-	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all.jar"/>
+	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all-${version}.jar"/>
 	<property name="target.jvm" value="5" />
 
 	<path id="libs">
