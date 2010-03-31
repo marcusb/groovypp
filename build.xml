@@ -184,7 +184,7 @@
         </groovyc >
     </target>
 
-    <target name="compile.examples"  depends="compile.stdlib">
+    <target name="compile.examples"  depends="compile.tests.stdlib">
         <groovyc classpathref="compile.examples.classpath" srcdir="${examples.src}" fork="yes" destdir="${examples.prod.output}"
         	verbose="true" includeantruntime="no">
             <javac sourcepath="${examples.src}"/>

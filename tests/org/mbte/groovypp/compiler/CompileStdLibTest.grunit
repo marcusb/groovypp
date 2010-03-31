@@ -1,0 +1,25 @@
+@Typed package org.mbte.groovypp.compiler
+
+import org.codehaus.groovy.tools.FileSystemCompiler
+import org.codehaus.groovy.control.CompilerConfiguration
+import groovy.util.test.GroovyFileSystemCompilerTestCase
+
+extendsTest GroovyFileSystemCompilerTestCase
+
+testCompilerNotNull { assertNotNull compiler }
+
+def finder = new FileNameFinder()
+def srcDir = "./StdLib/src/"
+
+testSrcExists {
+    assertTrue new File(srcDir).exists()
+}
+
+checkNamesNonEmpty {
+    def names = finder.getFileNames(srcDir, "**/*.groovy")
+    names.addAll(finder.getFileNames(srcDir, "**/*.java"))
+
+    assertFalse names.empty
+}
+
+compiler.compile (names as String[])

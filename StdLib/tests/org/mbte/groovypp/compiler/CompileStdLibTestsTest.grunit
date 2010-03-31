@@ -1,0 +1,22 @@
+package org.mbte.groovypp.compiler
+
+import org.codehaus.groovy.tools.FileSystemCompiler
+import org.codehaus.groovy.control.CompilerConfiguration
+
+extendsTest GroovyShellTestCase
+
+testTestsExists {
+    assertTrue new File("./StdLibTest/tests/").exists()
+}
+
+testInstance {
+    assertEquals "groovy.util.GroovyShellTestCase", this.class.superclass.name
+}
+
+def finder = new FileNameFinder ()
+
+String [] names = finder.getFileNames("./StdLibTest/tests/", "**/*.groovy")
+//names.each {
+//    println it
+//}
+new FileSystemCompiler (new CompilerConfiguration()).compile (names)
