@@ -19,6 +19,7 @@ abstract class Iterations {
      * @param op the function that computes aggregate given the current element and its own result computed so far.
      * @return computed aggregated value.
      */
+    @GrUnit({ assertEquals (8, [1,2,3].iterator().foldLeft(2){ sum, value -> sum + value }) })
     static <T, R> R foldLeft(Iterator<T> self, R init, Function2<T, R, R> op) {
         self.hasNext() ? foldLeft(self, op.call(self.next(), init), op) : init
     }
@@ -30,10 +31,12 @@ abstract class Iterations {
      * @param op the function that computes aggregate given the current element and its own result computed so far.
      * @return computed aggregated value.
      */
+    @GrUnit({ assertEquals (8, [1,2,3].foldLeft(2){ sum, value -> sum + value }) })
     static <T, R> R foldLeft(Iterable<T> self, R init, Function2<T, R, R> op) {
         foldLeft(self.iterator(), init, op)
     }
 
+    @GrUnit({ assertEquals (8, ([1,2,3] as Integer[]).iterator().foldLeft(2){ sum, value -> sum + value }) })
     static <T, R> R foldLeft(T[] self, R init, Function2<T, R, R> op) {
         foldLeft(self.asList(), init, op)
     }

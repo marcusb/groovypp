@@ -169,6 +169,11 @@
         	includeantruntime="no" fork="yes">
             <javac sourcepath="${stdlib.src}"/>
         </groovyc >
+        <move todir="${stdlib.test.output}">
+            <fileset dir="${stdlib.prod.output}">
+              <include name="**/*$GrUnitTest*.class"/>
+            </fileset>        
+        </move>
     </target>
 
     <target name="compile.tests.stdlib"  depends="compile.stdlib">

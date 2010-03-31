@@ -22,79 +22,113 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
     static final ClassNode GROOVY_TEST_CASE = make(GroovyTestCase)
 
     void visit(ASTNode[] nodes, SourceUnit source) {
-        if (!source.name.endsWith(".grunit"))
-            return
-
-        ExpressionTransformer transformer = { exp -> exp.transformExpression(this) }
-        
         ModuleNode module = nodes[0]
-        def classes = module.classes
-        if (classes) {
-            if (!classes[0].script) {
-                source.addError(new SyntaxException("Can't find body of .grunit script", null, -1, -1))
-                return
+        if (source.name.endsWith(".grunit")) {
+            def classes = module.classes
+            if (classes) {
+                if (!classes[0].script) {
+                    source.addError(new SyntaxException("Can't find body of .grunit script", null, -1, -1))
+                    return
+                }
+
+                def classNode = classes[0]
+
+                cleanScriptMethods(classNode)
+                processGrunitScript(source, classNode, module.statementBlock, true, "test\$main")
+            }
+        }
+        else {
+            List<InnerClassNode> toAdd = []
+            for (c in module.classes) {
+                if (!(c instanceof InnerClassNode))
+                    processClass(c, source, toAdd)
             }
 
-            def classNode = classes[0]
-            cleanScriptMethods (classNode)
+            for(c in toAdd)
+                module.addClass(c)
+        }
+    }
 
-            def accumulated = new BlockStatement()
+    void processGrunitScript(SourceUnit source, ClassNode classNode, Statement code, boolean classLevel, String defMethodName) {
+        ExpressionTransformer transformer = {exp -> exp.transformExpression(this) }
 
-            for(Iterator<Statement> it = module.statementBlock.statements.iterator(); it.hasNext(); ) {
-                def statement = it.next()
-                if (statement instanceof ExpressionStatement) {
-                    def expr = ((ExpressionStatement)statement).expression
-                    if (expr instanceof DeclarationExpression) {
-                        DeclarationExpression decl = expr
-                        VariableExpression ve = decl.leftExpression
-                        if (hasFieldAnnotation(ve)) {
-                            classNode.addField(ve.name, Opcodes.ACC_PRIVATE, ve.type, ConstantExpression.NULL)
-                            it.remove()
-                            continue
-                        }
-                    } else
+        BlockStatement bsCode
+        if(!(code instanceof BlockStatement)) {
+            bsCode = new BlockStatement()
+            bsCode.statements.add(code)
+        }
+        else {
+            bsCode = code
+        }
+
+        def accumulated = new BlockStatement()
+
+        for (Iterator<Statement> it = bsCode.statements.iterator(); it.hasNext();) {
+            def statement = it.next()
+            if (statement instanceof ExpressionStatement) {
+                def expr = ((ExpressionStatement) statement).expression
+                if (expr instanceof DeclarationExpression) {
+                    DeclarationExpression decl = expr
+                    VariableExpression ve = decl.leftExpression
+                    if (hasFieldAnnotation(ve)) {
+                        classNode.addField(ve.name, Opcodes.ACC_PRIVATE, ve.type, ConstantExpression.NULL)
+                        it.remove()
+                        continue
+                    }
+                } else
                     if (expr instanceof MethodCallExpression) {
                         MethodCallExpression methodCall = expr
                         if (methodCall.objectExpression == VariableExpression.THIS_EXPRESSION) {
                             def method = methodCall.method
                             if (method instanceof ConstantExpression) {
-                                def methodName = ((ConstantExpression)method).text
-                                switch(methodName) {
+                                def methodName = ((ConstantExpression) method).text
+                                switch (methodName) {
                                     case "extendsTest":
-                                        extendsTest (statement, methodCall, classes[0], source)
+                                        if (!classLevel) {
+                                            source.addError(new SyntaxException("extendsTest is allowed only on class level annotation", null, -1, -1))
+                                            return
+                                        }
+                                        extendsTest(statement, methodCall, classNode, source)
                                         it.remove()
                                         continue
-                                    break
+                                        break
 
                                     case "setUp":
-                                        setUp (statement, methodCall, classes[0], source)
+                                        if (!classLevel) {
+                                            source.addError(new SyntaxException("setUp is allowed only on class level annotation", null, -1, -1))
+                                            return
+                                        }
+                                        setUp(statement, methodCall, classNode, source)
                                         it.remove()
                                         continue
-                                    break
+                                        break
 
                                     case "tearDown":
-                                        tearDown (statement, methodCall, classes[0], source)
+                                        if (!classLevel) {
+                                            source.addError(new SyntaxException("tearDown is allowed only on class level annotation", null, -1, -1))
+                                            return
+                                        }
+                                        tearDown(statement, methodCall, classNode, source)
                                         it.remove()
                                         continue
-                                    break
+                                        break
 
                                     default:
-                                      if(defaultMethod(statement, methodCall, classes[0], source, accumulated, transformer)) {
-                                        it.remove ()
-                                        continue
-                                      }
+                                        if (defaultMethod(statement, methodCall, classNode, source, accumulated, transformer)) {
+                                            it.remove()
+                                            continue
+                                        }
                                 }
                             }
                         }
                     }
-                }
-
-                accumulate( accumulated, statement, transformer)
             }
 
-            if (!module.statementBlock.empty) {
-                classes[0].addMethod("test\$main", Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, accumulated)
-            }
+            accumulate(accumulated, statement, transformer)
+        }
+
+        if (!accumulated.empty) {
+            classNode.addMethod(findName(defMethodName, classNode), Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, accumulated)
         }
     }
 
@@ -166,7 +200,7 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
                 if (args && (args[0] instanceof ClosureExpression) && ((ClosureExpression)args[0]).parameters?.length <= 1) {
                     BlockStatement soFar = cloneStatement(accumulated, transformer)
                     accumulate(soFar, ((ClosureExpression)args[0]).code, transformer)
-                    classNode.addMethod(methodCall.methodAsString, Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, soFar)
+                    classNode.addMethod(findName(methodCall.methodAsString, classNode), Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, soFar)
                     return true
                 }
             }
@@ -177,7 +211,7 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
                 def args = ((ArgumentListExpression)methodCall.arguments).expressions
                 if (args && (args[0] instanceof ClosureExpression) && ((ClosureExpression)args[0]).parameters?.length <= 1) {
                     accumulate( accumulated, ((ClosureExpression)args[0]).code, transformer)
-                    classNode.addMethod("test" + methodCall.methodAsString.substring(5), Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, cloneStatement(accumulated, transformer))
+                    classNode.addMethod(findName("test" + methodCall.methodAsString.substring(5), classNode), Opcodes.ACC_PUBLIC, ClassHelper.VOID_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, cloneStatement(accumulated, transformer))
                     return true
                 }
             }
@@ -218,13 +252,34 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
     private boolean hasFieldAnnotation(VariableExpression ve) {
         for (AnnotationNode node : ve.getAnnotations()) {
             if ("Field".equals(node.getClassNode().getName()))
-                return true;
+                return true
             if ("groovy.lang.Field".equals(node.getClassNode().getName()))
-                return true;
+                return true
         }
         return false;
     }
     
+    private Statement hasGrunitAnnotation(AnnotatedNode ve, SourceUnit source) {
+        for (def it = ve.annotations.iterator(); it.hasNext(); ) {
+            def node = it.next()
+            if ("GrUnit" == node.classNode.name || "groovy.lang.GrUnit" == node.classNode.name) {
+                Expression value = node.getMember("value")
+                if (!(value instanceof ClosureExpression)) {
+                    source.addError(new SyntaxException("Closure expression expected", null, ve.lineNumber, ve.columnNumber))
+                    return null
+                }
+                ClosureExpression closure = value
+                if (closure.parameters.length > 1) {
+                    source.addError(new SyntaxException("GrUnit closure should have no parameters", null, ve.lineNumber, ve.columnNumber))
+                    return null
+                }
+                it.remove()
+                return closure.code
+            }
+        }
+        null
+    }
+
     private Statement cloneStatement(Statement statement, ExpressionTransformer transformer) {
         switch(statement) {
             case AssertStatement:
@@ -347,6 +402,56 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
         }
         else {
             accumulator.statements.add(cloneStatement(statement, transformer))
+        }
+    }
+
+    void processClass(ClassNode classNode, SourceUnit source, List<InnerClassNode> toAdd) {
+        ClassNode inner = null
+        Statement code = hasGrunitAnnotation(classNode, source)
+        if(code) {
+            inner = new InnerClassNode(classNode, classNode.name + "\$GrUnitTest", Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, GROOVY_TEST_CASE)
+            toAdd << inner
+            processGrunitScript(source, inner, code, true, "test\$main")
+        }
+
+        for (methodNode in classNode.methods) {
+            code = hasGrunitAnnotation(methodNode, source)
+            if(code) {
+                if (!inner) {
+                    inner = new InnerClassNode(classNode, classNode.name + "\$GrUnitTest", Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, GROOVY_TEST_CASE)
+                    toAdd << inner
+                }
+                processGrunitScript(source, inner, code, true, "test\$" + methodNode.name)
+            }
+        }
+
+        for (constructorNode in classNode.declaredConstructors) {
+            code = hasGrunitAnnotation(constructorNode, source)
+            if(code) {
+                if (!inner) {
+                    inner = new InnerClassNode(classNode, classNode.name + "\$GrUnitTest", Opcodes.ACC_PUBLIC|Opcodes.ACC_STATIC, GROOVY_TEST_CASE)
+                    toAdd << inner
+                }
+                processGrunitScript(source, inner, code, false, "test\$constructor")
+            }
+        }
+
+        for (c in classNode.innerClasses)
+            processClass(c, source, toAdd)
+    }
+
+    String findName(String name, ClassNode classNode) {
+        if(!classNode.getMethods(name)) {
+            return name
+        }
+        else {
+            def c = 0
+            while(true) {
+                c++
+                def nm = name + "\$" + c
+                if(!classNode.getMethods(nm))
+                    return nm
+            }
         }
     }
 }
