@@ -124,19 +124,11 @@
 
 	<target name="clean">
 		<delete dir="${output.dir}"/>
-
-        <mkdir dir="${compiler.prod.output}"/>
-        <mkdir dir="${compiler.test.output}"/>
-        <mkdir dir="${stdlib.prod.output}"/>
-        <mkdir dir="${stdlib.test.output}"/>
-        <mkdir dir="${stdlibtest.prod.output}"/>
-        <mkdir dir="${stdlibtest.test.output}"/>
-        <mkdir dir="${examples.prod.output}"/>
-		<mkdir dir="${test.reports}"/>
-	</target>
+    </target>
 
 	<target name="compile.compiler" depends="releaseinfo" description="compiles compiler source files">
-		<javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
+		<mkdir dir="${compiler.prod.output}"/>
+        <javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
 			destdir="${compiler.prod.output}" target="${target.jvm}"
 			debug="yes" debuglevel="lines,vars,source" includeantruntime="no" fork="true"/>
 		<copy todir="${compiler.prod.output}">
@@ -157,6 +149,7 @@
 	</target>
 
 	<target name="compile.tests.compiler" depends="compile.compiler" >
+        <mkdir dir="${compiler.test.output}"/>
 		<groovyc classpathref="compile.compiler.tests.classpath" srcdir="${compiler.tests}" destdir="${compiler.test.output}"
 			includeantruntime="no" fork="yes">
             <javac />
@@ -165,6 +158,7 @@
 
     <!-- STDLIB -->
     <target name="compile.stdlib" depends="compile.tests.compiler" description="compiles stdlib">
+        <mkdir dir="${stdlib.prod.output}"/>
         <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}" destdir="${stdlib.prod.output}"
         	includeantruntime="no" fork="yes">
             <javac sourcepath="${stdlib.src}"/>
@@ -183,6 +177,7 @@
     </target>
 
     <target name="compile.tests.stdlibtest"  depends="compile.stdlib,compile.tests.stdlib,compile.tests.compiler">
+        <mkdir dir="${stdlibtest.test.output}"/>
         <groovyc classpathref="compile.stdlibtest.tests.classpath" srcdir="${stdlibtest.tests}" fork="yes" includeantruntime="no"
             destdir="${stdlibtest.test.output}" verbose="true">
             <javac sourcepath="${stdlibtest.tests}"/>
@@ -190,6 +185,7 @@
     </target>
 
     <target name="compile.examples"  depends="compile.tests.stdlib">
+        <mkdir dir="${examples.prod.output}"/>
         <groovyc classpathref="compile.examples.classpath" srcdir="${examples.src}" fork="yes" destdir="${examples.prod.output}"
         	verbose="true" includeantruntime="no">
             <javac sourcepath="${examples.src}"/>
@@ -199,6 +195,7 @@
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
     <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib" description="run unit tests">
+        <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-ea"/>
