@@ -127,7 +127,6 @@
     </target>
 
 	<target name="compile.compiler" depends="releaseinfo" description="compiles compiler source files">
-		<mkdir dir="${compiler.prod.output}"/>
         <javac classpathref="compile.compiler.classpath" srcdir="${compiler.src}"
 			destdir="${compiler.prod.output}" target="${target.jvm}"
 			debug="yes" debuglevel="lines,vars,source" includeantruntime="no" fork="true"/>
@@ -255,10 +254,6 @@
     <target name="make.embeddable.jar" depends="make.jar"
         description="Build embeddable application jar file">
         <delete dir="${stagingDirectory}" quiet="true"/>
-        <mkdir dir="${stagingDirectory}"/>
-        <mkdir dir="${stagingDirectory}/groovy"/>
-        <mkdir dir="${stagingDirectory}/cli"/>
-        <mkdir dir="${stagingDirectory}/netty"/>
 
         <copy toDir="${stagingDirectory}">
             <fileset dir="${deploy.lib.dir}">
