@@ -15,8 +15,8 @@ import org.mbte.groovypp.remote.netty.NettyClientConnector
         for(i in 0..<n) {
             ClusterNode cluster = [
                 doStartup: {
-                    startupChild(new NettyServer(connectionPort: 8000 + 2*i))
-                    startupChild(new NettyServer(connectionPort: 8000 + 2*i+1))
+                    startupChild(new NettyServer(connectionPort: 16000 + 2*i))
+                    startupChild(new NettyServer(connectionPort: 16000 + 2*i+1))
 
                     startupChild(new NettyClientConnector())
                 }
