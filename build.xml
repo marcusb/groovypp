@@ -343,7 +343,7 @@
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
-            <zipfileset dir="install" prefix=""/>
+            <zipfileset dir="install" prefix="" excludes="embeddable/**"/>
             <zipfileset file="${jar.name}" prefix="lib"/>
 			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
             <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
