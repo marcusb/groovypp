@@ -1,8 +1,8 @@
 package groovy.remote
 
 @Typed abstract class RemoteConnection {
-    ClusterNode       clusterNode
-    RemoteClusterNode remoteNode
+    volatile ClusterNode       clusterNode
+    volatile RemoteClusterNode remoteNode
 
     void onConnect () {
         send(new RemoteMessage.Identity())
@@ -30,9 +30,8 @@ package groovy.remote
     }
 
     void onException (Throwable cause) {
-        onDisconnect()
-        if (!(cause instanceof IOException))
-            clusterNode.onException(this, cause)
+      clusterNode.onException(this, cause)
+      onDisconnect()
     }
 
     final void send(RemoteMessage msg) {
