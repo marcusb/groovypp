@@ -715,7 +715,8 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         mv.visitLabel(defaultLabel);
         statement.getDefaultStatement().visit(this);
 
-        mv.visitLineNumber(statement.getLastLineNumber(), breakLabel);
+        mv.visitLineNumber(statement.getLastLineNumber(), new Label());
+        mv.visitLabel(breakLabel);
 
         compileStack.pop();
     }
