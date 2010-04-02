@@ -1,6 +1,9 @@
 package groovy.util.concurrent
 
+import groovy.util.concurrent.NonfairExecutingChannel
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
+import groovy.util.concurrent.FList
 
 @Typed abstract class SupervisedChannel extends NonfairExecutingChannel {
 
@@ -12,7 +15,7 @@ import java.util.concurrent.Executor
         static Startup instance = []
     }
     private static final class Shutdown {
-        static Shutdown instance = []
+        Function0 afterShutdown
     }
     private static final class ChildCrashed {
         SupervisedChannel who
@@ -29,11 +32,11 @@ import java.util.concurrent.Executor
         }
     }
 
-    final void shutdown () {
+    final void shutdown (Function0 afterShutdown = null) {
         if (owner)
-            owner.shutdownChild(this)
+            owner.shutdownChild(this, afterShutdown)
         else
-            post(Shutdown.instance)
+            post(new Shutdown(afterShutdown:afterShutdown))
     }
 
     final void startupChild(SupervisedChannel child, Executor executor = null) {
@@ -43,9 +46,9 @@ import java.util.concurrent.Executor
         child.post(Startup.instance)
     }
 
-    final void shutdownChild(SupervisedChannel child) {
+    final void shutdownChild(SupervisedChannel child, Function0 afterShutdown = null) {
         children.apply{ it - child }
-        child.post(Shutdown.instance)
+        child.post(new Shutdown(afterShutdown:afterShutdown))
     }
 
     protected final void onMessage(Object message) {
@@ -64,9 +67,21 @@ import java.util.concurrent.Executor
                 break
 
             case Shutdown:
-                for(c in children)
-                    c.shutdown ()
-                doShutdown ()
+                int childsCount = children.size()
+                if (childsCount) {
+                    AtomicInteger cnt = [childsCount]
+                    for(c in children)
+                        c.shutdown {
+                            if(!cnt.decrementAndGet()) {
+                                doShutdown ()
+                                message.afterShutdown?.call()
+                            }
+                        }
+                }
+                else {
+                    doShutdown ()
+                    message.afterShutdown?.call()
+                }
                 break
 
             case ChildCrashed:
@@ -101,8 +116,8 @@ import java.util.concurrent.Executor
             c.post(message)
     }
 
-    final getRootSupervisor () {
-        owner ? owner.getRootSupervisor() : this
+    final SupervisedChannel getRootSupervisor () {
+        owner ? owner.rootSupervisor : this
     }
 
     protected boolean interested(Object message) {

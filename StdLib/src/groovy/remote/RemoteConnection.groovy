@@ -30,7 +30,7 @@ package groovy.remote
     }
 
     void onException (Throwable cause) {
-      clusterNode.onException(this, cause)
+      clusterNode?.onException(this, cause)
       onDisconnect()
     }
 
