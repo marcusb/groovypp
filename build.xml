@@ -50,7 +50,8 @@
 
     <path id="compile.compiler.tests.classpath">
 		<path refid="libs"/>
-		<pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
 	</path>
 
     <path id="compile.stdlib.classpath">
@@ -147,7 +148,7 @@
         </copy>
 	</target>
 
-	<target name="compile.tests.compiler" depends="compile.compiler" >
+	<target name="compile.tests.compiler" depends="compile.compiler,compile.stdlib" >
         <mkdir dir="${compiler.test.output}"/>
 		<groovyc classpathref="compile.compiler.tests.classpath" srcdir="${compiler.tests}" destdir="${compiler.test.output}"
 			includeantruntime="no" fork="yes">
