@@ -1,14 +1,12 @@
 package groovy.util.concurrent
 
-import groovy.util.concurrent.NonfairExecutingChannel
 import java.util.concurrent.Executor
-import groovy.util.concurrent.FList
 
 @Typed abstract class SupervisedChannel extends NonfairExecutingChannel {
 
     SupervisedChannel owner
 
-    private volatile FList<SupervisedChannel> childs = FList.emptyList
+    private volatile FList<SupervisedChannel> children = FList.emptyList
 
     private static final class Startup  {
         static Startup instance = []
@@ -40,13 +38,13 @@ import groovy.util.concurrent.FList
 
     final void startupChild(SupervisedChannel child, Executor executor = null) {
         child.owner = this
-        childs.apply{ it + child }
+        children.apply{ it + child }
         child.executor = executor ? executor : (child.executor ? child.executor : this.executor)
         child.post(Startup.instance)
     }
 
     final void shutdownChild(SupervisedChannel child) {
-        childs.apply{ it - child }
+        children.apply{ it - child }
         child.post(Shutdown.instance)
     }
 
@@ -66,7 +64,7 @@ import groovy.util.concurrent.FList
                 break
 
             case Shutdown:
-                for(c in childs)
+                for(c in children)
                     c.shutdown ()
                 doShutdown ()
                 break
@@ -87,7 +85,7 @@ import groovy.util.concurrent.FList
     }
 
     final void crash(Throwable cause) {
-        for(c in childs)
+        for(c in children)
             c.shutdown ()
         if(owner)
             owner.post(new ChildCrashed(who:this, cause:cause))
@@ -99,7 +97,7 @@ import groovy.util.concurrent.FList
         if (including)
             post(message)
 
-        for(c in childs)
+        for(c in children)
             c.post(message)
     }
 
