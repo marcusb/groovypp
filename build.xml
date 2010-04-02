@@ -156,7 +156,7 @@
 	</target>
 
     <!-- STDLIB -->
-    <target name="compile.stdlib" depends="compile.tests.compiler" description="compiles stdlib">
+    <target name="compile.stdlib" depends="compile.compiler" description="compiles stdlib">
         <mkdir dir="${stdlib.prod.output}"/>
         <groovyc classpathref="compile.stdlib.classpath" srcdir="${stdlib.src}" destdir="${stdlib.prod.output}"
         	includeantruntime="no" fork="yes">
