@@ -13,7 +13,7 @@ import java.util.concurrent.Executor
                 if (queue.compareAndSet(q, busyEmptyQueue)) {
                     onMessage removed.first
                     if (!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
-                        executor.execute this
+                        schedule ()
                     }
                     return
                 }
@@ -21,7 +21,7 @@ import java.util.concurrent.Executor
             else {
                 if (queue.compareAndSet(q, removed.second)) {
                     onMessage removed.first
-                    executor.execute this
+                    schedule ()
                     return
                 }
             }
@@ -30,6 +30,10 @@ import java.util.concurrent.Executor
 
     protected void signalPost(FQueue<M> oldQueue, FQueue<M> newQueue) {
         if (oldQueue !== busyEmptyQueue && newQueue.size() == 1)
-            executor.execute this
+            schedule ()
+    }
+
+    protected schedule() {
+        executor.execute this
     }
 }

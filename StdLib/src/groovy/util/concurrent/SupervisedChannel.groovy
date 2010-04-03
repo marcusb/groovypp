@@ -7,12 +7,22 @@ import groovy.util.concurrent.FList
 
 @Typed abstract class SupervisedChannel extends NonfairExecutingChannel {
 
+    private static int NOT_STARTED    = 0
+    private static int STARTING       = 1
+    private static int STARTED        = 2
+    private static int STOP_MASK      = 8
+    private static int STOPPING       = STOP_MASK
+    private static int STOPPED        = STOP_MASK|1
+    private static int CRASHED        = STOP_MASK|2
+
     SupervisedChannel owner
 
     private volatile FList<SupervisedChannel> children = FList.emptyList
 
+    private volatile int state
+
     private static final class Startup  {
-        static Startup instance = []
+        Function0 afterStartup
     }
     private static final class Shutdown {
         Function0 afterShutdown
@@ -22,31 +32,63 @@ import groovy.util.concurrent.FList
         Throwable cause
     }
 
-    final void startup () {
-        if (owner)
-            owner.startupChild(this)
+    final void startup (Function0 afterStartup = null) {
+        if (owner) {
+            owner.startupChild(this, afterStartup)
+        }
         else {
+            beginStartup ()
             if (!executor)
                 executor = CallLaterExecutors.currentExecutor
-            post(Startup.instance)
+            post(new Startup(afterStartup:afterStartup))
+        }
+    }
+
+    final void startupChild(SupervisedChannel child, Function0 afterStartup = null) {
+        child.beginStartup ()
+        child.owner = this
+        children.apply{ it + child }
+        child.executor = child.executor ? child.executor : this.executor
+        child.post(new Startup(afterStartup:afterStartup))
+    }
+
+    private void beginStartup () {
+        if (!state.compareAndSet(0, STARTING)) {
+            throw new IllegalStateException("${this} was started already")
         }
     }
 
     final void shutdown (Function0 afterShutdown = null) {
         if (owner)
             owner.shutdownChild(this, afterShutdown)
-        else
+        else {
+            beginShutdown ()
             post(new Shutdown(afterShutdown:afterShutdown))
+        }
     }
 
-    final void startupChild(SupervisedChannel child, Executor executor = null) {
-        child.owner = this
-        children.apply{ it + child }
-        child.executor = executor ? executor : (child.executor ? child.executor : this.executor)
-        child.post(Startup.instance)
+    private void beginShutdown () {
+        for (;;) {
+            def s = state
+            switch(s) {
+                case NOT_STARTED:
+                    throw new IllegalStateException("${this} was not started yet")
+
+                case STOPPING:
+                case  STOPPED:
+                    throw new IllegalStateException("${this} was stopped already")
+
+                case STARTING:
+                case STARTED:
+                    if(state.compareAndSet(s, STOPPING)) {
+                        return
+                    }
+            }
+        }
     }
 
     final void shutdownChild(SupervisedChannel child, Function0 afterShutdown = null) {
+        child.beginShutdown ()
         children.apply{ it - child }
         child.post(new Shutdown(afterShutdown:afterShutdown))
     }
@@ -64,6 +106,7 @@ import groovy.util.concurrent.FList
         switch(message) {
             case Startup:
                 doStartup()
+                message.afterStartup?.call ()
                 break
 
             case Shutdown:
@@ -75,19 +118,20 @@ import groovy.util.concurrent.FList
                             if(!cnt.decrementAndGet()) {
                                 doShutdown ()
                                 message.afterShutdown?.call()
+                                state = STOPPED
                             }
                         }
                 }
                 else {
                     doShutdown ()
                     message.afterShutdown?.call()
+                    state = STOPPED
                 }
                 break
 
             case ChildCrashed:
-                def crash = (ChildCrashed) message
-                shutdownChild(crash.who)
-                onChildCrashed(crash)
+                shutdownChild(message.who)
+                onChildCrashed(message)
                 break
         }
     }
@@ -102,29 +146,29 @@ import groovy.util.concurrent.FList
     final void crash(Throwable cause) {
         for(c in children)
             c.shutdown ()
+        
         if(owner)
             owner.post(new ChildCrashed(who:this, cause:cause))
         else
             throw cause
     }
 
-    final void post (Object message, boolean recursive, boolean including) {
+    final void broadcast (Object message, boolean recursive, boolean including) {
         if (including)
             post(message)
 
-        for(c in children)
-            c.post(message)
+        if (recursive)
+            for(c in children)
+                c.broadcast(message, recursive, true)
     }
 
     final SupervisedChannel getRootSupervisor () {
         owner ? owner.rootSupervisor : this
     }
 
-    protected boolean interested(Object message) {
-        message && (
-            message instanceof Startup  ||
-            message instanceof Shutdown ||
-            message instanceof ChildCrashed
-        )
+    protected final boolean interested(Object message) {
+        message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || !(state & STOP_MASK) && checkInterest(message)
     }
+
+    protected boolean checkInterest (Object message) { true }
 }

@@ -41,15 +41,16 @@ import org.mbte.groovypp.remote.netty.NettyClientConnector
                 counter++
                 if (counter == n) {
                     println "${cluster.id} stopping"
-                    cluster.shutdown ()
-                    stopCdl.countDown()
-                    println "${cluster.id} stopped"
+                    cluster.shutdown {
+                        stopCdl.countDown()
+                        println "${cluster.id} stopped"
+                    }
                 }
             }
             cluster.startup()
         }
-        assertTrue(stopCdl.await(60,TimeUnit.SECONDS))
-        assertTrue(connectCdl.await(60,TimeUnit.SECONDS))
-        assertTrue(disconnectCdl.await(60,TimeUnit.SECONDS))
+        assertTrue(stopCdl.await(15,TimeUnit.SECONDS))
+        assertTrue(connectCdl.await(15,TimeUnit.SECONDS))
+        assertTrue(disconnectCdl.await(15,TimeUnit.SECONDS))
     }
 }

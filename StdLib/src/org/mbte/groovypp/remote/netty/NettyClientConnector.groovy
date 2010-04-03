@@ -62,8 +62,8 @@ import groovy.util.concurrent.SupervisedChannel
         }
     }
 
-    protected boolean interested(Object message) {
-        message instanceof InetDiscoveryInfo || super.interested(message)
+    protected boolean checkInterest(Object message) {
+        message instanceof InetDiscoveryInfo || super.checkInterest(message)
     }
 
     private HashMap<UUID,NettyClient> clients = [:]

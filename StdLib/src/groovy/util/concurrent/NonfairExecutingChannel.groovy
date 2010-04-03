@@ -9,7 +9,7 @@ package groovy.util.concurrent
                     onMessage m
                 }
                 if(!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
-                    executor.execute this
+                    schedule ()
                 }
                 break
             }
