@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
 
 @Typed abstract class SupervisedChannel extends NonfairExecutingChannel {
-
     private static int NOT_STARTED    = 0
     private static int STARTING       = 1
     private static int STARTED        = 2
@@ -98,6 +97,7 @@ import groovy.util.concurrent.FList
             doOnMessage(message)
         }
         catch(Throwable cause) {
+            cause.printStackTrace()
             crash(cause)
         }
     }
@@ -107,10 +107,11 @@ import groovy.util.concurrent.FList
             case Startup:
                 doStartup()
                 message.afterStartup?.call ()
+                state = STARTED
                 break
 
             case Shutdown:
-                int childsCount = children.size()
+                def childsCount = children.size()
                 if (childsCount) {
                     AtomicInteger cnt = [childsCount]
                     for(c in children)
@@ -143,7 +144,7 @@ import groovy.util.concurrent.FList
         throw message.cause
     }
 
-    final void crash(Throwable cause) {
+    protected final void crash(Throwable cause) {
         for(c in children)
             c.shutdown ()
         
