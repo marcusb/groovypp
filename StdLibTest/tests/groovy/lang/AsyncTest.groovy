@@ -18,25 +18,7 @@ public class AsyncTest extends GroovyShellTestCase {
                     assert 21 == bl.get()
                     cdl.countDown ()
                 }.get ()
-            }
-        """
-    }
-
-    void testRemote () {
-        shell.evaluate """
-            @Typed package p
-
-            import java.util.concurrent.*
-            import groovy.util.concurrent.*
-
-            @Async int calculation (int a, int b) {
-               a + b
-            }
-
-            testWithFixedPool {
-                assert 21 == calculation (10, 11, pool){ bl ->
-                    assert 21 == bl.get()
-                }.get ()
+                assert cdl.await(10L,TimeUnit.SECONDS)
             }
         """
     }
