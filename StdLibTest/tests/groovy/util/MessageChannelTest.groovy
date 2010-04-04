@@ -92,6 +92,7 @@ import groovy.util.concurrent.CallLaterPool
 
         cdl.await(10,TimeUnit.SECONDS)
         assertTrue(pool.shutdownNow().empty) 
+        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
         assertEquals 0..<100, results
     }
 
@@ -139,8 +140,8 @@ import groovy.util.concurrent.CallLaterPool
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
         assertTrue(pool.shutdownNow().empty)
-        pool.awaitTermination(0L,TimeUnit.SECONDS)
-        println(System.currentTimeMillis()-start) 
+        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
+        println(System.currentTimeMillis()-start)
     }
 
     private void runRingNonFair (ExecutorService pool) {
@@ -160,7 +161,7 @@ import groovy.util.concurrent.CallLaterPool
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
         assertTrue(pool.shutdownNow().empty)
-        pool.awaitTermination(0L,TimeUnit.SECONDS)
+        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
         println(System.currentTimeMillis()-start)
     }
 }
