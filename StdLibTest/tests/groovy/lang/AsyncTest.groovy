@@ -12,9 +12,13 @@ public class AsyncTest extends GroovyShellTestCase {
                a + b
             }
 
-            assert 21 == calculation (10, 11, CallLaterExecutors.currentExecutor){ bl ->
-                assert 21 == bl.get()
-            }.get ()
+            testWithFixedPool {
+                CountDownLatch cdl = [1]
+                assert 21 == calculation (10, 11, pool){ bl ->
+                    assert 21 == bl.get()
+                    cdl.countDown ()
+                }.get ()
+            }
         """
     }
 
@@ -29,9 +33,11 @@ public class AsyncTest extends GroovyShellTestCase {
                a + b
             }
 
-            assert 21 == calculation (10, 11, CallLaterExecutors.currentExecutor){ bl ->
-                assert 21 == bl.get()
-            }.get ()
+            testWithFixedPool {
+                assert 21 == calculation (10, 11, pool){ bl ->
+                    assert 21 == bl.get()
+                }.get ()
+            }
         """
     }
 }
