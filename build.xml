@@ -201,8 +201,8 @@
             <jvmarg value="-ea"/>
 
             <classpath>
-            	<!--<fileset dir="lib/cobertura"/>
-            	<pathelement location="${output.instrumented.dir}"/>-->
+            	<fileset dir="lib/cobertura"/>
+            	<pathelement location="${output.instrumented.dir}"/>
             	<path>
                     <fileset dir="install/lib" includes="*.jar"/>
                     <fileset file="${jar.name}"/>
