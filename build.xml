@@ -194,27 +194,22 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" description="run unit tests">
+    <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" description="run unit tests">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-ea"/>
 
             <classpath>
-                <path>
+            	<!--<fileset dir="lib/cobertura"/>
+            	<pathelement location="${output.instrumented.dir}"/>-->
+            	<path>
                     <fileset dir="install/lib" includes="*.jar"/>
+                    <fileset file="${jar.name}"/>
                 </path>
                 <pathelement location="${stdlibtest.test.output}"/>
                 <pathelement location="${stdlib.test.output}"/>
                 <pathelement location="${compiler.test.output}"/>
-
-                <!--This should go before uninstrumented prod output-->
-                <!--<pathelement location="${output.instrumented.dir}"/>-->
-                <!--<fileset dir="lib/cobertura"/>-->
-
-                <!--Needed since cobertura doesn't place the uninstrumented classes-->
-                <pathelement location="${stdlib.prod.output}"/>
-                <pathelement location="${compiler.prod.output}"/>
             </classpath>
 
             <batchtest todir="${test.reports}">
