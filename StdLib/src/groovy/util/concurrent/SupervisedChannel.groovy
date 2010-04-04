@@ -168,7 +168,7 @@ import groovy.util.concurrent.FList
     }
 
     protected final boolean interested(Object message) {
-        message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || !(state & STOP_MASK) && checkInterest(message)
+        message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || (!(state & STOP_MASK) && checkInterest(message))
     }
 
     protected boolean checkInterest (Object message) { true }

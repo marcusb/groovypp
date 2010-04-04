@@ -7,6 +7,10 @@ package groovy.util.concurrent
 
     protected volatile FQueue<M> queue = FQueue.emptyQueue
 
+    /**
+     * Special tag saying that processing thread(reader) are processing last message in the queue.
+     * This is kind of protocol between writers to QueuedChannel and reader.
+     */
     protected static final FQueue busyEmptyQueue = FQueue.emptyQueue + null
 
     final void post(M message) {

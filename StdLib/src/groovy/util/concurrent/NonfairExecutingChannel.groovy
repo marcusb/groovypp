@@ -1,6 +1,6 @@
 package groovy.util.concurrent
 
-@Typed abstract class NonfairExecutingChannel<M> extends FairExecutingChannel<M>  {
+@Typed abstract class NonfairExecutingChannel<M> extends ExecutingChannel<M>  {
     void run () {
         for (;;) {
             def q = queue
