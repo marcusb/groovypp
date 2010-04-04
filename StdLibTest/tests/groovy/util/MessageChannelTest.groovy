@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService
 import groovy.util.concurrent.FQueue
 import groovy.util.concurrent.NonfairExecutingChannel
 import groovy.util.concurrent.CallLaterExecutors
+import groovy.util.concurrent.CallLaterPool
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 
@@ -84,12 +85,13 @@ import groovy.util.concurrent.CallLaterExecutors
             results << msg
             cdl.countDown()
         }
-        channel.executor = CallLaterExecutors.currentExecutor
+        def pool = CallLaterExecutors.newFixedThreadPool(Runtime.runtime.availableProcessors())
+        channel.executor = pool
         for (i in 0..<100)
             channel << i
 
         cdl.await(10,TimeUnit.SECONDS)
-
+        assertTrue(pool.shutdownNow().empty) 
         assertEquals 0..<100, results
     }
 

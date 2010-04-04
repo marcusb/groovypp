@@ -47,7 +47,7 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     void setMainActor(MessageChannel actor) {
-        mainActor = actor.async(CallLaterExecutors.currentExecutor)
+        mainActor = actor.async(executor)
     }
 
     static class CommunicationEvent {
