@@ -40,12 +40,12 @@ class CallLaterExecutors {
             executor.execute r
     }
 
-    static void testWithFixedPool (GroovyTestCase self, int nThreads = Runtime.getRuntime().availableProcessors(), TestWithPool test) {
+    static void testWithFixedPool (Object self, int nThreads = Runtime.getRuntime().availableProcessors(), TestWithPool test) {
         test.pool = newFixedThreadPool(nThreads)
         test.test ()
     }
 
-    static void testWithCachedPool (GroovyTestCase self, TestWithPool test) {
+    static void testWithCachedPool (Object self, TestWithPool test) {
         test.pool = newCachedThreadPool()
         test.test ()
     }
@@ -64,12 +64,6 @@ class CallLaterExecutors {
         }
     }
 
-    static synchronized CallLaterPool getDefaultExecutor () {
-        if (!_defaultExecutor)
-            _defaultExecutor = new CallLaterPool(0, Integer.MAX_VALUE, 1L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>())
-        _defaultExecutor
-    }
-
     static CallLaterPool getCurrentExecutor () {
         def t = Thread.currentThread()
         if (t instanceof CallLaterPool.GroovyThread) {
@@ -78,6 +72,6 @@ class CallLaterExecutors {
             if (pool)
                 return pool
         }
-        defaultExecutor
+        throw new NullPointerException("currentExecutor available only worker threads belonging to CallLaterPool")
     }
 }
