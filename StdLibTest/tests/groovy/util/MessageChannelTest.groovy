@@ -78,22 +78,22 @@ import groovy.util.concurrent.CallLaterPool
     }
 
     void testExecutor () {
-        def cdl = new CountDownLatch(100)
-        CopyOnWriteArrayList results = []
-        FairExecutingChannel channel = { int msg ->
-            println msg
-            results << msg
-            cdl.countDown()
-        }
-        def pool = CallLaterExecutors.newFixedThreadPool(Runtime.runtime.availableProcessors())
-        channel.executor = pool
-        for (i in 0..<100)
-            channel << i
+        testWithFixedPool {
+            def cdl = new CountDownLatch(100)
+            CopyOnWriteArrayList results = []
+            FairExecutingChannel channel = { int msg ->
+                println msg
+                results << msg
+                cdl.countDown()
+            }
 
-        cdl.await(10,TimeUnit.SECONDS)
-        assertTrue(pool.shutdownNow().empty) 
-        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
-        assertEquals 0..<100, results
+            channel.executor = pool
+            for (i in 0..<100)
+                channel << i
+
+            cdl.await(10,TimeUnit.SECONDS)
+            assertEquals 0..<100, results
+        }
     }
 
     void testConcurrentExecutor () {
@@ -116,11 +116,15 @@ import groovy.util.concurrent.CallLaterPool
     }
 
     void testRingFair () {
-        runRingFair(Executors.newFixedThreadPool(Runtime.runtime.availableProcessors()))
+        testWithFixedPool {
+            runRingFair(pool)
+        }
     }
 
     void testRingNonFair () {
-        runRingNonFair(Executors.newFixedThreadPool(Runtime.runtime.availableProcessors()))
+        testWithFixedPool {
+            runRingNonFair(pool)
+        }
     }
 
     private void runRingFair (ExecutorService pool) {
@@ -139,8 +143,6 @@ import groovy.util.concurrent.CallLaterPool
             last << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
-        assertTrue(pool.shutdownNow().empty)
-        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
         println(System.currentTimeMillis()-start)
     }
 
@@ -160,8 +162,6 @@ import groovy.util.concurrent.CallLaterPool
             last << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
-        assertTrue(pool.shutdownNow().empty)
-        assertTrue(pool.awaitTermination(10L,TimeUnit.SECONDS))
         println(System.currentTimeMillis()-start)
     }
 }

@@ -1,6 +1,7 @@
 package groovy.util.concurrent
 
 import java.util.concurrent.*
+import org.junit.Assert
 
 /**
  * Provide infrastructure for convinient work with thread pools
@@ -37,6 +38,30 @@ class CallLaterExecutors {
     static void execute (Executor executor, Runnable...run) {
         for(r in run)
             executor.execute r
+    }
+
+    static void testWithFixedPool (GroovyTestCase self, int nThreads = Runtime.getRuntime().availableProcessors(), TestWithPool test) {
+        test.pool = newFixedThreadPool(nThreads)
+        test.test ()
+    }
+
+    static void testWithCachedPool (GroovyTestCase self, TestWithPool test) {
+        test.pool = newCachedThreadPool()
+        test.test ()
+    }
+
+    abstract static class TestWithPool implements Runnable {
+        CallLaterPool pool
+
+        final void test () {
+            try {
+                run ()
+            }
+            finally {
+                Assert.assertTrue(pool.shutdownNow().empty)
+                Assert.assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
+            }
+        }
     }
 
     static synchronized CallLaterPool getDefaultExecutor () {
