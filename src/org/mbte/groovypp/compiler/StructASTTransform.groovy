@@ -40,7 +40,7 @@ class StructASTTransform implements ASTTransformation, Opcodes {
         for (AnnotationNode ann : classNode.getAnnotations()) {
             final String withoutPackage = ann.getClassNode().getNameWithoutPackage();
             if (withoutPackage.equals("Struct")) {
-                process = true;
+//                process = true;
             }
             if (withoutPackage.equals("Typed")) {
                 typed = true;
