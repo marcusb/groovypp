@@ -3,7 +3,7 @@ package groovy.lang
 @Typed class StructTest extends GroovyShellTestCase {
     void testMe () {
         shell.evaluate """
-    @Typed package p
+    @Typed(debug=true) package p
 
     @Struct class TupleTest<A> {
         int x, y

@@ -55,8 +55,7 @@ class CallLaterExecutors {
 
         final void test () {
             pool.rejectedExecutionHandler = { run, pool ->
-                println "Task rejected: $run"
-                throw new RejectedExecutionException();
+                throw new RejectedExecutionException("Task rejected: $run");
             }
             run ()
             assertTrue(pool.shutdownNow().empty)
@@ -72,6 +71,6 @@ class CallLaterExecutors {
             if (pool)
                 return pool
         }
-        throw new NullPointerException("currentExecutor available only worker threads belonging to CallLaterPool")
+        throw new NullPointerException("currentExecutor available only in worker threads belonging to CallLaterPool")
     }
 }
