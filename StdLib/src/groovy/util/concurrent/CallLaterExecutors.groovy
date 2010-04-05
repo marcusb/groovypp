@@ -50,17 +50,17 @@ class CallLaterExecutors {
         test.test ()
     }
 
-    abstract static class TestWithPool implements Runnable {
+    abstract static class TestWithPool extends Assert implements Runnable {
         CallLaterPool pool
 
         final void test () {
-            try {
-                run ()
+            pool.rejectedExecutionHandler = { run, pool ->
+                println "Task rejected: $run"
+                throw new RejectedExecutionException();
             }
-            finally {
-                Assert.assertTrue(pool.shutdownNow().empty)
-                Assert.assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
-            }
+            run ()
+            assertTrue(pool.shutdownNow().empty)
+            assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
         }
     }
 

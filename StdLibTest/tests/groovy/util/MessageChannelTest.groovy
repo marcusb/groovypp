@@ -129,18 +129,25 @@ import groovy.util.concurrent.CallLaterPool
 
     private void runRingFair (ExecutorService pool) {
         def start = System.currentTimeMillis()
-        MessageChannel last
-        CountDownLatch cdl = [10000*500]
-        for (i in 0..<10000) {
-            FairExecutingChannel channel = {
-                last?.post it
-                cdl.countDown()
-            }
+        MessageChannel prev
+        int nMessages = 500
+        int nActors = 10000
+        CountDownLatch cdl = [nActors*nMessages]
+        for (i in 0..<nActors) {
+            FairExecutingChannel channel = [
+                onMessage: {
+                        prev?.post it
+                        cdl.countDown()
+                    },
+                toString: {
+                    "Channel $i"
+                }
+            ]
             channel.executor = pool
-            last = channel
+            prev = channel
         }
-        for(i in 0..<500)
-            last << "Hi"
+        for(i in 0..<nMessages)
+            prev << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
         println(System.currentTimeMillis()-start)
@@ -148,18 +155,20 @@ import groovy.util.concurrent.CallLaterPool
 
     private void runRingNonFair (ExecutorService pool) {
         def start = System.currentTimeMillis()
-        MessageChannel last
-        CountDownLatch cdl = [10000*500]
-        for (i in 0..<10000) {
+        MessageChannel prev
+        int nMessages = 500
+        int nActors = 10000
+        CountDownLatch cdl = [nActors*nMessages]
+        for (i in 0..<nActors) {
             NonfairExecutingChannel channel = {
-                last?.post it
+                prev?.post it
                 cdl.countDown()
             }
             channel.executor = pool
-            last = channel
+            prev = channel
         }
-        for(i in 0..<500)
-            last << "Hi"
+        for(i in 0..<nMessages)
+            prev << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
         println(System.currentTimeMillis()-start)
