@@ -194,7 +194,7 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" description="run unit tests">
+    <target name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" description="run unit tests">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
