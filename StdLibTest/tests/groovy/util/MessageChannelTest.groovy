@@ -136,9 +136,9 @@ import groovy.util.concurrent.CallLaterPool
         for (i in 0..<nActors) {
             FairExecutingChannel channel = [
                 onMessage: {
-                        prev?.post it
-                        cdl.countDown()
-                    },
+                    prev?.post it
+                    cdl.countDown()
+                },
                 toString: {
                     "Channel $i"
                 }
@@ -150,7 +150,7 @@ import groovy.util.concurrent.CallLaterPool
             prev << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
-        println(System.currentTimeMillis()-start)
+        println("runRingFair: ${System.currentTimeMillis()-start}")
     }
 
     private void runRingNonFair (ExecutorService pool) {
@@ -160,10 +160,15 @@ import groovy.util.concurrent.CallLaterPool
         int nActors = 10000
         CountDownLatch cdl = [nActors*nMessages]
         for (i in 0..<nActors) {
-            NonfairExecutingChannel channel = {
-                prev?.post it
-                cdl.countDown()
-            }
+            NonfairExecutingChannel channel = [
+                onMessage: {
+                    prev?.post it
+                    cdl.countDown()
+                },
+                toString: {
+                    "Channel $i"
+                }
+            ]
             channel.executor = pool
             prev = channel
         }
@@ -171,6 +176,6 @@ import groovy.util.concurrent.CallLaterPool
             prev << "Hi"
 
         assertTrue(cdl.await(100,TimeUnit.SECONDS))
-        println(System.currentTimeMillis()-start)
+        println("runRingNonFair: ${System.currentTimeMillis()-start}")
     }
 }
