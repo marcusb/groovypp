@@ -280,17 +280,15 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
         null
     }
 
-    private Statement cloneStatement(Statement statement, ExpressionTransformer transformer) {
-        switch(statement) {
+    private Statement cloneStatement(Statement src, ExpressionTransformer transformer) {
+        switch(src) {
             case AssertStatement:
-                AssertStatement src = statement
                 def add = new AssertStatement(new BooleanExpression(transformer.transform(src.booleanExpression.expression)), transformer.transform(src.messageExpression))
                 add.setSourcePosition(src)
                 add
                 break
 
             case BlockStatement:
-                BlockStatement src = statement
                 def add = new BlockStatement()
                 for (s in src.statements)
                    add.statements.add(cloneStatement(s, transformer))
@@ -301,18 +299,16 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
             case EmptyStatement:
             case BreakStatement:
             case ContinueStatement:
-                statement
+                src
                 break
 
             case CaseStatement:
-                CaseStatement src = statement
                 def add = new CaseStatement(transformer.transform(src.expression), cloneStatement(src.code, transformer))
                 add.setSourcePosition(src)
                 add
                 break
 
             case CatchStatement:
-                CatchStatement src = statement
                 def add = new CatchStatement([src.variable.type, src.variable.name], cloneStatement(src.code, transformer))
                 add.setSourcePosition(src)
                 add
@@ -320,35 +316,30 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
 
 
             case ExpressionStatement:
-                ExpressionStatement src = statement
                 def add = new ExpressionStatement(transformer.transform(src.expression))
                 add.setSourcePosition(src)
                 add
                 break
 
             case ForStatement:
-                ForStatement src = statement
                 def add = new ForStatement([src.variable.type, src.variable.name], transformer.transform(src.collectionExpression), cloneStatement(src.loopBlock, transformer))
                 add.setSourcePosition(src)
                 add
                 break
 
             case IfStatement:
-                IfStatement src = statement
                 def add = new IfStatement(new BooleanExpression(transformer.transform(src.booleanExpression.expression)), cloneStatement(src.ifBlock, transformer), cloneStatement(src.elseBlock, transformer))
                 add.setSourcePosition(src)
                 add
                 break
 
             case ReturnStatement:
-                ReturnStatement src = statement
                 def add = new ReturnStatement(transformer.transform(src.expression))
                 add.setSourcePosition(src)
                 add
                 break
 
             case SwitchStatement:
-                SwitchStatement src = statement
                 def add = new SwitchStatement(transformer.transform(src.expression), cloneStatement(src.defaultStatement, transformer))
                 for (c in src.caseStatements)
                     add.addCase((CaseStatement)cloneStatement(c, transformer))
@@ -357,21 +348,18 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
                 break
 
             case SynchronizedStatement:
-                SynchronizedStatement src = statement
                 def add = new SynchronizedStatement(transformer.transform(src.expression), cloneStatement(src.code, transformer))
                 add.setSourcePosition(src)
                 add
                 break
 
             case ThrowStatement:
-                ThrowStatement src = statement
                 def add = new ThrowStatement(src.expression)
                 add.setSourcePosition(src)
                 add
                 break
 
             case TryCatchStatement:
-                TryCatchStatement src = statement
                 def add = new TryCatchStatement(cloneStatement(src.tryStatement, transformer), cloneStatement(src.finallyStatement, transformer))
                 for (c in src.catchStatements)
                     add.addCatch((CatchStatement)cloneStatement(c, transformer))
@@ -380,14 +368,12 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
                 break
 
             case DoWhileStatement:
-                DoWhileStatement src = statement
                 def add = new WhileStatement(new BooleanExpression(transformer.transform(src.booleanExpression.expression)), cloneStatement(src.loopBlock, transformer))
                 add.setSourcePosition(src)
                 add
                 break
 
             case WhileStatement:
-                WhileStatement src = statement
                 def add = new WhileStatement(new BooleanExpression(transformer.transform(src.booleanExpression.expression)), cloneStatement(src.loopBlock, transformer))
                 add.setSourcePosition(src)
                 add
