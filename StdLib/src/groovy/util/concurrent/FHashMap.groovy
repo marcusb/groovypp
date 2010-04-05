@@ -72,7 +72,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
 
     static final FHashMap emptyMap = new EmptyNode()
 
-    private static class EmptyNode extends FHashMap<K,V> {
+    private static class EmptyNode<K,V> extends FHashMap<K,V> {
         private EmptyNode() {}
 
         int size_() { 0 }
@@ -92,7 +92,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         }
     }
 
-    private static abstract class SingleNode extends FHashMap<K,V> {
+    private static abstract class SingleNode<K,V> extends FHashMap<K,V> {
         final int hash
 
         SingleNode(int hash) {
@@ -115,7 +115,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         }
     }
 
-    private static class LeafNode extends SingleNode implements Map.Entry {
+    private static class LeafNode<K,V> extends SingleNode<K,V> implements Map.Entry<K,V> {
         final K key
         final V value
 
@@ -173,7 +173,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         }
     }
 
-    private static class CollisionNode extends SingleNode {
+    private static class CollisionNode<K,V> extends SingleNode<K,V> {
         FList<BucketElement<K, V>> bucket
 
         CollisionNode(int hash, FList<BucketElement<K, V>> bucket) {
@@ -299,7 +299,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
         }
     }
 
-    private static class FullNode extends FHashMap<K,V> {
+    private static class FullNode<K,V> extends FHashMap<K,V> {
         int shift
         FHashMap<K,V>[] table
 

@@ -44,7 +44,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
                 policy, baseClosureName);
 //
         if (debug != -1)
-            DebugContext.outputStream.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ")");
+            DebugContext.outputStream.println("-----> " + methodNode.getDeclaringClass().getName() + "#" + methodNode.getName() + "(" + BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters()) + ") " + BytecodeHelper.getGenericsMethodSignature(methodNode));
 
         try {
             compiler.execute();
