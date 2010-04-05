@@ -89,7 +89,7 @@ class StructASTTransform implements ASTTransformation, Opcodes {
             builderClassNode.addAnnotation(typedAnn)
 
             builderClassNode.genericsTypes = builderGenericTypes(classNode)
-            builderClassNode.superClass = TypeUtil.withGenericTypes(superBuilder, builderSuperclassTypes(classNode, builderClassNode))
+            builderClassNode.unresolvedSuperClass = TypeUtil.withGenericTypes(superBuilder, builderSuperclassTypes(classNode, builderClassNode))
 
             classNode.getModule().addClass(builderClassNode);
 
@@ -195,8 +195,11 @@ class StructASTTransform implements ASTTransformation, Opcodes {
         if (!gt)
             gt = new GenericsType[0]
 
-        def builderGt = new GenericsType[gt.length+1]
-        builderGt[0] = new GenericsType(classNode)
+        def builderGt = new GenericsType[gt.length + 1]
+        ClassNode varT = ClassHelper.make("T")
+        varT.setRedirect(classNode)
+        varT.genericsPlaceHolder = true
+        builderGt[0] = new GenericsType(varT, [classNode], null)
         for (i in 0..<gt.length)
             builderGt[i+1] = gt[i]
         return builderGt
