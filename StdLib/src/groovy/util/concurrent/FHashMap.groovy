@@ -34,8 +34,6 @@
 
 package groovy.util.concurrent
 
-import java.util.Map.Entry
-
 /**
  * A clean-room port of Rich Hickey's persistent hash trie implementation from
  * Clojure (http://clojure.org).  Originally presented as a mutable structure in
