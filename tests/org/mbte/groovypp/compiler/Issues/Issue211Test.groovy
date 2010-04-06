@@ -19,19 +19,33 @@ book.title = "Foo"
 
   void testBinop () {
         shell.evaluate """
-@Typed(debug=true) package p
+@Typed package p
 class C{
     public int i = 0
-    void setI(int p) { i = i + 2*p }
+    void setI(int p) { i = p + 1 }
 }
 
 def c = new C()
 c.i = 2
-println c.i
-assert c.i == 4
+assert c.i == 3
 c.i += 3
-println c.i
-assert c.i == 18
+assert c.i == 7
+        """
+    }
+
+  void testPrefixPostfix () {
+        shell.evaluate """
+@Typed package p
+class C{
+    public int i = 0
+    void setI(int p) { i = p + 1 }
+}
+
+def c = new C()
+++c.i
+assert c.i == 2
+c.i++
+assert c.i == 4
         """
     }
 }

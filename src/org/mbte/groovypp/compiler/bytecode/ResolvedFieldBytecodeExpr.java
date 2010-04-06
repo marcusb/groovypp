@@ -194,13 +194,11 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             ));
         }
 
-        final BytecodeExpr put = new ResolvedFieldBytecodeExpr(
-                exp,
-                fieldNode,
-                dupObject,
-                incDec,
-                compiler
-        );
+        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : fieldNode.getDeclaringClass(),
+                fieldNode.getName(), getType(), compiler, isThis());
+        final CastExpression cast = new CastExpression(getType(), incDec);
+        cast.setSourcePosition(exp);
+        final BytecodeExpr put = PropertyUtil.createSetProperty(parent, compiler, fieldNode.getName(), dupObject, (BytecodeExpr) compiler.transform(cast), prop);
 
         return new BytecodeExpr(exp, getType()) {
             protected void compile(MethodVisitor mv) {
@@ -281,13 +279,19 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
             ));
         }
 
-        final BytecodeExpr put = new ResolvedFieldBytecodeExpr(
+        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : fieldNode.getDeclaringClass(),
+                fieldNode.getName(), getType(), compiler, isThis());
+        final CastExpression cast = new CastExpression(getType(), incDec);
+        cast.setSourcePosition(exp);
+        final BytecodeExpr put = PropertyUtil.createSetProperty(parent, compiler, fieldNode.getName(), dupObject, (BytecodeExpr) compiler.transform(cast), prop);
+
+        /*final BytecodeExpr put = new ResolvedFieldBytecodeExpr(
                 exp,
                 fieldNode,
                 dupObject,
                 incDec,
                 compiler
-        );
+        );*/
 
         return new BytecodeExpr(exp, getType()) {
             protected void compile(MethodVisitor mv) {
