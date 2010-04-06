@@ -20,7 +20,7 @@
 
 
     <properties>
-        <file>${project.basedir}/../../groovypp.jar</file>
+        <file>${project.basedir}/../../groovypp-@version@.jar</file>
     </properties>
 
 

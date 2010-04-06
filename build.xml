@@ -36,7 +36,7 @@
 	<property name="test.reports" location="${output.dir}/test-reports"/>
 	<property name="cobertura.report.dir" location="${output.dir}/cobertura"/>
 
-	<property name="jar.name" location="${output.dir}/${app.name}.jar"/>
+	<property name="jar.name" location="${output.dir}/${app.name}-${version}.jar"/>
 	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all-${version}.jar"/>
 	<property name="target.jvm" value="5" />
 
@@ -265,7 +265,7 @@
                 <exclude name="asm-analysis*.jar"/>
             </fileset>
             <fileset dir="out">
-                <include name="groovypp.jar"/>
+                <include name="${app.name}-${version}.jar"/>
             </fileset>
         </copy>
 
