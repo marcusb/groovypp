@@ -58,7 +58,7 @@ class DivideAndConquerProblemSolver {
           if (children != null) {
             assert !children.isEmpty()
             if (!children.any{it.result == null}) {
-              parent.result = problem.combine(children.map{it.result})
+              parent.setResult(problem.combine(children.map{it.result}))
               parent.children = null
             }
           }
