@@ -47,14 +47,14 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
 
     public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
         Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : methodNode.getDeclaringClass(),
-                propName, getType(), compiler, isThisCall());
+                propName, getType(), compiler, isThis());
         final CastExpression cast = new CastExpression(getType(), right);
         cast.setSourcePosition(right);
         right = (BytecodeExpr) compiler.transform(cast);
         return PropertyUtil.createSetProperty(parent, compiler, propName, object, right, prop);
     }
 
-    private boolean isThisCall() {
+    public boolean isThis() {
         return object == null || object.isThis();
     }
 
@@ -76,7 +76,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
 
         Object prop = PropertyUtil.resolveSetProperty(qualType, propName, transformedOp.getType(), compiler,
-                isThisCall());
+                isThis());
         final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, propName, fakeObject, transformedOp, prop);
 
         return object == null ? propExpr : new BytecodeExpr(parent, propExpr.getType()) {
@@ -150,7 +150,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         }
 
         Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, incDec.getType(), compiler,
-                isThisCall());
+                isThis());
         return PropertyUtil.createSetProperty(exp, compiler, propName, dupObject, incDec, prop);
     }
 
@@ -224,7 +224,7 @@ public class ResolvedGetterBytecodeExpr extends ResolvedLeftExpr {
         }
 
         Object prop = PropertyUtil.resolveSetProperty(methodNode.getDeclaringClass(), propName, incDec.getType(), compiler,
-                isThisCall());
+                isThis());
 
         final BytecodeExpr put = PropertyUtil.createSetProperty(exp, compiler, propName, dupObject, incDec, prop);
         return new BytecodeExpr(exp, getType()) {

@@ -2,6 +2,7 @@ package org.mbte.groovypp.compiler.bytecode;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
@@ -27,11 +28,6 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         this.object = object;
         this.compiler = compiler;
         this.value = value != null ? compiler.cast(value, fieldNode.getType() ): null;
-
-        if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
-                    compiler.classNode, object == null ? null : object.getType())) {
-          compiler.addError("Cannot access field " + formatFieldName(), parent);
-        }
     }
 
     private void checkAssignment() {
@@ -59,6 +55,11 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
     }
 
     public void compile(MethodVisitor mv) {
+        if (!AccessibilityCheck.isAccessible(fieldNode.getModifiers(), fieldNode.getDeclaringClass(),
+                    compiler.classNode, object == null ? null : object.getType())) {
+          compiler.addError("Cannot access field " + formatFieldName(), parent);
+        }
+        
         int op;
         if (object != null) {
             object.visit(mv);
@@ -84,12 +85,22 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         cast(TypeUtil.wrapSafely(fieldNode.getType()), TypeUtil.wrapSafely(getType()), mv);
     }
 
-    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
-        checkAssignment();
-        return new ResolvedFieldBytecodeExpr(parent, fieldNode, object, right, compiler);
+    public boolean isThis() {
+        return object == null || object.isThis();
     }
 
-    public BytecodeExpr createBinopAssign(ASTNode parent, Token method, final BytecodeExpr right, CompilerTransformer compiler) {
+    public BytecodeExpr createAssign(ASTNode parent, BytecodeExpr right, CompilerTransformer compiler) {
+        checkAssignment();
+        String propName = fieldNode.getName();
+        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : fieldNode.getDeclaringClass(),
+                propName, getType(), compiler, isThis());
+        final CastExpression cast = new CastExpression(getType(), right);
+        cast.setSourcePosition(right);
+        right = (BytecodeExpr) compiler.transform(cast);
+        return PropertyUtil.createSetProperty(parent, compiler, propName, object, right, prop);
+    }
+
+    public BytecodeExpr createBinopAssign(final ASTNode parent, Token method, final BytecodeExpr right, final CompilerTransformer compiler) {
         checkAssignment();
         final BytecodeExpr opLeft = new BytecodeExpr(this, getType()) {
             @Override

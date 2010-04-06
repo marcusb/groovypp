@@ -8,6 +8,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.classgen.Verifier;
+import org.mbte.groovypp.compiler.AccessibilityCheck;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
@@ -33,7 +34,8 @@ public class PropertyUtil {
 
         if (prop instanceof FieldNode) {
             FieldNode field = (FieldNode) prop;
-            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode) {
+            if ((field.getModifiers() & Opcodes.ACC_PRIVATE) != 0 && field.getDeclaringClass() != compiler.classNode
+                    && AccessibilityCheck.isAccessible(field.getModifiers(), field.getDeclaringClass(), compiler.classNode, null)) {
                 MethodNode getter = compiler.context.getFieldGetter(field);
                 return new ResolvedGetterBytecodeExpr.Accessor(field, exp, getter, object, compiler, type);
             }
@@ -176,10 +178,14 @@ public class PropertyUtil {
         }
 
         if (field != null && (field.getModifiers() & Opcodes.ACC_FINAL) != 0) {
-            if (field.getDeclaringClass() != compiler.classNode || !(compiler.methodNode instanceof ConstructorNode))
+            if (field.getDeclaringClass() != compiler.classNode && !isFieldInitializer(compiler.methodNode))
                 return null;
         }
         return field;
+    }
+
+    private static boolean isFieldInitializer(MethodNode methodNode) {
+        return methodNode instanceof ConstructorNode || methodNode.isStaticConstructor();
     }
 
     private static boolean isTraitImpl(ClassNode type) {

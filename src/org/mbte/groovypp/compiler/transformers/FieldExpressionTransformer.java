@@ -14,6 +14,10 @@ public class FieldExpressionTransformer extends ExprTransformer<FieldExpression>
                 exp,
                 exp.getField(),
                 new BytecodeExpr(exp, compiler.classNode) {
+                    public boolean isThis() {
+                        return true;
+                    }
+
                     protected void compile(MethodVisitor mv) {
                         if (!exp.getField().isStatic())
                             mv.visitVarInsn(ALOAD, 0);
