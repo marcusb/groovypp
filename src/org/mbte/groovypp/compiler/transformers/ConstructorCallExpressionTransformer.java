@@ -173,7 +173,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         final ConstructorNode constructorNode = innerClassNode.getDeclaredConstructors().get(0);
         final VariableScope scope = innerClassNode.getVariableScope();
 
-        final boolean isStatic = (superClass.getModifiers() & ACC_STATIC) != 0;
+        final boolean isStatic = !(superClass.redirect() instanceof InnerClassNode) || (superClass.getModifiers() & ACC_STATIC) != 0;
         if (!isStatic && compiler.methodNode.getVariableScope().isInStaticContext()) {
             compiler.addError("Can not instantiate non-static inner class " + superClass.getName() + " in static context", exp);
             return false;
@@ -243,18 +243,6 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         ClassNodeCache.clearCache(innerClassNode);
         return true;
-    }
-
-    private void addIinitField(BlockStatement code, String field, String variable) {
-        code.addStatement(
-                new ExpressionStatement(
-                        new BinaryExpression(
-                                new PropertyExpression(VariableExpression.THIS_EXPRESSION, field),
-                                Token.newSymbol(Types.ASSIGN, -1, -1),
-                                new VariableExpression(variable)
-                        )
-                )
-        );
     }
 
     private void rewriteThis0(ConstructorCallExpression exp, CompilerTransformer compiler) {
