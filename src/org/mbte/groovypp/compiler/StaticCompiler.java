@@ -171,6 +171,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Label breakLabel = compileStack.getBreakLabel();
         MethodCallExpression iterator = new MethodCallExpression(
                 collectionExpression, "iterator", new ArgumentListExpression());
+        iterator.setSourcePosition(collectionExpression);
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
         expr.visit(mv);
 
