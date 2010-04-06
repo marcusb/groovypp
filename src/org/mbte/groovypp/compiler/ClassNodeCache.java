@@ -291,22 +291,25 @@ public class ClassNodeCache {
         Map<String, Object> nameMap = info.fields;
         if (nameMap == null) {
             nameMap = new HashMap<String, Object>();
+
+            addFields(nameMap, type, type);
             info.fields = nameMap;
-
-            for (ClassNode node : ClassNodeCache.getAllInterfaces(type)) {
-                addFields(nameMap, node);
-            }
-
-            while (type != null) {
-                addFields(nameMap, type);
-                type = type.getSuperClass();
-            }
         }
         return nameMap.get(fieldName);
     }
 
-    private static void addFields(Map<String, Object> nameMap, ClassNode node) {
-        for (FieldNode m : node.getFields()) {
+    private static void addFields(Map<String, Object> nameMap, ClassNode type, ClassNode placeClass) {
+        ClassNode superClass = type.getSuperClass();
+        if (superClass != null) addFields(nameMap, superClass, placeClass);
+        ClassNode[] ifaces = type.getInterfaces();
+        if (ifaces != null) {
+            for (ClassNode iface : ifaces) {
+                addFields(nameMap, iface, placeClass);
+            }
+        }
+
+        for (FieldNode m : type.getFields()) {
+            // Not 100% correct but will do for now.
             nameMap.put(m.getName(), m);
         }
     }

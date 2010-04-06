@@ -11,7 +11,7 @@ public class Issue112Test extends GroovyShellTestCase {
          class B {}
 
          A a = new A()
-         metaClass.b = new B()
+         getMetaClass().b = new B()
          B b = b
       """
     }
