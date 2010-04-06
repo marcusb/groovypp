@@ -48,4 +48,16 @@ c.i++
 assert c.i == 4
         """
     }
+
+  void testJustSetter () {
+    shell.evaluate("""
+@Typed package p
+class Test {
+    public void setFoo(String s) {    }
+}
+
+def c = new Test()
+c.foo = 'x'
+""")
+  }
 }
