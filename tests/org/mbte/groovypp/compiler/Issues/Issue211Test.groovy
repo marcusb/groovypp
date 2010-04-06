@@ -26,8 +26,12 @@ class C{
 }
 
 def c = new C()
-c.i += 1
-assert c.i == 2
+c.i = 2
+println c.i
+assert c.i == 4
+c.i += 3
+println c.i
+assert c.i == 18
         """
     }
 }

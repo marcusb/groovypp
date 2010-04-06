@@ -100,39 +100,32 @@ public class ResolvedFieldBytecodeExpr extends ResolvedLeftExpr {
         return PropertyUtil.createSetProperty(parent, compiler, propName, object, right, prop);
     }
 
-    public BytecodeExpr createBinopAssign(final ASTNode parent, Token method, final BytecodeExpr right, final CompilerTransformer compiler) {
+    public BytecodeExpr createBinopAssign(final ASTNode parent, Token method, BytecodeExpr right, final CompilerTransformer compiler) {
         checkAssignment();
-        final BytecodeExpr opLeft = new BytecodeExpr(this, getType()) {
+        final BytecodeExpr fakeObject = object == null ? null : new BytecodeExpr(object, object.getType()) {
             @Override
             protected void compile(MethodVisitor mv) {
             }
         };
-        final BinaryExpression op = new BinaryExpression(opLeft, method, right);
+
+        BytecodeExpr get = new ResolvedFieldBytecodeExpr(this, fieldNode, fakeObject, null, compiler);
+
+        final BinaryExpression op = new BinaryExpression(get, method, right);
         op.setSourcePosition(parent);
-        final BytecodeExpr transformedOp = compiler.cast(compiler.transform(op), getType());
-        return new BytecodeExpr(parent, getType()) {
-            @Override
+        final BytecodeExpr transformedOp = (BytecodeExpr) compiler.transform(op);
+
+        Object prop = PropertyUtil.resolveSetProperty(object != null ? object.getType() : fieldNode.getDeclaringClass(),
+                fieldNode.getName(), getType(), compiler, isThis());
+        final CastExpression cast = new CastExpression(getType(), transformedOp);
+        cast.setSourcePosition(right);
+        right = (BytecodeExpr) compiler.transform(cast);
+        final BytecodeExpr propExpr = PropertyUtil.createSetProperty(parent, compiler, fieldNode.getName(), fakeObject, right, prop);
+
+        return object == null ? propExpr : new BytecodeExpr(parent, propExpr.getType()) {
             protected void compile(MethodVisitor mv) {
-                if (object != null) {
-                    object.visit(mv);
-                    if (fieldNode.isStatic()) {
-                        pop(object.getType(), mv);
-                    } else {
-                        box(object.getType(), mv);
-                        mv.visitInsn(DUP);
-                    }
-                }
-
-                mv.visitFieldInsn(fieldNode.isStatic() ? GETSTATIC : GETFIELD, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
-
-                transformedOp.visit(mv);
-
-                if (object != null)
-                    dup_x1(getType(), mv);
-                else
-                    dup(getType(), mv);
-
-                mv.visitFieldInsn(fieldNode.isStatic() ? PUTSTATIC : PUTFIELD, BytecodeHelper.getClassInternalName(fieldNode.getDeclaringClass()), fieldNode.getName(), BytecodeHelper.getTypeDescription(fieldNode.getType()));
+                object.visit(mv);
+                mv.visitInsn(DUP);
+                propExpr.visit(mv);
             }
         };
     }
