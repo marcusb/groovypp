@@ -102,7 +102,21 @@ public class ClassNodeCache {
                 "java.util.Collection collect(java.util.Map, java.util.Collection, groovy.lang.Closure)",
                 "java.lang.String toString(java.lang.Object)",
                 "void print(java.lang.Object, java.lang.Object)",
-                "void println(java.lang.Object, java.lang.Object)"
+                "void println(java.lang.Object, java.lang.Object)",
+                "java.lang.Object withReader(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withReader(java.io.File, java.lang.String, groovy.lang.Closure)",
+                "java.lang.Object withReader(java.io.Reader, groovy.lang.Closure)",
+                "java.lang.Object withWriter(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withWriter(java.io.File, java.lang.String, groovy.lang.Closure)",
+                "java.lang.Object withWriter(java.io.Reader, groovy.lang.Closure)",
+                "java.lang.Object withOutputStream(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withInputStream(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withDataOutputStream(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withDataInputStream(java.io.File, groovy.lang.Closure)",
+                "java.lang.Object withInputStream(java.net.URL, groovy.lang.Closure)",
+                "java.lang.Object withStream(java.io.InputStream, groovy.lang.Closure)",
+                "java.lang.Object withStream(java.io.OutputStream, groovy.lang.Closure)"
+
         )), false);
     }
 
