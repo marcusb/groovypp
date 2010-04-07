@@ -35,6 +35,9 @@ public class PresentationUtil {
             getText(type.getComponentType(), builder);
             builder.append("[]");
             return;
+        } else if (type.isGenericsPlaceHolder()) {
+            getText(type.redirect(), builder);
+            return;
         }
 
         if (type == TypeUtil.TMAP) {
