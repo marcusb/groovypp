@@ -1,6 +1,5 @@
 package org.mbte.groovypp.compiler.Issues
 
-import static groovy.CompileTestSupport.shouldNotCompile
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 @Typed
