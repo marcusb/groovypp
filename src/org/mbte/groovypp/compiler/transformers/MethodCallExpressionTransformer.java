@@ -44,257 +44,263 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             return compiler.transform(mce);
         }
 
-        Expression args = compiler.transform(exp.getArguments());
-        exp.setArguments(args);
+        final Expression originalArgs = exp.getArguments();
+        Expression args = compiler.transform(originalArgs);
+        try {
+            exp.setArguments(args);
 
-        if (exp.isSafe()) {
-            return transformSafe(exp, compiler);
-        }
-
-        BytecodeExpr object;
-        ClassNode type;
-        MethodNode foundMethod = null;
-        final ClassNode[] argTypes = compiler.exprToTypeArray(args);
-
-        if (exp.getObjectExpression() instanceof ClassExpression) {
-            type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
-            foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, true);
-            if (foundMethod == null || !foundMethod.isStatic()) {
-                // Try methods from java.lang.Class
-                ClassNode clazz = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
-                foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler, false);
-                if (foundMethod == null) {
-                    // Try some property with 'call' method.
-                    final Object prop = resolveCallableProperty(compiler, methodName, type, true);
-                    if (prop != null) {
-                        final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
-                        if (callMethod != null) {
-                            return createCallMethodCall(exp, compiler, methodName, args, null, prop, callMethod, type);
-                        }
-                    }
-                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
-                }
-                object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                return createCall(exp, compiler, args, object, foundMethod);
+            if (exp.isSafe()) {
+                return transformSafe(exp, compiler);
             }
-            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                    foundMethod.getDeclaringClass(), compiler.classNode, type)) {
-                return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
-            }
-            return createCall(exp, compiler, args, null, foundMethod);
-        } else {
-            if (exp.getObjectExpression() instanceof VariableExpression &&
-                (((VariableExpression) exp.getObjectExpression()).isThisExpression() ||
-                ((VariableExpression) exp.getObjectExpression()).isSuperExpression())) {
-                ClassNode thisType = compiler.methodNode.getDeclaringClass();
-                if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
-                    foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, true);
 
-                    if (foundMethod != null) {
-                        object = null;
-                        if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                                foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
-                            return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
-                        }
+            BytecodeExpr object;
+            ClassNode type;
+            MethodNode foundMethod = null;
+            final ClassNode[] argTypes = compiler.exprToTypeArray(args);
 
-                        return createCall(exp, compiler, args, object, foundMethod);
-                    }
-                    else {
-                        final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
+            if (exp.getObjectExpression() instanceof ClassExpression) {
+                type = TypeUtil.wrapSafely(exp.getObjectExpression().getType());
+                foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, true);
+                if (foundMethod == null || !foundMethod.isStatic()) {
+                    // Try methods from java.lang.Class
+                    ClassNode clazz = TypeUtil.withGenericTypes(ClassHelper.CLASS_Type, type);
+                    foundMethod = findMethodWithClosureCoercion(clazz, methodName, argTypes, compiler, false);
+                    if (foundMethod == null) {
+                        // Try some property with 'call' method.
+                        final Object prop = resolveCallableProperty(compiler, methodName, type, true);
                         if (prop != null) {
                             final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
                             if (callMethod != null) {
-                                return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, thisType);
+                                return createCallMethodCall(exp, compiler, methodName, args, null, prop, callMethod, type);
                             }
                         }
-
-                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLASS_Type, methodName, argTypes, compiler, false);
-                        if (foundMethod != null) {
-                            object = (BytecodeExpr) compiler.transform(new ClassExpression(compiler.classNode));
-                            return createCall(exp, compiler, args, object, foundMethod);
-                        }
+                        return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find static method ");
                     }
-                } else {
-                    if (thisType instanceof ClosureClassNode &&
-                        thisType.isDerivedFrom(ClassHelper.CLOSURE_TYPE) &&
-                        methodName.equals("call"))
-                    // We have a closure recursive call,
-                    // let's forget about 'call' and deal with 'doCall' instead.
-                    methodName = "doCall";
-
-                    boolean isSuper = ((VariableExpression) exp.getObjectExpression()).isSuperExpression();
-
-                    while (thisType != null) {
-                        ClassNode declaringType = isSuper ? thisType.getSuperClass() : thisType;
-                        foundMethod = findMethodWithClosureCoercion(declaringType, methodName, argTypes, compiler, false);
-                        if (foundMethod == null) {
-                            // Groovy does not allow to call 'this.closure()' for closure fields: issue 143.
-                            if (exp.isImplicitThis() || !(thisType instanceof ClosureClassNode) || isSuper) {
-                                // Try some property with 'call' method.
-                                final Object prop = resolveCallableProperty(compiler, methodName, declaringType, false);
-                                if (prop != null) {
-                                    final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
-                                    if (callMethod != null) {
-                                        return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, declaringType);
-                                    }
-                                }
-                            }
-
-                            if (thisType.implementsInterface(TypeUtil.DELEGATING)) {
-                                final MethodNode gd = compiler.findMethod(thisType, "getDelegate", ClassNode.EMPTY_ARRAY, false);
-                                if (gd != null) {
-                                    final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler);
-                                    final ResolvedMethodBytecodeExpr delegate = ResolvedMethodBytecodeExpr.create(exp, gd, innerThis, ArgumentListExpression.EMPTY_ARGUMENTS, compiler);
-                                    foundMethod = findMethodWithClosureCoercion(delegate.getType(), methodName, argTypes, compiler, false);
-
-                                    if (foundMethod != null) {
-                                        if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                                                foundMethod.getDeclaringClass(), compiler.classNode, delegate.getType())) {
-                                            return dynamicOrError(exp, compiler, methodName, delegate.getType(), argTypes, "Cannot access method ");
-                                        }
-
-                                        return createCall(exp, compiler, args, delegate, foundMethod);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (foundMethod != null) {
-                            // 'super' access is always permitted.
-                            final ClassNode accessType = isSuper ? null : declaringType;
-                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                                    foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
-                                return dynamicOrError(exp, compiler, methodName, declaringType, argTypes, "Cannot access method ");
-                            }
-
-
-                            if (foundMethod.isStatic())
-                                object = null;
-                            else {
-                                if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
-                                    compiler.addError("Cannot reference an instance method from static context", exp);
-                                    return null;
-                                }
-
-                                if (isSuper) {
-                                    if (thisType != compiler.classNode) {
-                                        // super call to outer class' super method needs to be proxied.
-                                        foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
-                                        object = createThisFetchingObject(exp, compiler, thisType);
-                                    } else {
-                                        object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
-                                    }
-                                } else {
-                                    if (thisType != compiler.classNode && thisType != foundMethod.getDeclaringClass() &&
-                                            !foundMethod.isPublic()) {
-                                        // super call to outer class' super method needs to be proxied.
-                                        foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
-                                    }
-                                    object = createThisFetchingObject(exp, compiler, thisType);
-                                }
-                            }
-
-                            return createCall(exp, compiler, args, object, foundMethod);
-                        }
-
-                        compiler.context.setOuterClassInstanceUsed(thisType);
-                        FieldNode ownerField = thisType.getField("this$0");
-                        thisType = ownerField == null ? null : ownerField.getType();
-                    }
+                    object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                    return createCall(exp, compiler, args, object, foundMethod);
                 }
-
-                return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
+                if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                        foundMethod.getDeclaringClass(), compiler.classNode, type)) {
+                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
+                }
+                return createCall(exp, compiler, args, null, foundMethod);
             } else {
-                object = (BytecodeExpr) compiler.transformToGround(exp.getObjectExpression());
-                type = object.getType();
+                if (exp.getObjectExpression() instanceof VariableExpression &&
+                    (((VariableExpression) exp.getObjectExpression()).isThisExpression() ||
+                    ((VariableExpression) exp.getObjectExpression()).isSuperExpression())) {
+                    ClassNode thisType = compiler.methodNode.getDeclaringClass();
+                    if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
+                        foundMethod = findMethodWithClosureCoercion(thisType, methodName, argTypes, compiler, true);
 
-                if (type instanceof ClosureClassNode && methodName.equals("call"))
-                    // Since ClosureClassNode can't (at least currently) escape its scope we have a typed closure,
-                    // so let's forget about 'call' and deal with 'doCall' instead.
-                    methodName = "doCall";
-
-                if (foundMethod == null)
-                    foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, false);
-
-                if (foundMethod == null) {
-                    // Try some property with 'call' method.
-                    Object prop = resolveCallableProperty(compiler, methodName, type, false);
-                    if (prop != null) {
-                        final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
-                        if (callMethod != null) {
-                            return createCallMethodCall(exp, compiler, methodName, args, object, prop, callMethod, type);
-                        }
-                    }
-                }
-
-                if (foundMethod == null) {
-                    if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
-                        foundMethod = findMethodWithClosureCoercion(ClassHelper.CLOSURE_TYPE, methodName, argTypes, compiler, false);
                         if (foundMethod != null) {
-                            ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
+                            object = null;
+                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                    foundMethod.getDeclaringClass(), compiler.classNode, thisType)) {
+                                return dynamicOrError(exp, compiler, methodName, thisType, argTypes, "Cannot access method ");
+                            }
+
                             return createCall(exp, compiler, args, object, foundMethod);
                         }
-                    } else {
-                        MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
-                        if (unboxing != null) {
-                            ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
-                            foundMethod = findMethodWithClosureCoercion(t, methodName, argTypes, compiler, false);
+                        else {
+                            final Object prop = resolveCallableProperty(compiler, methodName, thisType, false);
+                            if (prop != null) {
+                                final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                                if (callMethod != null) {
+                                    return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, thisType);
+                                }
+                            }
+
+                            foundMethod = findMethodWithClosureCoercion(ClassHelper.CLASS_Type, methodName, argTypes, compiler, false);
                             if (foundMethod != null) {
-                                object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
-                                        new ArgumentListExpression(), compiler);
+                                object = (BytecodeExpr) compiler.transform(new ClassExpression(compiler.classNode));
                                 return createCall(exp, compiler, args, object, foundMethod);
                             }
                         }
+                    } else {
+                        if (thisType instanceof ClosureClassNode &&
+                            thisType.isDerivedFrom(ClassHelper.CLOSURE_TYPE) &&
+                            methodName.equals("call"))
+                        // We have a closure recursive call,
+                        // let's forget about 'call' and deal with 'doCall' instead.
+                        methodName = "doCall";
+
+                        boolean isSuper = ((VariableExpression) exp.getObjectExpression()).isSuperExpression();
+
+                        while (thisType != null) {
+                            ClassNode declaringType = isSuper ? thisType.getSuperClass() : thisType;
+                            foundMethod = findMethodWithClosureCoercion(declaringType, methodName, argTypes, compiler, false);
+                            if (foundMethod == null) {
+                                // Groovy does not allow to call 'this.closure()' for closure fields: issue 143.
+                                if (exp.isImplicitThis() || !(thisType instanceof ClosureClassNode) || isSuper) {
+                                    // Try some property with 'call' method.
+                                    final Object prop = resolveCallableProperty(compiler, methodName, declaringType, false);
+                                    if (prop != null) {
+                                        final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                                        if (callMethod != null) {
+                                            return createCallMethodCall(exp, compiler, methodName, args, createThisFetchingObject(exp, compiler, thisType), prop, callMethod, declaringType);
+                                        }
+                                    }
+                                }
+
+                                if (thisType.implementsInterface(TypeUtil.DELEGATING)) {
+                                    final MethodNode gd = compiler.findMethod(thisType, "getDelegate", ClassNode.EMPTY_ARRAY, false);
+                                    if (gd != null) {
+                                        final InnerThisBytecodeExpr innerThis = new InnerThisBytecodeExpr(exp, thisType, compiler);
+                                        final ResolvedMethodBytecodeExpr delegate = ResolvedMethodBytecodeExpr.create(exp, gd, innerThis, ArgumentListExpression.EMPTY_ARGUMENTS, compiler);
+                                        foundMethod = findMethodWithClosureCoercion(delegate.getType(), methodName, argTypes, compiler, false);
+
+                                        if (foundMethod != null) {
+                                            if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                                    foundMethod.getDeclaringClass(), compiler.classNode, delegate.getType())) {
+                                                return dynamicOrError(exp, compiler, methodName, delegate.getType(), argTypes, "Cannot access method ");
+                                            }
+
+                                            return createCall(exp, compiler, args, delegate, foundMethod);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (foundMethod != null) {
+                                // 'super' access is always permitted.
+                                final ClassNode accessType = isSuper ? null : declaringType;
+                                if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                                        foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
+                                    return dynamicOrError(exp, compiler, methodName, declaringType, argTypes, "Cannot access method ");
+                                }
+
+
+                                if (foundMethod.isStatic())
+                                    object = null;
+                                else {
+                                    if (compiler.methodNode.isStatic() && !(foundMethod instanceof ClassNodeCache.DGM)) {
+                                        compiler.addError("Cannot reference an instance method from static context", exp);
+                                        return null;
+                                    }
+
+                                    if (isSuper) {
+                                        if (thisType != compiler.classNode) {
+                                            // super call to outer class' super method needs to be proxied.
+                                            foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
+                                            object = createThisFetchingObject(exp, compiler, thisType);
+                                        } else {
+                                            object = (BytecodeExpr) compiler.transform(exp.getObjectExpression());
+                                        }
+                                    } else {
+                                        if (thisType != compiler.classNode && thisType != foundMethod.getDeclaringClass() &&
+                                                !foundMethod.isPublic()) {
+                                            // super call to outer class' super method needs to be proxied.
+                                            foundMethod = compiler.context.getSuperMethodDelegate(foundMethod, thisType);
+                                        }
+                                        object = createThisFetchingObject(exp, compiler, thisType);
+                                    }
+                                }
+
+                                return createCall(exp, compiler, args, object, foundMethod);
+                            }
+
+                            compiler.context.setOuterClassInstanceUsed(thisType);
+                            FieldNode ownerField = thisType.getField("this$0");
+                            thisType = ownerField == null ? null : ownerField.getType();
+                        }
                     }
 
-                    if (object instanceof ResolvedFieldBytecodeExpr) {
-                        ResolvedFieldBytecodeExpr obj = (ResolvedFieldBytecodeExpr) object;
-                        FieldNode fieldNode = obj.getFieldNode();
-                        if ((fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
-                            FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
-                            if (updater != null) {
-                                ClassNode [] newArgs = new ClassNode [argTypes.length+1];
-                                System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
-                                newArgs [0] = obj.getObject().getType();
-                                MethodNode updaterMethod = findMethodWithClosureCoercion(updater.getType(), methodName, newArgs, compiler, false);
-                                if (updaterMethod != null) {
-                                    ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
-                                    ((TupleExpression)args).getExpressions().add(0, obj.getObject());
-                                    return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+                    return dynamicOrError(exp, compiler, methodName, compiler.classNode, argTypes, "Cannot find method ");
+                } else {
+                    object = (BytecodeExpr) compiler.transformToGround(exp.getObjectExpression());
+                    type = object.getType();
+
+                    if (type instanceof ClosureClassNode && methodName.equals("call"))
+                        // Since ClosureClassNode can't (at least currently) escape its scope we have a typed closure,
+                        // so let's forget about 'call' and deal with 'doCall' instead.
+                        methodName = "doCall";
+
+                    if (foundMethod == null)
+                        foundMethod = findMethodWithClosureCoercion(type, methodName, argTypes, compiler, false);
+
+                    if (foundMethod == null) {
+                        // Try some property with 'call' method.
+                        Object prop = resolveCallableProperty(compiler, methodName, type, false);
+                        if (prop != null) {
+                            final MethodNode callMethod = resolveCallMethod(compiler, argTypes, prop);
+                            if (callMethod != null) {
+                                return createCallMethodCall(exp, compiler, methodName, args, object, prop, callMethod, type);
+                            }
+                        }
+                    }
+
+                    if (foundMethod == null) {
+                        if (TypeUtil.isAssignableFrom(TypeUtil.TCLOSURE, object.getType())) {
+                            foundMethod = findMethodWithClosureCoercion(ClassHelper.CLOSURE_TYPE, methodName, argTypes, compiler, false);
+                            if (foundMethod != null) {
+                                ClosureUtil.improveClosureType(object.getType(), ClassHelper.CLOSURE_TYPE);
+                                return createCall(exp, compiler, args, object, foundMethod);
+                            }
+                        } else {
+                            MethodNode unboxing = TypeUtil.getReferenceUnboxingMethod(type);
+                            if (unboxing != null) {
+                                ClassNode t = TypeUtil.getSubstitutedType(unboxing.getReturnType(), unboxing.getDeclaringClass(), type);
+                                foundMethod = findMethodWithClosureCoercion(t, methodName, argTypes, compiler, false);
+                                if (foundMethod != null) {
+                                    object = ResolvedMethodBytecodeExpr.create(exp, unboxing, object,
+                                            new ArgumentListExpression(), compiler);
+                                    return createCall(exp, compiler, args, object, foundMethod);
                                 }
                             }
                         }
-                    } else if (object instanceof ResolvedGetterBytecodeExpr) {
-                        ResolvedGetterBytecodeExpr obj = (ResolvedGetterBytecodeExpr) object;
-                        FieldNode fieldNode = obj.getFieldNode();
-                        if (fieldNode != null && (fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
-                            FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
-                            if (updater != null) {
-                                ClassNode[] newArgs = new ClassNode [argTypes.length+1];
-                                System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
-                                newArgs [0] = obj.getObject().getType();
-                                MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
-                                if (updaterMethod != null) {
-                                    ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
-                                    ((TupleExpression)args).getExpressions().add(0, obj.getObject());
-                                    return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+
+                        if (object instanceof ResolvedFieldBytecodeExpr) {
+                            ResolvedFieldBytecodeExpr obj = (ResolvedFieldBytecodeExpr) object;
+                            FieldNode fieldNode = obj.getFieldNode();
+                            if ((fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
+                                FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
+                                if (updater != null) {
+                                    ClassNode [] newArgs = new ClassNode [argTypes.length+1];
+                                    System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
+                                    newArgs [0] = obj.getObject().getType();
+                                    MethodNode updaterMethod = findMethodWithClosureCoercion(updater.getType(), methodName, newArgs, compiler, false);
+                                    if (updaterMethod != null) {
+                                        ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
+                                        ((TupleExpression)args).getExpressions().add(0, obj.getObject());
+                                        return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+                                    }
+                                }
+                            }
+                        } else if (object instanceof ResolvedGetterBytecodeExpr) {
+                            ResolvedGetterBytecodeExpr obj = (ResolvedGetterBytecodeExpr) object;
+                            FieldNode fieldNode = obj.getFieldNode();
+                            if (fieldNode != null && (fieldNode.getModifiers() & Opcodes.ACC_VOLATILE) != 0) {
+                                FieldNode updater = fieldNode.getDeclaringClass().getDeclaredField(fieldNode.getName() + "$updater");
+                                if (updater != null) {
+                                    ClassNode[] newArgs = new ClassNode [argTypes.length+1];
+                                    System.arraycopy(argTypes, 0, newArgs, 1, argTypes.length);
+                                    newArgs [0] = obj.getObject().getType();
+                                    MethodNode updaterMethod = compiler.findMethod(updater.getType(), methodName, newArgs, false);
+                                    if (updaterMethod != null) {
+                                        ResolvedFieldBytecodeExpr updaterInstance = new ResolvedFieldBytecodeExpr(exp, updater, null, null, compiler);
+                                        ((TupleExpression)args).getExpressions().add(0, obj.getObject());
+                                        return createCall(exp, compiler, args, updaterInstance, updaterMethod);
+                                    }
                                 }
                             }
                         }
+
+                        return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
                     }
 
-                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot find method ");
-                }
+                    // 'super' access is always permitted.
+                    final ClassNode accessType = object instanceof VariableExpressionTransformer.Super ? null : type;
+                    if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
+                            foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
+                        return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
+                    }
 
-                // 'super' access is always permitted.
-                final ClassNode accessType = object instanceof VariableExpressionTransformer.Super ? null : type;
-                if (!AccessibilityCheck.isAccessible(foundMethod.getModifiers(),
-                        foundMethod.getDeclaringClass(), compiler.classNode, accessType)) {
-                    return dynamicOrError(exp, compiler, methodName, type, argTypes, "Cannot access method ");
+                    return createCall(exp, compiler, args, object, foundMethod);
                 }
-
-                return createCall(exp, compiler, args, object, foundMethod);
             }
+        }
+        finally {
+            exp.setArguments(originalArgs);
         }
     }
 
