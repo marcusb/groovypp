@@ -40,6 +40,8 @@
 	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all-${version}.jar"/>
 	<property name="target.jvm" value="5" />
 
+	<property name="skipTests" value="false"/>
+
 	<path id="libs">
 		<fileset dir="install/lib" includes="*.jar"/>
 	</path>
@@ -105,6 +107,10 @@
 		</fileset>
 	</path>
 
+	<condition property="_skipTests_">
+		<istrue value="${skipTests}"/>
+	</condition>
+
 
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
@@ -125,6 +131,7 @@
 
 	<target name="clean">
 		<delete dir="${output.dir}"/>
+		<delete file="cobertura.ser" quiet="true"/>
     </target>
 
 	<target name="compile.compiler" depends="releaseinfo" description="compiles compiler source files">
@@ -171,6 +178,7 @@
     </target>
 
     <target name="compile.tests.stdlib"  depends="compile.stdlib">
+	    <mkdir dir="${stdlib.test.output}"/>
         <groovyc classpathref="compile.compiler.tests.classpath" srcdir="${stdlib.tests}" fork="yes" includeantruntime="no"
             destdir="${stdlib.test.output}" verbose="true" >
         </groovyc >
@@ -194,7 +202,8 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" description="run unit tests">
+    <target name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
+            description="run unit tests" unless="_skipTests_">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
             <jvmarg value="-Xmx512m"/>
@@ -231,17 +240,22 @@
     		</fileset>
     		<report todir="${test.reports}"/>
     	</junitreport>
-	<cobertura-report destdir="${cobertura.report.dir}" format="xml">
-		<fileset dir="${compiler.src}"/>
-		<fileset dir="${stdlib.src}"/>
-	</cobertura-report>
     </target>
 
 	<target name="coverage-instrument" depends="compile.compiler, compile.stdlib">
-		<cobertura-instrument todir="${output.instrumented.dir}">
+		<!--<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
 			<fileset dir="${stdlib.prod.output}/"/>
-		</cobertura-instrument>
+		</cobertura-instrument>-->
+	</target>
+
+	<target name="coverage-report" depends="compile.compiler, compile.stdlib">
+<!--
+		<cobertura-report destdir="${cobertura.report.dir}" format="xml">
+			<fileset dir="${compiler.src}"/>
+			<fileset dir="${stdlib.src}"/>
+		</cobertura-report>
+-->
 	</target>
 
     <target name="make.jar" depends="clean,compile.examples,releaseinfo" description="Build application jar file">
@@ -263,9 +277,6 @@
                 <exclude name="asm-attr*.jar"/>
                 <exclude name="asm-util*.jar"/>
                 <exclude name="asm-analysis*.jar"/>
-            </fileset>
-            <fileset dir="out">
-                <include name="${app.name}-${version}.jar"/>
             </fileset>
         </copy>
 
@@ -299,10 +310,30 @@
                 <include name="netty-*.jar"/>
             </fileset>
         </unzip>
+	    <unzip dest="${stagingDirectory}/groovypp">
+		    <fileset dir="out">
+		        <include name="${app.name}-${version}.jar"/>
+		    </fileset>
+	    </unzip>
+
+	    <!-- Concatenate the AST Transform definitions, and remove groovypp's  ASTTransformation fil
+	        to avoid clashes -->
+	    <concat destfile="${stagingDirectory}/groovy/META-INF/services/org.codehaus.groovy.transform.ASTTransformation"
+		    append="true">
+		    <header filtering="no" trimleading="yes">
+			    # Added by Groovy++
+		    </header>
+		    <filelist dir="${stagingDirectory}/groovypp/META-INF/services"
+			       files="org.codehaus.groovy.transform.ASTTransformation"/>
+	    </concat>
+
+	    <delete
+			file="${stagingDirectory}/groovypp/META-INF/services/org.codehaus.groovy.transform.ASTTransformation" />
 
         <jarjar jarfile="${embeddable.jar.name}">
             <zipgroupfileset dir="${stagingDirectory}" includes="*.jar" />
             <fileset dir="${stagingDirectory}/groovy" />
+	        <fileset dir="${stagingDirectory}/groovypp" />
             <fileset dir="${stagingDirectory}/cli" />
             <fileset dir="${stagingDirectory}/netty" />
             <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
