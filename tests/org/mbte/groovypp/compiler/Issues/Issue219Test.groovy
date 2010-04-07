@@ -21,4 +21,13 @@ def arr = []
 arr[0] + 1
         """, "Cannot find method Object.plus(int)")
     }
+
+    void test3 () {
+        shouldNotCompile("""
+@Typed package p
+
+def list = [new Date()]
+list.add(1)
+        """, "Cannot find method ArrayList<Date>.add(int)")
+    }
 }
