@@ -8,7 +8,7 @@ public class Issue222Test extends GroovyShellTestCase {
         shouldCompile """
 import java.util.concurrent.Executor
 
-@Typed(debug=true)
+@Typed
 class CLP {
   static Executor getOrElse (Closure factory) {
 
@@ -26,7 +26,7 @@ class CLP {
         shouldCompile """
 import java.util.concurrent.Executor
 
-@Typed(debug=true)
+@Typed
 class CLP {
   static Executor getOrElse (Closure factory) {
 
