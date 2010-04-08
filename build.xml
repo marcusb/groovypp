@@ -41,7 +41,7 @@
 	<property name="target.jvm" value="5" />
 
 	<property name="skipTests" value="false"/>
-	<property name="skipCoverage" value="true"/>
+	<property name="skipCoverage" value="false"/>
 
 	<path id="libs">
 		<fileset dir="install/lib" includes="*.jar"/>
@@ -392,7 +392,7 @@
         </copy>
     </target>
 
-    <target name="make.install" depends="test, make.embeddable.jar" description="Build installation">
+    <target name="make.install" depends="coverage.test, make.embeddable.jar" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
@@ -501,5 +501,5 @@
 	    labels="Featured" verbose="true"/>
     </target>
 
-	<target name="coverage.test" depends="coverage-instrument, test, coverage-report" unless="_skipCoverage_"/>
+	<target name="coverage.test" depends="coverage-instrument, test, coverage-report"/>
 </project>
