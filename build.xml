@@ -41,7 +41,6 @@
 	<property name="target.jvm" value="5" />
 
 	<property name="skipTests" value="false"/>
-	<property name="skipCoverage" value="false"/>
 
 	<path id="libs">
 		<fileset dir="install/lib" includes="*.jar"/>
@@ -112,10 +111,14 @@
 		<istrue value="${skipTests}"/>
 	</condition>
 
-	<condition property="_skipCoverage_">
-		<istrue value="${skipCoverage}"/>
-	</condition>
-
+        <condition property="_forceCoverage_">
+            <and>
+                <not>
+                    <istrue value="${skipTests}"/>
+                </not>
+                <istrue value="${forceCoverage}"/>
+            </and>
+        </condition>
 
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
@@ -207,7 +210,7 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
+    <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
             description="run unit tests" unless="_skipTests_">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
@@ -251,17 +254,14 @@
     </target>
 
 	<target name="coverage-instrument"
-	        depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
-			unless="_skipCoverage_">
+	        depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" if="_forceCoverage_">
 		<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
 			<fileset dir="${stdlib.prod.output}/"/>
 		</cobertura-instrument>
 	</target>
 
-	<target name="coverage-report"
-	        depends="compile.compiler, compile.stdlib"
-			unless="_skipCoverage_">
+	<target name="coverage-report" depends="test" if="_forceCoverage_">
 		<cobertura-report destdir="${cobertura.report.dir}" format="xml">
 			<fileset dir="${compiler.src}"/>
 			<fileset dir="${stdlib.src}"/>
@@ -392,7 +392,7 @@
         </copy>
     </target>
 
-    <target name="make.install" depends="coverage.test, make.embeddable.jar" description="Build installation">
+    <target name="make.install" depends="test, make.embeddable.jar" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
@@ -500,6 +500,4 @@
     	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"
 	    labels="Featured" verbose="true"/>
     </target>
-
-	<target name="coverage.test" depends="coverage-instrument, test, coverage-report"/>
 </project>
