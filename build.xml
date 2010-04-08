@@ -315,6 +315,17 @@
 		        <include name="${app.name}-${version}.jar"/>
 		    </fileset>
 	    </unzip>
+	    <unzip dest="${stagingDirectory}/junit">
+		    <patternset>
+		        <exclude name="META-INF/MANIFEST.MF"/>
+		    </patternset>
+		    <mapper>
+		        <globmapper from="LICENSE.txt" to="META-INF/JUNIT-LICENSE.txt"/>
+			</mapper>
+		    <fileset dir="${deploy.lib.dir}">
+		        <include name="junit-*.jar"/>
+		    </fileset>
+	    </unzip>
 
 	    <!-- Concatenate the AST Transform definitions, and remove groovypp's  ASTTransformation fil
 	        to avoid clashes -->
@@ -336,6 +347,7 @@
 	        <fileset dir="${stagingDirectory}/groovypp" />
             <fileset dir="${stagingDirectory}/cli" />
             <fileset dir="${stagingDirectory}/netty" />
+	        <fileset dir="${stagingDirectory}/junit" />
             <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
             <rule pattern="org.objectweb.**" result="groovyjarjarasm.@1"/>
             <rule pattern="org.apache.commons.cli.**" result="groovyjarjarcommonscli.@1"/>
