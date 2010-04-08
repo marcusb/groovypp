@@ -210,7 +210,7 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="make.jar,coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
+    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
             description="run unit tests" unless="_skipTests_">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
