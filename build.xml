@@ -254,7 +254,7 @@
     </target>
 
 	<target name="coverage-instrument"
-	        depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest" if="_forceCoverage_">
+	        depends="compile.compiler,compile.stdlib" if="_forceCoverage_">
 		<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
 			<fileset dir="${stdlib.prod.output}/"/>
