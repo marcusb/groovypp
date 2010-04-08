@@ -268,7 +268,7 @@
 		</cobertura-report>
 	</target>
 
-    <target name="make.jar" depends="clean,compile.examples,releaseinfo" description="Build application jar file">
+    <target name="make.jar" depends="test,compile.examples" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
@@ -392,7 +392,7 @@
         </copy>
     </target>
 
-    <target name="make.install" depends="test, make.embeddable.jar" description="Build installation">
+    <target name="make.install" depends="make.embeddable.jar" description="Build installation">
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
 
