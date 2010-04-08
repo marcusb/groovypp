@@ -149,7 +149,7 @@ import groovy.util.concurrent.CallLaterPool
         for(i in 0..<nMessages)
             prev << "Hi"
 
-        assertTrue(cdl.await(100,TimeUnit.SECONDS))
+        assertTrue(cdl.await(300,TimeUnit.SECONDS))
         println("runRingFair: ${System.currentTimeMillis()-start}")
     }
 
@@ -175,7 +175,7 @@ import groovy.util.concurrent.CallLaterPool
         for(i in 0..<nMessages)
             prev << "Hi"
 
-        assertTrue(cdl.await(100,TimeUnit.SECONDS))
+        assertTrue(cdl.await(300,TimeUnit.SECONDS))
         println("runRingNonFair: ${System.currentTimeMillis()-start}")
     }
 }
