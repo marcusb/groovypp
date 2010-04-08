@@ -261,7 +261,7 @@
 		</cobertura-instrument>
 	</target>
 
-	<target name="coverage-report" depends="test" if="_forceCoverage_">
+	<target name="coverage-report">
 		<cobertura-report destdir="${cobertura.report.dir}" format="xml">
 			<fileset dir="${compiler.src}"/>
 			<fileset dir="${stdlib.src}"/>
