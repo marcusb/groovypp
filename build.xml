@@ -41,6 +41,7 @@
 	<property name="target.jvm" value="5" />
 
 	<property name="skipTests" value="false"/>
+	<property name="skipCoverage" value="true"/>
 
 	<path id="libs">
 		<fileset dir="install/lib" includes="*.jar"/>
@@ -109,6 +110,10 @@
 
 	<condition property="_skipTests_">
 		<istrue value="${skipTests}"/>
+	</condition>
+
+	<condition property="_skipCoverage_">
+		<istrue value="${skipCoverage}"/>
 	</condition>
 
 
@@ -245,14 +250,18 @@
     	</junitreport>
     </target>
 
-	<target name="coverage-instrument" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest">
+	<target name="coverage-instrument"
+	        depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
+			unless="_skipCoverage_">
 		<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
 			<fileset dir="${stdlib.prod.output}/"/>
 		</cobertura-instrument>
 	</target>
 
-	<target name="coverage-report" depends="compile.compiler, compile.stdlib">
+	<target name="coverage-report"
+	        depends="compile.compiler, compile.stdlib"
+			unless="_skipCoverage_">
 		<cobertura-report destdir="${cobertura.report.dir}" format="xml">
 			<fileset dir="${compiler.src}"/>
 			<fileset dir="${stdlib.src}"/>
@@ -492,5 +501,5 @@
 	    labels="Featured" verbose="true"/>
     </target>
 
-	<target name="coverage.test" depends="coverage-instrument, test, coverage-report" />
+	<target name="coverage.test" depends="coverage-instrument, test, coverage-report" unless="_skipCoverage_"/>
 </project>
