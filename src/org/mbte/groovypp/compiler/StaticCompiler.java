@@ -169,8 +169,12 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         Label continueLabel = compileStack.getContinueLabel();
         Label breakLabel = compileStack.getBreakLabel();
+        BytecodeExpr fakeObject = new BytecodeExpr(collectionExpression, collectionExpression.getType()) {
+            protected void compile(MethodVisitor mv) {}
+        };
+
         MethodCallExpression iterator = new MethodCallExpression(
-                collectionExpression, "iterator", new ArgumentListExpression());
+                fakeObject, "iterator", new ArgumentListExpression());
         iterator.setSourcePosition(collectionExpression);
         BytecodeExpr expr = (BytecodeExpr) transform(iterator);
         expr.visit(mv);
@@ -271,31 +275,36 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         if (loopVar == ForStatement.FOR_LOOP_DUMMY) {
             visitForLoopWithClosures(forLoop);
         } else {
-            BytecodeExpr collectionExpression = (BytecodeExpr) transform(forLoop.getCollectionExpression());
+            BytecodeExpr collectionExpression = (BytecodeExpr) transformToGround(forLoop.getCollectionExpression());
+            collectionExpression.visit(mv);
+            Label nullLabel = new Label(), endLabel = new Label();
+            mv.visitInsn(DUP);
+            mv.visitJumpInsn(IFNULL, nullLabel);
             if (collectionExpression.getType().isArray()) {
-                visitForLoopWithArray(forLoop, collectionExpression);
+                visitForLoopWithArray(forLoop, collectionExpression.getType().getComponentType());
             } else if (forLoop.getCollectionExpression() instanceof RangeExpression &&
                     TypeUtil.equal(TypeUtil.RANGE_OF_INTEGERS_TYPE, collectionExpression.getType())
                     && (forLoop.getVariable().isDynamicTyped() ||
                         forLoop.getVariable().getType().equals(ClassHelper.int_TYPE))) {
                 // This is the IntRange (or EmptyRange). Iterate with index.
-                visitForLoopWithIntRange(forLoop, collectionExpression);
+                visitForLoopWithIntRange(forLoop);
             } else {
                 visitForLoopWithIterator(forLoop, collectionExpression);
             }
+            mv.visitJumpInsn(GOTO, endLabel);
+            mv.visitLabel(nullLabel);
+            mv.visitInsn(POP);
+            mv.visitLabel(endLabel);
         }
     }
 
-    private void visitForLoopWithArray(ForStatement forLoop, BytecodeExpr coll) {
-        visitStatement(forLoop);
+    private void visitForLoopWithArray(ForStatement forLoop, ClassNode componentType) {
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
-        ClassNode type = coll.getType().getComponentType();
-        forLoop.getVariable().setType(type);
+        forLoop.getVariable().setType(componentType);
 
         Label breakLabel = compileStack.getBreakLabel();
         Label continueLabel = compileStack.getContinueLabel();
 
-        coll.visit(mv);
         int array = compileStack.defineTemporaryVariable("$array$", ClassHelper.OBJECT_TYPE, true);
         mv.visitInsn(ICONST_0);
         int idx = compileStack.defineTemporaryVariable("$idx$", ClassHelper.int_TYPE, true);
@@ -308,14 +317,14 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
 
         mv.visitVarInsn(ALOAD, array);
         mv.visitVarInsn(ILOAD, idx);
-        if (ClassHelper.isPrimitiveType(type)) {
-                if (type == ClassHelper.long_TYPE)
+        if (ClassHelper.isPrimitiveType(componentType)) {
+                if (componentType == ClassHelper.long_TYPE)
                     mv.visitInsn(LALOAD);
                 else
-                if (type == ClassHelper.float_TYPE)
+                if (componentType == ClassHelper.float_TYPE)
                     mv.visitInsn(FALOAD);
                 else
-                if (type == ClassHelper.double_TYPE)
+                if (componentType == ClassHelper.double_TYPE)
                     mv.visitInsn(DALOAD);
                 else
                     mv.visitInsn(IALOAD);
@@ -336,15 +345,13 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         compileStack.pop();
     }
 
-    private void visitForLoopWithIntRange(ForStatement forLoop, BytecodeExpr coll) {
-        visitStatement(forLoop);
+    private void visitForLoopWithIntRange(ForStatement forLoop) {
         compileStack.pushLoop(forLoop.getVariableScope(), forLoop.getStatementLabel());
         forLoop.getVariable().setType(ClassHelper.int_TYPE);
 
         Label breakLabel = compileStack.getBreakLabel();
         Label continueLabel = compileStack.getContinueLabel();
 
-        coll.visit(mv);
         mv.visitInsn(DUP);
         int collIdx = compileStack.defineTemporaryVariable("$coll$", ClassHelper.OBJECT_TYPE, true);
         mv.visitTypeInsn(INSTANCEOF, BytecodeHelper.getClassInternalName(EmptyRange.class));
