@@ -210,6 +210,9 @@
             <jvmarg value="-ea"/>
 
             <classpath>
+				<fileset dir="lib/cobertura"/>
+            	<pathelement location="${output.instrumented.dir}"/>
+	            
                 <pathelement location="${stdlib.prod.output}"/>
                 <pathelement location="${compiler.prod.output}"/>
             	<path>
@@ -242,20 +245,18 @@
     	</junitreport>
     </target>
 
-	<target name="coverage-instrument" depends="compile.compiler, compile.stdlib">
-		<!--<cobertura-instrument todir="${output.instrumented.dir}">
+	<target name="coverage-instrument" depends="make.jar,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest">
+		<cobertura-instrument todir="${output.instrumented.dir}">
 			<fileset dir="${compiler.prod.output}/"/>
 			<fileset dir="${stdlib.prod.output}/"/>
-		</cobertura-instrument>-->
+		</cobertura-instrument>
 	</target>
 
 	<target name="coverage-report" depends="compile.compiler, compile.stdlib">
-<!--
 		<cobertura-report destdir="${cobertura.report.dir}" format="xml">
 			<fileset dir="${compiler.src}"/>
 			<fileset dir="${stdlib.src}"/>
 		</cobertura-report>
--->
 	</target>
 
     <target name="make.jar" depends="clean,compile.examples,releaseinfo" description="Build application jar file">
@@ -490,4 +491,6 @@
     	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"
 	    labels="Featured" verbose="true"/>
     </target>
+
+	<target name="coverage.test" depends="coverage-instrument, test, coverage-report" />
 </project>
