@@ -15,8 +15,6 @@ import org.junit.Assert
  */
 @Typed
 class CallLaterExecutors {
-    private static CallLaterPool _defaultExecutor
-
     static CallLaterPool newFixedThreadPool(int nThreads) {
         new CallLaterPool(nThreads, nThreads,0L, TimeUnit.SECONDS,new LinkedBlockingQueue<Runnable>())
     }
