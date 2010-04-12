@@ -47,18 +47,15 @@ class GenericsTest extends GroovyShellTestCase {
     """
   }
 
-  void testSecondOrder() {
-    shouldCompile """
+  void testSecondCall() {
+    shell.evaluate """
       @Typed
       public class Test {
           public void foo(List<List<String>> ll) {
-              ll.get(0).get(0).toLowerCase()
+              assert "a" == ll.get(0).get(0).toLowerCase()
           }
       }
-      def ll = new ArrayList()
-      def l = new ArrayList()
-      ll.add(l)
-      l.add("")
+      def ll = [["A"]]
       new Test().foo(ll)
     """
   }
