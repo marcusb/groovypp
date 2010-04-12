@@ -9,7 +9,7 @@ import groovy.util.concurrent.CallLaterExecutors
 
 @Typed class ClusterTest extends GroovyTestCase {
     void testStartStop () {
-        def n = 10
+        def n = 3
         def stopCdl = new CountDownLatch(n)
         def connectCdl = new CountDownLatch(n*(n-1))
         def disconnectCdl = new CountDownLatch(n*(n-1))
