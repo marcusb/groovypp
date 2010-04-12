@@ -4,7 +4,7 @@ import groovy.util.concurrent.CallLaterExecutors
 import groovy.util.concurrent.SupervisedChannel
 
 /**
- * Local node in the claster
+ * Local node in the cluster.
  */
 @Typed class ClusterNode extends SupervisedChannel {
 

@@ -32,12 +32,10 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     static class Sender extends BroadcastThread {
-        long    sleepPeriod = 1000L
         byte [] dataToTransmit
 
         void doLoopAction () {
             socket.send ([dataToTransmit, dataToTransmit.length, multicastGroup, multicastPort])
-            Thread.currentThread().sleep(sleepPeriod);
         }
     }
 
