@@ -9,6 +9,14 @@ import groovy.util.concurrent.CallLaterExecutors
 import org.mbte.groovypp.remote.inet.InetClusterNode
 
 @Typed class ClusterTest extends GroovyTestCase {
+    int findFreePort() {
+      def server = new ServerSocket(0)
+      def port = server.getLocalPort()
+      server.close()
+      port
+    }
+
+
     void testStartStop () {
         def n = 3
         def stopCdl = new CountDownLatch(n)
@@ -18,8 +26,8 @@ import org.mbte.groovypp.remote.inet.InetClusterNode
         for(i in 0..<n) {
             InetClusterNode cluster = [
                 doStartup: {
-                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), 17000 + 2*i)))
-                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), 17000 + 2*i+1)))
+                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))
+                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))
 
                     startupChild(new ClientConnector())
                 }
