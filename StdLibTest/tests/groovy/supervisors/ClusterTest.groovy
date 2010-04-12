@@ -1,11 +1,12 @@
 package groovy.supervisors
 
 import groovy.remote.ClusterNode
-import org.mbte.groovypp.remote.netty.NettyServer
+import org.mbte.groovypp.remote.Server
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import org.mbte.groovypp.remote.netty.NettyClientConnector
+import org.mbte.groovypp.remote.ClientConnector
 import groovy.util.concurrent.CallLaterExecutors
+import org.mbte.groovypp.remote.inet.InetClusterNode
 
 @Typed class ClusterTest extends GroovyTestCase {
     void testStartStop () {
@@ -15,12 +16,12 @@ import groovy.util.concurrent.CallLaterExecutors
         def disconnectCdl = new CountDownLatch(n*(n-1))
         def pool = CallLaterExecutors.newCachedThreadPool()
         for(i in 0..<n) {
-            ClusterNode cluster = [
+            InetClusterNode cluster = [
                 doStartup: {
-                    startupChild(new NettyServer(connectionPort: 17000 + 2*i))
-                    startupChild(new NettyServer(connectionPort: 17000 + 2*i+1))
+                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), 17000 + 2*i)))
+                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), 17000 + 2*i+1)))
 
-                    startupChild(new NettyClientConnector())
+                    startupChild(new ClientConnector())
                 }
             ]
             cluster.executor = pool

@@ -1,6 +1,6 @@
-package org.mbte.groovypp.remote.netty;
+package org.mbte.groovypp.remote
 
-import java.net.InetAddress
+
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import groovy.remote.ClusterNode
 import org.jboss.netty.bootstrap.ClientBootstrap
@@ -8,8 +8,9 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder
 import java.util.concurrent.Executors
 import groovy.util.concurrent.SupervisedChannel
+import org.mbte.groovypp.remote.inet.InetDiscoveryInfo
 
-@Typed class NettyClientConnector extends SupervisedChannel {
+@Typed class ClientConnector extends SupervisedChannel {
     NioClientSocketChannelFactory clientFactory
 
     ClusterNode clusterNode
@@ -21,18 +22,12 @@ import groovy.util.concurrent.SupervisedChannel
             if(owner instanceof ClusterNode)
                 clusterNode = (ClusterNode)owner
             else
-                throw new IllegalStateException("NettyClientConnector requires clusterNode")
+                throw new IllegalStateException("ClientConnector requires clusterNode")
         }
 
         clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
 
-        if (clusterNode.multicastGroup && clusterNode.multicastPort) {
-            startupChild(new BroadcastThread.Receiver([
-                    multicastGroup: clusterNode.multicastGroup,
-                    multicastPort: clusterNode.multicastPort,
-                    messageTransform: { byte [] buf -> InetDiscoveryInfo.fromBytes(buf) }
-            ]))
-        }
+        clusterNode.startServerSniffer(this)
     }
 
     public void doShutdown() {
@@ -69,7 +64,7 @@ import groovy.util.concurrent.SupervisedChannel
     private HashMap<UUID,NettyClient> clients = [:]
 
     class NettyClient extends SupervisedChannel {
-        NettyConnection connection
+        Connection connection
         SocketAddress address
         UUID remoteId
 
@@ -77,7 +72,7 @@ import groovy.util.concurrent.SupervisedChannel
             ClientBootstrap bootstrap = [clientFactory]
             SimpleChannelHandlerEx handler = [
                 createConnection: { ctx ->
-                    new NettyClientConnection(channel: ctx.channel, clusterNode:clusterNode)
+                    new ClientConnection(channel: ctx.channel, clusterNode:clusterNode)
                 }
             ]
 
@@ -103,7 +98,7 @@ import groovy.util.concurrent.SupervisedChannel
             shutdown()
         }
 
-        private static class NettyClientConnection extends NettyConnection {
+        private static class ClientConnection extends Connection {
             NettyClient nettyClient
 
             public void onConnect() {

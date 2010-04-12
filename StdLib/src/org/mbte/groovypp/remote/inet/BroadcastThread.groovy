@@ -1,4 +1,4 @@
-package org.mbte.groovypp.remote.netty;
+package org.mbte.groovypp.remote.inet
 
 import groovy.util.concurrent.SupervisedChannel
 

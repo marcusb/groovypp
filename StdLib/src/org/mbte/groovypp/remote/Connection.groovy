@@ -1,10 +1,10 @@
-package org.mbte.groovypp.remote.netty
+package org.mbte.groovypp.remote
 
 import groovy.remote.RemoteConnection
 import org.jboss.netty.channel.Channel
 import groovy.remote.RemoteMessage
 
-@Typed static class NettyConnection extends RemoteConnection {
+@Typed static class Connection extends RemoteConnection {
     protected Channel channel
     private Timer timer
 

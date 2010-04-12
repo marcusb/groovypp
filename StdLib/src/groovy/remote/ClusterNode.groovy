@@ -1,12 +1,13 @@
 package groovy.remote
 
-import groovy.util.concurrent.CallLaterExecutors
 import groovy.util.concurrent.SupervisedChannel
+import org.mbte.groovypp.remote.ClientConnector
+import org.mbte.groovypp.remote.Server
 
 /**
  * Local node in the cluster.
  */
-@Typed class ClusterNode extends SupervisedChannel {
+@Typed abstract class ClusterNode extends SupervisedChannel {
 
     /**
      * Unique id of this node over cluster
@@ -14,9 +15,6 @@ import groovy.util.concurrent.SupervisedChannel
     final UUID id = UUID.randomUUID()
 
     private volatile long nextObjectId
-
-    InetAddress multicastGroup = InetAddress.getByAddress(230,0,0,239)
-    int         multicastPort  = 4238
 
     MessageChannel mainActor
 
@@ -50,7 +48,7 @@ import groovy.util.concurrent.SupervisedChannel
         mainActor = actor.async(executor)
     }
 
-    static class CommunicationEvent {
+  static class CommunicationEvent {
         static class TryingConnect extends CommunicationEvent{
             UUID uuid
             String address
@@ -76,4 +74,8 @@ import groovy.util.concurrent.SupervisedChannel
             }
         }
     }
+
+    abstract void startServerSniffer(ClientConnector clientConnector)
+
+    abstract void startServerBroadcaster(Server server)
 }

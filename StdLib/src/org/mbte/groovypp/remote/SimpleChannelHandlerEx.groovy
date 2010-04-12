@@ -1,4 +1,4 @@
-package org.mbte.groovypp.remote.netty
+package org.mbte.groovypp.remote
 
 import org.jboss.netty.channel.ChannelPipelineCoverage
 import org.jboss.netty.channel.SimpleChannelHandler

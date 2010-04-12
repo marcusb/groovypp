@@ -1,4 +1,4 @@
-package org.mbte.groovypp.remote.netty
+package org.mbte.groovypp.remote
 
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.bootstrap.ServerBootstrap
@@ -9,8 +9,8 @@ import org.jboss.netty.channel.Channel
 import groovy.remote.ClusterNode
 import groovy.util.concurrent.SupervisedChannel
 
-@Typed class NettyServer extends SupervisedChannel {
-    int connectionPort
+@Typed class Server extends SupervisedChannel {
+    SocketAddress address
 
     ClusterNode clusterNode
     NioServerSocketChannelFactory serverFactory
@@ -24,7 +24,7 @@ import groovy.util.concurrent.SupervisedChannel
             if(owner instanceof ClusterNode)
                 clusterNode = (ClusterNode)owner
             else
-                throw new IllegalStateException("NettyServer requires clusterNode")
+                throw new IllegalStateException("Server requires clusterNode")
         }
 
         serverFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
@@ -36,7 +36,7 @@ import groovy.util.concurrent.SupervisedChannel
 
         SimpleChannelHandlerEx handler = [
             createConnection: {ctx ->
-                new NettyConnection(channel: ctx.channel, clusterNode:clusterNode)
+                new Connection(channel: ctx.channel, clusterNode:clusterNode)
             }
         ]
 
@@ -45,15 +45,9 @@ import groovy.util.concurrent.SupervisedChannel
         bootstrap.pipeline.addLast("handler", handler)
 
         // Bind and startup to accept incoming connections.
-        def address = new InetSocketAddress(InetAddress.getLocalHost(), connectionPort)
         serverChannel = bootstrap.bind(address)
 
-        if (clusterNode.multicastGroup && clusterNode.multicastPort)
-            startupChild (new BroadcastThread.Sender([
-                    multicastGroup: clusterNode.multicastGroup,
-                    multicastPort:  clusterNode.multicastPort,
-                    dataToTransmit: InetDiscoveryInfo.toBytes(clusterNode.id, address)
-            ]))
+        clusterNode.startServerBroadcaster(this)
     }
 
     protected void doShutdown () {
