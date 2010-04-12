@@ -37,8 +37,7 @@ import groovy.util.concurrent.FList
         }
         else {
             beginStartup ()
-            if (!executor)
-                executor = CallLaterExecutors.currentExecutor
+            if (!executor) throw new NullPointerException("executor should be set prior to startup")
             post(new Startup(afterStartup:afterStartup))
         }
     }

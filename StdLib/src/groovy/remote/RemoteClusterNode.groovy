@@ -1,7 +1,7 @@
 package groovy.remote
 
 /**
- * Remode node in the claster
+ * Remote node in the cluster
  */
 @Typed class RemoteClusterNode extends MessageChannel<Serializable> {
    final RemoteConnection connection
