@@ -16,8 +16,8 @@ import groovy.remote.RemoteMessage
         super.onConnect();
         timer = new Timer()
         timer.scheduleAtFixedRate({
-            if (channel.isConnected())
-                channel.write(new RemoteMessage.Identity(senderNodeId:clusterNode.id))
+            if (channel?.isConnected())
+                channel?.write(new RemoteMessage.Identity(senderNodeId:clusterNode.id))
             else {
                 timer?.cancel()
                 timer = null
