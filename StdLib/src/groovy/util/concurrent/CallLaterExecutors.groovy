@@ -62,15 +62,4 @@ class CallLaterExecutors {
             assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
         }
     }
-
-    static CallLaterPool getCurrentExecutor () {
-        def t = Thread.currentThread()
-        if (t instanceof CallLaterPool.GroovyThread) {
-            CallLaterPool.GroovyThread gt = t
-            def pool = gt.pool
-            if (pool)
-                return pool
-        }
-        throw new NullPointerException("currentExecutor available only in worker threads belonging to CallLaterPool")
-    }
 }

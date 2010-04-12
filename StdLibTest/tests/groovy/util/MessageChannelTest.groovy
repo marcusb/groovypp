@@ -1,15 +1,12 @@
 package groovy.util
 
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.Executors
-import groovy.util.concurrent.FairExecutingChannel
-import java.util.concurrent.ExecutorService
 import groovy.util.concurrent.FQueue
+import groovy.util.concurrent.FairExecutingChannel
 import groovy.util.concurrent.NonfairExecutingChannel
-import groovy.util.concurrent.CallLaterExecutors
-import groovy.util.concurrent.CallLaterPool
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 
@@ -96,26 +93,7 @@ import groovy.util.concurrent.CallLaterPool
         }
     }
 
-    void testConcurrentExecutor () {
-//        def cdl = new CountDownLatch(100)
-//        CopyOnWriteArrayList results = []
-//        ConcurrentlyExecutingChannel channel = [
-//          'super': [5],
-//          onMessage: { msg ->
-//            println msg
-//            results << msg
-//            cdl.countDown()
-//        }]
-//
-//        for (i in 0..<100)
-//            channel << i
-//
-//        cdl.await(10,TimeUnit.SECONDS)
-//
-//        assertEquals (0..<100, results.iterator().asList().sort())
-    }
-
-    void testRingFair () {
+  void testRingFair () {
         testWithFixedPool {
             runRingFair(pool)
         }
