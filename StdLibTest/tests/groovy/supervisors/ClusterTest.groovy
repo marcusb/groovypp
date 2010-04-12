@@ -53,8 +53,8 @@ import groovy.util.concurrent.CallLaterExecutors
 
             cluster.startup()
         }
-        assertTrue(stopCdl.await(50,TimeUnit.SECONDS))
-        assertTrue(connectCdl.await(50,TimeUnit.SECONDS))
-        assertTrue(disconnectCdl.await(50,TimeUnit.SECONDS))
+        assertTrue(stopCdl.await(100,TimeUnit.SECONDS))
+        assertTrue(connectCdl.await(100,TimeUnit.SECONDS))
+        assertTrue(disconnectCdl.await(100,TimeUnit.SECONDS))
     }
 }
