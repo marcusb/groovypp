@@ -40,18 +40,12 @@ import groovy.util.concurrent.SupervisedChannel
     }
 
     static class Receiver extends BroadcastThread {
-        Function1<byte[],?> messageTransform
-
         void doLoopAction () {
-            def buffer = new byte [512]
-            def packet = new DatagramPacket(buffer, buffer.length)
-            socket.receive(packet)
+          def buffer = new byte[512]
+          def packet = new DatagramPacket(buffer, buffer.length)
+          socket.receive(packet)
 
-            def msg = buffer
-            if (messageTransform)
-                msg = messageTransform(buffer)
-            if (msg)
-                (owner ? owner : this).post(msg)
+          (owner ?: this).post(InetDiscoveryInfo.fromBytes(buffer))
         }
     }
 }

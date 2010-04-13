@@ -13,7 +13,6 @@ import org.mbte.groovypp.remote.Server
       clientConnector.startupChild(new BroadcastThread.Receiver([
               multicastGroup: multicastGroup,
               multicastPort: multicastPort,
-              messageTransform: { byte [] buf -> InetDiscoveryInfo.fromBytes(buf) }
       ]))
     }
   }

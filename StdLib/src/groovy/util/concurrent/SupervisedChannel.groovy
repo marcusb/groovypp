@@ -5,7 +5,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
 
-@Typed abstract class SupervisedChannel extends NonfairExecutingChannel {
+@Typed abstract class SupervisedChannel<M> extends NonfairExecutingChannel<M> {
     private static int NOT_STARTED    = 0
     private static int STARTING       = 1
     private static int STARTED        = 2

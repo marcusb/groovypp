@@ -29,7 +29,7 @@ package org.mbte.groovypp.remote.inet
             def addrLen = input.readInt()
             def addrBuf = new byte [addrLen]
             input.read(addrBuf)
-            new InetDiscoveryInfo(clusterId:uuid, serverAddress:new InetSocketAddress(InetAddress.getByAddress(addrBuf), port))
+            [clusterId:uuid, serverAddress:new InetSocketAddress(InetAddress.getByAddress(addrBuf), port)]
         }
     }
 
