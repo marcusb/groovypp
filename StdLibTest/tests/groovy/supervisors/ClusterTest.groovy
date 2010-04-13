@@ -6,16 +6,15 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.mbte.groovypp.remote.ClientConnector
 import groovy.util.concurrent.CallLaterExecutors
-import org.mbte.groovypp.remote.inet.InetClusterNode
+import org.mbte.groovypp.remote.inet.MulticastClusterNode
 
 @Typed class ClusterTest extends GroovyTestCase {
     int findFreePort() {
-      def server = new ServerSocket(0)
-      def port = server.getLocalPort()
-      server.close()
-      port
+        def server = new ServerSocket(0)
+        def port = server.getLocalPort()
+        server.close()
+        port
     }
-
 
     void testStartStop () {
         def n = 3
@@ -24,7 +23,7 @@ import org.mbte.groovypp.remote.inet.InetClusterNode
         def disconnectCdl = new CountDownLatch(n*(n-1))
         def pool = CallLaterExecutors.newCachedThreadPool()
         for(i in 0..<n) {
-            InetClusterNode cluster = [
+            MulticastClusterNode cluster = [
                 doStartup: {
                     startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))
                     startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))

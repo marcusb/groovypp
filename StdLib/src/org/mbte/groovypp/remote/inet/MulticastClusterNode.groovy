@@ -4,7 +4,7 @@ import groovy.remote.ClusterNode
 import org.mbte.groovypp.remote.ClientConnector
 import org.mbte.groovypp.remote.Server
 
-@Typed class InetClusterNode extends ClusterNode {
+@Typed class MulticastClusterNode extends ClusterNode {
   InetAddress multicastGroup = InetAddress.getByAddress(230,0,0,239)
   int         multicastPort  = 4238
 
