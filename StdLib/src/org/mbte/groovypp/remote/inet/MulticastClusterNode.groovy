@@ -10,7 +10,7 @@ import org.mbte.groovypp.remote.Server
 
   void startServerSniffer(ClientConnector clientConnector) {
     if (multicastGroup && multicastPort) {
-      clientConnector.startupChild(new BroadcastThread.Receiver([
+      clientConnector.startupChild(new MulticastChannel.Receiver([
               multicastGroup: multicastGroup,
               multicastPort: multicastPort,
       ]))
@@ -19,7 +19,7 @@ import org.mbte.groovypp.remote.Server
 
   void startServerBroadcaster(Server server) {
     if (multicastGroup && multicastPort)
-      server.startupChild (new BroadcastThread.Sender([
+      server.startupChild (new MulticastChannel.Sender([
               multicastGroup: multicastGroup,
               multicastPort:  multicastPort,
               dataToTransmit: InetDiscoveryInfo.toBytes(id, (InetSocketAddress)server.address)
