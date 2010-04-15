@@ -17,6 +17,6 @@ public class Issue221Test extends GroovyShellTestCase {
     '''
             """
         }
-        assertTrue(res.startsWith("startup failed:\nGeneral error during conversion: Error grabbing Grapes -- [unresolved dependency: roshan#dawrani;0.0.1: not found]\n\njava.lang.RuntimeException: Error grabbing Grapes -- [unresolved dependency: roshan#dawrani;0.0.1: not found]"))
+        assertTrue(res.contains("General error during conversion: Error grabbing Grapes -- [unresolved dependency: roshan#dawrani;0.0.1: not found]"))
     }
 }
