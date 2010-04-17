@@ -537,7 +537,7 @@ public class TypeUtil {
     }
 
     public static ClassNode withGenericTypes(ClassNode baseType, GenericsType[] genericTypes) {
-        if (ClassHelper.isPrimitiveType(baseType))
+        if (baseType.getGenericsTypes() == null)
             return baseType;
         
         ClassNode newBase = makeWithoutCaching(baseType.getName());
