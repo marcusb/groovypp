@@ -144,8 +144,13 @@ public class ClosureUtil {
     public static Parameter[] eraseParameterTypes(Parameter[] parameters) {
         final Parameter[] ret = new Parameter[parameters.length];
         for (int i = 0; i < ret.length; i++) {
-            final ClassNode erased = TypeUtil.withGenericTypes(parameters[i].getType().redirect(), (GenericsType[]) null);
-            ret[i] = new Parameter(erased, parameters[i].getName());
+            if (!ClassHelper.isPrimitiveType(parameters[i].getType())) {
+                final ClassNode erased = TypeUtil.withGenericTypes(parameters[i].getType().redirect(), (GenericsType[]) null);
+                ret[i] = new Parameter(erased, parameters[i].getName());
+            }
+            else {
+                ret[i] = new Parameter(parameters[i].getType(), parameters[i].getName());
+            }
         }
         return ret;
     }
