@@ -49,6 +49,7 @@ public class TypeUtil {
     public static final ClassNode ATOMIC_LONG_FIELD_UPDATER = make(AtomicLongFieldUpdater.class);
     public static final ClassNode DELEGATING = make(Delegating.class);
     public static final ClassNode THROWABLE = make(Throwable.class);
+    public static final ClassNode COMPARABLE = make(Comparable.class);
 
     public TypeUtil() {
         RAW_CLASS = new ClassNode(RawMarker.class);

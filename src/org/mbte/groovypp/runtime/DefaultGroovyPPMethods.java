@@ -1,13 +1,19 @@
 package org.mbte.groovypp.runtime;
 
 import groovy.lang.GString;
+import groovy.lang.GroovyRuntimeException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation.*;
 
 public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
     public static Number plus(Number self, Number other) {
@@ -116,5 +122,112 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
 
     public static void println(Writer self, Object value) {
         DefaultGroovyMethods.println(self, value);
+    }
+
+    public static boolean equals(Object left, Object right) {
+        return left == right || !(left == null || right == null) && left.equals(right);
+    }
+
+    public static boolean equals(List left, Object right) {
+        if (left == right) return true;
+        if (left == null || right == null) return false;
+        Class rightClass = right.getClass();
+        if (rightClass.isArray()) {
+            return compareArrayEqual(left, right);
+        }
+        if (right instanceof List)
+            return DefaultGroovyMethods.equals(left, (List)right);
+        return false;
+    }
+
+    public static boolean compareEqual(Object left, Object right) {
+        if (left == right) return true;
+        if (left == null || right == null) return false;
+
+        if (left instanceof Comparable) {
+            return compareToWithEqualityCheck(left, right) == 0;
+        }
+
+        // handle arrays on both sides as special case for efficiency
+        Class leftClass = left.getClass();
+        Class rightClass = right.getClass();
+        if (leftClass.isArray() && rightClass.isArray()) {
+            return compareArrayEqual(left, right);
+        }
+        if (leftClass.isArray() && leftClass.getComponentType().isPrimitive()) {
+            left = primitiveArrayToList(left);
+        }
+        if (rightClass.isArray() && rightClass.getComponentType().isPrimitive()) {
+            right = primitiveArrayToList(right);
+        }
+        if (left instanceof Object[] && right instanceof List) {
+            return DefaultGroovyMethods.equals((Object[]) left, (List) right);
+        }
+        if (left instanceof List && right instanceof Object[]) {
+            return DefaultGroovyMethods.equals((List) left, (Object[]) right);
+        }
+        if (left instanceof List && right instanceof List) {
+            return DefaultGroovyMethods.equals((List) left, (List) right);
+        }
+        return left.equals(right);
+    }
+
+    private static boolean isValidCharacterString(Object value) {
+        if (value instanceof String) {
+            String s = (String) value;
+            if (s.length() == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static int compareToWithEqualityCheck(Object left, Object right) {
+        if (left == right) {
+            return 0;
+        }
+        if (left == null) {
+            return -1;
+        }
+        else if (right == null) {
+            return 1;
+        }
+        if (left instanceof Comparable) {
+            if (left instanceof Number) {
+                if (isValidCharacterString(right)) {
+                    return DefaultGroovyMethods.compareTo((Number) left, (Character) box(castToChar(right)));
+                }
+                if (right instanceof Character || right instanceof Number) {
+                    return DefaultGroovyMethods.compareTo((Number) left, castToNumber(right));
+                }
+            }
+            else if (left instanceof Character) {
+                if (isValidCharacterString(right)) {
+                    return DefaultGroovyMethods.compareTo((Character)left,(Character)box(castToChar(right)));
+                }
+                if (right instanceof Number) {
+                    return DefaultGroovyMethods.compareTo((Character)left,(Number)right);
+                }
+            }
+            else if (right instanceof Number) {
+                if (isValidCharacterString(left)) {
+                    return DefaultGroovyMethods.compareTo((Character)box(castToChar(left)),(Number) right);
+                }
+            }
+            else if (left instanceof String && right instanceof Character) {
+                return ((String) left).compareTo(right.toString());
+            }
+            else if (left instanceof String && right instanceof GString) {
+                return ((String) left).compareTo(right.toString());
+            }
+            if (left.getClass().isAssignableFrom(right.getClass())
+                    || (right.getClass() != Object.class && right.getClass().isAssignableFrom(left.getClass())) //GROOVY-4046
+                    || (left instanceof GString && right instanceof String)) {
+                Comparable comparable = (Comparable) left;
+                return comparable.compareTo(right);
+            }
+        }
+
+        return -1; // anything other than 0
     }
 }

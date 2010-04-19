@@ -79,7 +79,11 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         Label noError = new Label();
 
         BytecodeExpr condition = transformLogical(statement.getBooleanExpression().getExpression(), noError, true);
-        BytecodeExpr msgExpr = (BytecodeExpr) transform(statement.getMessageExpression());
+
+        Expression msg = statement.getMessageExpression();
+        if (msg instanceof ConstantExpression && ((ConstantExpression)msg).getValue() == null)
+            msg = new ConstantExpression("\n" + su.getSample(statement.getLineNumber(), 0, null));
+        BytecodeExpr msgExpr = (BytecodeExpr) transform(msg);
 
         condition.visit(mv);
         mv.visitTypeInsn(NEW, "java/lang/AssertionError");
