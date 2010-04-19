@@ -428,7 +428,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
     }
 
-    private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName, ClassNode type, ClassNode[] argTypes, final String msg) {
+    private Expression dynamicOrError(MethodCallExpression exp, CompilerTransformer compiler, String methodName,
+                                      ClassNode type, ClassNode[] argTypes, final String msg) {
         if (compiler.policy == TypePolicy.STATIC) {
             final Expression anchor = exp.getMethod().getLineNumber() >= 0 ? exp.getMethod() : exp;
             compiler.addError(msg + getMethodDescr(type, methodName, argTypes), anchor);
@@ -437,7 +438,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             return createDynamicCall(exp, compiler);
     }
 
-    private String getMethodDescr(ClassNode type, String methodName, ClassNode[] argTypes) {
+    private static String getMethodDescr(ClassNode type, String methodName, ClassNode[] argTypes) {
         StringBuilder sb = new StringBuilder();
         sb.append(PresentationUtil.getText(type));
         sb.append(".");

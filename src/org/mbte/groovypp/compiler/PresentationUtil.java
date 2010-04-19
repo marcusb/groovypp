@@ -18,6 +18,7 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.objectweb.asm.Opcodes;
 
@@ -91,5 +92,20 @@ public class PresentationUtil {
                 builder.append(">");
             }
         }
+    }
+
+    public static String getText(MethodNode node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(PresentationUtil.getText(node.getDeclaringClass()));
+        sb.append(".");
+        sb.append(node.getName());
+        sb.append("(");
+        Parameter[] parameters = node.getParameters();
+        for (int i = 0; i != parameters.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(getText(parameters[i].getType()));
+        }
+        sb.append(")");
+        return sb.toString();
     }
 }

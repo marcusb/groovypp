@@ -928,6 +928,7 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
     }
 
     public void execute() {
+        checkWeakerOverriding();
         addReturnIfNeeded();
         compileStack.init(methodNode.getVariableScope(), methodNode.getParameters(), mv, methodNode.getDeclaringClass());
         getCode().visit(this);
@@ -935,6 +936,42 @@ public class StaticCompiler extends CompilerTransformer implements Opcodes {
         for (Runnable runnable : exceptionBlocks) {
             runnable.run();
         }
+    }
+
+    private void checkWeakerOverriding() {
+        ClassNode clazz = methodNode.getDeclaringClass();
+        if (methodNode.isPublic()) return;
+        if (methodNode instanceof ConstructorNode || methodNode.isStaticConstructor()) return;
+        ClassNode superClass = clazz.getSuperClass();
+        MethodNode superMethod = findSuperMethod(methodNode, clazz, superClass);
+        if (superMethod != null && isWeaker(methodNode, superMethod)) {
+            addError("Attempting to assign weaker access to " + PresentationUtil.getText(methodNode), methodNode);
+        } else {
+            for (ClassNode intf : clazz.getInterfaces()) {
+                superMethod = findSuperMethod(methodNode, clazz, intf);
+                if (superMethod != null && isWeaker(methodNode, superMethod)) {
+                    addError("Attempting to assign weaker access to " + PresentationUtil.getText(methodNode), methodNode);
+                }
+            }
+        }    }
+
+    /**
+     * precondition: !method.isPublic()
+     */
+    private boolean isWeaker(MethodNode method, MethodNode superMethod) {
+        if (superMethod.isPublic()) return true;
+        if (superMethod.isProtected()) return !method.isProtected();
+        return false;
+    }
+
+    private MethodNode findSuperMethod(MethodNode method, ClassNode clazz, ClassNode superClass) {
+        Parameter[] methodParameters = method.getParameters();
+        Parameter[] params = new Parameter[methodParameters.length];
+        for (int i = 0; i < params.length; i++) {
+            ClassNode type = TypeUtil.mapTypeFromSuper(methodParameters[i].getType(), superClass, clazz);
+            params[i] = new Parameter(type, methodParameters[i].getName());
+        }
+        return superClass.getMethod(method.getName(), params);
     }
 
     public void visitBytecodeSequence(BytecodeSequence sequence) {
