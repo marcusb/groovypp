@@ -1,3 +1,21 @@
+/*
+ * Copyright 2009-2010 MBTE Sweden AB.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+
 package groovy.util
 
 import groovy.util.concurrent.FQueue
@@ -5,8 +23,10 @@ import groovy.util.concurrent.FairExecutingChannel
 import groovy.util.concurrent.NonfairExecutingChannel
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutorService
+
 import java.util.concurrent.TimeUnit
+import groovy.util.concurrent.FThreadPool
+import java.util.concurrent.Executor
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 
@@ -93,7 +113,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-  void testRingFair () {
+    void testRingFair () {
         testWithFixedPool {
             runRingFair(pool)
         }
@@ -105,7 +125,21 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    private void runRingFair (ExecutorService pool) {
+    void testRingFairFastPool () {
+        FThreadPool pool = []
+        runRingFair(pool)
+        assertTrue(pool.shutdownNow().empty)
+        assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
+    }
+
+    void testRingNonFairFastPool () {
+        FThreadPool pool = []
+        runRingNonFair(pool)
+        assertTrue(pool.shutdownNow().empty)
+        assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
+    }
+
+    private void runRingFair (Executor pool) {
         def start = System.currentTimeMillis()
         MessageChannel prev
         int nMessages = 500
@@ -128,10 +162,10 @@ import java.util.concurrent.TimeUnit
             prev << "Hi"
 
         assertTrue(cdl.await(300,TimeUnit.SECONDS))
-        println("runRingFair: ${System.currentTimeMillis()-start}")
+        println("runRingFair: ${pool.class.simpleName} ${System.currentTimeMillis()-start}")
     }
 
-    private void runRingNonFair (ExecutorService pool) {
+    private void runRingNonFair (Executor pool) {
         def start = System.currentTimeMillis()
         MessageChannel prev
         int nMessages = 500
@@ -154,6 +188,6 @@ import java.util.concurrent.TimeUnit
             prev << "Hi"
 
         assertTrue(cdl.await(300,TimeUnit.SECONDS))
-        println("runRingNonFair: ${System.currentTimeMillis()-start}")
+        println("runRingNonFair: ${pool.class.simpleName} ${System.currentTimeMillis()-start}")
     }
 }
