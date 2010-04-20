@@ -409,10 +409,36 @@
     </target>
 
     <target name="make.install" depends="make.embeddable.jar" description="Build installation">
+
+		<!-- Prepare scripts to run with renamed groovy jar -->
+		<delete dir="tempbin" quiet="true" />
+		<mkdir dir="tempbin" />
+		<copy todir="tempbin">
+			<fileset dir="install/bin" />
+		</copy>
+
+		<replaceregexp match="groovy-1.8.0(.*).jar"
+				replace="groovy-1.8.0\1-${version}.jar"
+				byline="true">
+			<fileset dir="tempbin" includes="startGroovy*"/>
+		</replaceregexp>
+
         <zip destfile="${install.zip}"
              comment="The Groovy Booster binary distribution.">
+	        <zipfileset dir="install" prefix="" >
+		        <exclude name="embeddable/**" />
+		        <exclude name="lib/groovy-1.8.0*.jar" />
+		        <exclude name="bin/**" />
+	        </zipfileset>
 
-            <zipfileset dir="install" prefix="" excludes="embeddable/**"/>
+	        <mappedresources>
+		        <fileset dir="install/lib">
+			        <include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+		        </fileset>
+		        <globmapper from="groovy-1.8.0*.jar"
+		                    to="lib/groovy-1.8.0*-${version}.jar"/>
+	        </mappedresources>
+
             <zipfileset file="${jar.name}" prefix="lib"/>
 			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
             <zipfileset dir="${compiler.tests}" prefix="booster/tests"/>
@@ -420,7 +446,10 @@
             <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
             <zipfileset dir="${examples.src}" prefix="booster/examples"/>
             <zipfileset dir="${stdlib.src}" prefix="booster/stdlib"/>
+	        <zipfileset dir="tempbin" prefix="bin"/>
         </zip>
+
+	    <delete dir="tempbin" quiet="true" />
     </target>
 
 	<target name="check.groovypp.jar">
