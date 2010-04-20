@@ -30,26 +30,30 @@ import groovy.util.concurrent.LoopChannel
         super.doStartup()
     }
 
-    void doShutdown() {
-        socket.close()
-        super.doShutdown()
-    }
-
     static class Sender extends MulticastChannel {
         byte [] dataToTransmit
 
-        void doLoopAction () {
-            socket.send ([dataToTransmit, dataToTransmit.length, multicastGroup, multicastPort])
+        boolean doLoopAction () {
+            if (!stopped) {
+                socket.send ([dataToTransmit, dataToTransmit.length, multicastGroup, multicastPort])
+            } else {
+                socket.close()
+            }
+            return !stopped
         }
     }
 
     static class Receiver extends MulticastChannel {
-        void doLoopAction () {
-          def buffer = new byte[512]
-          def packet = new DatagramPacket(buffer, buffer.length)
-          socket.receive(packet)
-
-          (owner ?: this).post(InetDiscoveryInfo.fromBytes(buffer))
+        boolean doLoopAction () {
+          if (!stopped) {
+              def buffer = new byte[512]
+              def packet = new DatagramPacket(buffer, buffer.length)
+              socket.receive(packet)
+              (owner ?: this).post(InetDiscoveryInfo.fromBytes(buffer))
+          } else {
+              socket.close()
+          }
+          return !stopped
         }
     }
 }

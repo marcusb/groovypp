@@ -17,15 +17,16 @@
 package groovy.util.concurrent
 
 @Typed abstract class LoopChannel extends SupervisedChannel {
-    private volatile boolean stopped
+    protected volatile boolean stopped
 
-    protected abstract void doLoopAction ()
+    protected abstract boolean doLoopAction ()
 
     void doStartup() {
         executor.execute {
             try {
-                while (!stopped)
-                    doLoopAction ()
+                while (true) {
+                    if (!doLoopAction()) break
+                }
             }
             catch(Throwable t) {
                 stopped = true
