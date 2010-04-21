@@ -1,7 +1,0 @@
-# global annotation to handle @Trait annotation
-org.mbte.groovypp.compiler.TraitASTTransform
-
-# global annotation to handle verification on earlier stage
-org.mbte.groovypp.compiler.TraitASTTransformFinal
-
-#files:gpp,grunit

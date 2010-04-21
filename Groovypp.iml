@@ -2,10 +2,7 @@
 <module relativePaths="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/Compiler">
-      <sourceFolder url="file://$MODULE_DIR$/Compiler/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Compiler/tests" isTestSource="false" />
-    </content>
+    <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="groovy-1.8.0-beta-1-SNAPSHOT (1)" level="project" />
