@@ -33,6 +33,7 @@
 
     <property name="version" value="${groovyPPVersion}"/>
     <property name="install.zip" value="groovypp-${version}.zip"/>
+    <property name="src.zip" value="groovypp-src-${version}.zip"/>
 
 
     <property name="compiler.src" location="Compiler/src" />
@@ -441,16 +442,26 @@
 
             <zipfileset file="${jar.name}" prefix="lib"/>
 			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
-            <zipfileset dir="${compiler.tests}" prefix="groovypp/tests"/>
-            <zipfileset dir="${compiler.src}" prefix="groovypp/compiler"/>
-            <zipfileset dir="${stdlib.tests}" prefix="groovypp/tests"/>
-            <zipfileset dir="${stdlibtest.tests}" prefix="groovypp/tests"/>
-            <zipfileset dir="${examples.src}" prefix="groovypp/examples"/>
-            <zipfileset dir="${stdlib.src}" prefix="groovypp/stdlib"/>
 	        <zipfileset dir="tempbin" prefix="bin"/>
         </zip>
 
-	    <delete dir="tempbin" quiet="true" />
+        <delete dir="tempbin" quiet="true" />
+    </target>
+
+    <target name="package.src" description="Package sources">
+        <zip destfile="${src.zip}"
+             comment="The Groovy++ source distribution.">
+	        <zipfileset dir="install" prefix="install" />
+            <zipfileset dir="lib"     prefix="lib" />
+            <zipfileset dir="maven"   prefix="maven" />
+
+            <zipfileset dir="Compiler"   prefix="Compiler"/>
+			<zipfileset dir="StdLib"     prefix="StdLib"/>
+            <zipfileset dir="StdLibTest" prefix="StdLibTest"/>
+            <zipfileset dir="Examples"   prefix="Examples"/>
+            <zipfileset file="build.xml"   prefix=""/>
+            <zipfileset file="build.properties"   prefix=""/>
+        </zip>
     </target>
 
 	<target name="check.groovypp.jar">
@@ -541,9 +552,12 @@
 		<run.benchmark className="shootout.BenchmarkResultPrinter" benchmarkargs=""/>
 	</target>
 
-    <target name="publish-googlecode" depends="make.install">
+    <target name="publish-googlecode" depends="make.install, package.src">
 	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
     	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"
 	    labels="Featured" verbose="true"/>
+        <gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
+                filename="${src.zip}" targetfilename="${src.zip}" summary="Groovy++ Sources ${version}"
+            labels="Featured" verbose="true"/>
     </target>
 </project>
