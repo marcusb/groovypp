@@ -57,23 +57,18 @@ import java.util.concurrent.Executor
         }
     }
 
-    final MessageChannel<T> filter(Function1<T,Boolean> filter) {
-        def that = this;
-        { message ->
-            if (filter(message))
-                that.post(message)
-        }
+    final MessageChannel<T> filter(FilteringChannel<T> filter) {
+      filter.forwardTo = this
+      filter
     }
 
-    final <R> MessageChannel<R> map(Function1<T,R> mapping) {
-        def that = this;
-        { message ->
-            that.post(mapping(message))
-        }
+    final <R> MessageChannel<R> map(TransformingChannel<R,T> mapping) {
+        mapping.forwardTo = this
+        mapping
     }
 
     final MessageChannel<T> async(Executor executor, boolean fair = false) {
-        def that = this;
+        def that = this
         if (fair) {
             (FairExecutingChannel)[
                 executor:executor,

@@ -18,17 +18,17 @@ package groovy.channels
 
 import groovy.util.concurrent.FList
 
-@Typed class Multiplexor<M> extends MessageChannel<M> {
+@Typed class MultiplexorChannel<M> extends MessageChannel<M> {
     private volatile FList<MessageChannel<M>> listeners = FList.emptyList
 
-    Multiplexor() {
+    MultiplexorChannel() {
     }
 
-    Multiplexor(MessageChannel<M> channel) {
+    MultiplexorChannel(MessageChannel<M> channel) {
         subscribe(channel)
     }
 
-    Multiplexor<M> subscribe(MessageChannel<M> channel) {
+    MultiplexorChannel<M> subscribe(MessageChannel<M> channel) {
         for (;;) {
             def l = listeners
             if (listeners.compareAndSet(l, l + channel))
@@ -36,14 +36,14 @@ import groovy.util.concurrent.FList
         }
     }
 
-    Multiplexor<M> subscribe(MessageChannel<M> ... channels) {
+    MultiplexorChannel<M> subscribe(MessageChannel<M> ... channels) {
         for (c  in channels) {
             subscribe(c)
         }
         this
     }
 
-    Multiplexor<M> unsubscribe(MessageChannel<M> channel) {
+    MultiplexorChannel<M> unsubscribe(MessageChannel<M> channel) {
         for (;;) {
             def l = listeners
             if (listeners.compareAndSet(l, l - channel))
@@ -57,7 +57,7 @@ import groovy.util.concurrent.FList
         }
     }
 
-    static Multiplexor<M> of (MessageChannel<M> ... channels) {
-        new Multiplexor().subscribe(channels)
+    static MultiplexorChannel<M> of (MessageChannel<M> ... channels) {
+        new MultiplexorChannel().subscribe(channels)
     }
 }

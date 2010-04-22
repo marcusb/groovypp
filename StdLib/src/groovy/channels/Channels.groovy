@@ -22,8 +22,7 @@ class Channels {
     /**
     * Utility method to create a channel from closure.
     */
-    static <T> MessageChannel<T> channel(Executor self, NonfairExecutingChannel<T> channel) {
-        channel.executor = self
+    static <T> MessageChannel<T> channel(MessageChannel<T> channel) {
         channel
     }
 

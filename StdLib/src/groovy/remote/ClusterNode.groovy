@@ -20,7 +20,7 @@ import groovy.channels.SupervisedChannel
 import org.mbte.groovypp.remote.ClientConnector
 import org.mbte.groovypp.remote.Server
 import groovy.channels.MessageChannel
-import groovy.channels.Multiplexor
+import groovy.channels.MultiplexorChannel
 
 /**
  * Local node in the cluster.
@@ -36,7 +36,7 @@ import groovy.channels.Multiplexor
 
     MessageChannel mainActor
 
-    Multiplexor<CommunicationEvent> communicationEvents = []
+    MultiplexorChannel<CommunicationEvent> communicationEvents = []
 
     protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
