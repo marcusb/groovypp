@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit
 import groovy.util.concurrent.FThreadPool
 import java.util.concurrent.Executor
 import groovy.channels.MessageChannel
-import groovy.channels.Multiplexor
+import groovy.channels.MultiplexorChannel
+import static groovy.channels.Channels.channel
+import groovy.channels.Channels
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 
@@ -38,6 +40,22 @@ import groovy.channels.Multiplexor
         assertEquals 1, one.get()
         assertEquals 1, two.get()
         assertEquals 2, count.get()
+    }
+
+    void testFilter () {
+        Reference one = [0]
+        def c = channel{ int m -> one += m }.filter{ int m -> m & 1}
+        for(i in 0..5)
+          c << i
+        assertEquals 9, one.get()
+    }
+
+    void testTransform () {
+        def one = []
+        def c = channel{ String m -> one << m.toUpperCase() }.map{ int m -> "" + 2*m }
+        for(i in 0..4)
+          c << i
+        assertEquals(["0", "2", "4", "6", "8"], one)
     }
 
     void testBefore () {
@@ -75,7 +93,7 @@ import groovy.channels.Multiplexor
 
     void testMulti () {
         Reference count = [10]
-        def multiplexor = new Multiplexor ()
+        def multiplexor = new MultiplexorChannel ()
         multiplexor.subscribe { int msg ->
             count = count-msg
             multiplexor.unsubscribe(this)
