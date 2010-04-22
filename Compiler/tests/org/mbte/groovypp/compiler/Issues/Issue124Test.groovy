@@ -14,21 +14,38 @@
  * limitations under the License.
  */
 
-package org.mbte.groovypp.compiler;
+package org.mbte.groovypp.compiler.Issues
 
-import org.codehaus.groovy.ast.expr.SpreadExpression;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.objectweb.asm.MethodVisitor;
+import static groovy.CompileTestSupport.shouldNotCompile
 
-public class BytecodeSpreadExpr extends BytecodeExpr {
-    private final BytecodeExpr internal;
+@Typed
+public class Issue124Test extends GroovyShellTestCase {
+    void testArray () {
+        shouldNotCompile("""
+@Typed
+package test
 
-    public BytecodeSpreadExpr(SpreadExpression exp, BytecodeExpr internal) {
-        super(exp, internal.getType());
-        this.internal = internal;
+def foo(Object[] para) {
+    bar(*para)
+}
+
+def bar(x, y, z) {}
+
+foo(1, 2, 3)
+""", "Spread operator is not supported")
     }
 
-    protected void compile(MethodVisitor mv) {
-        internal.visit(mv);
+
+void testList () {
+        shouldNotCompile("""
+@Typed
+package test
+class C {
+  C(int i, int j) {}
+}
+
+def l = [0, 1]
+new C(*l)
+""", "Spread operator is not supported")
     }
 }

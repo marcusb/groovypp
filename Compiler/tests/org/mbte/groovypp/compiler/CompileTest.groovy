@@ -168,6 +168,7 @@ u()
     }
   }
 
+/*
   void testList() {
     def res = shell.evaluate("""
     @Typed
@@ -181,6 +182,7 @@ u()
 
     assertEquals([1, false, 7, null, 3, 4, 5], res)
   }
+*/
 
   void testMap() {
     def res = shell.evaluate("""

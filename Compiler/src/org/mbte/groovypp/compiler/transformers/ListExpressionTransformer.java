@@ -22,7 +22,6 @@ import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.mbte.groovypp.compiler.BytecodeSpreadExpr;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -67,9 +66,8 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
                 Expression transformed = compiler.transformToGround(list.get(i));
                 list.set(i, transformed);
 
-                if (!(transformed instanceof BytecodeSpreadExpr))
-                    genericArg = genericArg == null ? transformed.getType() :
-                            TypeUtil.commonType(genericArg, transformed.getType());
+                genericArg = genericArg == null ? transformed.getType() :
+                        TypeUtil.commonType(genericArg, transformed.getType());
             }
 
             if (needInference) {
@@ -93,12 +91,8 @@ public class ListExpressionTransformer extends ExprTransformer<ListExpression> {
                 final BytecodeExpr be = (BytecodeExpr) list.get(i);
                 mv.visitInsn(DUP);
                 be.visit(mv);
-                if (be instanceof BytecodeSpreadExpr)
-                    mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Collection","addAll","(Ljava/util/Collection;)Z");
-                else {
-                    box(be.getType(), mv);
-                    mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Collection","add","(Ljava/lang/Object;)Z");
-                }
+                box(be.getType(), mv);
+                mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Collection","add","(Ljava/lang/Object;)Z");
                 mv.visitInsn(POP);
             }
         }

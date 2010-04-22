@@ -519,11 +519,9 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         int count = list.size();
         for (int i = 0; i != count; ++i) {
             Expression el = list.get(i);
-            if (!(el instanceof BytecodeSpreadExpr) && !(el instanceof SpreadExpression)) {
-                CastExpression castExpression = new CastExpression(componentType, el);
-                castExpression.setSourcePosition(el);
-                list.set(i, castExpression);
-            }
+            CastExpression castExpression = new CastExpression(componentType, el);
+            castExpression.setSourcePosition(el);
+            list.set(i, castExpression);
         }
     }
 
