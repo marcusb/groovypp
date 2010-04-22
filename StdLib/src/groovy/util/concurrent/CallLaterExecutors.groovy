@@ -16,8 +16,8 @@
 
 package groovy.util.concurrent
 
-import java.util.concurrent.*
 import org.junit.Assert
+import java.util.concurrent.*
 
 /**
  * Provide infrastructure for convinient work with thread pools

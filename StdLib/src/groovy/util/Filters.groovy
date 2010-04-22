@@ -16,10 +16,7 @@
 
 package groovy.util
 
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
-import org.codehaus.groovy.runtime.InvokerHelper
 
 /**
  * Utility methods for filtering.

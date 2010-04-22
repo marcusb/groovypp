@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package groovy.util.concurrent
+package groovy.channels
 
-import groovy.util.concurrent.NonfairExecutingChannel
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
 

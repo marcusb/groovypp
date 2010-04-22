@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package groovy.util.concurrent
+package groovy.channels
+
+import groovy.util.concurrent.FQueue
 
 @Typed abstract class SchedulingChannel<M> extends MessageChannel<M> implements Runnable {
     protected volatile FQueue<M> queue = FQueue.emptyQueue

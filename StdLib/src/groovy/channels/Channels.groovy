@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-@Typed package groovy.util
+package groovy.channels
 
-import groovy.util.concurrent.FairExecutingChannel
 import java.util.concurrent.Executor
-import groovy.util.concurrent.NonfairExecutingChannel
 
 class Channels {
     /**

@@ -18,6 +18,9 @@ package groovy.util.concurrent
 
 import java.util.concurrent.*
 
+/**
+ * A bit faster implementation of fixed thread pool Executor
+ */
 @Typed class FThreadPool implements Executor {
 
   protected volatile FQueue<Runnable> queue = FQueue.emptyQueue
@@ -26,24 +29,32 @@ import java.util.concurrent.*
 
   private final Semaphore semaphore = [0]
 
+  private CountDownLatch termination
+
   FThreadPool(int num = Runtime.getRuntime().availableProcessors(), ThreadFactory threadFactory = Executors.defaultThreadFactory()) {
     for(i in 0..<num) {
+      termination = [num]
       def thread = threadFactory.newThread {
-        for(;;) {
-          semaphore.acquire()
-
+        try {
           for(;;) {
-            def q = queue
+            semaphore.acquire()
 
-            if(q.first === stopMarker) {
-              runStopping()
-              return
-            }
-            else {
-              if(tryRun(q))
-                break
+            for(;;) {
+              def q = queue
+
+              if(q.first === stopMarker) {
+                runStopping()
+                return
+              }
+              else {
+                if(tryRun(q))
+                  break
+              }
             }
           }
+        }
+        finally {
+          termination.countDown()
         }
       }
       thread.start()
@@ -126,6 +137,6 @@ import java.util.concurrent.*
   }
 
   boolean awaitTermination(long timeout, TimeUnit timeUnit) {
-    true
+    termination?.await(timeout, timeUnit)
   }
 }

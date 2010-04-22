@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package groovy.util.concurrent
+package groovy.channels
 
-@Typed abstract class NonfairExecutingChannel<M> extends ExecutingChannel<M>  {
-    void run () {
-        for (;;) {
-            def q = queue
-            if (queue.compareAndSet(q, busyEmptyQueue)) {
-                for(m in q) {
-                    onMessage m
-                }
-                if(!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
-                    schedule ()
-                }
-                break
-            }
-        }
-    }
+/**
+ * Channel, which decide(select) for each incoming message, who can be interested in this message
+ * and forward it for processing.
+ *
+ * For example, some selector may choose lazily create and cache actual recipients of the message.
+ * Such strategy is implemented in CachingSelectorChannel
+ */
+abstract class SelectorChannel<M> extends MessageChannel<M> {
+
+  final void post(M message) {
+    for (c in selectInterested(message))
+      c.post(message)
+  }
+
+  abstract Iterator<MessageChannel<M>> selectInterested(M message);
 }

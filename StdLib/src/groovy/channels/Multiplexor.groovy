@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package groovy.util
+package groovy.channels
 
 import groovy.util.concurrent.FList
 

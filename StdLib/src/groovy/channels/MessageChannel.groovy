@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package groovy.util
+package groovy.channels
 
 import groovy.util.concurrent.BindLater
 import java.util.concurrent.Executor
-import groovy.util.concurrent.FairExecutingChannel
-import groovy.util.concurrent.NonfairExecutingChannel
 
 @Typed abstract class MessageChannel<T> {
 

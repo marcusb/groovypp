@@ -16,8 +16,8 @@
 
 package groovy.util.concurrent
 
-import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.*
 
 @Typed
 class CallLaterPool extends ThreadPoolExecutor {

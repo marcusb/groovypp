@@ -16,6 +16,8 @@
 
 package groovy.remote
 
+import groovy.channels.MessageChannel
+
 /**
  * Remote node in the cluster
  */

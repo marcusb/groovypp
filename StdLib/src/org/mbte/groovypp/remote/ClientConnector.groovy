@@ -23,7 +23,7 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder
 import java.util.concurrent.Executors
-import groovy.util.concurrent.SupervisedChannel
+import groovy.channels.SupervisedChannel
 import org.mbte.groovypp.remote.inet.InetDiscoveryInfo
 
 @Typed class ClientConnector extends SupervisedChannel {

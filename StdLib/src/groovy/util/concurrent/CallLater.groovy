@@ -16,7 +16,8 @@
 
 package groovy.util.concurrent
 
-import java.util.concurrent.*
+import java.util.concurrent.Callable
+import java.util.concurrent.Future
 
 /**
  * Specially optimized version of FutureTask from JDK

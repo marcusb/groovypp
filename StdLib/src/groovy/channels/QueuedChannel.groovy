@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package groovy.util.concurrent
+package groovy.channels
+
+import groovy.util.concurrent.FQueue
 
 /**
  * Message channel with incoming queue

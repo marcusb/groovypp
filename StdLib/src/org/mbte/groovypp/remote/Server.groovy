@@ -23,7 +23,7 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder
 import org.jboss.netty.channel.Channel
 import groovy.remote.ClusterNode
-import groovy.util.concurrent.SupervisedChannel
+import groovy.channels.SupervisedChannel
 
 @Typed class Server extends SupervisedChannel {
     SocketAddress address

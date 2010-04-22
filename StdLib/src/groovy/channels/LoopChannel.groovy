@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
-package groovy.util.concurrent
+package groovy.channels
 
-import java.util.concurrent.Executor
+@Typed abstract class LoopChannel extends SupervisedChannel {
+    protected volatile boolean stopped
 
-@Typed abstract class ExecutingChannel<M> extends QueuedChannel<M> implements Runnable {
-    Executor executor
+    protected abstract boolean doLoopAction ()
 
-    protected void signalPost(FQueue<M> oldQueue, FQueue<M> newQueue) {
-        if (oldQueue !== busyEmptyQueue && newQueue.size() == 1)
-            schedule ()
+    void doStartup() {
+        executor.execute {
+            try {
+                while (true) {
+                    if (!doLoopAction()) break
+                }
+            }
+            catch(Throwable t) {
+                stopped = true
+                crash(t)
+            }
+        }
     }
 
-    protected schedule() {
-        executor.execute this
+    void doShutdown() {
+        stopped = true
     }
 }

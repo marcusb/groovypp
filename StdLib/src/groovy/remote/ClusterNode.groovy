@@ -16,9 +16,11 @@
 
 package groovy.remote
 
-import groovy.util.concurrent.SupervisedChannel
+import groovy.channels.SupervisedChannel
 import org.mbte.groovypp.remote.ClientConnector
 import org.mbte.groovypp.remote.Server
+import groovy.channels.MessageChannel
+import groovy.channels.Multiplexor
 
 /**
  * Local node in the cluster.

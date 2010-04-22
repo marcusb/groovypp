@@ -16,7 +16,6 @@
 
 @Typed package groovy.util.concurrent
 
-import groovy.util.concurrent.AtomicMapEntry
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AtomicBooleanMap<K> extends AtomicMap<K,AtomicBooleanMap.Entry<K>> {

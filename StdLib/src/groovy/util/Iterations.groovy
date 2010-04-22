@@ -16,12 +16,12 @@
 
 package groovy.util
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.Executor
 import groovy.util.concurrent.BindLater
 import groovy.util.concurrent.FList
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 /**
  * Utility methods to iterate over objects of standard types.

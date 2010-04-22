@@ -16,7 +16,9 @@
 
 package groovy.remote
 
-import groovy.util.concurrent.*
+import groovy.util.concurrent.AtomicMap
+import groovy.util.concurrent.AtomicMapEntry
+import groovy.util.concurrent.Calculation
 
 @Typed class RemoteClassLoader extends ClassLoader implements WithRemoteId {
 

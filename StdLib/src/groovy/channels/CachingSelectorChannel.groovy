@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-@Typed package groovy.util.concurrent
+package groovy.channels
 
-import java.util.concurrent.atomic.AtomicLong
+/**
+ * 
+ */
+abstract class CachingSelectorChannel<M,K> extends SelectorChannel<M> {
 
-class AtomicLongMap<K> extends AtomicMap<K,AtomicLongMap.Entry<K>> {
+  private AtomicMap
 
-    static class Entry<K> extends AtomicLong implements AtomicMapEntry<K,AtomicLong> {}
+  Iterator<MessageChannel<M>> selectInterested(M message) {
+    throw new UnsupportedOperationException("Not yet implemented")
+  }
 
-    Entry<K> createEntry(K key, int hash) {
-        [key:key, hash:hash]
-    }
+ /**
+  * Maps message to key in the cache
+  */
+ abstract protected K messageKey(M message)
 }

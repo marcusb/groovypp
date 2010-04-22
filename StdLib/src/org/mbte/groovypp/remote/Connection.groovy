@@ -17,8 +17,8 @@
 package org.mbte.groovypp.remote
 
 import groovy.remote.RemoteConnection
-import org.jboss.netty.channel.Channel
 import groovy.remote.RemoteMessage
+import org.jboss.netty.channel.Channel
 
 @Typed static class Connection extends RemoteConnection {
     protected Channel channel

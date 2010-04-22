@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-@Typed package groovy.util.concurrent
+package groovy.channels
 
-import java.util.concurrent.atomic.AtomicLong
+import groovy.util.concurrent.FQueue
 
-class AtomicLongMap<K> extends AtomicMap<K,AtomicLongMap.Entry<K>> {
-
-    static class Entry<K> extends AtomicLong implements AtomicMapEntry<K,AtomicLong> {}
-
-    Entry<K> createEntry(K key, int hash) {
-        [key:key, hash:hash]
+@Typed abstract class NonfairExecutingChannel<M> extends ExecutingChannel<M>  {
+    void run () {
+        for (;;) {
+            def q = queue
+            if (queue.compareAndSet(q, busyEmptyQueue)) {
+                for(m in q) {
+                    onMessage m
+                }
+                if(!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
+                    schedule ()
+                }
+                break
+            }
+        }
     }
 }

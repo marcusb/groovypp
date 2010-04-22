@@ -18,7 +18,6 @@
 
 import org.codehaus.groovy.util.AbstractConcurrentMap
 import org.codehaus.groovy.util.AbstractConcurrentMapBase
-import groovy.util.concurrent.AtomicMapEntry
 
 abstract class AtomicMap<K,V extends AtomicMapEntry> implements Iterable<V> {
 

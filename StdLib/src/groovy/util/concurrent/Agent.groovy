@@ -16,7 +16,9 @@
 
 package groovy.util.concurrent
 
-@Typed class Agent<T> extends FairExecutingChannel<Function1<T,T>> {
+import groovy.channels.FairExecutingChannel
+
+@Typed class Agent<T> extends FairExecutingChannel<Function1<T, T>> {
     private volatile T ref
 
     Agent () {}

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-@Typed package groovy.util.concurrent
+package groovy.channels
 
-import java.util.concurrent.atomic.AtomicLong
+/**
+ * Message channel, which transform and forward incoming messages
+ */
+abstract class TransformingChannel<M,R> extends MessageChannel<M> {
+  MessageChannel<R> forwardTo
 
-class AtomicLongMap<K> extends AtomicMap<K,AtomicLongMap.Entry<K>> {
+  final void post(M message) {
+    forwardTo?.post(transform(message))
+  }
 
-    static class Entry<K> extends AtomicLong implements AtomicMapEntry<K,AtomicLong> {}
-
-    Entry<K> createEntry(K key, int hash) {
-        [key:key, hash:hash]
-    }
+  abstract R transform(M m)
 }

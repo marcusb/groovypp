@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-
-
 package groovy.util
 
 import groovy.util.concurrent.FQueue
-import groovy.util.concurrent.FairExecutingChannel
-import groovy.util.concurrent.NonfairExecutingChannel
+import groovy.channels.FairExecutingChannel
+import groovy.channels.NonfairExecutingChannel
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 
 import java.util.concurrent.TimeUnit
 import groovy.util.concurrent.FThreadPool
 import java.util.concurrent.Executor
+import groovy.channels.MessageChannel
+import groovy.channels.Multiplexor
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 

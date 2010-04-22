@@ -16,17 +16,7 @@
 
 package groovy.util.concurrent
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicReferenceArray
-import java.util.concurrent.atomic.AtomicIntegerArray
-import java.util.concurrent.atomic.AtomicLongArray
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
-import java.util.concurrent.atomic.AtomicLongFieldUpdater
+import java.util.concurrent.atomic.*
 
 /**
  * Operations on atomic primitives

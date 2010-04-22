@@ -16,14 +16,8 @@
 
 package org.mbte.groovypp.remote
 
-import org.jboss.netty.channel.ChannelPipelineCoverage
-import org.jboss.netty.channel.SimpleChannelHandler
-import org.jboss.netty.channel.ChannelHandlerContext
-import org.jboss.netty.channel.MessageEvent
-import org.jboss.netty.channel.ChannelStateEvent
-import org.jboss.netty.channel.ExceptionEvent
 import groovy.remote.RemoteConnection
-import org.jboss.netty.channel.ChannelEvent
+import org.jboss.netty.channel.*
 
 @ChannelPipelineCoverage("all")
 @Typed abstract class SimpleChannelHandlerEx extends SimpleChannelHandler {

@@ -16,7 +16,8 @@
 
 package groovy.util.concurrent
 
-import java.util.concurrent.*
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
 
 @Typed
 abstract class Calculation<V> extends BindLater<V> implements Future<V>, Runnable {

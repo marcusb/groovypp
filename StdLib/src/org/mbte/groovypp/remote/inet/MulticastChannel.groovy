@@ -16,7 +16,7 @@
 
 package org.mbte.groovypp.remote.inet
 
-import groovy.util.concurrent.LoopChannel
+import groovy.channels.LoopChannel
 
 @Typed abstract class MulticastChannel extends LoopChannel {
     InetAddress multicastGroup

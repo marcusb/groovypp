@@ -16,8 +16,8 @@
 
 package org.mbte.groovypp.compiler
 
-import org.codehaus.groovy.tools.FileSystemCompiler
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.tools.FileSystemCompiler
 
 extendsTest GroovyShellTestCase
 

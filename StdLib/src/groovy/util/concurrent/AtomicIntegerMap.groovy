@@ -16,10 +16,7 @@
 
 @Typed package groovy.util.concurrent
 
-import org.codehaus.groovy.util.AbstractConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
-import org.codehaus.groovy.util.AbstractConcurrentMapBase
-import groovy.util.concurrent.AtomicMapEntry
 
 class AtomicIntegerMap<K> extends AtomicMap<K,AtomicIntegerMap.Entry<K>> {
 
