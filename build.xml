@@ -32,7 +32,7 @@
     <property name="examples.module.name" value="Examples" />
 
     <property name="version" value="${groovyPPVersion}"/>
-    <property name="install.zip" value="groovy-booster-${version}.zip"/>
+    <property name="install.zip" value="groovypp-${version}.zip"/>
 
 
     <property name="compiler.src" location="Compiler/src" />
@@ -424,7 +424,7 @@
 		</replaceregexp>
 
         <zip destfile="${install.zip}"
-             comment="The Groovy Booster binary distribution.">
+             comment="The Groovy++ binary distribution.">
 	        <zipfileset dir="install" prefix="" >
 		        <exclude name="embeddable/**" />
 		        <exclude name="lib/groovy-1.8.0*.jar" />
@@ -441,11 +441,12 @@
 
             <zipfileset file="${jar.name}" prefix="lib"/>
 			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
-            <zipfileset dir="Compiler/tests" prefix="booster/tests"/>
-            <zipfileset dir="${stdlib.tests}" prefix="booster/tests"/>
-            <zipfileset dir="${stdlibtest.tests}" prefix="booster/tests"/>
-            <zipfileset dir="${examples.src}" prefix="booster/examples"/>
-            <zipfileset dir="${stdlib.src}" prefix="booster/stdlib"/>
+            <zipfileset dir="${compiler.tests}" prefix="groovypp/tests"/>
+            <zipfileset dir="${compiler.src}" prefix="groovypp/compiler"/>
+            <zipfileset dir="${stdlib.tests}" prefix="groovypp/tests"/>
+            <zipfileset dir="${stdlibtest.tests}" prefix="groovypp/tests"/>
+            <zipfileset dir="${examples.src}" prefix="groovypp/examples"/>
+            <zipfileset dir="${stdlib.src}" prefix="groovypp/stdlib"/>
 	        <zipfileset dir="tempbin" prefix="bin"/>
         </zip>
 
