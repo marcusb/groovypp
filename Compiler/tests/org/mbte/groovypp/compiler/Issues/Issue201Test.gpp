@@ -27,7 +27,7 @@ class Issue201Test extends GroovyShellTestCase {
 }
 
 class Issue201 { 
-    def invokeMethod(String method, Object args) {method + "," + args}
+    def invokeMethod(String method, Object args) {method + "," + DefaultGroovyMethods.toString(args)}
  
     def getProperty(String property){property} 
 }
