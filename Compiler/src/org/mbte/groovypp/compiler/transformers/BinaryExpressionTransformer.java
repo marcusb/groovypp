@@ -286,9 +286,25 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     compiler.mathOp(mathType, be.getOperation(), be);
                 }
             };
+        } else if (l.getType() == ClassHelper.STRING_TYPE && tokenType == Types.PLUS) {
+            Expression stringBuilder = new ConstructorCallExpression(TypeUtil.STRING_BUILDER,
+                    new ArgumentListExpression());
+            stringBuilder = stringBuilderAppend(l, r, stringBuilder);
+            Expression res = new MethodCallExpression(stringBuilder, "toString", new ArgumentListExpression());
+            return compiler.transform(res);   // NB: some of the terms are already transformed.
         } else {
             return callMethod(be, getMethod(tokenType), compiler, l, r);
         }
+    }
+
+    private Expression stringBuilderAppend(Expression l, Expression r, Expression stringBuilder) {
+        if (l instanceof BinaryExpression && ((BinaryExpression) l).getOperation().getType() == Types.PLUS) {
+            BinaryExpression be = (BinaryExpression) l;
+            stringBuilder = stringBuilderAppend(be.getLeftExpression(), be.getRightExpression(), stringBuilder);
+        } else {
+            stringBuilder = new MethodCallExpression(stringBuilder, "append", new ArgumentListExpression(l));
+        }
+        return new MethodCallExpression(stringBuilder, "append", new ArgumentListExpression(r));
     }
 
     private Expression callMethod(BinaryExpression be, String method, CompilerTransformer compiler, BytecodeExpr l, BytecodeExpr r) {

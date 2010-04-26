@@ -66,6 +66,7 @@ public class TypeUtil {
     public static final ClassNode DELEGATING = make(Delegating.class);
     public static final ClassNode THROWABLE = make(Throwable.class);
     public static final ClassNode COMPARABLE = make(Comparable.class);
+    public static final ClassNode STRING_BUILDER = make(StringBuilder.class);
 
     public TypeUtil() {
         RAW_CLASS = new ClassNode(RawMarker.class);
