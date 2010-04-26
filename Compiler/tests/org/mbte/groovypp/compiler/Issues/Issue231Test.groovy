@@ -17,8 +17,6 @@
 package org.mbte.groovypp.compiler.Issues
 
 import groovy.lang.GroovyClassLoader
-import groovy.mock.interceptor.MockFor
-import groovy.util.GroovyTestCase
 
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CompileUnit
