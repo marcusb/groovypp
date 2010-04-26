@@ -17,6 +17,8 @@
 @Typed(TypePolicy.MIXED)
 package org.mbte.groovypp.compiler.Issues
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
 class Issue201Test extends GroovyShellTestCase {
     void testMixedModeSpecifiedOnPackageInAGPPFile() {
         Issue201 test = new Issue201()
