@@ -32,8 +32,8 @@
     <property name="examples.module.name" value="Examples" />
 
     <property name="version" value="${groovyPPVersion}"/>
-    <property name="install.zip" value="groovypp-${version}.zip"/>
-    <property name="src.zip" value="groovypp-src-${version}.zip"/>
+    <property name="install.zip" value="${output.dir}/groovypp-${version}.zip"/>
+    <property name="src.zip" value="${output.dir}/groovypp-src-${version}.zip"/>
 
 
     <property name="compiler.src" location="Compiler/src" />
