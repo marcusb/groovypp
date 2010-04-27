@@ -22,7 +22,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.objectweb.asm.MethodVisitor;
 
-class UnresolvedLeftExpr extends ResolvedLeftExpr {
+public class UnresolvedLeftExpr extends ResolvedLeftExpr {
     private final BytecodeExpr value;
     private final BytecodeExpr object;
     private final String propName;

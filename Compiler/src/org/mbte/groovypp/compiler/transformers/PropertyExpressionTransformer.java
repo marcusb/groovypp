@@ -16,16 +16,14 @@
 
 package org.mbte.groovypp.compiler.transformers;
 
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.PresentationUtil;
 import org.mbte.groovypp.compiler.TypeUtil;
-import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.InnerThisBytecodeExpr;
-import org.mbte.groovypp.compiler.bytecode.PropertyUtil;
-import org.mbte.groovypp.compiler.bytecode.ResolvedMethodBytecodeExpr;
+import org.mbte.groovypp.compiler.bytecode.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -173,10 +171,16 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
             thisType = thisType.getOuterClass();
         }
 
-        compiler.addError(MessageFormat.format("Cannot resolve property {0}.{1}",
-                PresentationUtil.getText(compiler.classNode),
-                propName), exp);
-        return null;
+        if (compiler.policy == TypePolicy.STATIC) {
+            compiler.addError(MessageFormat.format("Cannot resolve property {0}.{1}",
+                    PresentationUtil.getText(compiler.classNode),
+                    propName), exp);
+            return null;
+        }
+        else {
+            object = new InnerThisBytecodeExpr(exp, compiler.classNode, compiler);
+            return new UnresolvedLeftExpr(exp, null, object, propName);
+        }
     }
 
     private Expression transformSafe(final PropertyExpression exp, CompilerTransformer compiler) {

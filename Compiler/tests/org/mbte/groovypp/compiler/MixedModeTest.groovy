@@ -63,6 +63,17 @@ public class MixedModeTest extends GroovyShellTestCase {
     assert res == 'int: 239'
   }
 
+  void testScript () {
+    def res = shell.evaluate ("""
+      @Typed(TypePolicy.MIXED) package p
+
+      var = 239
+      def clos = { var }
+      clos ()
+""")
+    assert res == 239
+  }
+
     void testSequentially () {
         shell.evaluate """
           import java.util.concurrent.*
