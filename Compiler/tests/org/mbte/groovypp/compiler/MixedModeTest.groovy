@@ -22,7 +22,7 @@ public class MixedModeTest extends GroovyShellTestCase {
     def res = shell.evaluate("""
     import groovy.xml.*
 
-    @Typed(value=TypePolicy.MIXED)
+    @Typed(TypePolicy.MIXED)
     class A {
         void m () {
             def writer = new StringWriter()
@@ -44,6 +44,23 @@ public class MixedModeTest extends GroovyShellTestCase {
 
     new A ().m ()
 """)
+  }
+
+  void testConstructor () {
+    def res = shell.evaluate ("""
+      @Typed(TypePolicy.MIXED) package p
+
+      class X {
+         String val
+
+         X (int i){ val = "int: \${i.toString()}" }
+         X (String i){ val = "String: \${i.toString()}" }
+      }
+
+      Object o = 239
+      new X(o).val
+""")
+    assert res == 'int: 239'
   }
 
     void testSequentially () {

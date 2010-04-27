@@ -16,6 +16,7 @@
 
 package org.mbte.groovypp.compiler.transformers;
 
+import groovy.lang.TypePolicy;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.ast.expr.*;
@@ -177,8 +178,42 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             };
         }
 
-        compiler.addError("Cannot find constructor", exp);
-        return null;
+        if (compiler.policy == TypePolicy.STATIC) {
+            compiler.addError("Cannot find constructor", exp);
+            return null;
+        } else
+            return createDynamicCall(exp, compiler, newArgs);
+    }
+
+    private Expression createDynamicCall(final ConstructorCallExpression exp, CompilerTransformer compiler, TupleExpression newArgs) {
+        final List<Expression> args = newArgs.getExpressions();
+
+        for (int i = 0; i != args.size(); ++i) {
+            BytecodeExpr arg = compiler.transformSynthetic((BytecodeExpr) args.get(i));
+            if (arg instanceof CompiledClosureBytecodeExpr) {
+                compiler.processPendingClosure((CompiledClosureBytecodeExpr) arg);
+            }
+            args.set(i, arg);
+        }
+
+        return new BytecodeExpr(exp, exp.getType()) {
+            protected void compile(MethodVisitor mv) {
+                mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(getType()));
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+                mv.visitLdcInsn(args.size());
+                mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+                for (int j = 0; j != args.size(); ++j) {
+                    mv.visitInsn(DUP);
+                    mv.visitLdcInsn(j);
+                    BytecodeExpr arg = (BytecodeExpr) args.get(j);
+                    arg.visit(mv);
+                    box(arg.getType(), mv);
+                    mv.visitInsn(AASTORE);
+                }
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/codehaus/groovy/runtime/InvokerHelper", "invokeConstructorOf", "(Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;");
+                mv.visitTypeInsn(Opcodes.CHECKCAST, BytecodeHelper.getClassInternalName(getType()));
+            }
+        };
     }
 
     private boolean improveWhatInnerClassVisitorDid(InnerClassNode innerClassNode, ConstructorCallExpression exp, CompilerTransformer compiler) {
