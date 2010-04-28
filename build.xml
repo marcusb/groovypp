@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<project name="Groovy Compiler" default="make.install">
+<project name="Groovy Compiler" default="dist">
 
 	<property name="app.name" value="groovypp" />
 
@@ -463,6 +463,8 @@
             <zipfileset file="build.properties"   prefix=""/>
         </zip>
     </target>
+	
+	<target name="dist" depends="make.install, package.src" description="build the distribution archives"/>
 
 	<target name="check.groovypp.jar">
 	    <available file="${jar.name}" property="groovypp.jar.present"/>
@@ -552,7 +554,7 @@
 		<run.benchmark className="shootout.BenchmarkResultPrinter" benchmarkargs=""/>
 	</target>
 
-    <target name="publish-googlecode" depends="make.install, package.src">
+    <target name="publish-googlecode" depends="dist">
 	<gcupload username="${googlecode.user}" password="${googlecode.password}" projectname="groovypptest"
     	    filename="${install.zip}" targetfilename="${install.zip}" summary="Groovy++ ${version}"
 	    labels="Featured" verbose="true"/>
