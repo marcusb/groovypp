@@ -29,8 +29,9 @@ class Channels {
     /**
     * Utility method to create a channel from closure.
     */
-    static <T> MessageChannel<T> fairChannel(Executor self, FairExecutingChannel<T> channel) {
+    static <T> MessageChannel<T> fairChannel(Executor self, ExecutingChannel<T> channel) {
         channel.executor = self
+        channel.runFair = true
         channel
     }
 

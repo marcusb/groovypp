@@ -16,14 +16,19 @@
 
 package groovy.util.concurrent
 
-import groovy.channels.FairExecutingChannel
+import groovy.channels.ExecutingChannel
 
-@Typed class Agent<T> extends FairExecutingChannel<Function1<T, T>> {
+@Typed class Agent<T> extends ExecutingChannel<Function1<T, T>> {
     private volatile T ref
 
-    Agent () {}
+    Agent () {
+      runFair = true
+    }
 
-    Agent (T ref) { this.@ref = ref }
+    Agent (T ref) {
+      runFair = true
+      this.@ref = ref
+    }
     
     final T get () { ref }
 

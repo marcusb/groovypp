@@ -19,15 +19,70 @@ package groovy.channels
 import groovy.util.concurrent.FQueue
 import java.util.concurrent.Executor
 
+/**
+ * Channel, which asynchronously schedule incoming messages for processing.
+ * No more than one message processed at any given moment
+ */
 @Typed abstract class ExecutingChannel<M> extends QueuedChannel<M> implements Runnable {
     Executor executor
+    boolean  runFair
 
-    protected void signalPost(FQueue<M> oldQueue, FQueue<M> newQueue) {
+    void run() {
+        runFair ? runFair () : runNonfair ()
+    }
+
+    protected final void signalPost(FQueue<M> oldQueue, FQueue<M> newQueue) {
         if (oldQueue !== busyEmptyQueue && newQueue.size() == 1)
-            schedule ()
+            executor.execute this
     }
 
-    protected schedule() {
-        executor.execute this
+    protected final void runFair () {
+        for (;;) {
+            def q = queue
+            def removed = q.removeFirst()
+            if (q.size() == 1) {
+                if (queue.compareAndSet(q, busyEmptyQueue)) {
+                    onMessage removed.first
+                    if (!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
+                        executor.execute this
+                    }
+                    return
+                }
+            }
+            else {
+                if (queue.compareAndSet(q, removed.second)) {
+                    onMessage removed.first
+                    executor.execute this
+                    return
+                }
+            }
+        }
     }
+
+    protected final void runNonfair () {
+        for (;;) {
+            def q = queue
+            if (queue.compareAndSet(q, busyEmptyQueue)) {
+                for(m in q) {
+                    onMessage m
+                }
+                if(!queue.compareAndSet(busyEmptyQueue, FQueue.emptyQueue)) {
+                    executor.execute this
+                }
+                break
+            }
+        }
+    }
+
+    protected void onMessage(M message) {
+        if(message instanceof ExecuteCommand) {
+            ((ExecuteCommand)message).run ()
+        }
+    }
+
+    void execute (ExecuteCommand command) {
+        post(command)
+    }
+
+    abstract static class ExecuteCommand implements Runnable {}
 }

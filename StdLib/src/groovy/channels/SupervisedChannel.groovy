@@ -19,7 +19,7 @@ package groovy.channels
 import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
 
-@Typed abstract class SupervisedChannel<M> extends NonfairExecutingChannel<M> {
+@Typed abstract class SupervisedChannel<M> extends ExecutingChannel<M> {
     private static int NOT_STARTED    = 0
     private static int STARTING       = 1
     private static int STARTED        = 2
@@ -43,9 +43,6 @@ import groovy.util.concurrent.FList
     private static final class ChildCrashed {
         SupervisedChannel who
         Throwable cause
-    }
-    private static final class Execute {
-      Function0 operation
     }
 
     final void startup (Function0 afterStartup = null) {
@@ -109,6 +106,9 @@ import groovy.util.concurrent.FList
     }
 
     protected final void onMessage(Object message) {
+        if ((state & STOP_MASK) && !(message instanceof Shutdown) )
+            return
+
         try {
             doOnMessage(message)
         }
@@ -151,14 +151,9 @@ import groovy.util.concurrent.FList
                 onChildCrashed(message)
                 break
 
-            case Execute:
-                message.operation()
-                break
+            default:
+                super.onMessage(message)
         }
-    }
-
-    final void execute(Function0 operation) {
-      post(new Execute(operation:operation))
     }
 
     protected void doStartup() {}
@@ -178,22 +173,7 @@ import groovy.util.concurrent.FList
             throw cause
     }
 
-    final void broadcast (Object message, boolean recursive, boolean including) {
-        if (including)
-            post(message)
-
-        if (recursive)
-            for(c in children)
-                c.broadcast(message, recursive, true)
-    }
-
     final SupervisedChannel getRootSupervisor () {
         owner ? owner.rootSupervisor : this
     }
-
-    protected final boolean interested(Object message) {
-        message instanceof Execute || message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || (!(state & STOP_MASK) && checkInterest(message))
-    }
-
-    protected boolean checkInterest (Object message) { true }
 }

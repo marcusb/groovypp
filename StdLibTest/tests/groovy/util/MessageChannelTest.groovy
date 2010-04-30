@@ -17,8 +17,6 @@
 package groovy.util
 
 import groovy.util.concurrent.FQueue
-import groovy.channels.FairExecutingChannel
-import groovy.channels.NonfairExecutingChannel
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 
@@ -29,6 +27,7 @@ import groovy.channels.MessageChannel
 import groovy.channels.MultiplexorChannel
 import static groovy.channels.Channels.channel
 import groovy.channels.Channels
+import groovy.channels.ExecutingChannel
 
 @Typed class MessageChannelTest extends GroovyTestCase {
 
@@ -116,13 +115,16 @@ import groovy.channels.Channels
         testWithFixedPool {
             def cdl = new CountDownLatch(100)
             CopyOnWriteArrayList results = []
-            FairExecutingChannel channel = { int msg ->
-                println msg
-                results << msg
-                cdl.countDown()
-            }
+            ExecutingChannel channel = [onMessage: { msg ->
+                if (msg instanceof Integer) {
+                  results << msg
+                  cdl.countDown()
+                }
+                else
+                  super.onMessage(msg)
+            },
+            executor:pool]
 
-            channel.executor = pool
             for (i in 0..<100)
                 channel << i
 
@@ -131,81 +133,77 @@ import groovy.channels.Channels
         }
     }
 
+    void testExecute () {
+        testWithFixedPool {
+            def cdl = new CountDownLatch(100)
+            CopyOnWriteArrayList results = []
+            ExecutingChannel channel = [executor:pool, runFair:true]
+            for (i in 0..<100)
+                channel.execute {
+                  results << i
+                  cdl.countDown()
+                }
+
+            cdl.await(10,TimeUnit.SECONDS)
+            assertEquals 0..<100, results
+        }
+    }
+
     void testRingFair () {
         testWithFixedPool {
-            runRingFair(pool)
+          runRing(pool,true)
         }
     }
 
     void testRingNonFair () {
         testWithFixedPool {
-            runRingNonFair(pool)
+          runRing(pool,false)
         }
     }
 
     void testRingFairFastPool () {
         FThreadPool pool = []
-        runRingFair(pool)
+        runRing(pool,true)
         assertTrue(pool.shutdownNow().empty)
         assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
     }
 
     void testRingNonFairFastPool () {
         FThreadPool pool = []
-        runRingNonFair(pool)
+        runRing(pool,false)
         assertTrue(pool.shutdownNow().empty)
         assertTrue(pool.awaitTermination(10,TimeUnit.SECONDS))
     }
 
-    private void runRingFair (Executor pool) {
+    private void runRing (Executor pool, boolean fair) {
         def start = System.currentTimeMillis()
         MessageChannel prev
         int nMessages = 500
         int nActors = 10000
         CountDownLatch cdl = [nActors*nMessages]
         for (i in 0..<nActors) {
-            FairExecutingChannel channel = [
+            ExecutingChannel channel = [
                 onMessage: {
-                    prev?.post it
-                    cdl.countDown()
+                    if (it instanceof String) {
+                      prev?.post it
+                      cdl.countDown()
+                    }
+                    else {
+                      super.onMessage(it)
+                    }
                 },
                 toString: {
                     "Channel $i"
-                }
+                },
+                executor:pool,
+                runFair:fair
             ]
-            channel.executor = pool
             prev = channel
         }
         for(i in 0..<nMessages)
             prev << "Hi"
 
         assertTrue(cdl.await(300,TimeUnit.SECONDS))
-        println("runRingFair: ${pool.class.simpleName} ${System.currentTimeMillis()-start}")
-    }
-
-    private void runRingNonFair (Executor pool) {
-        def start = System.currentTimeMillis()
-        MessageChannel prev
-        int nMessages = 500
-        int nActors = 10000
-        CountDownLatch cdl = [nActors*nMessages]
-        for (i in 0..<nActors) {
-            NonfairExecutingChannel channel = [
-                onMessage: {
-                    prev?.post it
-                    cdl.countDown()
-                },
-                toString: {
-                    "Channel $i"
-                }
-            ]
-            channel.executor = pool
-            prev = channel
-        }
-        for(i in 0..<nMessages)
-            prev << "Hi"
-
-        assertTrue(cdl.await(300,TimeUnit.SECONDS))
-        println("runRingNonFair: ${pool.class.simpleName} ${System.currentTimeMillis()-start}")
+        println("runRing($fair): ${pool.class.simpleName} ${System.currentTimeMillis()-start}")
     }
 }

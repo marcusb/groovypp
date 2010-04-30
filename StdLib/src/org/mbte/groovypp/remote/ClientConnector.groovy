@@ -71,10 +71,6 @@ import org.mbte.groovypp.remote.inet.InetDiscoveryInfo
         }
     }
 
-    protected boolean checkInterest(Object message) {
-        message instanceof InetDiscoveryInfo || super.checkInterest(message)
-    }
-
     private HashMap<UUID,NettyClient> clients = [:]
 
     class NettyClient extends SupervisedChannel {

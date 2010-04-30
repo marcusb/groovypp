@@ -32,9 +32,6 @@ abstract class FQueue<T> implements Iterable<T> {
         addLast(element)
     }
 
-    /**
-     * Number of elements in the list
-     */
     static final EmptyQueue emptyQueue = []
 
     abstract int size ()

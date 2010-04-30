@@ -69,22 +69,13 @@ import java.util.concurrent.Executor
 
     final MessageChannel<T> async(Executor executor, boolean fair = false) {
         def that = this
-        if (fair) {
-            (FairExecutingChannel)[
-                executor:executor,
-                onMessage: { message ->
-                   that.post(message)
-                }
-            ]
-        }
-        else {
-            (NonfairExecutingChannel)[
-                executor:executor,
-                onMessage: { message ->
-                   that.post(message)
-                }
-            ]
-        }
+        (ExecutingChannel)[
+            executor:executor,
+            runFair: fair,
+            onMessage: { message ->
+               that.post(message)
+            }
+        ]
     }
 
     static class ReplyRequiringMessage {
