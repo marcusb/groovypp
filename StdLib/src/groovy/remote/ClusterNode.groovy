@@ -38,6 +38,9 @@ import groovy.channels.MultiplexorChannel
 
     MultiplexorChannel<CommunicationEvent> communicationEvents = []
 
+    final Server server = []
+    final ClientConnector clientConnector = []
+
     protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
     }
@@ -92,8 +95,4 @@ import groovy.channels.MultiplexorChannel
             }
         }
     }
-
-    abstract void startServerSniffer(ClientConnector clientConnector)
-
-    abstract void startServerBroadcaster(Server server)
 }

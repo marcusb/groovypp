@@ -43,6 +43,10 @@ import groovy.channels.SupervisedChannel
                 throw new IllegalStateException("Server requires clusterNode")
         }
 
+        if (!address) {
+            address = new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())
+        }
+
         serverFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
 
         ServerBootstrap bootstrap = [serverFactory]
@@ -62,13 +66,18 @@ import groovy.channels.SupervisedChannel
 
         // Bind and startup to accept incoming connections.
         serverChannel = bootstrap.bind(address)
-
-        clusterNode.startServerBroadcaster(this)
     }
 
     protected void doShutdown () {
         serverChannel?.close()
         serverFactory.releaseExternalResources()
         serverFactory = null
+    }
+
+    static int findFreePort() {
+        def server = new ServerSocket(0)
+        def port = server.getLocalPort()
+        server.close()
+        port
     }
 }

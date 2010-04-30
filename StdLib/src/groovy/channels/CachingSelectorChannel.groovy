@@ -16,19 +16,28 @@
 
 package groovy.channels
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * 
  */
 abstract class CachingSelectorChannel<M,K> extends SelectorChannel<M> {
 
-  private AtomicMap
+    private ConcurrentHashMap<K, MessageChannel<M>> cache = []
 
-  Iterator<MessageChannel<M>> selectInterested(M message) {
-    throw new UnsupportedOperationException("Not yet implemented")
-  }
+    Iterator<MessageChannel<M>> selectInterested(M message) {
+        def key = messageKey(message)
+        def c = cache.get(key)
+        if (!c) {
+          synchronized(cache) {
 
- /**
-  * Maps message to key in the cache
-  */
- abstract protected K messageKey(M message)
+          }
+        }
+        c.singletonList().iterator()
+    }
+
+    /**
+    * Maps message to key in the cache
+    */
+    abstract protected K messageKey(M message)
 }

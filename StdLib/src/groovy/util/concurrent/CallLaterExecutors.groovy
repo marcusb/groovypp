@@ -20,7 +20,7 @@ import org.junit.Assert
 import java.util.concurrent.*
 
 /**
- * Provide infrastructure for convinient work with thread pools
+ * Provide infrastructure for convenient work with thread pools
  *
  * Each thread knows which executor it belongs to so objects can easily submit tasks for the same
  * executor
@@ -31,7 +31,7 @@ import java.util.concurrent.*
  */
 @Typed
 class CallLaterExecutors {
-    static CallLaterPool newFixedThreadPool(int nThreads) {
+    static CallLaterPool newFixedThreadPool(int nThreads = Runtime.getRuntime().availableProcessors()) {
         new CallLaterPool(nThreads, nThreads,0L, TimeUnit.SECONDS,new LinkedBlockingQueue<Runnable>())
     }
 

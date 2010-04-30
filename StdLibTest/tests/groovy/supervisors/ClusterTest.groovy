@@ -27,13 +27,6 @@ import groovy.util.concurrent.CallLaterExecutors
 import org.mbte.groovypp.remote.inet.MulticastClusterNode
 
 @Typed class ClusterTest extends GroovyTestCase {
-    int findFreePort() {
-        def server = new ServerSocket(0)
-        def port = server.getLocalPort()
-        server.close()
-        port
-    }
-
     void testStartStop () {
         def n = 3
         def stopCdl = new CountDownLatch(n)
@@ -41,15 +34,7 @@ import org.mbte.groovypp.remote.inet.MulticastClusterNode
         def disconnectCdl = new CountDownLatch(n*(n-1))
         def pool = CallLaterExecutors.newCachedThreadPool()
         for(i in 0..<n) {
-            MulticastClusterNode cluster = [
-                doStartup: {
-                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))
-                    startupChild(new Server(address : new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())))
-
-                    startupChild(new ClientConnector())
-                }
-            ]
-            cluster.executor = pool
+            MulticastClusterNode cluster = [executor:pool]
             cluster.communicationEvents.subscribe { msg ->
                 println "${cluster.id} $msg"
             }

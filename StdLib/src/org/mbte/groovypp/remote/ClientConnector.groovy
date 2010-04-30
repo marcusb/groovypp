@@ -42,8 +42,6 @@ import org.mbte.groovypp.remote.inet.InetDiscoveryInfo
         }
 
         clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
-
-        clusterNode.startServerSniffer(this)
     }
 
     public void doShutdown() {

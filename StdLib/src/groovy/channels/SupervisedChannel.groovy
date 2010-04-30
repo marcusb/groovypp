@@ -34,7 +34,7 @@ import groovy.util.concurrent.FList
 
     private volatile int state
 
-    private static final class Startup  {
+    private static final class Startup {
         Function0 afterStartup
     }
     private static final class Shutdown {
@@ -43,6 +43,9 @@ import groovy.util.concurrent.FList
     private static final class ChildCrashed {
         SupervisedChannel who
         Throwable cause
+    }
+    private static final class Execute {
+      Function0 operation
     }
 
     final void startup (Function0 afterStartup = null) {
@@ -147,7 +150,15 @@ import groovy.util.concurrent.FList
                 shutdownChild(message.who)
                 onChildCrashed(message)
                 break
+
+            case Execute:
+                message.operation()
+                break
         }
+    }
+
+    final void execute(Function0 operation) {
+      post(new Execute(operation:operation))
     }
 
     protected void doStartup() {}
@@ -181,7 +192,7 @@ import groovy.util.concurrent.FList
     }
 
     protected final boolean interested(Object message) {
-        message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || (!(state & STOP_MASK) && checkInterest(message))
+        message instanceof Execute || message instanceof Startup  || message instanceof Shutdown || message instanceof ChildCrashed || (!(state & STOP_MASK) && checkInterest(message))
     }
 
     protected boolean checkInterest (Object message) { true }

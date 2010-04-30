@@ -18,7 +18,7 @@ package groovy.channels
 
 import groovy.util.concurrent.FList
 
-@Typed class MultiplexorChannel<M> extends MessageChannel<M> {
+@Typed class MultiplexorChannel<M> extends SelectorChannel<M> {
     private volatile FList<MessageChannel<M>> listeners = FList.emptyList
 
     MultiplexorChannel() {
@@ -51,13 +51,11 @@ import groovy.util.concurrent.FList
         }
     }
 
-    final void post(M message) {
-        listeners.each { channel ->
-            channel.post message
-        }
-    }
-
     static MultiplexorChannel<M> of (MessageChannel<M> ... channels) {
         new MultiplexorChannel().subscribe(channels)
+    }
+
+    Iterator<MessageChannel<M>> selectInterested(M message) {
+        listeners.iterator()
     }
 }
