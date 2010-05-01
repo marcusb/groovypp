@@ -44,18 +44,18 @@ import groovy.channels.ExecutingChannel
     }
 
     void addListener (Function1<Agent<T>,?> listener) {
-        subscribers.apply{ it + listener }
+        listeners.apply{ it + listener }
     }
 
     void removeListener (Function1<Agent<T>,?> listener) {
-        subscribers.apply{ it - listener }
+        listeners.apply{ it - listener }
     }
 
     void addValidator (Function2<Agent<T>,T,Boolean> validator) {
-        subscribers.apply{ it + listener }
+        validators.apply{ it + validator }
     }
 
     void removeValidator (Function2<Agent<T>,T,Boolean> validator) {
-        subscribers.apply{ it - listener }
+        validators.apply{ it - validator }
     }
 }
