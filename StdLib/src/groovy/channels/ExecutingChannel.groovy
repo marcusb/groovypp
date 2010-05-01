@@ -81,7 +81,7 @@ import java.util.concurrent.Executor
     }
 
 
-    final void schedule (ExecuteCommand command) {
+    protected final void schedule (ExecuteCommand command) {
         post(command)
     }
 

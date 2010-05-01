@@ -18,25 +18,44 @@ package groovy.util.concurrent
 
 import groovy.channels.ExecutingChannel
 
-@Typed class Agent<T> extends ExecutingChannel<Function1<T, T>> {
+@Typed final class Agent<T> extends ExecutingChannel {
     private volatile T ref
 
-    Agent () {
-      runFair = true
+    private volatile FList<Function1<Agent<T>,?>> listeners = FList.emptyList
+
+    private volatile FList<Function2<Agent<T>,T,Boolean>> validators = FList.emptyList
+
+    Agent (T ref = null, boolean runFair = false) {
+      this.runFair = runFair
+      this.ref = ref
     }
 
-    Agent (T ref) {
-      runFair = true
-      this.@ref = ref
-    }
-    
     final T get () { ref }
 
     void call (Function1<T,T> mutation) {
-        post mutation
+//        def that = this
+//        schedule {
+//            def newRef = mutation(ref)
+//            if(!validators.any{ v -> !v(that, newRef) }) {
+//                ref = newRef
+//                listeners*.call(that, newRef)
+//            }
+//        }
     }
 
-    void onMessage(Function1<T, T> message) {
-        ref = message(ref)
+    void addListener (Function1<Agent<T>,?> listener) {
+        subscribers.apply{ it + listener }
+    }
+
+    void removeListener (Function1<Agent<T>,?> listener) {
+        subscribers.apply{ it - listener }
+    }
+
+    void addValidator (Function2<Agent<T>,T,Boolean> validator) {
+        subscribers.apply{ it + listener }
+    }
+
+    void removeValidator (Function2<Agent<T>,T,Boolean> validator) {
+        subscribers.apply{ it - listener }
     }
 }

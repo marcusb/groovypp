@@ -18,7 +18,6 @@ package groovy.channels
 
 import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
-import groovy.util.concurrent.FQueue
 
 @Typed abstract class SupervisedChannel<M> extends ExecutingChannel<M> {
     private static int NOT_STARTED = 0
@@ -168,7 +167,7 @@ import groovy.util.concurrent.FQueue
         owner ? owner.rootSupervisor : this
     }
 
-    boolean stopped () {
+    final boolean stopped () {
         state & STOP_MASK
     }
 }
