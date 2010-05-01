@@ -52,7 +52,7 @@ import org.mbte.groovypp.remote.inet.InetDiscoveryInfo
     protected void doOnMessage(Object msg) {
         switch(msg) {
             case InetDiscoveryInfo:
-                if (msg.clusterId > clusterNode.id) {
+                if (!stopped() && msg.clusterId > clusterNode.id) {
                     synchronized(clients) {
                         if(!clients.containsKey(msg.clusterId)) {
                             clusterNode.communicationEvents << new ClusterNode.CommunicationEvent.TryingConnect(uuid:msg.clusterId, address:msg.serverAddress)

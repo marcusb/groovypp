@@ -42,6 +42,17 @@ import groovy.util.concurrent.FQueue
         }
     }
 
+    final void postFirst(M message) {
+        for (;;) {
+            def oldQueue = queue
+            def newQueue = (oldQueue === busyEmptyQueue ? FQueue.emptyQueue : oldQueue).addFirst(message)
+            if (queue.compareAndSet(oldQueue, newQueue)) {
+                signalPost(oldQueue, newQueue)
+                return
+            }
+        }
+    }
+
     /**
      * Action (normally scheduling logic) to be taken after a message placed in to incoming queue
      */

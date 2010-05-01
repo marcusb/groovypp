@@ -133,13 +133,13 @@ import groovy.channels.ExecutingChannel
         }
     }
 
-    void testExecute () {
+    void testSchedule () {
         testWithFixedPool {
             def cdl = new CountDownLatch(100)
             CopyOnWriteArrayList results = []
             ExecutingChannel channel = [executor:pool, runFair:true]
             for (i in 0..<100)
-                channel.execute {
+                channel.schedule {
                   results << i
                   cdl.countDown()
                 }

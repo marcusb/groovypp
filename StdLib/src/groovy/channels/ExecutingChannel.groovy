@@ -80,7 +80,8 @@ import java.util.concurrent.Executor
         }
     }
 
-    void execute (ExecuteCommand command) {
+
+    final void schedule (ExecuteCommand command) {
         post(command)
     }
 

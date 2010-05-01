@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package groovy.lang
 
 public class SerialTest extends GroovyShellTestCase {

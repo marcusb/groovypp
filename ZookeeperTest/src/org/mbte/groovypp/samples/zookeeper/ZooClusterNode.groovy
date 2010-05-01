@@ -105,7 +105,7 @@ import org.apache.zookeeper.AsyncCallback
   }
 
   void process(WatchedEvent event) {
-    execute {
+    schedule {
       println event
       switch (event.type) {
         case Watcher.Event.EventType.NodeCreated:

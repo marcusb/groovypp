@@ -67,9 +67,9 @@ import java.util.concurrent.Executor
         mapping
     }
 
-    final MessageChannel<T> async(Executor executor, boolean fair = false) {
+    final ExecutingChannel<T> async(Executor executor, boolean fair = false) {
         def that = this
-        (ExecutingChannel)[
+        [
             executor:executor,
             runFair: fair,
             onMessage: { message ->
