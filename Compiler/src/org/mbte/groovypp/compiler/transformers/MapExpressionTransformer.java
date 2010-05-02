@@ -22,6 +22,7 @@ import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -50,15 +51,15 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
         }
 
         public BytecodeExpr transform(CompilerTransformer compiler) {
-            return new TransformedMapExpr(exp, compiler);
+            return new TransformedMapExpr(exp, TypeUtil.LINKED_HASH_MAP_TYPE, compiler);
         }
     }
 
     public static class TransformedMapExpr extends BytecodeExpr {
         private final MapExpression exp;
 
-        public TransformedMapExpr(MapExpression exp, CompilerTransformer compiler) {
-            super(exp, TypeUtil.EX_LINKED_HASH_MAP_TYPE);
+        public TransformedMapExpr(MapExpression exp, ClassNode type, CompilerTransformer compiler) {
+            super(exp, type);
             this.exp = exp;
 
             final List<MapEntryExpression> list = exp.getMapEntryExpressions();
@@ -83,9 +84,9 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
 
         protected void compile(MethodVisitor mv) {
             final List<MapEntryExpression> list = exp.getMapEntryExpressions();
-            mv.visitTypeInsn(NEW, "org/mbte/groovypp/runtime/LinkedHashMapEx");
+            mv.visitTypeInsn(NEW, BytecodeHelper.getClassInternalName(getType()));
             mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL,"org/mbte/groovypp/runtime/LinkedHashMapEx","<init>","()V");
+            mv.visitMethodInsn(INVOKESPECIAL,BytecodeHelper.getClassInternalName(getType()),"<init>","()V");
             for (int i = 0; i != list.size(); ++i) {
                 mv.visitInsn(DUP);
                 final MapEntryExpression me = list.get(i);
@@ -95,7 +96,7 @@ public class MapExpressionTransformer extends ExprTransformer<MapExpression> {
                 final BytecodeExpr ve = (BytecodeExpr) me.getValueExpression();
                 ve.visit(mv);
                 box(ve.getType(), mv);
-                mv.visitMethodInsn(INVOKEVIRTUAL,"org/mbte/groovypp/runtime/LinkedHashMapEx","put","(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                mv.visitMethodInsn(INVOKEINTERFACE,"java/util/Map","put","(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
                 mv.visitInsn(POP);
             }
         }

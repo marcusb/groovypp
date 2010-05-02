@@ -603,6 +603,44 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         return substitutedType;
     }
 
+    public ClassNode getMapKeyType(ClassNode type) {
+        final GenericsType[] generics = TypeUtil.getSubstitutedType(ClassHelper.MAP_TYPE, ClassHelper.MAP_TYPE, type).getGenericsTypes();
+        if (generics == null) return ClassHelper.OBJECT_TYPE;
+        ClassNode substitutedType = generics[0].getType();
+        while (substitutedType.equals(ClassHelper.OBJECT_TYPE) && !substitutedType.isGenericsPlaceHolder() && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+            GenericsType genericsType = substitutedType.getGenericsTypes()[0];
+            if (genericsType.isWildcard()) {
+                substitutedType = genericsType.getUpperBounds()[0];
+                if (substitutedType.equals(ClassHelper.OBJECT_TYPE) && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+                    genericsType = substitutedType.getGenericsTypes()[0];
+                }
+            }
+            else {
+                substitutedType = genericsType.getType();
+            }
+        }
+        return substitutedType;
+    }
+
+    public ClassNode getMapValueType(ClassNode type) {
+        final GenericsType[] generics = TypeUtil.getSubstitutedType(ClassHelper.MAP_TYPE, ClassHelper.MAP_TYPE, type).getGenericsTypes();
+        if (generics == null) return ClassHelper.OBJECT_TYPE;
+        ClassNode substitutedType = generics[1].getType();
+        while (substitutedType.equals(ClassHelper.OBJECT_TYPE) && !substitutedType.isGenericsPlaceHolder() && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+            GenericsType genericsType = substitutedType.getGenericsTypes()[0];
+            if (genericsType.isWildcard()) {
+                substitutedType = genericsType.getUpperBounds()[0];
+                if (substitutedType.equals(ClassHelper.OBJECT_TYPE) && substitutedType.getGenericsTypes() != null && substitutedType.getGenericsTypes().length != 0) {
+                    genericsType = substitutedType.getGenericsTypes()[0];
+                }
+            }
+            else {
+                substitutedType = genericsType.getType();
+            }
+        }
+        return substitutedType;
+    }
+
     public String getNextClosureName() {
         while (true) {
             String name = baseClosureName + "$" + (nextClosureIndex++);

@@ -48,6 +48,8 @@ public class TypeUtil {
     public static final ClassNode OBJECT_ARRAY = OBJECT_TYPE.makeArray();
     public static final ClassNode SET_TYPE = make(Set.class);
     public static final ClassNode SORTED_SET_TYPE = make(SortedSet.class);
+    public static final ClassNode SORTED_MAP_TYPE = make(SortedMap.class);
+    public static final ClassNode TREE_MAP_TYPE = make(TreeMap.class);
     public static final ClassNode QUEUE_TYPE = make(Queue.class);
     public static final ClassNode TREE_SET_TYPE = make(TreeSet.class);
     public static final ClassNode LINKED_LIST_TYPE = make(LinkedList.class);

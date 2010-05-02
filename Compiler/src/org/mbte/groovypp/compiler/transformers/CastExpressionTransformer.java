@@ -63,7 +63,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true), cast.getType());
             }
             if (cast.getExpression() instanceof MapExpression) {
-                return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)cast.getExpression(), compiler), cast.getType());
+                return compiler.castToBoolean( new MapExpressionTransformer.TransformedMapExpr( (MapExpression)cast.getExpression(), TypeUtil.LINKED_HASH_MAP_TYPE, compiler), cast.getType());
             }
             return compiler.castToBoolean((BytecodeExpr)compiler.transform(cast.getExpression()), cast.getType());
         }
@@ -126,13 +126,24 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         if (cast.getExpression() instanceof MapExpression) {
             MapExpression mapExpression = (MapExpression) cast.getExpression();
 
+            if (cast.getType().implementsInterface(ClassHelper.MAP_TYPE)) {
+                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY) != null){
+                    ClassNode keyType = compiler.getMapKeyType(cast.getType());
+                    ClassNode valueType = compiler.getMapValueType(cast.getType());
+                    improveMapTypes(mapExpression, keyType, valueType);
+
+                    ClassNode mapType = calcResultMapType(cast, keyType, valueType, compiler);
+                    return new MapExpressionTransformer.TransformedMapExpr(mapExpression, mapType, compiler);
+                }
+            }
+
             if (!cast.getType().implementsInterface(ClassHelper.MAP_TYPE)
              && !cast.getType().equals(ClassHelper.MAP_TYPE)
              && !TypeUtil.isAssignableFrom(cast.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
                 return buildClassFromMap (mapExpression, cast.getType(), compiler);
             }
             else {
-                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) cast.getExpression(), compiler);
+                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) cast.getExpression(), TypeUtil.LINKED_HASH_MAP_TYPE, compiler);
                 return standardCast(cast, compiler, inner);
             }
         }
@@ -399,6 +410,37 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         return objType;
     }
 
+    private ClassNode calcResultMapType(CastExpression exp, ClassNode keyType, ClassNode valueType, CompilerTransformer compiler) {
+        ClassNode collType = exp.getType();
+        if ((collType.getModifiers() & ACC_ABSTRACT) != 0) {
+            if (collType.equals(ClassHelper.MAP_TYPE)) {
+                if (collType.getGenericsTypes() != null) {
+                    collType = ClassHelper.make ("java.util.LinkedHashMap");
+                    collType.setRedirect(TypeUtil.LINKED_HASH_MAP_TYPE);
+                    collType.setGenericsTypes(new GenericsType[]{new GenericsType(keyType), new GenericsType(valueType)});
+                }
+                else
+                    collType = TypeUtil.LINKED_HASH_MAP_TYPE;
+            }
+            else {
+                if (collType.equals(TypeUtil.SORTED_MAP_TYPE)) {
+                    if (collType.getGenericsTypes() != null) {
+                        collType = ClassHelper.make ("java.util.TreeMap");
+                        collType.setRedirect(TypeUtil.LINKED_HASH_SET_TYPE);
+                        collType.setGenericsTypes(new GenericsType[]{new GenericsType(keyType), new GenericsType(valueType)});
+                    }
+                    else
+                        collType = TypeUtil.TREE_MAP_TYPE;
+                }
+                else {
+                        compiler.addError ("Cannot instantiate map as instance of abstract type " + collType.getName(), exp);
+                        return null;
+                    }
+            }
+        }
+        return collType;
+    }
+
     private ClassNode calcResultCollectionType(CastExpression exp, ClassNode componentType, CompilerTransformer compiler) {
         ClassNode collType = exp.getType();
         if ((collType.getModifiers() & ACC_ABSTRACT) != 0) {
@@ -522,6 +564,21 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             CastExpression castExpression = new CastExpression(componentType, el);
             castExpression.setSourcePosition(el);
             list.set(i, castExpression);
+        }
+    }
+
+    private void improveMapTypes(MapExpression mapExpression, ClassNode keyType, ClassNode valueType) {
+        List<MapEntryExpression> list = mapExpression.getMapEntryExpressions();
+        int count = list.size();
+        for (int i = 0; i != count; ++i) {
+            MapEntryExpression el = list.get(i);
+            CastExpression castExpression;
+            castExpression = new CastExpression(keyType, el.getKeyExpression());
+            castExpression.setSourcePosition(el.getKeyExpression());
+            el.setKeyExpression(castExpression);
+            castExpression = new CastExpression(valueType, el.getValueExpression());
+            castExpression.setSourcePosition(el.getValueExpression());
+            el.setValueExpression(castExpression);
         }
     }
 
