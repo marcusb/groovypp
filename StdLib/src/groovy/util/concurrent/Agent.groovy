@@ -33,14 +33,21 @@ import groovy.channels.ExecutingChannel
     final T get () { ref }
 
     void call (Function1<T,T> mutation) {
-//        def that = this
-//        schedule {
-//            def newRef = mutation(ref)
+        def that = this
+        schedule {
+            def newRef = mutation(ref)
+//  FAIL TO COMPILE
 //            if(!validators.any{ v -> !v(that, newRef) }) {
 //                ref = newRef
-//                listeners*.call(that, newRef)
+//                listeners*.call(that)
 //            }
-//        }
+            for (v in validators) {
+                if (!v(that, newRef))
+                    return
+            }
+            ref = newRef
+            listeners*.call(that)
+        }
     }
 
     void addListener (Function1<Agent<T>,?> listener) {
