@@ -57,7 +57,7 @@ class FVector<T> implements Iterable<T> {
       if (i >= tailOff()) {
         def newTail = new T[tail.length]
         System.arraycopy tail, 0, newTail, 0, tail.length
-        newTail[i] = obj
+        newTail[i - tailOff()] = obj
         return new FVector<T> (length, shift, root, newTail)
       } else {
         return new FVector<T> (length, shift, doAssoc(shift, root, i, obj), tail)

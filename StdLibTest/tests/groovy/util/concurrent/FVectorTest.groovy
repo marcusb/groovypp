@@ -53,4 +53,23 @@ public class FVectorTest extends GroovyTestCase {
 
       assertEquals range, l
     }
+
+void testShuffle () {
+       FVector<Integer> vec = FVector.emptyVector
+
+       for(i in 0..<10000) {
+         vec = vec + i
+       }
+
+       def r = new Random ()
+       for(i in 0..<10000) {
+           def i1 = r.nextInt (10000)
+           def i2 = r.nextInt (10000)
+
+           def v1 = vec[i1]
+           def v2 = vec[i2]
+           vec = vec.set(i2, v1)
+           vec.set(i1, v2)
+       }
+   }
 }
