@@ -369,7 +369,20 @@ public class TypeUtil {
         if (mapped == null) return toSubstitute;
         toSubstitute = mapped;
         final GenericsType[] typeArgs = accessType.getGenericsTypes();
-        return getSubstitutedTypeToplevel(toSubstitute, accessClass, typeArgs);
+        return getSubstitutedTypeToplevel(toSubstitute, accessClass, typeArgs, null);
+    }
+
+    public static ClassNode getSubstitutedType(ClassNode toSubstitute,
+                                               final ClassNode declaringClass,
+                                               final ClassNode accessType,
+                                               final Set<String> ignoreTypeVariables) {
+        ClassNode accessClass = accessType.redirect();
+
+        ClassNode mapped = mapTypeFromSuper(toSubstitute, declaringClass.redirect(), accessClass);
+        if (mapped == null) return toSubstitute;
+        toSubstitute = mapped;
+        final GenericsType[] typeArgs = accessType.getGenericsTypes();
+        return getSubstitutedTypeToplevel(toSubstitute, accessClass, typeArgs, ignoreTypeVariables);
     }
 
     public static ClassNode getSubstitutedType(ClassNode toSubstitute,
@@ -380,7 +393,7 @@ public class TypeUtil {
         for (int i = 0; i < genericsTypes.length; i++) {
             genericsTypes[i] = methodTypeArgs[i] == null ? null : new GenericsType(methodTypeArgs[i]);
         }
-        return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method));
+        return getSubstitutedTypeToplevelInner(toSubstitute, genericsTypes, getTypeParameterNames(method), null);
     }
 
     private static class RawMarker {}
@@ -388,7 +401,7 @@ public class TypeUtil {
     private static ClassNode RAW_CLASS = new ClassNode(RawMarker.class);
     private static GenericsType RAW_GENERIC_TYPE = new GenericsType(RAW_CLASS);
 
-    private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs) {
+    private static ClassNode getSubstitutedTypeToplevel(ClassNode toSubstitute, ClassNode accessClass, GenericsType[] typeArgs, Set<String> ignoreTypeVariables) {
         String[] typeVariables = getTypeParameterNames(accessClass);
         if (typeVariables.length == 0) return toSubstitute;
         if (typeArgs == null) {
@@ -397,16 +410,16 @@ public class TypeUtil {
                 typeArgs[i] = RAW_GENERIC_TYPE;
             }
         }
-        return getSubstitutedTypeToplevelInner(toSubstitute, typeArgs, typeVariables);
+        return getSubstitutedTypeToplevelInner(toSubstitute, typeArgs, typeVariables, ignoreTypeVariables);
     }
 
-    private static ClassNode getSubstitutedTypeToplevelInner(ClassNode toSubstitute, GenericsType[] typeArgs, String[] typeVariables) {
+    private static ClassNode getSubstitutedTypeToplevelInner(ClassNode toSubstitute, GenericsType[] typeArgs, String[] typeVariables, Set<String> ignoreTypeVariables) {
         int arrayCount = 0;
         while (toSubstitute.isArray()) {
             toSubstitute = toSubstitute.getComponentType();
             arrayCount++;
         }
-        if (isTypeParameterPlaceholder(toSubstitute)) {
+        if (isTypeParameterPlaceholder(toSubstitute, ignoreTypeVariables)) {
             String name = toSubstitute.getUnresolvedName();
             // This is an erased type parameter
             ClassNode binding = getBindingNormalized(name, typeVariables, typeArgs);
@@ -414,11 +427,12 @@ public class TypeUtil {
             return createArrayType(arrayCount, binding != null ? binding : toSubstitute);
         }
         if (typeVariables.length != typeArgs.length) return createArrayType(arrayCount, toSubstitute);
-        return createArrayType(arrayCount, getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs));
+        return createArrayType(arrayCount, getSubstitutedTypeInner(toSubstitute, typeVariables, typeArgs, ignoreTypeVariables));
     }
 
-    private static boolean isTypeParameterPlaceholder(ClassNode type) {
-        return type.isGenericsPlaceHolder();
+    private static boolean isTypeParameterPlaceholder(ClassNode type, Set<String> ignoreTypeVariables) {
+        return type.isGenericsPlaceHolder() &&
+                (ignoreTypeVariables == null || !ignoreTypeVariables.contains(type.getUnresolvedName()));
     }
 
     private static ClassNode createArrayType(int arrayCount, ClassNode type) {
@@ -446,26 +460,26 @@ public class TypeUtil {
         return result;
     }
 
-    private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, String[] typeVariables, GenericsType[] typeArgs) {
+    private static ClassNode getSubstitutedTypeInner(ClassNode toSubstitute, String[] typeVariables, GenericsType[] typeArgs, Set<String> ignoreTypeVariables) {
         GenericsType[] toSubstituteTypeArgs = toSubstitute.getGenericsTypes();
         if (toSubstituteTypeArgs == null || toSubstituteTypeArgs.length == 0) return toSubstitute;
         GenericsType[] substitutedArgs = new GenericsType[toSubstituteTypeArgs.length];
         for (int i = 0; i < toSubstituteTypeArgs.length; i++) {
             GenericsType typeArg = toSubstituteTypeArgs[i];
-            if (isTypeParameterPlaceholder(typeArg.getType())) {
+            if (isTypeParameterPlaceholder(typeArg.getType(), ignoreTypeVariables)) {
                 GenericsType binding = getBinding(typeArg.getType().getUnresolvedName(), typeVariables, typeArgs);
                 if (binding == RAW_GENERIC_TYPE) return eraseTypeArguments(toSubstitute);
                 substitutedArgs[i] = binding != null ? binding : typeArg;
             } else {
-                ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs);
+                ClassNode type = getSubstitutedTypeInner(typeArg.getType(), typeVariables, typeArgs, ignoreTypeVariables);
                 ClassNode oldLower = typeArg.getLowerBound();
-                ClassNode lowerBound = oldLower != null ? getSubstitutedTypeInner(oldLower, typeVariables, typeArgs) : oldLower;
+                ClassNode lowerBound = oldLower != null ? getSubstitutedTypeInner(oldLower, typeVariables, typeArgs, ignoreTypeVariables) : oldLower;
                 ClassNode[] oldUpper = typeArg.getUpperBounds();
                 ClassNode[] upperBounds = null;
                 if (oldUpper != null) {
                     upperBounds = new ClassNode[oldUpper.length];
                     for (int j = 0; j < upperBounds.length; j++) {
-                        upperBounds[j] = getSubstitutedTypeInner(oldUpper[j], typeVariables, typeArgs);
+                        upperBounds[j] = getSubstitutedTypeInner(oldUpper[j], typeVariables, typeArgs, ignoreTypeVariables);
 
                     }
                 }
@@ -489,16 +503,16 @@ public class TypeUtil {
     private static ClassNode mapTypeFromSuper(ClassNode type, ClassNode aSuper, ClassNode bDerived, boolean substituteOwn) {
         if (bDerived.redirect().equals(aSuper)) {
             return substituteOwn ? getSubstitutedTypeToplevel(type, bDerived.redirect(),
-                        bDerived.getGenericsTypes()) : type;
+                        bDerived.getGenericsTypes(), null) : type;
         }
         ClassNode derivedSuperClass = bDerived.getUnresolvedSuperClass(true);
         if (derivedSuperClass != null) {
             ClassNode rec = mapTypeFromSuper(type, aSuper, derivedSuperClass, false);
             if (rec != null) {
                 rec = getSubstitutedTypeToplevel(rec, derivedSuperClass.redirect(),
-                        derivedSuperClass.getGenericsTypes());
+                        derivedSuperClass.getGenericsTypes(), null);
                 return substituteOwn ? getSubstitutedTypeToplevel(rec, bDerived.redirect(),
-                        bDerived.getGenericsTypes()) : rec;
+                        bDerived.getGenericsTypes(), null) : rec;
             }
         }
         ClassNode[] interfaces = bDerived.getUnresolvedInterfaces(true);
@@ -507,9 +521,9 @@ public class TypeUtil {
                 ClassNode rec = mapTypeFromSuper(type, aSuper, derivedInterface, false);
                 if (rec != null) {
                     rec = getSubstitutedTypeToplevel(rec, derivedInterface.redirect(),
-                            derivedInterface.getGenericsTypes());
+                            derivedInterface.getGenericsTypes(), null);
                     return substituteOwn ? getSubstitutedTypeToplevel(rec, bDerived.redirect(),
-                            bDerived.getGenericsTypes()) : rec;
+                            bDerived.getGenericsTypes(), null) : rec;
                 }
             }
         }

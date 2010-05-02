@@ -36,17 +36,10 @@ import groovy.channels.ExecutingChannel
         def that = this
         schedule {
             def newRef = mutation(ref)
-//  FAIL TO COMPILE
-//            if(!validators.any{ v -> !v(that, newRef) }) {
-//                ref = newRef
-//                listeners*.call(that)
-//            }
-            for (v in validators) {
-                if (!v(that, newRef))
-                    return
+            if(!validators.any{ v -> !v(that, newRef) }) {
+                ref = newRef
+                listeners*.call(that)
             }
-            ref = newRef
-            listeners*.call(that)
         }
     }
 

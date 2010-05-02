@@ -674,7 +674,14 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         paramType = TypeUtil.getSubstitutedType(paramType, foundMethod, bindings);
 
         if (type != null) {
-            paramType = TypeUtil.getSubstitutedType(paramType, foundMethod.getDeclaringClass(), type);
+            Set<String> ignoreTypeVariables = new HashSet<String>();
+            GenericsType[] methodVars = foundMethod.getGenericsTypes();
+            if (methodVars != null) {
+                for (GenericsType methodVar : methodVars) {
+                    ignoreTypeVariables.add(methodVar.getType().getUnresolvedName());
+                }
+            }
+            paramType = TypeUtil.getSubstitutedType(paramType, foundMethod.getDeclaringClass(), type, ignoreTypeVariables);
         }
 
         List<MethodNode> one = info.oneMethodAbstract;
