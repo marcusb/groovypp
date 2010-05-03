@@ -66,8 +66,7 @@ public class FVectorTest extends GroovyTestCase {
 
             def v1 = vec[i1]
             def v2 = vec[i2]
-            vec = vec.set(i2, v1)
-            vec.set(i1, v2)
+            vec = vec.set(i2, v1).set(i1, v2)
         }
     }
 }
