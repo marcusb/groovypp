@@ -21,9 +21,17 @@ import groovy.channels.ExecutingChannel
 @Typed final class Agent<T> extends ExecutingChannel {
     private volatile T ref
 
-    private volatile FList<Function1<Agent<T>,?>> listeners = FList.emptyList
+    abstract static class Validator<T> {
+        abstract boolean validate (Agent<T> agent, T newValue)
+    }
 
-    private volatile FList<Function2<Agent<T>,T,Boolean>> validators = FList.emptyList
+    private volatile FList<Listener<T>> listeners = FList.emptyList
+
+    abstract static class Listener<T> {
+        abstract void onUpdate (Agent<T> agent)
+    }
+
+    private volatile FList<Validator<T>> validators = FList.emptyList
 
     Agent (T ref = null, boolean runFair = false) {
       this.runFair = runFair
@@ -38,9 +46,9 @@ import groovy.channels.ExecutingChannel
             def oldRef = ref
             def newRef = mutation(oldRef)
             if (newRef !== oldRef) {
-                if(!validators.any{ !it(that, newRef) }) {
+                if(!validators.any{ !it.validate(that, newRef) }) {
                     ref = newRef
-                    listeners*.call(that)
+                    listeners*.onUpdate(that)
                 }
             }
             
@@ -48,7 +56,7 @@ import groovy.channels.ExecutingChannel
         }
     }
 
-    void await (Mutation<T> mutation, Runnable whenDone = null) {
+    void await (Mutation<T> mutation) {
         CountDownLatch cdl = [1]
         call(mutation) {
             cdl.countDown ()
@@ -56,21 +64,21 @@ import groovy.channels.ExecutingChannel
         cdl.await()    
     }
 
-    Function1<Agent<T>,?> addListener (Function1<Agent<T>,?> listener) {
+    Listener<T> addListener (Listener<T> listener) {
         listeners.apply{ it + listener }
         listener
     }
 
-    void removeListener (Function1<Agent<T>,?> listener) {
+    void removeListener (Listener<T> listener) {
         listeners.apply{ it - listener }
     }
 
-    Function2<Agent<T>,T,Boolean> addValidator (Function2<Agent<T>,T,Boolean> validator) {
+    Validator<T> addValidator (Validator<T> validator) {
         validators.apply{ it + validator }
         validator
     }
 
-    void removeValidator (Function2<Agent<T>,T,Boolean> validator) {
+    void removeValidator (Validator<T> validator) {
         validators.apply{ it - validator }
     }
 }
