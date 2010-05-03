@@ -14,62 +14,60 @@
  * limitations under the License.
  */
 
-
-
 package groovy.util.concurrent
 
 @Typed
 public class FVectorTest extends GroovyTestCase {
-    void testAddRemove () {
+    void testAddRemove() {
         FVector<Integer> vec = FVector.emptyVector
 
-        for(i in 0..<1000000) {
-          vec = vec + i
-          if (i % 2) {
-            def p = vec.pop()
-            assertEquals i, p.first
-            vec = p.second
-          }
+        for (i in 0..<1000000) {
+            vec = vec + i
+            if (i % 2) {
+                def p = vec.pop()
+                assertEquals i, p.first
+                vec = p.second
+            }
         }
 
         assertEquals 500000, vec.length
 
-        for(i in 0..<500000) {
-          assertEquals 2*i, vec[i]
+        for (i in 0..<500000) {
+            assertEquals 2 * i, vec[i]
         }
     }
 
     void testIterator() {
-      FVector<Integer> vec = FVector.emptyVector
-      def range = 0..<100000
-      for(i in range) {
-          vec = vec + i
-      }
+        FVector<Integer> vec = FVector.emptyVector
+        def range = 0..<100000
+        for (i in range) {
+            vec = vec + i
+        }
 
-      def l = []
-      for (i in vec) {
-        l << i
-      }
+        def l = []
+        for (i in vec) {
+            l << i
+        }
 
-      assertEquals range, l
+        assertEquals range, l
     }
 
-void testShuffle () {
-       FVector<Integer> vec = FVector.emptyVector
+    void testShuffle() {
+        FVector<Integer> vec = FVector.emptyVector
 
-       for(i in 0..<10000) {
-         vec = vec + i
-       }
+        for (i in 0..<10000) {
+            vec = vec + i
+        }
 
-       def r = new Random ()
-       for(i in 0..<10000) {
-           def i1 = r.nextInt (10000)
-           def i2 = r.nextInt (10000)
+        def r = new Random()
+        for (i in 0..<10000) {
+            def i1 = r.nextInt(10000)
+            def i2 = r.nextInt(10000)
 
-           def v1 = vec[i1]
-           def v2 = vec[i2]
-           vec = vec.set(i2, v1)
-           vec.set(i1, v2)
-       }
-   }
+            def v1 = vec[i1]
+            def v2 = vec[i2]
+            vec = vec.set(i2, v1)
+            vec.set(i1, v2)
+        }
+    }
 }

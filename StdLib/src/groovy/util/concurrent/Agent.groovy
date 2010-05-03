@@ -32,27 +32,42 @@ import groovy.channels.ExecutingChannel
 
     final T get () { ref }
 
-    void call (Function1<T,T> mutation) {
+    void call (Mutation<T> mutation, Runnable whenDone = null) {
         def that = this
         schedule {
-            def newRef = mutation(ref)
-            if(!validators.any{ v -> !v(that, newRef) }) {
-                ref = newRef
-                listeners*.call(that)
+            def oldRef = ref
+            def newRef = mutation(oldRef)
+            if (newRef !== oldRef) {
+                if(!validators.any{ !it(that, newRef) }) {
+                    ref = newRef
+                    listeners*.call(that)
+                }
             }
+            
+            whenDone?.run ()
         }
     }
 
-    void addListener (Function1<Agent<T>,?> listener) {
+    void await (Mutation<T> mutation, Runnable whenDone = null) {
+        CountDownLatch cdl = [1]
+        call(mutation) {
+            cdl.countDown ()
+        }
+        cdl.await()    
+    }
+
+    Function1<Agent<T>,?> addListener (Function1<Agent<T>,?> listener) {
         listeners.apply{ it + listener }
+        listener
     }
 
     void removeListener (Function1<Agent<T>,?> listener) {
         listeners.apply{ it - listener }
     }
 
-    void addValidator (Function2<Agent<T>,T,Boolean> validator) {
+    Function2<Agent<T>,T,Boolean> addValidator (Function2<Agent<T>,T,Boolean> validator) {
         validators.apply{ it + validator }
+        validator
     }
 
     void removeValidator (Function2<Agent<T>,T,Boolean> validator) {

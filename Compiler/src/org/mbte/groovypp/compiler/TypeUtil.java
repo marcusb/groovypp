@@ -179,7 +179,7 @@ public class TypeUtil {
                 || ClassHelper.isPrimitiveType(classNode)) return null;
         if (!isTransparentClass(classNode)) return null;
         MethodNode method = MethodSelection.findPublicMethodInClass(classNode, "get", new ClassNode[0]);
-        return method != null && method.getParameters().length == 0 ? method : null;
+        return method != null && method.getParameters().length == 0 && !method.getReturnType().equals(ClassHelper.VOID_TYPE)? method : null;
     }
 
     public static MethodNode getReferenceBoxingMethod(ClassNode classNode, ClassNode arg) {

@@ -626,10 +626,13 @@ public class MethodSelection {
 
     public static MethodNode findPublicMethodInClass(ClassNode classToTransformFrom, String methodName, ClassNode[] args) {
         Object methodOrList = ClassNodeCache.getMethods(classToTransformFrom, methodName);
+        if (methodOrList == null)
+            return null;
+        
         if (methodOrList instanceof MethodNode) {
             if (!((MethodNode)methodOrList).isPublic()) return null;
         } else {
-            final FastArray array = (FastArray) methodOrList;
+            final FastArray array = ((FastArray) methodOrList).copy();
             for (int i = 0; i < array.size(); i++) {
                 final MethodNode method = (MethodNode) array.get(i);
                 if (!method.isPublic()) array.remove(i);
