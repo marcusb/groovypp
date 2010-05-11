@@ -81,9 +81,10 @@ import java.util.concurrent.Executor
     }
 
 
-    final void schedule (ExecuteCommand command) {
+    final <S> ExecuteCommand<S> schedule (ExecuteCommand<S> command) {
         post(command)
+        command
     }
 
-    abstract static class ExecuteCommand implements Runnable {}
+    abstract static class ExecuteCommand<S> extends CallLater<S> {}
 }

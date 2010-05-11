@@ -36,7 +36,7 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
     // contains either null or running thread or result or exception
     private volatile def internalData
 
-    private volatile FList listeners = FList.emptyList
+    private volatile FList bindListeners = FList.emptyList
 
     final boolean isCancelled() {
         def s = getState()
@@ -103,14 +103,14 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
 
     final BindLater<V> whenBound (Listener<V> listener) {
         for (;;) {
-            def l = listeners
+            def l = bindListeners
             if (l == null) {
                 // it mean done worked already
                 invokeListener(listener)
                 return this
             }
 
-            if(listeners.compareAndSet(l,l + listener))
+            if(bindListeners.compareAndSet(l,l + listener))
                 return this
         }
     }
@@ -126,8 +126,8 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
 
     protected final void done() {
         for (;;) {
-            def l = listeners
-            if (listeners.compareAndSet(l, null)) {
+            def l = bindListeners
+            if (bindListeners.compareAndSet(l, null)) {
                 for (el in l.reverse()) {
                     if (el instanceof BlockingQueue) {
                         ((BlockingQueue)el).put(this)
@@ -149,7 +149,6 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
             if (s & S_DONE)
                 return false
             if (compareAndSetState(s, S_SET|S_RUNNING)) {
-                def internal = internalData
                 internalData = v
                 releaseShared(S_SET)
                 done()

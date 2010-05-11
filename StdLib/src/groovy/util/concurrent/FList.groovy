@@ -176,7 +176,10 @@ abstract static class FList<T> implements Iterable<T> {
             sb << head
             if (!tail.empty) {
                 sb << ", "
-                ((MoreThanOneElementList)tail).toString(sb)
+                if (tail instanceof MoreThanOneElementList)
+                    ((MoreThanOneElementList)tail).toString(sb)
+                else
+                    sb << tail.toString()
             }
         }
     }
