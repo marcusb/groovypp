@@ -24,11 +24,16 @@ import groovy.util.concurrent.FList
     Executor executor
     boolean  runFair
 
-    private volatile Pair<FQueue<Function1<R,?>>,FList<R>> state = [FQueue.emptyQueue,null]
+    private volatile Pair<FQueue<Action<R,Object>>,FList<R>> state = [FQueue.emptyQueue,null]
 
     abstract FList<R> initResources ()
 
-    final void execute (Function1<R,?> action) {
+    abstract static class Action<R,D> extends Function1<R,D> {
+        Function1<D,Object> whenDone
+    }
+
+    final <D> void execute (Action<R,D> action, Function1<D,Object> whenDone = null) {
+        action.whenDone = whenDone
         if (state.second == null) {
             initPool ()
         }
@@ -52,26 +57,32 @@ import groovy.util.concurrent.FList
         }
     }
 
-    private final void scheduledAction(Function1<R,?> action, R resource) {
-        action(resource)
+    private final <D> Object scheduledAction(Action<R,D> action, R resource) {
+        def res = action(resource)
+
         for (;;) {
             def s = state
             if (s.first.empty) {
                 // no more actions => we return resource to the pool
-                if(state.compareAndSet(s, [FQueue.emptyQueue, s.second + resource]))
-                    break
+                if(state.compareAndSet(s, [FQueue.emptyQueue, s.second + resource])) {
+                    return action.whenDone?.call (res)
+                }
             }
             else {
                 def removed = s.first.removeFirst()
                 if(state.compareAndSet(s, [removed.second, s.second])) {
-                    if (runFair) {
+                    if (runFair || action.whenDone) {
                         // schedule action
                         executor.execute {
                             scheduledAction(removed.first,resource)
                         }
+
+                        return action.whenDone?.call (res)
                     }
-                    else
-                        removed.first.call(resource)
+                    else {
+                        // tail recursion
+                        return scheduledAction(removed.first, resource)
+                    }
                 }
             }
         }
