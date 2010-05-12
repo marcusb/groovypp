@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
-package groovy.channels
+package groovy.util.concurrent
 
-import groovy.util.concurrent.FQueue
 import java.util.concurrent.Executor
-import groovy.util.concurrent.FList
 
+@GrUnit({
+    testWithFixedPool(10) {
+        ResourcePool<String> cassandraPool = [
+        executor: pool,
+        initResources: {
+            ["a"]
+        }]
+
+        cassandraPool.execute { it.toUpperCase() } { assert it == 'A' }
+    }
+})
 @Typed abstract class ResourcePool<R> {
     Executor executor
     boolean  runFair
 
     private volatile Pair<FQueue<Action<R,Object>>,FList<R>> state = [FQueue.emptyQueue,null]
 
-    abstract FList<R> initResources ()
+    /**
+     * @return created pooled resources
+     */
+    abstract Iterable<R> initResources ()
 
     abstract static class Action<R,D> extends Function1<R,D> {
         Function1<D,Object> whenDone
@@ -90,7 +102,7 @@ import groovy.util.concurrent.FList
 
     private synchronized void initPool () {
         if (state.second == null) {
-            state.second = initResources ()
+            state.second = FList.emptyList.addAll(initResources ())
         }
     }
 }

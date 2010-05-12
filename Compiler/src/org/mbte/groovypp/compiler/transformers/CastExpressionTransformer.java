@@ -444,7 +444,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
     private ClassNode calcResultCollectionType(CastExpression exp, ClassNode componentType, CompilerTransformer compiler) {
         ClassNode collType = exp.getType();
         if ((collType.getModifiers() & ACC_ABSTRACT) != 0) {
-            if (collType.equals(ClassHelper.LIST_TYPE) || collType.equals(TypeUtil.COLLECTION_TYPE)) {
+            if (collType.equals(ClassHelper.LIST_TYPE) || collType.equals(TypeUtil.COLLECTION_TYPE) || collType.equals(TypeUtil.ITERABLE)) {
                 if (collType.getGenericsTypes() != null) {
                     collType = ClassHelper.make ("java.util.ArrayList");
                     collType.setRedirect(TypeUtil.ARRAY_LIST_TYPE);

@@ -21,8 +21,7 @@ public class Issue238Test extends GroovyShellTestCase {
         shell.evaluate """
 @Typed package p
 
-import groovy.util.concurrent.FList
-import groovy.channels.ResourcePool
+import groovy.util.concurrent.*
 
 testWithFixedPool(10) {
     ResourcePool<String> rPool = [

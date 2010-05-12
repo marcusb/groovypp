@@ -18,23 +18,15 @@
 
 import org.apache.cassandra.thrift.Cassandra
 
-import org.apache.cassandra.thrift.ColumnOrSuperColumn
-import org.apache.cassandra.thrift.ColumnParent
 import org.apache.cassandra.thrift.ColumnPath
 import org.apache.cassandra.thrift.ConsistencyLevel
-import org.apache.cassandra.thrift.InvalidRequestException
-import org.apache.cassandra.thrift.NotFoundException
-import org.apache.cassandra.thrift.SlicePredicate
 
-import org.apache.cassandra.thrift.TimedOutException
-import org.apache.cassandra.thrift.UnavailableException
-import org.apache.thrift.TException
 import org.apache.thrift.protocol.TBinaryProtocol
 
 import org.apache.thrift.transport.TSocket
-import groovy.util.concurrent.CallLaterExecutors
+
 import java.util.concurrent.CountDownLatch
-import groovy.channels.ResourcePool
+import groovy.util.concurrent.ResourcePool
 import groovy.util.concurrent.FList
 
 def UTF8 = "UTF8"
