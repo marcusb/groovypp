@@ -670,8 +670,8 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
     private boolean inferTypesForClosure(ClassNode type, MethodNode foundMethod,
                                          CompilerTransformer compiler, ClassNode[] paramTypes,
                                          Changed info, ClassNode[] bindings, GenericsType[] typeVars) {
-        ClassNode paramType = paramTypes[info.index];
-        paramType = TypeUtil.getSubstitutedType(paramType, foundMethod, bindings);
+        ClassNode origParamType = paramTypes[info.index];
+        ClassNode paramType = TypeUtil.getSubstitutedType(origParamType, foundMethod, bindings);
 
         if (type != null) {
             Set<String> ignoreTypeVariables = new HashSet<String>();
@@ -691,6 +691,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         } else {
             ClosureUtil.makeOneMethodClass(info.original, paramType, one, doCall, compiler);
             ClassNode formal = one.get(0).getReturnType();
+            formal = TypeUtil.getSubstitutedType(formal, one.get(0).getDeclaringClass(), origParamType);
             ClassNode instantiated = doCall.getReturnType();
             ClassNode[] addition = TypeUnification.inferTypeArguments(typeVars, new ClassNode[]{formal},
                     new ClassNode[]{instantiated});
