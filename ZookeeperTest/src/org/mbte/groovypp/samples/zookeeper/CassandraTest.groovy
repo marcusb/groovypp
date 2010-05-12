@@ -37,75 +37,47 @@ import java.util.concurrent.CountDownLatch
 import groovy.channels.ResourcePool
 import groovy.util.concurrent.FList
 
+def UTF8 = "UTF8"
 
-public class CassandraTest {
+def keyspace = "Keyspace1"
+def columnFamily = "Standard1"
 
-        public static final String UTF8 = "UTF8"
+def colPathName = new ColumnPath(column_family:columnFamily, column:"fullName".getBytes(UTF8))
+def colPathAge  = new ColumnPath(column_family:columnFamily, column:"age".getBytes(UTF8))
 
-        public static void main(String[] args) throws UnsupportedEncodingException,
-                        InvalidRequestException, UnavailableException, TimedOutException,
-                        TException, NotFoundException {
-
-                def keyspace = "Keyspace1"
-                def columnFamily = "Standard1"
-
-                def colPathName = new ColumnPath(column_family:columnFamily, column:"fullName".getBytes(UTF8))
-                def colPathAge  = new ColumnPath(column_family:columnFamily, column:"age".getBytes(UTF8))
-
-                testWithFixedPool(10) {
-                    ResourcePool<Cassandra.Client> cassandraPool = {
-                        FList<Cassandra.Client> cp = FList.emptyList
-                        for (i in 0..<3) {
-                            def transport = new TSocket("localhost", 9160)
-                            def client = new Cassandra.Client(new TBinaryProtocol(transport))
-                            transport.open()
-                            cp = cp + client
-                        }
-                        cp
-                    }
-                    cassandraPool.executor = pool
-
-                    def integers = 0..<1000
-                    CountDownLatch cdl = [20]
-                    def totalStart = System.currentTimeMillis()
-                    for (j in 0..<20) {
-                        cassandraPool.execute { client ->
-                            def start = System.currentTimeMillis()
-                            for (i in integers) {
-//                            def timestamp = System.currentTimeMillis()
-                                client.insert(keyspace, i, colPathName, "Chris Goffinet$i".toString().getBytes(UTF8), start, ConsistencyLevel.ONE)
-                                client.insert(keyspace, i, colPathAge, "$j".toString().getBytes(UTF8), start, ConsistencyLevel.ONE)
-                            }
-                            def elapsed = System.currentTimeMillis() - start
-                            println "Thread$j: ${integers.size()} inserts in $elapsed ms ${(1.0d*elapsed)/integers.size()}"
-
-                            cdl.countDown()
-                        }
-                    }
-
-                    cdl.await()
-                    def elapsed = System.currentTimeMillis() - totalStart
-                    println "${elapsed}ms ${1.0d*elapsed/(20*integers.size())}"
-                }
-
-//
-//                // read single column
-//                println("single column:")
-//                def col = client.get(keyspace, "1", colPathName, ConsistencyLevel.ONE).column
-//
-//                println("column name: " + new String(col.name, UTF8))
-//                println("column value: " + new String(col.value, UTF8))
-//                println("column timestamp: " + new Date(col.timestamp))
-//
-//                // read entire row
-//                def allColumns = new SlicePredicate(slice_range:[start:new byte[0], finish:new byte[0]])
-//
-//                println("\nrow:")
-//                def parent = new ColumnParent(columnFamily)
-//                def results = client.get_slice(keyspace, "1", parent, allColumns, ConsistencyLevel.ONE)
-//                for (result in results) {
-//                    def column = result.column
-//                    println(new String(column.name, UTF8) + " -> " + new String(column.value, UTF8))
-//                }
+testWithFixedPool(10) {
+    ResourcePool<Cassandra.Client> cassandraPool = [
+    executor: pool,
+    initResources: {
+        FList<Cassandra.Client> cp = FList.emptyList
+        for (i in 0..<3) {
+            def transport = new TSocket("localhost", 9160)
+            def client = new Cassandra.Client(new TBinaryProtocol(transport))
+            transport.open()
+            cp = cp + client
         }
+        cp
+    }]
+
+    def integers = 0..<1000
+    CountDownLatch cdl = [20]
+    def totalStart = System.currentTimeMillis()
+    for (j in 0..<20) {
+        cassandraPool.execute { client ->
+            def start = System.currentTimeMillis()
+            for (i in integers) {
+//                            def timestamp = System.currentTimeMillis()
+                client.insert(keyspace, i, colPathName, "Chris Goffinet$i".toString().getBytes(UTF8), start, ConsistencyLevel.ONE)
+                client.insert(keyspace, i, colPathAge, "$j".toString().getBytes(UTF8), start, ConsistencyLevel.ONE)
+            }
+            def elapsed = System.currentTimeMillis() - start
+            println "Thread$j: ${integers.size()} inserts in $elapsed ms ${(1.0d*elapsed)/integers.size()}"
+        }{
+            cdl.countDown()
+        }
+    }
+
+    cdl.await()
+    def elapsed = System.currentTimeMillis() - totalStart
+    println "${elapsed}ms ${1.0d*elapsed/(20*integers.size())}"
 }
