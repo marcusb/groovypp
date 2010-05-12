@@ -99,6 +99,7 @@ public class SourceUnitContext {
             delegate = new MethodNode(name, modifiers, method.getReturnType(), method.getParameters(), new ClassNode[0],
                     new ReturnStatement(new MethodCallExpression(new VariableExpression("this", ClassHelper.DYNAMIC_TYPE),
                             method.getName(), argList)));
+            delegate.setGenericsTypes(method.getGenericsTypes());
             generatedMethodDelegates.put(method, delegate);
             ClassNode clazz = method.getDeclaringClass();
             delegate.setDeclaringClass(clazz);
