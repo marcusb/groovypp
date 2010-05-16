@@ -183,6 +183,10 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     flatMap(self, {it})
   }
 
+  static <T> Iterator<T> flatten(Iterable<Iterable<T>> self) {
+      flatMap(self.iterator().map{it.iterator()}, {it})
+  }
+
   static <T, R> Iterator<R> mapConcurrently(Iterator<T> self,
                                             Executor executor,
                                             boolean ordered,

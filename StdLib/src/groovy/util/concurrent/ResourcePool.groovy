@@ -21,10 +21,9 @@ import java.util.concurrent.Executor
 @GrUnit({
     testWithFixedPool(10) {
         ResourcePool<String> cassandraPool = [
-        executor: pool,
-        initResources: {
-            ["a"]
-        }]
+            executor: pool,
+            initResources: { ["a"] }
+        ]
 
         cassandraPool.execute { it.toUpperCase() } { assert it == 'A' }
     }
