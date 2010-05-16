@@ -131,8 +131,8 @@ public class ClassNodeCache {
                 "java.lang.Object withDataInputStream(java.io.File, groovy.lang.Closure)",
                 "java.lang.Object withInputStream(java.net.URL, groovy.lang.Closure)",
                 "java.lang.Object withStream(java.io.InputStream, groovy.lang.Closure)",
-                "java.lang.Object withStream(java.io.OutputStream, groovy.lang.Closure)"
-
+                "java.lang.Object withStream(java.io.OutputStream, groovy.lang.Closure)",
+                "java.util.Collection flatten(java.util.Collection)"
         )), false);
     }
 

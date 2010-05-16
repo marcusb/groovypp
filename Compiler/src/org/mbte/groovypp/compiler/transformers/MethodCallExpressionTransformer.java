@@ -44,6 +44,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             methodName = (String) ((ConstantExpression) method).getValue();
         }
 
+        if (methodName.equals("call") && exp.getObjectExpression() instanceof AttributeExpression) {
+            // special case of concurrent call x.@w(a,b,c)
+        }
+
         if (exp.isSpreadSafe()) {
             Parameter param = new Parameter(ClassHelper.OBJECT_TYPE, "$it");
             VariableExpression ve = new VariableExpression(param);
