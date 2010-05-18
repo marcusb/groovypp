@@ -182,7 +182,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(File file, Function1<Reader,?> closure) throws IOException {
+    public static <R> R withReader(File file, Function1<Reader,R> closure) throws IOException {
         return withReader(newReader(file), closure);
     }
 
@@ -197,8 +197,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(File file, String charset, Function1<Reader,?> closure) throws IOException {
-        return withReader(newReader(file, charset), closure);
+    public static <R> R withReader(File file, String charset, Function1<Reader,R> closure) throws IOException {
+        withReader(newReader(file, charset), closure);
     }
 
     /**
@@ -211,8 +211,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withStream(java.io.OutputStream, groovy.lang.Closure)
      */
-    public static Object withOutputStream(File file, Function1<OutputStream,?> closure) throws IOException {
-        return withStream(newOutputStream(file), closure);
+    public static <R> R withOutputStream(File file, Function1<OutputStream,R> closure) throws IOException {
+        withStream(newOutputStream(file), closure)
     }
 
     /**
@@ -225,8 +225,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withStream(java.io.InputStream, groovy.lang.Closure)
      */
-    public static Object withInputStream(File file, Function1<InputStream,?> closure) throws IOException {
-        return withStream(newInputStream(file), closure);
+    public static <R> R withInputStream(File file, Function1<InputStream,R> closure) throws IOException {
+        withStream(newInputStream(file), closure)
     }
 
     /**
@@ -239,8 +239,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withStream(java.io.InputStream, groovy.lang.Closure)
      */
-    public static Object withInputStream(URL url, Function1<InputStream,?> closure) throws IOException {
-        return withStream(newInputStream(url), closure);
+    public static <R> R withInputStream(URL url, Function1<InputStream,R> closure) throws IOException {
+        withStream(newInputStream(url), closure)
     }
 
     /**
@@ -253,8 +253,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withStream(java.io.OutputStream, groovy.lang.Closure)
      */
-    public static Object withDataOutputStream(File file, Function1<DataOutputStream,?> closure) throws IOException {
-        return withStream(newDataOutputStream(file), closure);
+    public static <R> R withDataOutputStream(File file, Function1<DataOutputStream,R> closure) throws IOException {
+        withStream(newDataOutputStream(file), closure)
     }
 
     /**
@@ -267,8 +267,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withStream(java.io.InputStream, groovy.lang.Closure)
      */
-    public static Object withDataInputStream(File file, Function1<DataInputStream,?> closure) throws IOException {
-        return withStream(newDataInputStream(file), closure);
+    public static <R> R withDataInputStream(File file, Function1<DataInputStream,R> closure) throws IOException {
+        withStream(newDataInputStream(file), closure)
     }
 
     /**
@@ -297,8 +297,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withWriter(File file, Function1<Writer,?> closure) throws IOException {
-        return withWriter(newWriter(file), closure);
+    public static <R> R withWriter(File file, Function1<Writer,R> closure) throws IOException {
+        withWriter(newWriter(file), closure);
     }
 
     /**
@@ -312,8 +312,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withWriter(File file, String charset, Function1<Writer,?> closure) throws IOException {
-        return withWriter(newWriter(file, charset), closure);
+    public static <R> R withWriter(File file, String charset, Function1<Writer,R> closure) throws IOException {
+        withWriter(newWriter(file, charset), closure)
     }
 
     /**
@@ -327,8 +327,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withWriterAppend(File file, String charset, Function1<Writer,?> closure) throws IOException {
-        return withWriter(newWriter(file, charset, true), closure);
+    public static <R> R withWriterAppend(File file, String charset, Function1<Writer,?> closure) throws IOException {
+        withWriter(newWriter(file, charset, true), closure)
     }
 
     /**
@@ -340,8 +340,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withWriterAppend(File file, Function1<Writer,?> closure) throws IOException {
-        return withWriter(newWriter(file, true), closure);
+    public static <R> R withWriterAppend(File file, Function1<Writer,R> closure) throws IOException {
+        withWriter(newWriter(file, true), closure)
     }
 
     /**
@@ -354,8 +354,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withPrintWriter(File file, Function1<PrintWriter,?> closure) throws IOException {
-        return withWriter(newPrintWriter(file), closure);
+    public static <R> R withPrintWriter(File file, Function1<PrintWriter,R> closure) throws IOException {
+        withWriter(newPrintWriter(file), closure)
     }
 
     /**
@@ -369,8 +369,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withPrintWriter(File file, String charset, Function1<PrintWriter,?> closure) throws IOException {
-        return withWriter(newPrintWriter(file, charset), closure);
+    public static <R> R withPrintWriter(File file, String charset, Function1<PrintWriter,R> closure) throws IOException {
+        withWriter(newPrintWriter(file, charset), closure)
     }
 
     /**
@@ -383,8 +383,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withPrintWriter(Writer writer, Function1<PrintWriter,?> closure) throws IOException {
-        return withWriter(newPrintWriter(writer), closure);
+    public static <R> R withPrintWriter(Writer writer, Function1<PrintWriter,R> closure) throws IOException {
+        withWriter(newPrintWriter(writer), closure)
     }
 
     /**
@@ -396,9 +396,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withWriter(Writer writer, Function1<Writer,?> closure) throws IOException {
+    public static <R> R withWriter(Writer writer, Function1<Writer,R> closure) throws IOException {
         try {
-            Object result = closure.call(writer);
+            def result = closure(writer);
 
             try {
                 writer.flush();
@@ -423,9 +423,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(Reader reader, Function1<Reader,?> closure) throws IOException {
+    public static <R> R withReader(Reader reader, Function1<Reader,R> closure) throws IOException {
         try {
-            Object result = closure.call(reader);
+            def result = closure(reader);
 
             Reader temp = reader;
             reader = null;
@@ -446,9 +446,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withStream(InputStream stream, Function1<InputStream,?> closure) throws IOException {
+    public static <R> R withStream(InputStream stream, Function1<InputStream,R> closure) throws IOException {
         try {
-            Object result = closure.call(stream);
+            def result = closure(stream);
 
             InputStream temp = stream;
             stream = null;
@@ -469,8 +469,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(URL url, Function1<Reader,?> closure) throws IOException {
-        return withReader(url.openConnection().getInputStream(), closure);
+    public static <R> R withReader(URL url, Function1<Reader,R> closure) throws IOException {
+        withReader(url.openConnection().getInputStream(), closure)
     }
 
     /**
@@ -483,8 +483,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(URL url, String charset, Function1<Reader,?> closure) throws IOException {
-        return withReader(url.openConnection().getInputStream(), charset, closure);
+    public static <R> R withReader(URL url, String charset, Function1<Reader,R> closure) throws IOException {
+        withReader(url.openConnection().getInputStream(), charset, closure)
     }
 
     /**
@@ -498,8 +498,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(InputStream ins, Function1<Reader,?> closure) throws IOException {
-        return withReader(new InputStreamReader(ins), closure);
+    public static <R> R withReader(InputStream ins, Function1<Reader,R> closure) throws IOException {
+        withReader(new InputStreamReader(ins), closure)
     }
 
     /**
@@ -514,8 +514,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withReader(InputStream ins, String charset, Function1<Reader,?> closure) throws IOException {
-        return withReader(new InputStreamReader(ins, charset), closure);
+    public static <R> R withReader(InputStream ins, String charset, Function1<Reader,R> closure) throws IOException {
+        withReader(new InputStreamReader(ins, charset), closure)
     }
 
     /**
@@ -529,8 +529,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @see #withWriter(java.io.Writer, groovy.lang.Function1)
      * @since 1.5.2
      */
-    public static Object withWriter(OutputStream stream, Function1<Writer,?> closure) throws IOException {
-        return withWriter(new OutputStreamWriter(stream), closure);
+    public static <R> R withWriter(OutputStream stream, Function1<Writer,R> closure) throws IOException {
+        withWriter(new OutputStreamWriter(stream), closure)
     }
 
     /**
@@ -544,8 +544,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @throws IOException if an IOException occurs.
      * @see #withWriter(java.io.Writer, groovy.lang.Function1)
      */
-    public static Object withWriter(OutputStream stream, String charset, Function1<Writer,?> closure) throws IOException {
-        return withWriter(new OutputStreamWriter(stream, charset), closure);
+    public static <R> R withWriter(OutputStream stream, String charset, Function1<Writer,R> closure) throws IOException {
+        withWriter(new OutputStreamWriter(stream, charset), closure)
     }
 
     /**
@@ -557,9 +557,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      * @return the value returned by the closure
      * @throws IOException if an IOException occurs.
      */
-    public static Object withStream(OutputStream os, Function1<OutputStream,?> closure) throws IOException {
+    public static <R> R withStream(OutputStream os, Function1<OutputStream,R> closure) throws IOException {
         try {
-            Object result = closure.call(os);
+            def result = closure(os);
             os.flush();
 
             OutputStream temp = os;
