@@ -993,31 +993,10 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
     }
 
     private static void castString(ClassNode expr, ClassNode type, MethodVisitor mv) {
-        if (TypeUtil.isNumericalType(type) || type == Character_TYPE || type == char_TYPE) {
-            mv.visitInsn(DUP);
-            final Label nonempty = new Label();
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
-            mv.visitJumpInsn(IFNE, nonempty);
-            mv.visitTypeInsn(NEW, "java/lang/ClassCastException");
-            mv.visitInsn(DUP);
-            mv.visitLdcInsn("Cannot cast object '' with class 'java.lang.String' to class '" + type.getName() + "'");
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/ClassCastException", "<init>", "(Ljava/lang/String;)V");
-            mv.visitInsn(ATHROW);
-            mv.visitLabel(nonempty);
-        }
-
         if (TypeUtil.isNumericalType(type)) {
-            mv.visitInsn(ICONST_0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
-            box(int_TYPE, mv);
-            castIntegral(ClassHelper.Integer_TYPE, type, mv);
-        } else if (type == Character_TYPE) {
-            mv.visitInsn(ICONST_0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
-            box(char_TYPE, mv);
-        } else if (type == char_TYPE) {
-            mv.visitInsn(ICONST_0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
+            mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "castToNumber", "(Ljava/lang/Object;)Ljava/lang/Number;");
+            checkCast(Integer_TYPE, mv);
+            castIntegral(Integer_TYPE, type, mv);
         } else if (type == Boolean_TYPE) {
             mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "asBoolean", "(Ljava/lang/CharSequence;)Z");
             box(boolean_TYPE, mv);
