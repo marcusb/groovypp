@@ -146,13 +146,13 @@ def m () {
      u++
    }
    x.add(u)
-   x.add "\$u \${->((List)x).size()}"
+   x.add "\$u \${((List)x).size()}"
    x
 }
 
 m ()
     """)
-    assertEquals([1, 2, 3, 4, 5, 6.0d, 1, 10, "10 9"], res)
+    assertEquals([1, 2, 3, 4, 5, 6.0d, 1, 10, "10 8"], res)
   }
 
   void testListWithGen() {

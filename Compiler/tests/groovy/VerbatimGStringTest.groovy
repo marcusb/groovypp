@@ -27,9 +27,7 @@ class VerbatimGStringTest extends GroovyShellTestCase {
           "hello \${name} how are you?\n" +
           "\"\"\"\n\n" +
 
-          "assert template instanceof GString\n" +        
-          "assert template.getValueCount() == 1\n" +        
-          "assert template.getValue(0) == \"Bob\"\n" +        
+          "assert template instanceof String\n" +
           "assert template.toString().trim() == \"hello Bob how are you?\"\n" +        
 
           "}\n\n" +

@@ -135,11 +135,11 @@ class VArgsTest extends GroovyShellTestCase {
 
   }
 
-  void testGStringVargsMethod() {
+  void testStringVargsMethod() {
     shell.evaluate(
             """
         @Typed
-        def gstringMethod(GString[] gstrings){gstrings.length}
+        def gstringMethod(String[] gstrings){gstrings.length}
 
         @Typed
         def u() {
@@ -148,7 +148,7 @@ class VArgsTest extends GroovyShellTestCase {
             assert gstringMethod() == 0
             assert gstringMethod(gstring) == 1
             assert gstringMethod(gstring,gstring,gstring) == 3
-            assert gstringMethod([gstring] as GString[]) == 1
+            assert gstringMethod([gstring] as String[]) == 1
         }
 
         u()
@@ -169,7 +169,7 @@ class VArgsTest extends GroovyShellTestCase {
           assert stringMethod() == 0
           assert stringMethod(gstring) == 1
           assert stringMethod(gstring,gstring,gstring) == 3
-          assert stringMethod([gstring] as GString[]) == 1
+          assert stringMethod([gstring] as String[]) == 1
           assert stringMethod() == 0
           assert stringMethod("a") == 1
           assert stringMethod("a","a","a") == 3
