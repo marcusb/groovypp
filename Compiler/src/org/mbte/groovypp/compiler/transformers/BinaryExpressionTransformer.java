@@ -326,7 +326,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
         BytecodeExpr right = (BytecodeExpr) compiler.transform(be.getRightExpression());
         MethodNode boxing = TypeUtil.getReferenceBoxingMethod(left.getType(), right.getType());
-        if (boxing != null) {
+        if (boxing != null && !TypeUtil.isDirectlyAssignableFrom(left.getType(), right.getType())) {
             return ResolvedMethodBytecodeExpr.create(be, boxing, left, new ArgumentListExpression(right), compiler);
         }
         return ((ResolvedLeftExpr) left).createAssign(be, right, compiler);
