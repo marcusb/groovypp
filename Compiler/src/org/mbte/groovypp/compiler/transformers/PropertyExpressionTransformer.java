@@ -107,7 +107,7 @@ public class PropertyExpressionTransformer extends ExprTransformer<PropertyExpre
                         type = TypeUtil.wrapSafely(object.getType());
                     }
 
-                    Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false, object != null && object.isThis());
+                    Object prop = PropertyUtil.resolveGetProperty(type, propName, compiler, false, object == null || object.isThis());
                     return PropertyUtil.createGetProperty(exp, compiler, propName, type, object, prop);
                 }
             } else {

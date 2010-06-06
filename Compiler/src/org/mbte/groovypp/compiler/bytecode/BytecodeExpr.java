@@ -917,7 +917,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
         mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/ScriptBytecodeAdapter", "asType", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
-        BytecodeExpr.checkCast(type, mv);
+        checkCast(type, mv);
     }
 
     private static void castNumber(ClassNode expr, ClassNode type, MethodVisitor mv) {
@@ -963,7 +963,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -974,13 +974,13 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "size", "()I");
                 mv.visitTypeInsn(ANEWARRAY, BytecodeHelper.getClassInternalName(type.getComponentType()));
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
-                BytecodeExpr.checkCast(type, mv);
+                checkCast(type, mv);
                 return;
             } else {
                 mv.visitLdcInsn(BytecodeHelper.getClassLoadingTypeDescription(type));
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation", "asArray", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
-                BytecodeExpr.checkCast(type, mv);
+                checkCast(type, mv);
                 return;
             }
         }
@@ -1052,7 +1052,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1104,7 +1104,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1159,7 +1159,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1214,7 +1214,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>", "(Ljava/lang/String;)V");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1252,7 +1252,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
         } else if (type == BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigDecimal", "toBigInteger", "()Ljava/math/BigInteger;");
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1294,7 +1294,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
         } else if (type == BigInteger_TYPE) {
         } else {
-            BytecodeExpr.checkCast(type, mv);
+            checkCast(type, mv);
         }
     }
 
@@ -1305,7 +1305,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "next", "(Ljava/lang/Number;)Ljava/lang/Number;");
             else
                 mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "previous", "(Ljava/lang/Number;)Ljava/lang/Number;");
-            BytecodeExpr.checkCast(primType, mv);
+            checkCast(primType, mv);
         } else if (primType == double_TYPE) {
             mv.visitInsn(DCONST_1);
             mv.visitInsn(add ? DADD : DSUB);
