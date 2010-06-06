@@ -25,6 +25,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -245,5 +246,9 @@ public class DefaultGroovyPPMethods extends DefaultGroovyMethodsSupport {
         }
 
         return -1; // anything other than 0
+    }
+
+    public static BigDecimal asBigDecimal(Number self) {
+        return self instanceof BigDecimal ? (BigDecimal) self : self instanceof Float || self instanceof Double ? new BigDecimal(self.doubleValue()) : new BigDecimal(self.toString());
     }
 }

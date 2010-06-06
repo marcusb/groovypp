@@ -946,11 +946,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             unbox(double_TYPE, mv);
             box(double_TYPE, mv);
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
             if (expr.equals(Character_TYPE)) {
                 mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
@@ -1040,11 +1036,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(I2D);
             box(double_TYPE, mv);
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigInteger");
@@ -1092,11 +1084,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(L2D);
             box(double_TYPE, mv);
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
             mv.visitTypeInsn(NEW, "java/math/BigInteger");
@@ -1144,11 +1132,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             box(float_TYPE, mv);
         } else if (type == Double_TYPE) {
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
             mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
@@ -1199,11 +1183,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitInsn(F2D);
             box(double_TYPE, mv);
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
             mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J");
@@ -1287,11 +1267,7 @@ public abstract class BytecodeExpr extends BytecodeExpression implements Opcodes
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "doubleValue", "()D");
             box(double_TYPE, mv);
         } else if (type == BigDecimal_TYPE) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-            mv.visitTypeInsn(NEW, "java/math/BigDecimal");
-            mv.visitInsn(DUP_X1);
-            mv.visitInsn(SWAP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>", "(Ljava/lang/String;)V");
+            mv.visitMethodInsn(INVOKESTATIC, "org/mbte/groovypp/runtime/DefaultGroovyPPMethods", "asBigDecimal", "(Ljava/lang/Number;)Ljava/math/BigDecimal;");
         } else if (type == BigInteger_TYPE) {
         } else {
             checkCast(type, mv);

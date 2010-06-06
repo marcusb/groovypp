@@ -240,7 +240,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
         final int tokenType = be.getOperation().getType();
         if (TypeUtil.isNumericalType(l.getType()) && TypeUtil.isNumericalType(r.getType())) {
             if (tokenType == Types.POWER)
-                return compiler.cast(callMethod(be, getMethod(tokenType), compiler, l, r), ClassHelper.double_TYPE);
+                return callMethod(be, getMethod(tokenType), compiler, l, r);
 
             ClassNode mathType0 = TypeUtil.getMathType(l.getType(), r.getType());
 
@@ -253,7 +253,7 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
 
             final ClassNode mathType = mathType0;
 
-            if (mathType == ClassHelper.BigDecimal_TYPE || mathType == ClassHelper.BigInteger_TYPE)
+            if (mathType == ClassHelper.BigDecimal_TYPE || mathType == ClassHelper.BigInteger_TYPE || mathType == TypeUtil.Number_TYPE)
                 return compiler.cast(callMethod(be, getMethod(tokenType), compiler, l, r), mathType);
 
             if (mathType != ClassHelper.int_TYPE && mathType != ClassHelper.long_TYPE) {

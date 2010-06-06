@@ -317,10 +317,17 @@ public class TypeUtil {
         return type == long_TYPE;
     }
 
+    public static boolean isNumber(ClassNode type) {
+        return type.equals(TypeUtil.Number_TYPE);
+    }
+
     public static ClassNode getMathType(ClassNode l, ClassNode r) {
         l = getUnwrapper(l);
         r = getUnwrapper(r);
 
+        if (isNumber(l) || isNumber(r)) {
+            return TypeUtil.Number_TYPE;
+        }
         if (isFloatingPoint(l) || isFloatingPoint(r)) {
             return double_TYPE;
         }
