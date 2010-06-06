@@ -538,8 +538,10 @@ public class BinaryExpressionTransformer extends ExprTransformer<BinaryExpressio
                     } else if (mathType == ClassHelper.BigDecimal_TYPE) {
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/math/BigDecimal", "compareTo", "(Ljava/math/BigDecimal;)I");
                         intCmp(op, onTrue, mv, label);
-                    } else
-                        throw new RuntimeException("Internal Error");
+                    } else {
+                        mv.visitMethodInsn(INVOKESTATIC, "org/codehaus/groovy/runtime/DefaultGroovyMethods", "compareTo", "(Ljava/lang/Number;Ljava/lang/Number;)I");
+                        intCmp(op, onTrue, mv, label);
+                    }
                 }
             };
         } else {
