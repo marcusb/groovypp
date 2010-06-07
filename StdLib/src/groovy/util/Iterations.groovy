@@ -154,10 +154,9 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <T, R> boolean every(Iterator<T> self, Function1<T, R> closure) {
+    static <T> boolean every(Iterator<T> self, Function1<T, Boolean> closure) {
         for (el in self) {
-            def done = !(closure.call(el))
-            if (done)
+            if (!closure.call(el))
                 return false
         }
         return true
@@ -199,7 +198,7 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <T, R> boolean every(Iterable<T> self, Function1<T, R> closure) {
+    static <T> boolean every(Iterable<T> self, Function1<T, Boolean> closure) {
         every(self.iterator(), closure)
     }
 
@@ -238,7 +237,7 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <T, R> boolean every(T[] self, Function1<T, R> closure) {
+    static <T> boolean every(T[] self, Function1<T, Boolean> closure) {
         every(self.iterator(), closure)
     }
 
@@ -277,7 +276,7 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <T, R> boolean every(Enumeration<T> self, Function1<T, R> closure) {
+    static <T> boolean every(Enumeration<T> self, Function1<T, Boolean> closure) {
         every(self.iterator(), closure)
     }
 
@@ -320,7 +319,7 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <K, V, R> boolean every(Map<K,V> self, Function1<Map.Entry<K, V>, R> closure) {
+    static <K, V> boolean every(Map<K,V> self, Function1<Map.Entry<K, V>, Boolean> closure) {
         every(self.entrySet().iterator(), closure)
     }
 
@@ -332,10 +331,9 @@ abstract class Iterations {
      * @param closure the function predicate used for matching
      * @return true if every iteration of the object matches the closure predicate
      */
-    static <K, V, R> boolean every(Map<K,V> self, Function2<K, V, R> closure) {
+    static <K, V> boolean every(Map<K,V> self, Function2<K, V, Boolean> closure) {
         for (el in self.entrySet()) {
-            def done = !(closure.call(el.key, el.value))
-            if (done)
+            if (!closure.call(el.key, el.value))
                 return false
         }
         true
