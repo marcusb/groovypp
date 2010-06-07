@@ -143,6 +143,27 @@ abstract class Iterations {
     }
 
     /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     * A simple example for a list:
+     * <pre>def list = [3,4,5]
+     * def greaterThanTwo = list.every { it > 2 }
+     * </pre>
+     *
+     * @param self the Iterator over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <T, R> boolean every(Iterator<T> self, Function1<T, R> closure) {
+        for (el in self) {
+            def done = !(closure.call(el))
+            if (done)
+                return false
+        }
+        return true
+    }
+
+    /**
      * Applies given function to each element. The result of function application is discarded.
      * @param self input @link{Iterable} object.
      * @param op function to be applied.
@@ -150,6 +171,7 @@ abstract class Iterations {
     static <T> void each(Iterable<T> self, Function1<T, Object> op) {
         each(self.iterator(), op)
     }
+
 
     /**
      * Iterates through this object transforming each value into a new value using the
@@ -167,6 +189,18 @@ abstract class Iterations {
         for(el in self)
             where << closure(el)
         where
+    }
+
+    /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     *
+     * @param self the Iterable over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <T, R> boolean every(Iterable<T> self, Function1<T, R> closure) {
+        every(self.iterator(), closure)
     }
 
     /**
@@ -197,6 +231,18 @@ abstract class Iterations {
     }
 
     /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     *
+     * @param self the list over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <T, R> boolean every(T[] self, Function1<T, R> closure) {
+        every(self.iterator(), closure)
+    }
+
+    /**
      * Applies given function to each enumeration element. The result of function application is discarded.
      * @param self input {java.util.Enumeration} object.
      * @param op function to be applied.
@@ -221,6 +267,18 @@ abstract class Iterations {
         for(el in self)
             where << closure(el)
         where
+    }
+
+    /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     *
+     * @param self the Enumeration over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <T, R> boolean every(Enumeration<T> self, Function1<T, R> closure) {
+        every(self.iterator(), closure)
     }
 
     /**
@@ -255,6 +313,35 @@ abstract class Iterations {
     }
 
     /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     *
+     * @param self    the map over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <K, V, R> boolean every(Map<K,V> self, Function1<Map.Entry<K, V>, R> closure) {
+        every(self.entrySet().iterator(), closure)
+    }
+
+    /**
+     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * <code>true</code> for all items in this data structure).
+     *
+     * @param self    the map over which we iterate
+     * @param closure the function predicate used for matching
+     * @return true if every iteration of the object matches the closure predicate
+     */
+    static <K, V, R> boolean every(Map<K,V> self, Function2<K, V, R> closure) {
+        for (el in self.entrySet()) {
+            def done = !(closure.call(el.key, el.value))
+            if (done)
+                return false
+        }
+        true
+    }
+
+    /**
      * Default dynamic iteration.
      */
     static <T> T each(T self, Closure closure) {
@@ -267,6 +354,14 @@ abstract class Iterations {
     static <T> List collect(T self, Closure closure) {
         return DefaultGroovyMethods.collect(self, closure)
     }
+
+	/**
+	 * Default dynamic iteration.
+	 */
+	static <T> boolean every(T self, Closure closure) {
+	    return DefaultGroovyMethods.every(self, closure)
+	}
+
 
     static <T> BlockingQueue<T> leftShift(BlockingQueue<T> queue, Iterator<T> iter) {
         for (el in iter) {
