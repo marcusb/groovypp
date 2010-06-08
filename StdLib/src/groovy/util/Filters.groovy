@@ -243,7 +243,7 @@ class Filters extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * Used to determine if the given predicate function is valid (i.e.&nsbp;returns
      * <code>true</code> for all items in this data structure).
      * A simple example for a list:
      * <pre>def list = [3,4,5]
@@ -262,7 +262,7 @@ class Filters extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * Used to determine if the given predicate function is valid (i.e.&nsbp;returns
      * <code>true</code> for all items in this data structure).
      *
      * @param self the Iterable over which we iterate
@@ -286,7 +286,7 @@ class Filters extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * Used to determine if the given predicate function is valid (i.e.&nsbp;returns
      * <code>true</code> for all items in this data structure).
      *
      * @param self the list over which we iterate
@@ -298,7 +298,7 @@ class Filters extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * Used to determine if the given predicate function is valid (i.e.&nsbp;returns
      * <code>true</code> for all items in this data structure).
      *
      * @param self    the map over which we iterate
@@ -310,7 +310,7 @@ class Filters extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Used to determine if the given predicate fucntion is valid (i.e.&nsbp;returns
+     * Used to determine if the given predicate function is valid (i.e.&nsbp;returns
      * <code>true</code> for all items in this data structure).
      *
      * @param self    the map over which we iterate
