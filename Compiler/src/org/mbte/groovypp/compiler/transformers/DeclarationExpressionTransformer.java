@@ -33,6 +33,8 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
         }
 
         final VariableExpression ve = (VariableExpression) exp.getLeftExpression();
+        if (exp.getAnnotations() != null)
+            ve.addAnnotations(exp.getAnnotations());
         if (ve.getOriginType() != ve.getType())
             ve.setType(ve.getOriginType());
 

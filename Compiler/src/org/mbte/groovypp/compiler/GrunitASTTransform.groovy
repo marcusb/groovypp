@@ -86,6 +86,8 @@ class GrunitASTTransform implements ASTTransformation, Opcodes {
                 if (expr instanceof DeclarationExpression) {
                     DeclarationExpression decl = expr
                     VariableExpression ve = decl.leftExpression
+                    if (decl.annotations)
+                        ve.addAnnotations(decl.annotations);
                     if (hasFieldAnnotation(ve)) {
                         classNode.addField(ve.name, Opcodes.ACC_PRIVATE, ve.type, ConstantExpression.NULL)
                         it.remove()

@@ -24,7 +24,7 @@ public class CompileExamplesTest extends GroovyFileSystemCompilerTestCase {
     void testCompile () {
         def finder = new FileNameFinder ()
         
-        String [] names = finder.getFileNames("./Examples/src/", "**/*.groovy")
+        String [] names = finder.getFileNames("./Examples/src/", "**/Gr*.groovy")
         names.each {
             println it
         }
