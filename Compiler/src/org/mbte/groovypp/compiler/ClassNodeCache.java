@@ -19,9 +19,8 @@ package org.mbte.groovypp.compiler;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.BytecodeHelper;
-import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
+import org.codehaus.groovy.runtime.*;
 import org.codehaus.groovy.util.FastArray;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.vmplugin.v5.PluginDefaultGroovyMethods;
 import org.mbte.groovypp.runtime.DefaultGroovyPPMethods;
 import org.mbte.groovypp.runtime.ArraysMethods;
@@ -136,6 +135,11 @@ public class ClassNodeCache {
                 "java.lang.Object withStream(java.io.InputStream, groovy.lang.Closure)",
                 "java.lang.Object withStream(java.io.OutputStream, groovy.lang.Closure)"
         )), false);
+        initDgm(SwingGroovyMethods.class, false);
+        initDgm(SqlGroovyMethods.class, false);
+        initDgm(XmlGroovyMethods.class, false);
+        initDgm(EncodingGroovyMethods.class, false);
+        initDgm(DateGroovyMethods.class, false);
     }
 
     private static void initDgm(String klazz) {
