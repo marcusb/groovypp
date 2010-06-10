@@ -87,7 +87,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
 
             if(cast.getType().implementsInterface(TypeUtil.ITERABLE) || cast.getType().equals(TypeUtil.ITERABLE)) {
-                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY) != null){
+                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY, null) != null){
                     ClassNode componentType = compiler.getCollectionType(cast.getType());
                     improveListTypes(listExpression, componentType);
                     final List<Expression> list = listExpression.getExpressions();
@@ -127,7 +127,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             MapExpression mapExpression = (MapExpression) cast.getExpression();
 
             if (cast.getType().implementsInterface(ClassHelper.MAP_TYPE)) {
-                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY) != null){
+                if(compiler.findConstructor(cast.getType(), ClassNode.EMPTY_ARRAY, null) != null){
                     ClassNode keyType = compiler.getMapKeyType(cast.getType());
                     ClassNode valueType = compiler.getMapValueType(cast.getType());
                     improveMapTypes(mapExpression, keyType, valueType);
@@ -283,7 +283,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 superArgs = new ArgumentListExpression();
             final Expression finalSA = compiler.transform(superArgs);
 
-            final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler);
+            final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler, objType);
 
             if (constructor == null) {
                 compiler.addError ("Cannot find super constructor", objType);

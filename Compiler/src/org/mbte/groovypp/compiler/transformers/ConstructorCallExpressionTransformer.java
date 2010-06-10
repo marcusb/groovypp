@@ -58,11 +58,11 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         if (exp.getArguments() instanceof TupleExpression && ((TupleExpression)exp.getArguments()).getExpressions().size() == 1 && ((TupleExpression)exp.getArguments()).getExpressions().get(0) instanceof MapExpression) {
             MapExpression me = (MapExpression) ((TupleExpression)exp.getArguments()).getExpressions().get(0);
 
-            constructor = compiler.findConstructor(type, MAP_ARGS);
+            constructor = compiler.findConstructor(type, MAP_ARGS, null);
             if (constructor == null) {
                 final ArrayList<BytecodeExpr> propSetters = new ArrayList<BytecodeExpr> ();
 
-                constructor = compiler.findConstructor(type, ClassNode.EMPTY_ARRAY);
+                constructor = compiler.findConstructor(type, ClassNode.EMPTY_ARRAY, null);
                 if (constructor != null) {
                     for (MapEntryExpression mee : me.getMapEntryExpressions()) {
 
@@ -107,7 +107,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        constructor = findConstructorWithClosureCoercion(type, argTypes, compiler);
+        constructor = findConstructorWithClosureCoercion(type, argTypes, compiler, null);
 
         if (constructor != null) {
             if (!AccessibilityCheck.isAccessible(constructor.getModifiers(), constructor.getDeclaringClass(), compiler.classNode, null)) {
@@ -245,7 +245,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         final TupleExpression newArgs = (TupleExpression) compiler.transform(exp.getArguments());
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        final MethodNode constr = findConstructorWithClosureCoercion(superClass, argTypes, compiler);
+        final MethodNode constr = findConstructorWithClosureCoercion(superClass, argTypes, compiler, innerClassNode);
         if (constr == null) {
             compiler.addError("Cannot find constructor", exp);
             return false;
@@ -358,7 +358,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         final Expression newArgs = compiler.transform(args);
         final ClassNode[] argTypes = compiler.exprToTypeArray(newArgs);
 
-        MethodNode constructor = compiler.findConstructor(type, argTypes);
+        MethodNode constructor = compiler.findConstructor(type, argTypes, null);
         if (constructor != null) {
             return ResolvedMethodBytecodeExpr.create(exp, constructor,
                     exp.isSuperCall() ?
@@ -371,8 +371,8 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         return null;
     }
 
-    private static MethodNode findConstructorVariatingArgs(ClassNode type, ClassNode[] argTypes, CompilerTransformer compiler, int firstNonVariating) {
-        MethodNode foundMethod = compiler.findConstructor(type, argTypes);
+    private static MethodNode findConstructorVariatingArgs(ClassNode type, ClassNode[] argTypes, CompilerTransformer compiler, int firstNonVariating, ClassNode contextClass) {
+        MethodNode foundMethod = compiler.findConstructor(type, argTypes, contextClass);
         if (foundMethod != null) {
             return foundMethod;
         }
@@ -384,7 +384,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     continue;
                 
                 if (oarg.implementsInterface(TypeUtil.TCLOSURE)) {
-                    foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                    foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
 
                     if (foundMethod != null) {
                         Parameter p[] = foundMethod.getParameters();
@@ -394,7 +394,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     }
 
                     argTypes[i] = null;
-                    foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                    foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
                     if (foundMethod != null) {
                         Parameter p[] = foundMethod.getParameters();
                         if (p.length == argTypes.length) {
@@ -439,7 +439,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                 }
                 else {
                     if (oarg.implementsInterface(TypeUtil.TMAP)) {
-                        foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                        foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
 
                         if (foundMethod != null) {
                             Parameter p[] = foundMethod.getParameters();
@@ -449,7 +449,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                         }
 
                         argTypes[i] = null;
-                        foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                        foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
                         if (foundMethod != null) {
                             Parameter p[] = foundMethod.getParameters();
                             if (p.length == argTypes.length) {
@@ -482,7 +482,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     }
                     else {
                         if (oarg.implementsInterface(TypeUtil.TLIST)) {
-                            foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                            foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
 
                             if (foundMethod != null) {
                                 Parameter p[] = foundMethod.getParameters();
@@ -492,7 +492,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             }
 
                             argTypes[i] = null;
-                            foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                            foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
                             if (foundMethod != null) {
                                 Parameter p[] = foundMethod.getParameters();
                                 if (p.length == argTypes.length) {
@@ -526,7 +526,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                             ClassNode run = oarg.getOuterClass();
                             while (run != null) {
                                 argTypes[i] = run;
-                                foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i);
+                                foundMethod = findConstructorVariatingArgs(type, argTypes, compiler, i, contextClass);
                                 if (foundMethod != null) return foundMethod;
                                 if ((run.getModifiers() & Opcodes.ACC_STATIC) != 0) break;
                                 run = run.getOuterClass();
@@ -540,7 +540,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         return null;
     }
 
-    public static MethodNode findConstructorWithClosureCoercion(ClassNode type, ClassNode[] argTypes, CompilerTransformer compiler) {
-        return findConstructorVariatingArgs(type, argTypes, compiler, -1);
+    public static MethodNode findConstructorWithClosureCoercion(ClassNode type, ClassNode[] argTypes, CompilerTransformer compiler, ClassNode contextClass) {
+        return findConstructorVariatingArgs(type, argTypes, compiler, -1, contextClass);
     }
 }

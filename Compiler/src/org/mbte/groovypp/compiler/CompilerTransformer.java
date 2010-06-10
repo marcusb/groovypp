@@ -273,7 +273,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
         return null;
     }
 
-    public MethodNode findConstructor(ClassNode type, ClassNode[] args) {
+    public MethodNode findConstructor(ClassNode type, ClassNode[] args, ClassNode contextClass) {
         FastArray methods = ClassNodeCache.getConstructors(type);
 
 //        if (type.redirect() instanceof InnerClassNode && (type.getModifiers() & ACC_STATIC) == 0) {
@@ -290,7 +290,7 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
 //            args = newArgs;
 //        }
 
-        final Object res = MethodSelection.chooseMethod("<init>", methods, type, args, classNode);
+        final Object res = MethodSelection.chooseMethod("<init>", methods, type, args, contextClass == null ? classNode : contextClass);
         if (res instanceof MethodNode)
             return (MethodNode) res;
         return null;
