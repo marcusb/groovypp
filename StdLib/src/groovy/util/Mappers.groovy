@@ -183,6 +183,8 @@ public class Mappers extends DefaultGroovyMethodsSupport {
     flatMap(self, {it})
   }
 
+  private static def NULL = new Object ()  
+
   static <T, R> Iterator<R> mapConcurrently(Iterator<T> self,
                                             Executor executor,
                                             boolean ordered,
@@ -224,7 +226,10 @@ public class Mappers extends DefaultGroovyMethodsSupport {
             while (self && pending < maxConcurrentTasks) {
               pending++
               def nextElement = self.next()
-              executor.execute {-> ready << op.call(nextElement) }
+              executor.execute {->
+                  def res = op.call(nextElement)
+                  ready << (res ? res : NULL)
+              }
             }
           },
 

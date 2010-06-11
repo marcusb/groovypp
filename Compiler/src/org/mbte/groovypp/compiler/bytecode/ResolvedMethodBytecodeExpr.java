@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
-    private final MethodNode methodNode;
+    protected final MethodNode methodNode;
     private final BytecodeExpr object;
     private final String methodName;
 
@@ -223,7 +223,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
             methodDescriptor = BytecodeHelper.getMethodDescriptor(methodNode.getReturnType(), methodNode.getParameters());
         }
 
-        loadParams(mv, op == INVOKESTATIC);
+        loadParams(mv, methodNode.isStatic());
         mv.visitMethodInsn(op, classInternalName, methodName, methodDescriptor);
 
         if (!methodNode.getReturnType().equals(ClassHelper.VOID_TYPE))
@@ -263,7 +263,7 @@ public class ResolvedMethodBytecodeExpr extends BytecodeExpr {
         @Override
         protected void loadParams(MethodVisitor mv, boolean isStatic) {
             super.loadParams(mv, isStatic);
-            if (isStatic)
+            if (isStatic && methodNode.getParameters().length == 1)
                 dup(getType(), mv);
             else
                 dup_x1(getType(), mv);
