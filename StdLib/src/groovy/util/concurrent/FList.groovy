@@ -20,7 +20,7 @@ package groovy.util.concurrent
  * Simple implementation of one-directional immutable functional list
  */
 @Typed
-abstract static class FList<T> implements Iterable<T> {
+abstract static class FList<T> implements Iterable<T>, Serializable {
     /**
      * Singleton for empty list
      */
@@ -77,7 +77,7 @@ abstract static class FList<T> implements Iterable<T> {
     }
 
     /**
-     * Utility method allowing convinient syntax <code>flist ()</code> for accessing head of the list
+     * Utility method allowing convenient syntax <code>flist ()</code> for accessing head of the list
      */
     final T call () { head }
 
@@ -93,6 +93,22 @@ abstract static class FList<T> implements Iterable<T> {
      */
     final boolean contains (T element) {
         size && (head == element || tail.contains(element))
+    }
+
+    protected final Object writeReplace() {
+        Serial res = []
+        for(e in this)
+            res.addFirst(e)
+        res
+    }
+
+    static class Serial extends LinkedList {
+        protected final Object readResolve() {
+            def res = FList.emptyList
+            for(e in this)
+                res += e
+            res
+        }
     }
 
     private static class EmptyList<T> extends FList<T> {

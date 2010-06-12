@@ -17,7 +17,7 @@
 package groovy.util.concurrent
 
 @Typed
-abstract class FQueue<T> implements Iterable<T> {
+abstract class FQueue<T> implements Iterable<T>, Serializable {
     abstract boolean isEmpty ()
 
     T getFirst () { throw new NoSuchElementException() }
@@ -35,6 +35,22 @@ abstract class FQueue<T> implements Iterable<T> {
     static final EmptyQueue emptyQueue = []
 
     abstract int size ()
+
+    protected final Object writeReplace() {
+        Serial res = []
+        for(e in this)
+            res.add(e)
+        res
+    }
+
+    static class Serial extends LinkedList {
+        protected final Object readResolve() {
+            FQueue res = FQueue.emptyQueue
+            for(e in this)
+                res += e
+            res
+        }
+    }
 
     private static final class EmptyQueue<T> extends FQueue<T> {
         EmptyQueue(){
