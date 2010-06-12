@@ -123,16 +123,9 @@ class EchoClient {
 
         final NioClientSocketChannelFactory factory =[Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
 
-        for (i in 0..50000) {
+        for (i in 0..100000) {
             workers.execute {
-                try {
-                    semaphor.acquire()
-                } catch (InterruptedException e) {
-                    e.printStackTrace()
-                }
-
-                if (i % 100 == 0)
-                   println i
+                semaphor.acquire()
 
                 def firstMessage = ChannelBuffers.buffer(firstMessageSize)
                 for (int j = 0; j < firstMessage.capacity(); j ++) {
@@ -142,13 +135,16 @@ class EchoClient {
                 ClientBootstrap bootstrap = [factory]
                 FrameDecoder handler = [
                     channelConnected: { /*ChannelHandlerContext*/ ctx, /*ChannelStateEvent*/ e ->
+                        println "$i connected"
                         e.channel.write(firstMessage)
+                        semaphor.release()
                     },
 
                     exceptionCaught: { /*ChannelHandlerContext*/ ctx, /*ExceptionEvent*/ e ->
                         // Close the connection when an exception is raised.
-//                        e.cause.printStackTrace(System.err)
+                        System.err.println "err @ $i ${e.cause.message}"
                         e.channel.close()
+                        semaphor.release()
                     },
 
                     decode: { /*ChannelHandlerContext*/ ctx, /*Channel*/ channel, /*ChannelBuffer*/ buffer ->
@@ -157,7 +153,8 @@ class EchoClient {
 
                         buffer.readBytes(firstMessage.capacity())
                         ThroughputMonitor.addBytesStat(firstMessage.capacity())
-                        channel.close()
+//                        channel.close ()
+                        channel.write(firstMessage)
                         return ""
                     }
                 ]
@@ -166,12 +163,7 @@ class EchoClient {
                 bootstrap.setOption("tcpNoDelay", true);
                 bootstrap.setOption("keepAlive", true);
 
-                // Start the connection attempt.
-                def connectFuture = bootstrap.connect(new InetSocketAddress(host, port))
-
-                connectFuture.channel.closeFuture.addListener {
-                    semaphor.release()
-                }
+                bootstrap.connect(new InetSocketAddress(host, port))
             }
         }
 
