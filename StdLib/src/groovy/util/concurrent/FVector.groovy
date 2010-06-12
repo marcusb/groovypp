@@ -22,7 +22,7 @@ package groovy.util.concurrent
   @author Rich Hickey
 */
 @Typed
-class FVector<T> implements Iterable<T> {
+class FVector<T> implements Iterable<T>, Serializable {
     int length
     int shift
     Object[] root
@@ -184,5 +184,33 @@ class FVector<T> implements Iterable<T> {
     Iterator<T> iterator() {
         (shift..<0).step(5).foldLeft(root.iterator()) { level, iter -> iter.map { ((Object[]) it).iterator() }.flatten() } |
                 tail.iterator()
+    }
+
+    protected final Object writeReplace() {
+        new Serial(fvector:this)
+    }
+
+    static class Serial implements Externalizable {
+        FVector fvector
+
+        protected final Object readResolve() {
+            fvector
+        }
+
+        void writeExternal(ObjectOutput out) {
+            out.writeInt fvector.length
+            for(e in fvector) {
+                out.writeObject e
+            }
+        }
+
+        void readExternal(ObjectInput input) {
+            def sz = input.readInt()
+            def res = FVector.emptyVector
+            while(sz--) {
+                res += input.readObject()
+            }
+            fvector = res
+        }
     }
 }

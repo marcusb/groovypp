@@ -16,7 +16,7 @@
 
 package groovy.util.concurrent
 
-@Typed class FQueueSerialTest extends FSerialTest {
+@Typed class FQueueSerialTest extends FSerialTestCase {
 
     void testEmpty() {
         def res = fromBytes(toBytes(FQueue.emptyQueue))

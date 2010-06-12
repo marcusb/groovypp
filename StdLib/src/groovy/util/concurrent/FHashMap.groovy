@@ -26,7 +26,7 @@ package groovy.util.concurrent
  */
 
 @Typed
-abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
+abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable {
     final int size() {
       if (size < 0) size = size_()
       size
@@ -53,6 +53,35 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>> {
     protected abstract FHashMap<K,V> remove(K key, int hash)
 
     static final FHashMap emptyMap = new EmptyNode()
+
+    protected final Object writeReplace() {
+        new Serial(fmap:this)
+    }
+
+    static class Serial implements Externalizable {
+        FHashMap fmap
+
+        protected final Object readResolve() {
+            fmap
+        }
+
+        void writeExternal(ObjectOutput out) {
+            out.writeInt fmap.size()
+            for(e in fmap) {
+                out.writeObject e.key
+                out.writeObject e.value
+            }
+        }
+
+        void readExternal(ObjectInput input) {
+            def sz = input.readInt()
+            def res = FHashMap.emptyMap
+            while(sz--) {
+                res = res.put(input.readObject(), input.readObject())
+            }
+            fmap = res
+        }
+    }
 
     private static class EmptyNode<K,V> extends FHashMap<K,V> {
         private EmptyNode() {}

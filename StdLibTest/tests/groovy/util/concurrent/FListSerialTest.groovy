@@ -16,7 +16,7 @@
 
 package groovy.util.concurrent
 
-@Typed class FListSerialTest extends FSerialTest {
+@Typed class FListSerialTest extends FSerialTestCase {
 
     void testEmpty() {
         def res = fromBytes(toBytes(FList.emptyList))

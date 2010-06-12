@@ -32,23 +32,34 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
         addLast(element)
     }
 
-    static final EmptyQueue emptyQueue = []
+    static final FQueue emptyQueue = new EmptyQueue()
 
     abstract int size ()
 
     protected final Object writeReplace() {
-        Serial res = []
-        for(e in this)
-            res.add(e)
-        res
+        new Serial(fqueue:this)
     }
 
-    static class Serial extends LinkedList {
+    static class Serial implements Externalizable {
+        FQueue fqueue
+
         protected final Object readResolve() {
-            FQueue res = FQueue.emptyQueue
-            for(e in this)
-                res += e
-            res
+            fqueue
+        }
+
+        void writeExternal(ObjectOutput out) {
+            out.writeInt fqueue.size()
+            for(e in fqueue)
+                out.writeObject(e)
+        }
+
+        void readExternal(ObjectInput input) {
+            def sz = input.readInt()
+            def res = FQueue.emptyQueue
+            while(sz--) {
+                res += input.readObject()
+            }
+            fqueue = res
         }
     }
 

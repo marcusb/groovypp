@@ -16,22 +16,22 @@
 
 package groovy.util.concurrent
 
-@Typed class FSerialTest extends GroovyTestCase {
-    protected byte [] toBytes (Object object) {
-        ByteArrayOutputStream bout = []
-        ObjectOutputStream output = [bout]
-        output.writeObject(object)
-        output.flush()
-        bout.toByteArray()
+@Typed class FHashMapSerialTest extends FSerialTestCase {
+
+    void testEmpty() {
+        def res = fromBytes(toBytes(FHashMap.emptyMap))
+        assert res instanceof FHashMap
+        FHashMap r = res
+        assert r.size() == 0
+        assert FHashMap.emptyMap === r
     }
 
-    protected Object fromBytes (byte [] bytes) {
-        ByteArrayInputStream bin = [bytes]
-        ObjectInputStream input = [bin]
-        input.readObject()
-    }
-
-    void testObject () {
-        assert "test string" == fromBytes(toBytes("test string"))
+    void testSeveralEl() {
+        def res = fromBytes(toBytes(FHashMap.emptyMap.put("1", "2").put("3","4")))
+        assert res instanceof FHashMap
+        FHashMap r = res
+        assert r.size() == 2
+        assert r["1"] == "2"
+        assert r["3"] == "4"
     }
 }

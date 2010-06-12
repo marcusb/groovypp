@@ -17,10 +17,12 @@
 package groovy.lang
 
 @Typed
-class Pair<T1, T2> {
+class Pair<T1, T2> implements Externalizable {
   T1 first
   T2 second
 
+  Pair() {}
+    
   Pair(T1 first, T2 second) {
     this.first = first;
     this.second = second
@@ -41,4 +43,14 @@ class Pair<T1, T2> {
   String toString() {
       "first: $first, second: $second"
   }
+
+    void writeExternal(ObjectOutput out) {
+        out.writeObject first
+        out.writeObject second
+    }
+
+    void readExternal(ObjectInput input) {
+        first  = input.readObject()
+        second = input.readObject()
+    }
 }

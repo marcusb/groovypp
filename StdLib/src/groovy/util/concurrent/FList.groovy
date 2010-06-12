@@ -96,18 +96,43 @@ abstract static class FList<T> implements Iterable<T>, Serializable {
     }
 
     protected final Object writeReplace() {
-        Serial res = []
-        for(e in this)
-            res.addFirst(e)
-        res
+        new Serial(flist:this)
     }
 
-    static class Serial extends LinkedList {
+    static class Serial implements Externalizable {
+        FList flist
+
         protected final Object readResolve() {
-            def res = FList.emptyList
-            for(e in this)
-                res += e
-            res
+            flist
+        }
+
+        void writeExternal(ObjectOutput out) {
+            out.writeInt flist.size()
+            for(e in flist) {
+                out.writeObject(e)
+            }
+        }
+
+        void readExternal(ObjectInput input) {
+            int sz = input.readInt()
+            if (!sz)
+                flist = FList.emptyList
+            else {
+                if (sz == 1) {
+                    flist = new OneElementList(input.readObject())
+                }
+                else {
+                    MoreThanOneElementList res = [input.readObject(), sz-1], cur = res
+                    sz--;;
+                    for( ; sz > 1; sz--) {
+                        MoreThanOneElementList nextCur = [input.readObject(), sz-1]
+                        cur.tail = nextCur
+                        cur = nextCur
+                    }
+                    cur.tail = new OneElementList(input.readObject())
+                    flist = res
+                }
+            }
         }
     }
 
@@ -161,21 +186,31 @@ abstract static class FList<T> implements Iterable<T>, Serializable {
         public FList<T> getTail() {
             emptyList
         }
+
+        String toString () { "[$head]" }
     }
 
     private static class MoreThanOneElementList<T> extends OneElementList<T> {
-        final FList<T> tail
+        FList<T> tail
 
         MoreThanOneElementList (T head, FList<T> tail) {
             super (head, tail.size)
             this.tail = tail
         }
 
+        MoreThanOneElementList (T head, int size) {
+            super (head, size)
+        }
+
         Iterator<T> iterator () {
             [
                 cur:     (FList<T>)this,
                 hasNext: { cur.size },
-                next:    { def that = cur; cur = cur.tail; that.head },
+                next:    {
+                    def that = cur; 
+                    cur = cur.tail;
+                    that.head
+                },
                 remove:  { throw new UnsupportedOperationException() }
             ]
         }
@@ -195,7 +230,7 @@ abstract static class FList<T> implements Iterable<T>, Serializable {
                 if (tail instanceof MoreThanOneElementList)
                     ((MoreThanOneElementList)tail).toString(sb)
                 else
-                    sb << tail.toString()
+                    sb << ((OneElementList)tail).head.toString()
             }
         }
     }
