@@ -123,7 +123,7 @@ abstract static class FList<T> implements Iterable<T>, Serializable {
                 }
                 else {
                     MoreThanOneElementList res = [input.readObject(), sz-1], cur = res
-                    sz--;;
+                    sz--;
                     for( ; sz > 1; sz--) {
                         MoreThanOneElementList nextCur = [input.readObject(), sz-1]
                         cur.tail = nextCur
