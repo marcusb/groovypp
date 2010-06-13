@@ -16,10 +16,10 @@
 
 package groovy.util.concurrent
 
-@Typed class FHashMapSerialTest extends FSerialTestCase {
+@Typed class FHashMapSerialTest extends GroovyTestCase {
 
     void testEmpty() {
-        def res = fromBytes(toBytes(FHashMap.emptyMap))
+        def res = FHashMap.emptyMap.toSerialBytes().fromSerialBytes()
         assert res instanceof FHashMap
         FHashMap r = res
         assert r.size() == 0
@@ -27,7 +27,7 @@ package groovy.util.concurrent
     }
 
     void testSeveralEl() {
-        def res = fromBytes(toBytes(FHashMap.emptyMap.put("1", "2").put("3","4")))
+        def res = FHashMap.emptyMap.put("1", "2").put("3","4").toSerialBytes().fromSerialBytes()
         assert res instanceof FHashMap
         FHashMap r = res
         assert r.size() == 2

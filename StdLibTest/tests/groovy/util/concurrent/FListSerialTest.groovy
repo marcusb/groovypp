@@ -16,10 +16,10 @@
 
 package groovy.util.concurrent
 
-@Typed class FListSerialTest extends FSerialTestCase {
+@Typed class FListSerialTest extends GroovyTestCase {
 
     void testEmpty() {
-        def res = fromBytes(toBytes(FList.emptyList))
+        def res = FList.emptyList.toSerialBytes().fromSerialBytes()
         assert res instanceof FList
         FList r = res
         assert ((FList)res).size() == 0
@@ -27,7 +27,7 @@ package groovy.util.concurrent
     }
 
     void testOneEl() {
-        def res = fromBytes(toBytes(FList.emptyList + "one"))
+        def res = (FList.emptyList + "one").toSerialBytes().fromSerialBytes()
         assert res instanceof FList
         FList r = res
         assert r.size() == 1
@@ -35,7 +35,7 @@ package groovy.util.concurrent
     }
 
     void testSeveralEl() {
-        def res = fromBytes(toBytes(FList.emptyList + "one" + "two" + "three"))
+        def res = (FList.emptyList + "one" + "two" + "three").toSerialBytes().fromSerialBytes()
         assert res instanceof FList
         FList r = res
         assert r.size() == 3

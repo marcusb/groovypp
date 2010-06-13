@@ -16,10 +16,10 @@
 
 package groovy.util.concurrent
 
-@Typed class FVectorSerialTest extends FSerialTestCase {
+@Typed class FVectorSerialTest extends GroovyTestCase {
 
     void testEmpty() {
-        def res = fromBytes(toBytes(FVector.emptyVector))
+        def res = FVector.emptyVector.toSerialBytes().fromSerialBytes()
         assert res instanceof FVector
         FVector r = res
         assert r.length == 0
@@ -27,7 +27,7 @@ package groovy.util.concurrent
     }
 
     void testSeveralEl() {
-        def res = fromBytes(toBytes(FVector.emptyVector + "12" + "34" + "56"))
+        def res = (FVector.emptyVector + "12" + "34" + "56").toSerialBytes().fromSerialBytes()
         assert res instanceof FVector
         FVector r = res
         assert r.length == 3

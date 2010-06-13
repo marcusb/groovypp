@@ -571,4 +571,17 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
             closeWithWarning(os);
         }
     }
+
+    public static byte [] toSerialBytes(Object self) {
+        def bos = new ByteArrayOutputStream()
+        def out = new ObjectOutputStream(bos)
+        out.writeObject self
+        out.flush()
+        out.close()
+        bos.toByteArray()
+    }
+
+    public static Object fromSerialBytes(byte [] bytes) {
+        new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject()
+    }
 }

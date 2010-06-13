@@ -16,10 +16,10 @@
 
 package groovy.util.concurrent
 
-@Typed class FQueueSerialTest extends FSerialTestCase {
+@Typed class FQueueSerialTest extends GroovyTestCase {
 
     void testEmpty() {
-        def res = fromBytes(toBytes(FQueue.emptyQueue))
+        def res = FQueue.emptyQueue.toSerialBytes().fromSerialBytes()
         assert res instanceof FQueue
         FQueue r = res
         assert r.size() == 0
@@ -27,7 +27,7 @@ package groovy.util.concurrent
     }
 
     void testOneEl() {
-        def res = fromBytes(toBytes(FQueue.emptyQueue + "one"))
+        def res = (FQueue.emptyQueue + "one").toSerialBytes().fromSerialBytes()
         assert res instanceof FQueue
         FQueue r = res
         assert r.size() == 1
@@ -35,7 +35,7 @@ package groovy.util.concurrent
     }
 
     void testSeveralEl() {
-        def res = fromBytes(toBytes(FQueue.emptyQueue + "one" + "two" + "three"))
+        def res = (FQueue.emptyQueue + "one" + "two" + "three").toSerialBytes().fromSerialBytes()
         assert res instanceof FQueue
         FQueue r = res
         assert r.size() == 3
