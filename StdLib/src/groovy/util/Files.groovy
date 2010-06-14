@@ -25,12 +25,8 @@ import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newDataInputStrea
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newDataOutputStream
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newPrintWriter
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
-import java.util.zip.DeflaterInputStream
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.InflaterInputStream
-import org.jboss.netty.handler.codec.serialization.CompactObjectOutputStream
-import com.thoughtworks.xstream.core.util.CustomObjectInputStream
-import java.util.zip.InflaterOutputStream
 
 @Typed class Files extends DefaultGroovyMethodsSupport {
     /**
