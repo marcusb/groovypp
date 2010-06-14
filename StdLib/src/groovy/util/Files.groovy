@@ -25,6 +25,12 @@ import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newDataInputStrea
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newDataOutputStream
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.newPrintWriter
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
+import java.util.zip.DeflaterInputStream
+import java.util.zip.DeflaterOutputStream
+import java.util.zip.InflaterInputStream
+import org.jboss.netty.handler.codec.serialization.CompactObjectOutputStream
+import com.thoughtworks.xstream.core.util.CustomObjectInputStream
+import java.util.zip.InflaterOutputStream
 
 @Typed class Files extends DefaultGroovyMethodsSupport {
     /**
@@ -574,14 +580,16 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 
     public static byte [] toSerialBytes(Object self) {
         def bos = new ByteArrayOutputStream()
-        def out = new ObjectOutputStream(bos)
+        def out = new SerialOutputStream(new DeflaterOutputStream(bos))
         out.writeObject self
-        out.flush()
         out.close()
         bos.toByteArray()
     }
 
-    public static Object fromSerialBytes(byte [] bytes) {
-        new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject()
+    public static Object fromSerialBytes(byte [] bytes, ClassLoader loader = null) {
+        def inp = new SerialInputStream(new InflaterInputStream(new ByteArrayInputStream(bytes)), loader)
+        def res = inp.readObject()
+        inp.close()
+        res
     }
 }
