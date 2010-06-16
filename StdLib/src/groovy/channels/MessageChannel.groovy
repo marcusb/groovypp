@@ -19,7 +19,7 @@ package groovy.channels
 import groovy.util.concurrent.BindLater
 import java.util.concurrent.Executor
 
-@Typed abstract class MessageChannel<T> {
+@Typed abstract class MessageChannel<T> implements Serializable {
 
     abstract void post (T message)
 
@@ -80,5 +80,9 @@ import java.util.concurrent.Executor
 
     static class ReplyRequiringMessage {
         MessageChannel replyTo
+    }
+
+    protected Object writeReplace () {
+        new RemoteMessageChannel.SerializedMessageChannel(this)
     }
 }

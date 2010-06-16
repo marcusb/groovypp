@@ -16,26 +16,25 @@
 
 package groovy.util
 
-@Typed class SerialOutputStream extends ObjectOutputStream {
+/**
+ * Utility for use as identity key in comparisons
+ */
+@Typed class Identity<T> {
+    final T ref
 
-    SerialOutputStream(OutputStream out) throws IOException {
-        super(out)
+    Identity(T ref) {
+        this.ref = ref
     }
 
-    @Override
-    protected void writeStreamHeader() throws IOException {
-        writeByte(STREAM_VERSION)
+    T get () {
+        ref
     }
 
-    @Override
-    protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
-        Class<?> clazz = desc.forClass()
-        if (clazz.isPrimitive() || clazz.isArray()) {
-            write(0)
-            super.writeClassDescriptor(desc)
-        } else {
-            write(1)
-            writeUTF(desc.name)
-        }
+    boolean equals(o) {
+        this === o
+    }
+
+    int hashCode() {
+        ref?.hashCode ()
     }
 }

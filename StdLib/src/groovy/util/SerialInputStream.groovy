@@ -16,11 +16,11 @@
 
 package groovy.util
 
-class SerialInputStream extends ObjectInputStream {
+@Typed class SerialInputStream extends ObjectInputStream {
 
     private final ClassLoader classLoader;
 
-    SerialInputStream(InputStream inp, ClassLoader classLoader) throws IOException {
+    SerialInputStream(InputStream inp, ClassLoader classLoader = null) throws IOException {
         super(inp);
         this.classLoader = classLoader;
     }

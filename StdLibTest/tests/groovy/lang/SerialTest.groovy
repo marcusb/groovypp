@@ -42,16 +42,11 @@ class D extends C {
         ArrayList q
 }
 
-def bos = new ByteArrayOutputStream()
-def o = new ObjectOutputStream (bos)
-o.writeObject(new D(a:"lala", c:239, d:932, x:0.1f, y:false, q:[3,4,5], bytes: (byte[])[0,1,2,3]))
-o.flush ()
-o.close ()
+def bytes = new D(a:"lala", c:239, d:932, x:0.1f, y:false, q:[3,4,5], bytes: (byte[])[0,1,2,3]).toSerialBytes ()
 
-println bos.size ()
+println bytes.length
 
-def i = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()))
-D read = i.readObject()
+D read = bytes.fromSerialBytes(this.class.classLoader)
 
 assert read.a == "lala"
 assert read.c == 239

@@ -29,17 +29,23 @@ class Channels {
     /**
     * Utility method to create a channel from closure.
     */
-    static <T> MessageChannel<T> fairChannel(Executor self, ExecutingChannel<T> channel) {
+    static <T> MessageChannel<T> executingChannel(Executor self, boolean runFair = false, InlineExecutingChannel<T> channel) {
         channel.executor = self
-        channel.runFair = true
+        channel.runFair = runFair
         channel
     }
 
-    /**
-    * Utility method to create a channel from closure.
-    */
-    static <T> MessageChannel<T> directChannel(Object ignore, MessageChannel<T> channel) {
-        channel
+    abstract static class InlineExecutingChannel<T> extends ExecutingChannel<T> {
+        protected void onMessage(T message) {
+            if(message instanceof ExecutingChannel.ExecuteCommand) {
+                super.onMessage(message)
+            }
+            else {
+                doOnMessage(message)
+            }
+        }
+
+        abstract protected void doOnMessage(T message)
     }
 
     /**

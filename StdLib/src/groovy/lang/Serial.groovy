@@ -28,12 +28,12 @@ package groovy.lang
  * - super class is {@link Externalizable} and have non abstract implementation of readExternal and writeExternal
  * - all non-transient fields/ properties are one of primitive types or {@link Serializable} or array of such type
  *
- * If one of rules above is not fulfiled a compile time warning will be issued
+ * If one of rules above is not fulfilled a compile time warning will be issued
  */
 public @interface Serial {
     enum Policy {
        /**
-        * all non-transient fields will be serializied
+        * all non-transient fields will be serialized
         */
         FIELDS,
 
@@ -54,7 +54,7 @@ public @interface Serial {
     Policy value () default Policy.FIELDS
 
    /**
-    * Names of fields/properties to exclude from serilization
+    * Names of fields/properties to exclude from serialization
     */
     String [] exclude ()   
 }
