@@ -21,7 +21,7 @@ class Issue249Test extends GroovyShellTestCase {
 
     void testClosure () {
             shell.evaluate """
-    @Typed(debug=true) package p
+    @Typed package p
 
     @Trait class Tr<T> {
             List prop = []
