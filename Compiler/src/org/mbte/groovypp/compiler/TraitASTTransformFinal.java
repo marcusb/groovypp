@@ -121,6 +121,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             return;
 
         List<MethodNode> abstractMethods = getAbstractMethods(classNode);
+        boolean addInit = false;
         if (abstractMethods != null) {
             for (final MethodNode method : abstractMethods) {
                 List<AnnotationNode> list = method.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION);
@@ -161,6 +162,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                             if (initMethod != null) {
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
                                 klazzField.addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
+                                addInit = true;
                             }
                         }
 
@@ -183,6 +185,11 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                     }
                 }
             }
+        }
+
+        if (addInit && !classNode.getDeclaredConstructors().isEmpty()) {
+            new OpenVerifier().addInitialization(classNode);
+            classNode.getObjectInitializerStatements().clear();
         }
     }
 
