@@ -157,10 +157,11 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
                         final String fieldName = (String) ((ConstantExpression) field).getValue();
                         FieldNode klazzField = classNode.getField(fieldName);
                         if (klazzField == null) {
-                            classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
+                            klazzField = classNode.addField(fieldName, ACC_PRIVATE, fieldType, null);
                             final MethodNode initMethod = klazz.getType().getMethod("__init_" + fieldName, new Parameter[]{new Parameter(method.getDeclaringClass(), "$self")});
                             if (initMethod != null) {
                                 classNode.getObjectInitializerStatements().add(new ExpressionStatement(new StaticMethodCallExpression(klazz.getType(), initMethod.getName(), new ArgumentListExpression(VariableExpression.THIS_EXPRESSION))));
+                                klazzField.addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
                                 addInit = true;
                             }
                         }
@@ -186,7 +187,7 @@ public class TraitASTTransformFinal implements ASTTransformation, Opcodes {
             }
         }
 
-        if (addInit) {
+        if (addInit && !classNode.getDeclaredConstructors().isEmpty()) {
             new OpenVerifier().addInitialization(classNode);
             classNode.getObjectInitializerStatements().clear();
         }

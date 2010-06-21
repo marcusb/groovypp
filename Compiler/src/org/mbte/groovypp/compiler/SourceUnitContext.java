@@ -39,7 +39,6 @@ public class SourceUnitContext {
     private Map<MethodNode, Integer> generatedSuperMethodAccessorNumbers = new HashMap<MethodNode, Integer>();
 
     private Set<ClassNode> outerClassInstanceUsers = new HashSet<ClassNode>();
-    private Set<FieldNode> selfInitializedFields = new HashSet<FieldNode>();
 
     public MethodNode getFieldGetter(FieldNode field) {
         MethodNode getter = generatedFieldGetters.get(field);
@@ -173,14 +172,6 @@ public class SourceUnitContext {
 
     public boolean isOuterClassInstanceUsed(ClassNode node) {
         return outerClassInstanceUsers.contains(node);
-    }
-
-    public void setSelfInitialized(FieldNode node) {
-        selfInitializedFields.add(node);
-    }
-
-    public boolean isSelfInitialized(FieldNode node) {
-        return selfInitializedFields.contains(node);
     }
 
     public String getNextTempVarName() {

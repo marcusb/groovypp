@@ -302,7 +302,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 me.setValueExpression(init);
 
                 FieldNode fieldNode = objType.addField(keyName, 0, init.getType(), null);
-                compiler.context.setSelfInitialized(fieldNode);
+                fieldNode.addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
             }
 
             for (MapEntryExpression me : methods) {

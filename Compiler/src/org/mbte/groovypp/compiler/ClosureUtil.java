@@ -223,23 +223,21 @@ public class ClosureUtil {
                     ));
             }
             else {
-                if (ClosureUtil.likeGetter(missed)) {
+                if (ClosureUtil.traitMethod(missed)) {
+                    traitMethods = true;
+                }
+                else if (ClosureUtil.likeGetter(missed)) {
                     String pname = missed.getName().substring(3);
                     pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                     final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
-                    compiler.context.setSelfInitialized(propertyNode.getField());
+                    propertyNode.getField().addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
                 }
                 else {
                     if (ClosureUtil.likeSetter(missed)) {
                         String pname = missed.getName().substring(3);
                         pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                         final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, parameters[0].getType(), null, null, null);
-                        compiler.context.setSelfInitialized(propertyNode.getField());
-                    }
-                    else {
-                        if (ClosureUtil.traitMethod(missed)) {
-                            traitMethods = true;
-                        }
+                        propertyNode.getField().addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
                     }
                 }
             }
@@ -418,7 +416,7 @@ public class ClosureUtil {
             constrParams.add(new Parameter(ownerField.getType(), "this$0"));
         for (int i = 0; i != fields.size(); ++i) {
             final FieldNode fieldNode = fields.get(i);
-            if (!fieldNode.getName().equals("this$0") && !compiler.context.isSelfInitialized(fieldNode))
+            if (!fieldNode.getName().equals("this$0") && fieldNode.getAnnotations(TypeUtil.NO_EXTERNAL_INITIALIZATION).isEmpty())
                 constrParams.add(new Parameter(fieldNode.getType(), fieldNode.getName()));
         }
         return constrParams.toArray(new Parameter[constrParams.size()]);

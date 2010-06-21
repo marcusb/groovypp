@@ -24,6 +24,7 @@ import org.codehaus.groovy.classgen.BytecodeHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.mbte.groovypp.runtime.HasDefaultImplementation;
 import org.mbte.groovypp.runtime.LinkedHashMapEx;
+import org.mbte.groovypp.runtime.NoExternalInitialization;
 import org.objectweb.asm.Opcodes;
 
 import java.util.*;
@@ -45,6 +46,7 @@ public class TypeUtil {
     public static final ClassNode TYPED = make(Typed.class);
     public static final ClassNode TRAIT = make(Trait.class);
     public static final ClassNode HAS_DEFAULT_IMPLEMENTATION = make(HasDefaultImplementation.class);
+    public static final ClassNode NO_EXTERNAL_INITIALIZATION = make(NoExternalInitialization.class);
     public static final ClassNode OBJECT_ARRAY = OBJECT_TYPE.makeArray();
     public static final ClassNode SET_TYPE = make(Set.class);
     public static final ClassNode SORTED_SET_TYPE = make(SortedSet.class);

@@ -66,7 +66,7 @@ public class DeclarationExpressionTransformer extends ExprTransformer<Declaratio
             }
 
             FieldNode fieldNode = compiler.classNode.addField(compiler.methodNode.getName() + "$" + ve.getName(), ACC_PRIVATE, type, exp.getRightExpression());
-            compiler.context.setSelfInitialized(fieldNode);
+            fieldNode.addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
             ve.setAccessedVariable(fieldNode);
             return new BytecodeExpr(exp, TypeUtil.NULL_TYPE) {
                 protected void compile(MethodVisitor mv) {
