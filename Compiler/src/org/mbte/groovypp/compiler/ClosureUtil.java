@@ -396,7 +396,11 @@ public class ClosureUtil {
                    vtype = var.getType();
             }
             else {
-                vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
+                if (astVar instanceof VariableExpression && ((VariableExpression)astVar).getAccessedVariable() instanceof FieldNode) {
+                    vtype = ((FieldNode)((VariableExpression)astVar).getAccessedVariable()).getType();
+                }
+                else
+                    vtype = compiler.methodNode.getDeclaringClass().getField(astVar.getName()).getType();
             }
 
             if (newType.getDeclaredField(astVar.getName()) == null) {
@@ -433,7 +437,7 @@ public class ClosureUtil {
         final ConstructorNode constructorNode = type.getDeclaredConstructors().get(0);
 
         for (int i = 0; i != constrParams.length; i++) {
-            final String name = constrParams[i].getName();
+            String name = constrParams[i].getName();
 
             if ("this$0".equals(name)) {
                 mv.visitVarInsn(Opcodes.ALOAD,0);
@@ -448,7 +452,10 @@ public class ClosureUtil {
                     }
                 }
                 else {
+                    FieldNode field = compiler.methodNode.getDeclaringClass().getDeclaredField(name);
                     mv.visitVarInsn(Opcodes.ALOAD, 0);
+                    if (field == null) // @Field
+                        name = compiler.methodNode.getName() + "$" + name;
                     mv.visitFieldInsn(Opcodes.GETFIELD, BytecodeHelper.getClassInternalName(compiler.methodNode.getDeclaringClass()), name, BytecodeHelper.getTypeDescription(constrParams[i].getType()));
                 }
             }

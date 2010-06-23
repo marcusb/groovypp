@@ -257,6 +257,10 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
         withStream(newDataOutputStream(file), closure)
     }
 
+    public static <R> R withDataOutputStream(OutputStream output, Function1<DataOutputStream,R> closure) throws IOException {
+        withStream(new DataOutputStream(output), closure)
+    }
+
     /**
      * Create a new DataInputStream for this file and passes it into the closure.
      * This method ensures the stream is closed after the closure returns.
@@ -269,6 +273,10 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      */
     public static <R> R withDataInputStream(File file, Function1<DataInputStream,R> closure) throws IOException {
         withStream(newDataInputStream(file), closure)
+    }
+
+    public static <R> R withDataInputStream(InputStream input, Function1<DataInputStream,R> closure) throws IOException {
+        withStream(new DataInputStream(input), closure)
     }
 
     /**
@@ -385,6 +393,10 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
      */
     public static <R> R withPrintWriter(Writer writer, Function1<PrintWriter,R> closure) throws IOException {
         withWriter(newPrintWriter(writer), closure)
+    }
+
+    public static <R> R withPrintWriter(OutputStream writer, Function1<PrintWriter,R> closure) throws IOException {
+        withWriter(new PrintWriter(writer), closure)
     }
 
     /**

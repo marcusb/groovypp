@@ -120,7 +120,7 @@ public class TypeUnification {
                 fType = fType.getComponentType();
                 iType = iType.getComponentType();
             }
-            if (iType.isArray()) continue;
+//            if (iType.isArray()) continue;
             fType = TypeUtil.wrapSafely(fType);
             iType = TypeUtil.wrapSafely(iType);
 

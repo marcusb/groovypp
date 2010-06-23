@@ -106,4 +106,24 @@ Tr<String> o = [prop: "123"]
 assert o.prop == "prop: 123"
         """
     }
+
+    void testClosure () {
+        shell.evaluate """
+@Typed package p
+
+@Trait class Tr<T> {
+        List prop = []
+}
+
+abstract class Der implements Tr {
+    abstract def y (int a)
+}
+
+def x(int a, Der d){
+   d.y(a)
+}
+
+assert x(10) { a -> def b = 2*a; prop << b } == [20]
+        """
+    }
 }

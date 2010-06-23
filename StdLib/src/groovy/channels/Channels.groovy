@@ -18,7 +18,7 @@ package groovy.channels
 
 import java.util.concurrent.Executor
 
-class Channels {
+@Typed class Channels {
     /**
     * Utility method to create a channel from closure.
     */

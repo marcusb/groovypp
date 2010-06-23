@@ -26,6 +26,7 @@ import org.codehaus.groovy.reflection.ReflectionCache;
 import org.objectweb.asm.MethodVisitor;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 class OpenVerifier extends Verifier {
     @Override
@@ -37,6 +38,13 @@ class OpenVerifier extends Verifier {
         for (FieldNode fieldNode : classNode.getFields()) {
             fieldNode.setInitialValueExpression(null);
         }
+    }
+
+    @Override
+    protected void addGroovyObjectInterfaceAndMethods(ClassNode node, String classInternalName) {
+        final List<AnnotationNode> list = node.getAnnotations(TypeUtil.TYPED);
+        if (list == null || list.size() == 0 || list.get(0).getMember("value") != null)
+            super.addGroovyObjectInterfaceAndMethods(node, classInternalName);
     }
 
     protected void addPropertyMethod(MethodNode method) {
