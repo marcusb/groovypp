@@ -67,6 +67,9 @@ import java.util.concurrent.atomic.*
         }
     }
 
+    static int inc(AtomicInteger self) { apply(self, {it + 1}) }
+    static int dec(AtomicInteger self) { apply(self, {it - 1}) }
+
     static <T> int apply (AtomicIntegerFieldUpdater<T> self, T obj, Function1<Integer,Integer> mutation) {
         for (;;) {
             def s = self.get(obj)
