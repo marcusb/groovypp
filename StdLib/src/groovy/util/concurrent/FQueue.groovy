@@ -16,6 +16,8 @@
 
 package groovy.util.concurrent
 
+import java.util.concurrent.atomic.AtomicReference
+
 @Typed
 abstract class FQueue<T> implements Iterable<T>, Serializable {
     abstract boolean isEmpty ()
@@ -161,5 +163,57 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
         }
 
         boolean isEmpty () { false }
+    }
+
+    static class Ref<T> extends AtomicReference<FQueue<T>> {
+        Ref (FQueue<T> init = FQueue.emptyQueue) {
+            super(init)
+        }
+
+        FQueue<T> addFirstAndGet(T el) {
+            for(;;) {
+                def q = get ()
+                def newQueue = q.addFirst(el)
+                if (compareAndSet(q, newQueue))
+                    return newQueue
+            }
+        }
+
+        FQueue<T> getAndAddFirst(T el) {
+            for(;;) {
+                def q = get ()
+                def newQueue = q.addFirst(el)
+                if (compareAndSet(q, newQueue))
+                    return q
+            }
+        }
+
+        FQueue<T> addLastAndGet(T el) {
+            for(;;) {
+                def q = get ()
+                def newQueue = q.addLast(el)
+                if (compareAndSet(q, newQueue))
+                    return newQueue
+            }
+        }
+
+        FQueue<T> getAndAddLast(T el) {
+            for(;;) {
+                def q = get ()
+                def newQueue = q.addLast(el)
+                if (compareAndSet(q, newQueue))
+                    return q
+            }
+        }
+
+        Pair<T, FQueue<T>> removeFirst() {
+            for (;;) {
+                def q = get()
+                def res = q.removeFirst()
+                if (compareAndSet(q, res.second)) {
+                    return res
+                }
+            }
+        }
     }
 }
