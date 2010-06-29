@@ -50,16 +50,19 @@ public class PostfixExpressionTransformer extends ExprTransformer<PostfixExpress
                         compiler.cast(unboxingCall, t).visit(mv);
 
                         final VariableExpression v1 = new VariableExpression(compiler.context.getNextTempVarName(), t);
+                        v1.setType(t);
                         compiler.compileStack.defineVariable(v1, true);
 
-                        final BytecodeExpr postfix = ((BytecodeExpr) compiler.transform(v1)).createPostfixOp(exp,
+                        BytecodeExpr v1Transformed = (BytecodeExpr) compiler.transform(v1);
+                        final BytecodeExpr postfix = v1Transformed.createPostfixOp(exp,
                                 exp.getOperation().getType(), compiler);
                         postfix.visit(mv);
 
                         final VariableExpression v2 = new VariableExpression(compiler.context.getNextTempVarName(), t);
+                        v2.setType(t);
                         compiler.compileStack.defineVariable(v2, true);
                         
-                        ResolvedMethodBytecodeExpr.create(exp, boxing, refTransformed, new ArgumentListExpression(v1),
+                        ResolvedMethodBytecodeExpr.create(exp, boxing, refTransformed, new ArgumentListExpression(v1Transformed),
                                 compiler).visit(mv);
 
                         ((BytecodeExpr) compiler.transform(v2)).visit(mv);

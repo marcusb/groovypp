@@ -56,6 +56,7 @@ public class PrefixExpressionTransformer extends ExprTransformer<PrefixExpressio
                         compiler.cast(unboxingCall, t).visit(mv);
 
                         final VariableExpression v1 = new VariableExpression(compiler.context.getNextTempVarName(), t);
+                        v1.setType(t);
                         compiler.compileStack.defineVariable(v1, true);
 
                         final BytecodeExpr prefix = ((BytecodeExpr) compiler.transform(v1)).createPrefixOp(exp,
