@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit
 import org.mbte.groovypp.remote.ClientConnector
 import groovy.util.concurrent.CallLaterExecutors
 import org.mbte.groovypp.remote.inet.MulticastClusterNode
+import java.util.concurrent.atomic.AtomicInteger
 
 @Typed class ClusterTest extends GroovyTestCase {
     void testStartStop () {
@@ -34,6 +35,7 @@ import org.mbte.groovypp.remote.inet.MulticastClusterNode
         def disconnectCdl = new CountDownLatch(n*(n-1))
         def pool = CallLaterExecutors.newCachedThreadPool()
         for(i in 0..<n) {
+            def counter = new AtomicInteger(n - 1)
             MulticastClusterNode cluster = [executor:pool]
             cluster.communicationEvents.subscribe { msg ->
                 println "${cluster.id} $msg"
@@ -43,17 +45,15 @@ import org.mbte.groovypp.remote.inet.MulticastClusterNode
                     case ClusterNode.CommunicationEvent.Connected:
                         msg.remoteNode << "Hello!"
                         connectCdl.countDown()
-                    break
+                        break
                     case ClusterNode.CommunicationEvent.Disconnected:
                         disconnectCdl.countDown()
-                    break
+                        break
                 }
             }
             cluster.mainActor = { msg ->
-                @Field int counter=1
                 println "${cluster.id} received '$msg' $counter"
-                counter++
-                if (counter == n) {
+                if (counter.dec() == 0) {
                     println "${cluster.id} stopping"
                     cluster.shutdown {
                         stopCdl.countDown()
@@ -64,8 +64,8 @@ import org.mbte.groovypp.remote.inet.MulticastClusterNode
 
             cluster.startup()
         }
-        assertTrue(stopCdl.await(100,TimeUnit.SECONDS))
         assertTrue(connectCdl.await(100,TimeUnit.SECONDS))
+        assertTrue(stopCdl.await(100,TimeUnit.SECONDS))
         assertTrue(disconnectCdl.await(100,TimeUnit.SECONDS))
     }
 }
