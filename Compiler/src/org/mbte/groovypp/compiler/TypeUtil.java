@@ -17,6 +17,7 @@
 package org.mbte.groovypp.compiler;
 
 import groovy.lang.Delegating;
+import groovy.lang.IntRange;
 import groovy.lang.Trait;
 import groovy.lang.Typed;
 import org.codehaus.groovy.ast.*;
@@ -42,6 +43,7 @@ public class TypeUtil {
     public static final ClassNode EX_LINKED_HASH_MAP_TYPE = make(LinkedHashMapEx.class);
     public static final ClassNode ARRAY_LIST_TYPE = make(ArrayList.class);
     public static final ClassNode COLLECTION_TYPE = make(Collection.class);
+    public static final ClassNode INT_RANGE_TYPE = make(IntRange.class);
     public static final ClassNode RANGE_OF_INTEGERS_TYPE = TypeUtil.withGenericTypes(ClassHelper.RANGE_TYPE, ClassHelper.Integer_TYPE);
     public static final ClassNode TYPED = make(Typed.class);
     public static final ClassNode TRAIT = make(Trait.class);

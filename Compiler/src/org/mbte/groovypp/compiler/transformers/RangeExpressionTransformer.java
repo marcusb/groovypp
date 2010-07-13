@@ -36,7 +36,8 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
         final boolean intRange =
                    (from.getType() == ClassHelper.int_TYPE || from.getType().equals(ClassHelper.Integer_TYPE))
                 && (to.getType() == ClassHelper.int_TYPE || to.getType().equals(ClassHelper.Integer_TYPE));
-        ClassNode type = intRange ? TypeUtil.RANGE_OF_INTEGERS_TYPE : ClassHelper.RANGE_TYPE;
+        final ClassNode type = intRange ? (exp.isInclusive() ? TypeUtil.INT_RANGE_TYPE : TypeUtil.RANGE_OF_INTEGERS_TYPE) :
+                ClassHelper.RANGE_TYPE;
         return new BytecodeExpr(exp, type) {
             protected void compile(MethodVisitor mv) {
                 from.visit(mv);
@@ -45,6 +46,7 @@ public class RangeExpressionTransformer extends ExprTransformer<RangeExpression>
                 box(to.getType(), mv);
                 mv.visitLdcInsn(exp.isInclusive());
                 mv.visitMethodInsn(INVOKESTATIC, BytecodeHelper.getClassInternalName(ScriptBytecodeAdapter.class), "createRange", "(Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/util/List;");
+                cast(ClassHelper.LIST_TYPE, type, mv);
             }
         };
     }
