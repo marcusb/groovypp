@@ -525,6 +525,7 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
             if (oarg.implementsInterface(TypeUtil.TCLOSURE) ||
                 oarg.implementsInterface(TypeUtil.TLIST) ||
                 oarg.implementsInterface(TypeUtil.TMAP) ||
+                oarg.implementsInterface(TypeUtil.TTERNARY) ||
                 oarg.implementsInterface(TypeUtil.TTHIS)) {
 
                 if (changed == null)

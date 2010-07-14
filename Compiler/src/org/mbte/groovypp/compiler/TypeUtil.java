@@ -60,6 +60,7 @@ public class TypeUtil {
     public static final ClassNode LINKED_HASH_SET_TYPE = make(LinkedHashSet.class);
     public static final ClassNode MATCHER = make(Matcher.class);
     public static final ClassNode TMAP = make(TypedMap.class);
+    public static final ClassNode TTERNARY = make(TypedTernary.class);
     public static final ClassNode TLIST = make(TypedList.class);
     public static final ClassNode TTHIS = make(TypedThis.class);
     public static final ClassNode TCLOSURE = make(TypedClosure.class);
@@ -104,6 +105,9 @@ public class TypeUtil {
     }
 
     public static interface TypedThis {
+    }
+
+    public static interface TypedTernary {
     }
 
     public static final ClassNode NULL_TYPE = new ClassNode(Null.class);
@@ -299,8 +303,10 @@ public class TypeUtil {
         final Set<ClassNode> allTypes2 = getAllTypes(type2);
 
         for (ClassNode cn : allTypes1)
-            if (allTypes2.contains(cn))
+            if (allTypes2.contains(cn)) {
+                cn = getSubstitutedType(cn, cn, type1);
                 return cn;
+            }
 
         return ClassHelper.OBJECT_TYPE;
     }

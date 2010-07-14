@@ -36,6 +36,7 @@ import org.mbte.groovypp.compiler.bytecode.StackAwareMethodAdapter;
 import org.mbte.groovypp.compiler.transformers.ExprTransformer;
 import org.mbte.groovypp.compiler.transformers.ListExpressionTransformer;
 import org.mbte.groovypp.compiler.transformers.MapExpressionTransformer;
+import org.mbte.groovypp.compiler.transformers.TernaryExpressionTransformer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -111,6 +112,8 @@ public abstract class CompilerTransformer extends ReturnsAdder implements Opcode
             return ((ListExpressionTransformer.UntransformedListExpr) res).transform(TypeUtil.ARRAY_LIST_TYPE, this);
         else if (res instanceof MapExpressionTransformer.UntransformedMapExpr)
             return ((MapExpressionTransformer.UntransformedMapExpr) res).transform(this);
+        else if (res instanceof TernaryExpressionTransformer.UntransformedTernaryExpr)
+            return ((TernaryExpressionTransformer.UntransformedTernaryExpr) res).transform(this);
         else if (res.getType().declaresInterface(TypeUtil.TTHIS)) {
             res.setType(res.getType().getOuterClass());
         }

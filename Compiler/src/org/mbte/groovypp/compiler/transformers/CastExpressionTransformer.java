@@ -58,6 +58,35 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             cast = newExp;
         }
 
+        if (cast.getExpression() instanceof TernaryExpressionTransformer.UntransformedTernaryExpr) {
+            final TernaryExpression original = ((TernaryExpressionTransformer.UntransformedTernaryExpr) cast.getExpression()).exp;
+
+            if (original instanceof ElvisOperatorExpression) {
+                final CastExpression newTrue = new CastExpression(cast.getType(), original.getTrueExpression());
+                newTrue.setSourcePosition(original.getTrueExpression());
+
+                final CastExpression newFalse = new CastExpression(cast.getType(), original.getFalseExpression());
+                newFalse.setSourcePosition(original.getFalseExpression());
+
+                ElvisOperatorExpression newTernary = new ElvisOperatorExpression(newTrue, newFalse);
+                newTernary.setSourcePosition(original);
+
+                return (BytecodeExpr) compiler.transformToGround(newTernary);
+            }
+            else {
+                final CastExpression newTrue = new CastExpression(cast.getType(), original.getTrueExpression());
+                newTrue.setSourcePosition(original.getTrueExpression());
+
+                final CastExpression newFalse = new CastExpression(cast.getType(), original.getFalseExpression());
+                newFalse.setSourcePosition(original.getFalseExpression());
+
+                TernaryExpression newTernary = new TernaryExpression(original.getBooleanExpression(), newTrue, newFalse);
+                newTernary.setSourcePosition(original);
+
+                return (BytecodeExpr) compiler.transformToGround(newTernary);
+            }
+        }
+
         if (cast.getType().equals(ClassHelper.boolean_TYPE) || cast.getType().equals(ClassHelper.Boolean_TYPE)) {
             if (cast.getExpression() instanceof ListExpression) {
                 return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true), cast.getType());
