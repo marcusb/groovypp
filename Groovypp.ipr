@@ -15,8 +15,91 @@
     <option name="BUILD_JARS_ON_MAKE" value="false" />
   </component>
   <component name="CodeStyleSettingsManager">
-    <option name="PER_PROJECT_SETTINGS" />
-    <option name="USE_PER_PROJECT_SETTINGS" value="false" />
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <ADDITIONAL_INDENT_OPTIONS fileType="groovy">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="gsp">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="java">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="js">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="jsp">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="php">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="sql">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="xml">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="yml">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+      </value>
+    </option>
   </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
@@ -974,6 +1057,217 @@
           </module>
           <module name="Parallelizer">
             <files>
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/AsyncEnhancer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/AsyncInvokerUtil.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/Asynchronizer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/ForkJoinOrchestrator.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/Parallel.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/ParallelArrayUtil.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/ParallelEnhancer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/Parallelizer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/ThreadLocalPools.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/TransparentParallel.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/ActorGroup.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/Actors.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/DefaultPooledActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/DynamicDispatchActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/NonDaemonActorGroup.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/PooledActorGroup.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/ReactiveActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/actor/Safe.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/DataCallback.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/DataFlow.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/DataFlowActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/DataFlows.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/SingleRunActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/dataflow/operator/DataFlowOperator.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/util/EnhancedRWLock.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/main/groovy/groovyx/gpars/util/EnhancedSemaphore.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsyncEnhancerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsyncUtilTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsynchronizerDSLTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsynchronizerExceptionTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsynchronizerIteratorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsynchronizerStringTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/AsynchronizerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/DemoCar.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentCornerCaseEnhancerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentCornerCaseTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentEnhancerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentMethodEnhancerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentMethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MakeTransparentTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MapReduceTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/MessageStreamTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/ParallelEnhancerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/ParallelUtilTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/ParallelizerDSLTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/ParallelizerStringTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/ParallelizerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/AbstractActorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ActorThreadTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ActorsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ArraySumTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/CrossReplyTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/DefaultActorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/DeliveryErrorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ImmutableMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/JoinTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/MergeSortTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/MixinTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/MultiMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/MultiMessageTimeoutTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/NestedClosureTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/NullMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ReplyTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/ReplyToMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/SendAndWaitTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/blocking/TimeCategoryActorsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/groups/FJGroupTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/groups/PooledActorGroupTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/DeliveryErrorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/DynamicDispatchActorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/EventMixinTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/ImmutableMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/JoinTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/LifeCycleTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/LifecycleErrorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/LoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/MessagingTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/MultiMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/MultiMessageTimeoutTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/NestedClosureTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/NullMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/PooledActorThreadTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/PooledMergeSortTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/ReactorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/ReceiveTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/RepeatLoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/ReplyTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/ReplyToMessageTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/SendAndWaitTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/SharedMemoryTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/SingleThreadLoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/SingleThreadedLifeCycleTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/SingleThreadedMessagingTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/TimeCategoryTimeoutTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/nonBlocking/TimeoutTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/actor/safe/SafeTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/benchmark/AllBenchmarks.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/benchmark/BenchmarkActors.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/benchmark/BenchmarkActors2.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/benchmark/BenchmarkActors3.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DataFlowExpressionTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DataFlowStreamTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DataFlowTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DataFlowVariableTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DataFlowsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/DistributedDataFlowTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/ThreadLifeCycleTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/operator/DataFlowOperatorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/dataflow/operator/DataFlowTaskTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/ImmutableAct.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/ImmutableMessageIssue.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/MixinIssue1.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/MixinIssue2.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/MixinIssue3.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/issues/PropertyIssues.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/remote/CommunicationTestBase.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/remote/NettyTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/remote/SyncTest.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoAsyncEnhancer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoAsynchronizer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoAsynchronizerAsyncClosures.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoAsynchronizerParallelFunctionInvocation.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoMapReduce.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoParallelEnhancer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoParallelEnhancerWithTransparent.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoParallelizer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoParallelizerWithTransparent.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoQuicksort.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoQuicksortMapReduce.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoSleepingBarberWithQueue.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoSwingCollectionProcessing.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/DemoSwingMashup.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoDecryptor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoDiningPhilosophers.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoDynamicDispatchActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoEventMergeSort.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoForwarding.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoGuessGame.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoLoadBalancer.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoMergeSort.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoMultiMessage.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoNestedLoops.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoNestedLoopsWithClosures.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoNestedLoopsWithMetaClass.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoNestedMethodCalls.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoOnDeliveryError.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoPooledGroups.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoPooledLifeCycleMethods.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoReactor1.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoReactor2.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoReply.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoRockPaperScissors.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoSleepingBarber.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoSleepingBarber_RW.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoSleepingLazyBarber.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoStockPrices.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoStockPricesWithCoordinatingActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoStockPricesWithResultActor.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoSwing.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoSwingActors.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/DemoWordSort.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoAdvancedThreadSafeCounter.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoCart.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoListSafe.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoNameSafe.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoPrintingService.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoSafeVariable.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/actors/safe/DemoThreadSafeCounter.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/AsynclBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/Benchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/Benchmarks.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/EventMergeSortBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/GroupRemoval.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PoolBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PooledActorBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PooledActorCreationBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PooledActorNetworkingBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PooledGroupRemoval.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/PooledWordSortBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/benchmarks/SequentialWordSortBenchmark.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/BenchmarkManyDataFlowVariables.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo1.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo2.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo3.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo4.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo5.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DataFlowDemo6.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoDataFlowOperator.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoDataFlowStreamIteration.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoDataFlows.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoDeadLock.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoManyDataFlows.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoMashupWithMethods.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoMixDataFlowWithActors.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoNonDeterministicDeadlockWithDataFlows.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoNormalThreadDataFlow.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoPerfectNumbers.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoPhysicalCalculations.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoPotentialDeadlock.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoProducerConsumer1.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoProducerConsumer2.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoSimpleMashup.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoStockPricesDataFlows.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoStockPricesWithDataFlowOperator.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoSwingDataFlowOperators.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/dataflow/DemoThreadLifeCycle.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/forkjoin/DemoForkJoinFileCounter.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/forkjoin/DemoForkJoinMergeSort.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/forkjoin/DemoQuicksortForkJoin.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/forkjoin/DemoRawForkJoinFileCounter.groovy" />
+              <file url="file://$PROJECT_DIR$/../../GPARS/src/test/groovy/groovyx/gpars/samples/remote/DemoRemote.groovy" />
               <file url="file://$PROJECT_DIR$/../../GParallelizer/src/main/groovy/org/gparallelizer/AsyncEnhancer.groovy" />
               <file url="file://$PROJECT_DIR$/../../GParallelizer/src/main/groovy/org/gparallelizer/AsyncInvokerUtil.groovy" />
               <file url="file://$PROJECT_DIR$/../../GParallelizer/src/main/groovy/org/gparallelizer/Asynchronizer.groovy" />
@@ -1364,6 +1658,737 @@
               <file url="file://$PROJECT_DIR$/GParallelizer/src/test/groovy/org/gparallelizer/transformations/TransformationSample.groovy" />
             </files>
           </module>
+          <module name="WideFinder" />
+          <module name="Groovypp">
+            <files>
+              <file url="file://$PROJECT_DIR$/src/groovy/lang/AbstractStruct.groovy" />
+              <file url="file://$PROJECT_DIR$/src/groovy/util/test/GrUnitTestSuite.groovy" />
+              <file url="file://$PROJECT_DIR$/src/groovy/util/test/GroovyFileSystemCompilerTestCase.groovy" />
+              <file url="file://$PROJECT_DIR$/src/org/mbte/groovypp/compiler/AsyncASTTransform.groovy" />
+              <file url="file://$PROJECT_DIR$/src/org/mbte/groovypp/compiler/GrunitASTTransform.groovy" />
+              <file url="file://$PROJECT_DIR$/src/org/mbte/groovypp/compiler/SerialASTTransform.groovy" />
+              <file url="file://$PROJECT_DIR$/src/org/mbte/groovypp/compiler/StructASTTransform.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/AbstractClassAndInterfaceTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/AmbiguousInvocationTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ArrayAutoboxingTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ArrayCoerceTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ArrayParamMethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/AsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/BreakContinueLabelTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CallInnerClassCtorTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CastTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ChainedAssignmentTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClassExpressionTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClosureAsParamTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClosureCloneTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClosureCurryTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClosureDefaultParameterTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ClosureInClosureTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CompareEqualsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CompareToTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CompareTypesTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/CompileTestSupport.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ForInTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ForLoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/GenericsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/GroovyTruthTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/IfElseCompactTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/IfElseTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/IfTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/IfWithMethodCallTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/InnerClassTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/InstanceofTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/LogicTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/MinusEqualsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ModuloTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/MultilineChainExpressionTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/MultiplyDivideEqualsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/NullPropertyTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/NumberMathTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/OptionalReturnTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/PlusEqualsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/PostfixTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/RegularExpressionsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/SimpleGStringTemplateEngineTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/SimplePostfixTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/StaticThisTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/StringBufferTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/StringTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/SubscriptTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/SwitchTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ThisAndSuperTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ThrowTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ToArrayBugTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/TryCatchTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/TypesafeMethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/UnsafeNavigationTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/VArgsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/ValidNameTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/VarargsMethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/VerbatimGStringTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/groovy/WhileLoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/AccessTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/AssignTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/CastTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/ClosureTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/CompareTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/CompileExamplesTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/CompileTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/ConstructorCallTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/ConvertibleTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/DelegateTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/ElvisTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/FieldAnnotationTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/GStringTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/GenericsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/InnerTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue100Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue103Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue105Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue107Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue108Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue111Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue112Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue113Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue120Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue123Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue125Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue127Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue129Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue130Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue132Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue134Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue135Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue136Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue138Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue139Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue13Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue140Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue141142Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue143Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue144Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue146Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue147Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue148Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue150Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue151Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue153Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue15Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue16Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue172Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue175Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue176Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue177Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue178Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue179Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue181Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue186Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue187Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue188Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue189Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue18Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue190Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue191Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue192Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue194Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue195Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue196Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue197Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue198Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue199Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue19Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue200Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue202Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue203Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue204Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue205Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue207.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue21Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue22Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue23Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue28Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue2Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue31Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue35Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue36Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue39Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue41Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue43Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue45Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue46Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue47Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue48Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue49Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue50Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue51Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue52Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue53Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue54Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue56Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue58Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue62Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue63Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue64Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue65Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue66Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue67Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue68Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue6Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue70Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue71Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue74Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue76Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue78Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue79Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue7Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue80N81N119Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue82Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue83Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue84Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue86Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue92Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue93Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue96Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue97Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue99Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/Issues/Issue9Test.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/IterationsTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/LoopTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/MapAsObjectTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/MethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/MixedModeTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/NullCompareTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/PerfTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/PrefixPostfixTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/PromotionTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/RegExpTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/StaticMethodTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/SwitchTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/SyncTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/TraitTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/TypeInferenceTest.groovy" />
+              <file url="file://$PROJECT_DIR$/tests/org/mbte/groovypp/compiler/VolatileUpdaterTest.groovy" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Spring">
+        <modules>
+          <module name="GrailsTest">
+            <files>
+              <file url="file://$PROJECT_DIR$/GrailsTest/web-app/WEB-INF/applicationContext.xml" />
+              <file url="file://$PROJECT_DIR$/../groovypptest/GrailsTest/web-app/WEB-INF/applicationContext.xml" />
+            </files>
+          </module>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="web">
+        <modules>
+          <module name="infinispan-server-rest" />
+          <module name="infinispan-ec2-demo" />
+          <module name="cometd-java-examples" />
+          <module name="cometd-javascript-common" />
+          <module name="cometd-examples-dojo" />
+          <module name="cometd-demo" />
+          <module name="cometd-javascript-dojo" />
+          <module name="cometd-examples-jquery" />
+          <module name="cometd-javascript-jquery" />
+          <module name="atmosphere-meteor-chat" />
+          <module name="atmosphere-websocket-chat" />
+          <module name="atmosphere-rest-longpolling" />
+          <module name="atmosphere-rest-cluster-chat" />
+          <module name="atmosphere-appengine-pubsub" />
+          <module name="atmosphere-jquery" />
+          <module name="atmosphere-appengine-chat" />
+          <module name="atmosphere-twitter" />
+          <module name="atmosphere-bayeux-samples" />
+          <module name="atmosphere-flickr" />
+          <module name="atmosphere-gwt-auction" />
+          <module name="atmosphere-chat" />
+          <module name="atmosphere-rest-chat" />
+          <module name="atmosphere-scala-chat" />
+          <module name="atmosphere-jquery-pubsub" />
+          <module name="atmosphere-tictactoe" />
+          <module name="atmosphere-simple-jersey" />
+          <module name="atmosphere-counter" />
+          <module name="atmosphere-rest-twitter" />
+          <module name="atmosphere-pubsub" />
+          <module name="atmosphere-guice-chat" />
+          <module name="Servlet30Test">
+            <files>
+              <file url="file://$PROJECT_DIR$/../../Servlet30Test/WEB-INF/web.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Struts2">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="hibernate">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="jsf">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="gwt">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="jpa">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="ejb">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="google-app-engine">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Osmorc">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-runtime" />
+          <module name="atmosphere-annotations" />
+          <module name="atmosphere-jgroups" />
+          <module name="atmosphere-jersey" />
+          <module name="atmosphere-bayeux" />
+          <module name="atmosphere-compat-weblogic" />
+          <module name="atmosphere-compat-jbossweb" />
+          <module name="atmosphere-jms" />
+          <module name="atmosphere-grizzly-adapter" />
+          <module name="atmosphere-compat-tomcat" />
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="struts">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="tapestry">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="javaeeApplication">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="BeanValidation">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="WebBeans">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="android">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
+        </modules>
+      </facet-type>
+      <facet-type id="Seam">
+        <modules>
+          <module name="cometd-javascript-dojo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/dojo/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-bayeux-samples">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/bayeux/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-javascript-jquery">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-javascript/jquery/overlays" />
+            </directories>
+          </module>
+          <module name="atmosphere-jquery-pubsub">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../atmosphere/samples/jquery-pubsub/overlays" />
+            </directories>
+          </module>
+          <module name="cometd-demo">
+            <directories>
+              <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
+            </directories>
+          </module>
         </modules>
       </facet-type>
     </autodetection-disabled>
@@ -1383,13 +2408,6 @@
       <item index="3" class="java.lang.String" itemvalue="INFO" />
       <item index="4" class="java.lang.String" itemvalue="ERROR" />
     </list>
-  </component>
-  <component name="JavacSettings">
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="DEPRECATION" value="true" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-    <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
@@ -1548,14 +2566,53 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/EchoServer/EchoServer.iml" filepath="$PROJECT_DIR$/EchoServer/EchoServer.iml" />
       <module fileurl="file://$PROJECT_DIR$/Examples/Examples.iml" filepath="$PROJECT_DIR$/Examples/Examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/Groovypp.iml" filepath="$PROJECT_DIR$/Groovypp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Netty/Netty.iml" filepath="$PROJECT_DIR$/Netty/Netty.iml" />
       <module fileurl="file://$PROJECT_DIR$/StdLib/StdLib.iml" filepath="$PROJECT_DIR$/StdLib/StdLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/StdLibTest/StdLibTest.iml" filepath="$PROJECT_DIR$/StdLibTest/StdLibTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" filepath="$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../cassandra-ec2/cassandra-ec2.iml" filepath="$PROJECT_DIR$/../../cassandra-ec2/cassandra-ec2.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="ALL" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" runner="emma" />
+      <extension name="snapshooter" />
+      <module name="StdLibTest" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -server" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="54125" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Profile ">
+        <option name="myExternalizedOptions" value="&#10;snapshots-dir=&#10;additional-options2=onexit\=snapshot&#10;" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Profile " />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
   </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -1564,16 +2621,42 @@
       </value>
     </option>
   </component>
-  <component name="RmicSettings">
-    <option name="IS_EANABLED" value="false" />
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="GENERATE_IIOP_STUBS" value="false" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-  </component>
   <component name="SvnBranchConfigurationManager">
     <option name="myConfigurationMap">
       <map>
+        <entry key="$PROJECT_DIR$/../../GPARS">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://gparallelizer.googlecode.com/svn/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://gparallelizer.googlecode.com/svn/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://gparallelizer.googlecode.com/svn/wiki">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://gparallelizer.googlecode.com/svn/branches" />
+                  <option value="https://gparallelizer.googlecode.com/svn/tags" />
+                  <option value="https://gparallelizer.googlecode.com/svn/wiki" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://gparallelizer.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../../GParallelizer">
           <value>
             <SvnBranchConfiguration>
@@ -1671,6 +2754,114 @@
             </SvnBranchConfiguration>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/../groovypptest">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://groovypptest.googlecode.com/svn/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://groovypptest.googlecode.com/svn/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://groovypptest.googlecode.com/svn/branches" />
+                  <option value="https://groovypptest.googlecode.com/svn/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://groovypptest.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../groovypptest/WideFinder">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://groovypptest.googlecode.com/svn/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://groovypptest.googlecode.com/svn/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://groovypptest.googlecode.com/svn/branches" />
+                  <option value="https://groovypptest.googlecode.com/svn/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://groovypptest.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../groovypptest/WordCount">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://groovypptest.googlecode.com/svn/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://groovypptest.googlecode.com/svn/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://groovypptest.googlecode.com/svn/branches" />
+                  <option value="https://groovypptest.googlecode.com/svn/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://groovypptest.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../../cassandra-ec2">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="svn://svn.bindows.net/lucy/ec2-scripts/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="svn://svn.bindows.net/lucy/ec2-scripts/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="svn://svn.bindows.net/lucy/ec2-scripts/branches" />
+                  <option value="svn://svn.bindows.net/lucy/ec2-scripts/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="svn://svn.bindows.net/lucy/ec2-scripts/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
       </map>
     </option>
     <option name="myVersion" value="124" />
@@ -1678,6 +2869,9 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/EchoServer" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/ZookeeperTest" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../cassandra-ec2" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="copyright">
@@ -1686,47 +2880,17 @@
     </Base>
   </component>
   <component name="libraryTable">
-    <library name="scala-2.7.3.final">
+    <library name="GROOVY">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/lib/scala-compiler.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/lib/scala-dbc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/lib/scala-library.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/lib/scala-swing.jar!/" />
+        <root url="file://$PROJECT_DIR$/install/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/src/scala-compiler-src.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/src/scala-dbc-src.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/src/scala-library-src.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../scala-2.7.3.final/src/scala-swing-src.jar!/" />
+        <root url="file://$PROJECT_DIR$/../../netty-3.2.1.Final/src/main/java" />
+        <root url="file://$PROJECT_DIR$/../../jackson-src-1.5.4/src/mapper/java" />
+        <root url="file://$PROJECT_DIR$/../../jackson-src-1.5.4/src/java" />
       </SOURCES>
-    </library>
-    <library name="groovy-1.7-rc-1-SNAPSHOT">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/ant-1.7.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/ant-junit-1.7.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/ant-launcher-1.7.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/antlr-2.7.7.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/asm-3.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/asm-analysis-3.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/asm-commons-3.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/asm-tree-3.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/asm-util-3.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/bsf-2.4.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/commons-cli-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/commons-logging-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/groovy-1.7-rc-1-SNAPSHOT.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/ivy-2.1.0-rc2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/jline-0.9.94.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/jsp-api-2.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/junit-4.7.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/servlet-api-2.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../GroovyDev/target/install/lib/xstream-1.3.1.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../GroovyDev/src/main" />
-      </SOURCES>
+      <jarDirectory url="file://$PROJECT_DIR$/install/lib" recursive="false" />
     </library>
   </component>
 </project>

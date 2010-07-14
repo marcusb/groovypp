@@ -30,6 +30,8 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
 
     abstract FQueue<T> addFirst (T element)
 
+    abstract FQueue<T> remove(T element)
+
     FQueue<T> plus (T element) {
         addLast(element)
     }
@@ -73,6 +75,8 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
 
         OneElementQueue<T> addFirst (T element) { [element] }
 
+        FQueue<T> remove(T element) { this }
+
         Iterator<T> iterator () {
             [
                     hasNext: { false },
@@ -100,6 +104,10 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
         MoreThanOneElementQueue<T> addLast (T element)  { [(FList.emptyList + element) + head, FList.emptyList] }
 
         MoreThanOneElementQueue<T> addFirst (T element) { [(FList.emptyList + head) + element, FList.emptyList] }
+
+        FQueue<T> remove(T element) {
+            head == element ? FQueue.emptyQueue : this
+        }
 
         T getFirst () { head }
 
@@ -137,6 +145,58 @@ abstract class FQueue<T> implements Iterable<T>, Serializable {
         }
 
         T getFirst () { output.head }
+
+        FQueue<T> remove(T element) {
+            if (size () == 2) {
+                if (output.head == element) {
+                    return new OneElementQueue(output.tail.head)
+                }
+                else {
+                    if (output.tail.head == element) {
+                        return new OneElementQueue(output.head)
+                    }
+                    else {
+                        return this
+                    }
+                }
+            }
+            else {
+                if(output.size > 2) {
+                    def no = output.remove(element)
+                    if (no != output) {
+                        return (MoreThanOneElementQueue)[no, input]
+                    }
+                    else {
+                        def ni = input.remove(element)
+                        if (ni != input) {
+                            return (MoreThanOneElementQueue)[output, ni]
+                        }
+                        else {
+                            return this
+                        }
+                    }
+                }
+                else {
+                    if (output.head == element) {
+                        return (MoreThanOneElementQueue)[input.reverse() + output.tail.head, FList.emptyList]
+                    }
+                    else {
+                        if (output.tail.head == element) {
+                            return (MoreThanOneElementQueue)[input.reverse() + output.head, FList.emptyList]
+                        }
+                        else {
+                            def ni = input.remove(element)
+                            if (ni != input) {
+                                return (MoreThanOneElementQueue)[output, ni]
+                            }
+                            else {
+                                return this
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         Pair<T, FQueue<T>> removeFirst() {
             if (size () == 2)

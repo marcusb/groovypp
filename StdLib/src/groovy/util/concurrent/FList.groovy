@@ -58,12 +58,26 @@ abstract static class FList<T> implements Iterable<T>, Serializable {
     /**
      * Creates new list containing all elements of this list except given one
      */
-    final FList<T> minus (T element, FList<T> accumulated = FList.emptyList) {
+    final FList<T> minus (T element) {
+        remove(element)
+    }
+
+    /**
+     * Creates new list containing all elements of this list except given one
+     */
+    final FList<T> remove (T element) {
+        contains(element) ? doRemove(element, FList.emptyList) : this
+    }
+
+    /**
+     * Creates new list containing all elements of this list except given one
+     */
+    private FList<T> doRemove (T element, FList<T> accumulated) {
         !size ?
             accumulated.reverse() :
             head == element ?
                 tail.addAll(accumulated) :
-                tail.minus(element,accumulated + head)
+                tail.doRemove(element,accumulated + head)
     }
 
     /**

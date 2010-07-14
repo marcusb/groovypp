@@ -97,6 +97,7 @@ public class ClassNodeCache {
                 "boolean every(java.util.Map, groovy.lang.Closure)",
                 "java.lang.Object find(java.lang.Object, groovy.lang.Closure)",
                 "java.lang.Object find(java.util.Iterator, groovy.lang.Closure)",
+                "java.lang.Object find(java.util.Collection, groovy.lang.Closure)",
                 "java.util.Map.Entry find(java.util.Map, groovy.lang.Closure)",
                 "java.lang.Object getAt(java.lang.Object, java.lang.String)",
                 "void putAt(java.lang.Object, java.lang.String, java.lang.Object)",

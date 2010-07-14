@@ -137,13 +137,27 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
                 }
             }
 
-            if (!cast.getType().implementsInterface(ClassHelper.MAP_TYPE)
-             && !cast.getType().equals(ClassHelper.MAP_TYPE)
-             && !TypeUtil.isAssignableFrom(cast.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
+            boolean isMap = cast.getType().implementsInterface(ClassHelper.MAP_TYPE) || cast.getType().equals(ClassHelper.MAP_TYPE);
+            if (!isMap && !TypeUtil.isAssignableFrom(cast.getType(), TypeUtil.LINKED_HASH_MAP_TYPE)) {
                 return buildClassFromMap (mapExpression, cast.getType(), compiler);
             }
             else {
-                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) cast.getExpression(), TypeUtil.LINKED_HASH_MAP_TYPE, compiler);
+                ClassNode mapType = TypeUtil.LINKED_HASH_MAP_TYPE;
+                if (isMap) {
+                    final GenericsType[] generics = TypeUtil.getSubstitutedType(ClassHelper.MAP_TYPE, ClassHelper.MAP_TYPE, cast.getType()).getGenericsTypes();
+                    ClassNode keyType = ClassHelper.OBJECT_TYPE;
+                    ClassNode valueType = ClassHelper.OBJECT_TYPE;
+                    if (generics != null) {
+                        keyType = compiler.getCollOrMapGenericType(generics[0].getType());
+                        valueType = compiler.getCollOrMapGenericType(generics[1].getType());
+
+                        improveMapTypes(mapExpression, keyType, valueType);
+                    }
+
+                    mapType = calcResultMapType(cast, keyType, valueType, compiler);
+                }
+
+                final MapExpressionTransformer.TransformedMapExpr inner = new MapExpressionTransformer.TransformedMapExpr((MapExpression) cast.getExpression(), mapType, compiler);
                 return standardCast(cast, compiler, inner);
             }
         }
