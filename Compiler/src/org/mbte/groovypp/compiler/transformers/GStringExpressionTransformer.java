@@ -35,25 +35,74 @@ public class GStringExpressionTransformer extends ExprTransformer<GStringExpress
     public static final ClassNode FORMAT = make(Format.class);
 
     public Expression transform(final GStringExpression exp, CompilerTransformer compiler) {
+
         final List<Expression> values = exp.getValues();
         final List<ConstantExpression> strings = exp.getStrings();
 
-        int n = strings.size();
-
-        Expression acc = new ConstructorCallExpression(TypeUtil.STRING_BUILDER, new ArgumentListExpression());
-        acc.setSourcePosition(exp);
-        for (int i = 0; i != n; ++i) {
-
-            acc = new MethodCallExpression(acc, "append", new ArgumentListExpression(strings.get(i)));
-            acc.setSourcePosition(exp);
-
-            if (i < values.size()) {
-                acc = new StaticMethodCallExpression(FORMAT, "toString", new ArgumentListExpression(values.get(i), acc));
-                acc.setSourcePosition(exp);
+        boolean hasClosures = false;
+        for(Expression e : values) {
+            if(e instanceof ClosureExpression) {
+                hasClosures = true;
+                break;
             }
         }
-        acc = new MethodCallExpression(acc, "toString", new ArgumentListExpression());
-        acc.setSourcePosition(exp);
-        return compiler.transform(acc);
+
+        if(hasClosures) {
+            final List list = exp.getValues();
+            for (int i = 0; i != list.size(); i++)
+               list.set(i, compiler.transform((Expression) list.get(i)));
+            return new BytecodeExpr (exp, ClassHelper.GSTRING_TYPE) {
+                protected void compile(MethodVisitor mv) {
+                    mv.visitTypeInsn(NEW, "org/codehaus/groovy/runtime/GStringImpl");
+                    mv.visitInsn(DUP);
+
+                    int size = exp.getValues().size();
+                    mv.visitLdcInsn(size);
+                    mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+
+                    for (int i = 0; i < size; i++) {
+                        mv.visitInsn(DUP);
+                        mv.visitLdcInsn(i);
+                        final BytecodeExpr el = (BytecodeExpr) exp.getValue(i);
+                        el.visit(mv);
+                        box(el.getType(), mv);
+                        mv.visitInsn(AASTORE);
+                    }
+
+                    List strings = exp.getStrings();
+                    size = strings.size();
+                    mv.visitLdcInsn(size);
+                    mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
+
+                    for (int i = 0; i < size; i++) {
+                        mv.visitInsn(DUP);
+                        mv.visitLdcInsn(i);
+                        mv.visitLdcInsn(((ConstantExpression) strings.get(i)).getValue());
+                        mv.visitInsn(AASTORE);
+                    }
+
+                    mv.visitMethodInsn(INVOKESPECIAL, "org/codehaus/groovy/runtime/GStringImpl", "<init>", "([Ljava/lang/Object;[Ljava/lang/String;)V");
+                }
+            };
+        }
+        else {
+            int n = strings.size();
+
+            Expression acc = new ConstructorCallExpression(TypeUtil.STRING_BUILDER, new ArgumentListExpression());
+            acc.setSourcePosition(exp);
+            for (int i = 0; i != n; ++i) {
+
+                acc = new MethodCallExpression(acc, "append", new ArgumentListExpression(strings.get(i)));
+                acc.setSourcePosition(exp);
+
+                if (i < values.size()) {
+                    acc = new StaticMethodCallExpression(FORMAT, "toString", new ArgumentListExpression(values.get(i), acc));
+                    acc.setSourcePosition(exp);
+                }
+            }
+            acc = new MethodCallExpression(acc, "toString", new ArgumentListExpression());
+            acc.setSourcePosition(exp);
+            return compiler.transform(acc);
+        }
     }
 }
