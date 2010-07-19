@@ -77,6 +77,16 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
                 continue;
             }
 
+            if (classNode.getDeclaredConstructors().size() > 0) {
+                source.addError(new SyntaxException("Constructors are not allowed in traits", classNode.getLineNumber(), classNode.getColumnNumber()));
+                continue;
+            }
+
+            if (classNode.getObjectInitializerStatements().size() > 0) {
+                source.addError(new SyntaxException("Object initializers are not allowed in traits", classNode.getLineNumber(), classNode.getColumnNumber()));
+                continue;
+            }
+
             int mod = classNode.getModifiers();
             mod &= ~Opcodes.ACC_FINAL;
             mod |= Opcodes.ACC_ABSTRACT | Opcodes.ACC_INTERFACE;
