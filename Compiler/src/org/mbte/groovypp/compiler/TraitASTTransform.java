@@ -20,6 +20,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.ASTHelper;
@@ -78,12 +79,14 @@ public class TraitASTTransform implements ASTTransformation, Opcodes {
             }
 
             if (classNode.getDeclaredConstructors().size() > 0) {
-                source.addError(new SyntaxException("Constructors are not allowed in traits", classNode.getLineNumber(), classNode.getColumnNumber()));
+                ConstructorNode constructor = classNode.getDeclaredConstructors().get(0);
+                source.addError(new SyntaxException("Constructors are not allowed in traits", constructor.getLineNumber(), constructor.getColumnNumber()));
                 continue;
             }
 
             if (classNode.getObjectInitializerStatements().size() > 0) {
-                source.addError(new SyntaxException("Object initializers are not allowed in traits", classNode.getLineNumber(), classNode.getColumnNumber()));
+                Statement initializer = classNode.getObjectInitializerStatements().get(0);
+                source.addError(new SyntaxException("Object initializers are not allowed in traits", initializer.getLineNumber(), initializer.getColumnNumber()));
                 continue;
             }
 
