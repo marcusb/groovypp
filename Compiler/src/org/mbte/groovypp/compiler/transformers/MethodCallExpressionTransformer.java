@@ -601,11 +601,9 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                     if (!hasGenerics) {
                         it.remove();
 
-                        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, compiler, paramType);
+                        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) change.original, paramType, compiler);
                         if (doCall == null) {
                             return null;
-                        } else {
-                            ClosureUtil.makeOneMethodClass(change.original, paramType, one, doCall, compiler);
                         }
                     } else {
                         boolean[] used = new boolean[typeVars.length];
@@ -690,11 +688,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         }
 
         List<MethodNode> one = info.oneMethodAbstract;
-        MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) info.original, compiler, paramType);
+        MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) info.original, paramType, compiler);
         if (doCall == null) {
             return false;
         } else {
-            ClosureUtil.makeOneMethodClass(info.original, paramType, one, doCall, compiler);
             ClassNode formal = one.get(0).getReturnType();
             formal = TypeUtil.getSubstitutedType(formal, one.get(0).getDeclaringClass(), origParamType);
             ClassNode instantiated = doCall.getReturnType();

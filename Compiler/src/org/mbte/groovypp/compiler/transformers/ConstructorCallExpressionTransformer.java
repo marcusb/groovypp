@@ -425,11 +425,9 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                                             instantiateds.toArray(new ClassNode[instantiateds.size()]));
                                     argType = TypeUtil.getSubstitutedType(argType, foundMethod, unified);
                                 }
-                                MethodNode doCall = one == null ? null : ClosureUtil.isMatch(one, (ClosureClassNode) oarg, compiler, argType);
-                                if (one == null || doCall == null) {
+                                MethodNode doCall = ClosureUtil.isMatch(one, (ClosureClassNode) oarg, argType, compiler);
+                                if (doCall == null) {
                                     foundMethod = null;
-                                } else {
-                                    ClosureUtil.makeOneMethodClass(oarg, argType, one, doCall, compiler);
                                 }
                             }
                         }

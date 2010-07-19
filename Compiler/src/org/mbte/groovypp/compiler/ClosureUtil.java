@@ -32,13 +32,13 @@ import java.util.*;
 public class ClosureUtil {
     private static final LinkedList<MethodNode> NONE = new LinkedList<MethodNode> ();
 
-    public static boolean likeGetter(MethodNode method) {
+    private static boolean likeGetter(MethodNode method) {
         return method.getName().startsWith("get")
                 && ClassHelper.VOID_TYPE != method.getReturnType()
                 && method.getParameters().length == 0;
     }
 
-    public static boolean likeSetter(MethodNode method) {
+    private static boolean likeSetter(MethodNode method) {
         return method.getName().startsWith("set")
                 && ClassHelper.VOID_TYPE == method.getReturnType()
                 && method.getParameters().length == 1;
@@ -95,7 +95,7 @@ public class ClosureUtil {
         return !mn.getAnnotations(TypeUtil.HAS_DEFAULT_IMPLEMENTATION).isEmpty();
     }
 
-    public static MethodNode isMatch(List<MethodNode> one, ClosureClassNode closureType, CompilerTransformer compiler, ClassNode baseType) {
+    public static MethodNode isMatch(List<MethodNode> one, ClosureClassNode closureType, ClassNode baseType, CompilerTransformer compiler) {
         class Mutation {
             final Parameter p;
             final ClassNode t;
@@ -109,6 +109,9 @@ public class ClosureUtil {
                 p.setType(t);
             }
         }
+
+        if(one == null)
+            return null;
 
         List<Mutation> mutations = null;
 
@@ -151,6 +154,7 @@ public class ClosureUtil {
 
                 improveClosureType(closureType, baseType);
                 StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, method, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, closureType.getName());
+                makeOneMethodClass(one, closureType, baseType, compiler, method);
                 return method;
             }
         }
@@ -165,7 +169,7 @@ public class ClosureUtil {
         return ret;
     }
 
-    public static void makeOneMethodClass(final ClassNode closureType, ClassNode baseType, List<MethodNode> abstractMethods, final MethodNode doCall, CompilerTransformer compiler) {
+    private static void makeOneMethodClass(List<MethodNode> abstractMethods, final ClassNode closureType, ClassNode baseType, CompilerTransformer compiler, final MethodNode doCall) {
         boolean traitMethods = false;
         int k = 0;
         for (final MethodNode missed : abstractMethods) {
@@ -175,7 +179,7 @@ public class ClosureUtil {
                     missed.getName(),
                     Opcodes.ACC_PUBLIC,
                     getSubstitutedReturnType(doCall, missed, closureType, baseType),
-                       parameters,
+                    parameters,
                     ClassNode.EMPTY_ARRAY,
                     new BytecodeSequence(
                             new BytecodeInstruction() {
@@ -223,17 +227,17 @@ public class ClosureUtil {
                     ));
             }
             else {
-                if (ClosureUtil.traitMethod(missed)) {
+                if (traitMethod(missed)) {
                     traitMethods = true;
                 }
-                else if (ClosureUtil.likeGetter(missed)) {
+                else if (likeGetter(missed)) {
                     String pname = missed.getName().substring(3);
                     pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                     final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, missed.getReturnType(), null, null, null);
                     propertyNode.getField().addAnnotation(new AnnotationNode(TypeUtil.NO_EXTERNAL_INITIALIZATION));
                 }
                 else {
-                    if (ClosureUtil.likeSetter(missed)) {
+                    if (likeSetter(missed)) {
                         String pname = missed.getName().substring(3);
                         pname = Character.toLowerCase(pname.charAt(0)) + pname.substring(1);
                         final PropertyNode propertyNode = closureType.addProperty(pname, Opcodes.ACC_PUBLIC, parameters[0].getType(), null, null, null);
