@@ -19,6 +19,7 @@
     <orderEntry type="module" module-name="StdLib" />
     <orderEntry type="library" name="GROOVY" level="project" />
     <orderEntry type="module" module-name="Groovypp" />
+    <orderEntry type="module" module-name="Gretty" />
   </component>
   <component name="copyright">
     <Base>

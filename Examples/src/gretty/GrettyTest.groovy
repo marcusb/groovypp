@@ -1,6 +1,6 @@
 @Typed package gretty
 
-import groovy.gretty.GrettyServer
+import org.mbte.gretty.server.GrettyServer
 import java.util.logging.Level
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager
@@ -8,9 +8,9 @@ import org.jboss.netty.logging.InternalLogLevel
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame
 
-//def rootLogger = LogManager.logManager.getLogger("")
-//rootLogger.setLevel(Level.FINE)
-//rootLogger.addHandler(new ConsoleHandler(level:Level.FINE))
+def rootLogger = LogManager.logManager.getLogger("")
+rootLogger.setLevel(Level.FINE)
+rootLogger.addHandler(new ConsoleHandler(level:Level.FINE))
 
 GrettyServer server = [
 //    logLevel: InternalLogLevel.DEBUG,

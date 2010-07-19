@@ -35,10 +35,7 @@ def startTime = new Date()
 println "Start time: ${startTime}"
 //TODO: insert GPars magic here
 
-def pool = CallLaterExecutors.newFixedThreadPool(10)
-// map line iterator to concurrent iterator
-// thread pool of 10 threads, not preserving order, maximum 10 tasks simultaniously
-lineIterator.mapConcurrently(pool, false, 10) {line->
+lineIterator.each {line->
   //split csv
   //cast to List to avoid ArrayIndexOutOfBoundsException on last missing element
   def values = line.split(",") as List
@@ -52,11 +49,9 @@ lineIterator.mapConcurrently(pool, false, 10) {line->
   // curl -vX GET http://127.0.0.1:5984/_uuids
   // curl -vX PUT http://127.0.0.1:5984/shapes/uuid123 -d '{"shape_id":"509029", "shape_pt_lat":"39.65624", ...}'
   // we'll just use a println as a proxy for the HTTP traffic for now
-  println map
-}.each { /* as mapConcurrently returns iterator we need each{} */ }
-pool.shutdown()
+//  println map
+}
 
-println "Start time: ${startTime}"
 println "End time: ${new Date()}"
 
 //Start time: Fri Jun 11 10:53:13 MDT 2010

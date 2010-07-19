@@ -30,6 +30,7 @@
     <property name="stdlib.module.name" value="StdLib" />
     <property name="stdlibtest.module.name" value="StdLibTest" />
     <property name="examples.module.name" value="Examples" />
+    <property name="gretty.module.name" value="Gretty" />
 
     <property name="version" value="${groovyPPVersion}"/>
     <property name="install.zip" value="${output.dir}/groovypp-${version}.zip"/>
@@ -39,6 +40,8 @@
     <property name="compiler.src" location="Compiler/src" />
     <property name="compiler.tests" location="Compiler/tests" />
     <property name="stdlib.src" location="${stdlib.module.name}/src" />
+    <property name="gretty.src" location="${gretty.module.name}/src" />
+    <property name="gretty.tests" location="${gretty.module.name}/tests" />
     <property name="stdlib.tests" location="${stdlib.module.name}/tests" />
     <property name="stdlibtest.tests" location="${stdlibtest.module.name}/tests" />
     <property name="examples.src" location="${examples.module.name}/src" />
@@ -49,11 +52,14 @@
     <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.module.name}" />
     <property name="stdlibtest.prod.output" location="${output.dir}/production/${stdlibtest.module.name}" />
     <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
+    <property name="gretty.prod.output" location="${output.dir}/production/${gretty.module.name}" />
+    <property name="gretty.test.output" location="${output.dir}/test/${gretty.module.name}" />
     <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
 	<property name="test.reports" location="${output.dir}/test-reports"/>
 	<property name="cobertura.report.dir" location="${output.dir}/cobertura"/>
 
 	<property name="jar.name" location="${output.dir}/${app.name}-${version}.jar"/>
+    <property name="gretty.jar.name" location="${output.dir}/gretty-${version}.jar"/>
 	<property name="embeddable.jar.name" location="${output.dir}/${app.name}-all-${version}.jar"/>
 	<property name="target.jvm" value="5" />
 
@@ -94,6 +100,20 @@
         <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
+        <pathelement location="${gretty.prod.output}"/>
+    </path>
+
+    <path id="compile.gretty.classpath">
+        <path refid="libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+    </path>
+
+    <path id="compile.gretty.tests.classpath">
+        <path refid="libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+        <pathelement location="${gretty.prod.output}"/>
     </path>
 
     <path id="tests.classpath">
@@ -103,6 +123,7 @@
         <pathelement location="${stdlibtest.test.output}"/>
         <pathelement location="${stdlib.test.output}"/>
         <pathelement location="${compiler.test.output}"/>
+        <pathelement location="${gretty.test.output}"/>
     </path>
 
 	<path id="jarjar.classpath">
@@ -202,7 +223,7 @@
         </move>
     </target>
 
-    <target name="compile.tests.stdlib"  depends="compile.stdlib">
+    <target name="compile.tests.stdlib"  depends="compile.gretty">
 	    <mkdir dir="${stdlib.test.output}"/>
         <groovyc classpathref="compile.compiler.tests.classpath" srcdir="${stdlib.tests}" fork="yes" includeantruntime="no"
             destdir="${stdlib.test.output}" verbose="true" >
@@ -217,7 +238,21 @@
         </groovyc >
     </target>
 
-    <target name="compile.examples"  depends="compile.tests.stdlib">
+    <target name="compile.gretty" depends="compile.stdlib" description="compiles Gretty">
+        <mkdir dir="${gretty.prod.output}"/>
+        <groovyc classpathref="compile.gretty.classpath" srcdir="${gretty.src}" destdir="${gretty.prod.output}"
+        	includeantruntime="no" fork="yes">
+        </groovyc >
+    </target>
+
+    <target name="compile.tests.gretty"  depends="compile.gretty">
+	    <mkdir dir="${gretty.test.output}"/>
+        <groovyc classpathref="compile.gretty.tests.classpath" srcdir="${gretty.tests}" fork="yes" includeantruntime="no"
+            destdir="${gretty.test.output}" verbose="true" >
+        </groovyc >
+    </target>
+
+    <target name="compile.examples"  depends="compile.tests.stdlib,compile.gretty">
         <mkdir dir="${examples.prod.output}"/>
         <groovyc classpathref="compile.examples.classpath" srcdir="${examples.src}" fork="yes" destdir="${examples.prod.output}"
         	verbose="true" includeantruntime="no">
@@ -227,7 +262,7 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest"
+    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest,compile.tests.gretty"
             description="run unit tests" unless="_skipTests_">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
@@ -240,12 +275,14 @@
 	            
                 <pathelement location="${stdlib.prod.output}"/>
                 <pathelement location="${compiler.prod.output}"/>
+                <pathelement location="${gretty.prod.output}"/>
             	<path>
                     <fileset dir="install/lib" includes="*.jar"/>
                 </path>
                 <pathelement location="${stdlibtest.test.output}"/>
                 <pathelement location="${stdlib.test.output}"/>
                 <pathelement location="${compiler.test.output}"/>
+                <pathelement location="${gretty.test.output}"/>
             </classpath>
 
             <batchtest todir="${test.reports}">
@@ -256,6 +293,9 @@
                     <include name="**/*Test.class"/>
                 </fileset>
                 <fileset dir="${stdlibtest.test.output}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+                <fileset dir="${gretty.test.output}">
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
@@ -285,10 +325,11 @@
 		</cobertura-report>
 	</target>
 
-    <target name="make.jar" depends="test,compile.examples" description="Build application jar file">
+    <target name="make.jar" depends="clean-test,compile.examples" description="Build application jar file">
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
+            <fileset dir="${gretty.prod.output}" />
         </jar>
     </target>
 
@@ -456,6 +497,7 @@
 		<include name="Compiler/"/>
 		<include name="StdLib/"/>
 		<include name="StdLibTest/"/>
+        <include name="Gretty/"/>
 		<include name="Examples/"/>
 		<include name="build.properties"/>
 		<include name="build.xml"/>
