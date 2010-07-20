@@ -69,6 +69,10 @@
 		<fileset dir="install/lib" includes="*.jar"/>
 	</path>
 
+    <path id="gretty.libs">
+        <fileset dir="${gretty.module.name}/lib" includes="*.jar"/>
+    </path>
+
     <path id="compile.compiler.classpath">
 		<path refid="libs"/>
 	</path>
@@ -98,6 +102,7 @@
 
     <path id="compile.examples.classpath">
         <path refid="libs"/>
+        <path refid="gretty.libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
         <pathelement location="${gretty.prod.output}"/>
@@ -105,12 +110,14 @@
 
     <path id="compile.gretty.classpath">
         <path refid="libs"/>
+        <path refid="gretty.libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
     </path>
 
     <path id="compile.gretty.tests.classpath">
         <path refid="libs"/>
+        <path refid="gretty.libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
         <pathelement location="${gretty.prod.output}"/>
@@ -279,6 +286,7 @@
             	<path>
                     <fileset dir="install/lib" includes="*.jar"/>
                 </path>
+                <path refid="gretty.libs"/>
                 <pathelement location="${stdlibtest.test.output}"/>
                 <pathelement location="${stdlib.test.output}"/>
                 <pathelement location="${compiler.test.output}"/>
@@ -329,6 +337,8 @@
         <jar destfile="${jar.name}" >
             <fileset dir="${compiler.prod.output}" />
             <fileset dir="${stdlib.prod.output}" />
+        </jar>
+        <jar destfile="${gretty.jar.name}" >
             <fileset dir="${gretty.prod.output}" />
         </jar>
     </target>
@@ -364,18 +374,6 @@
             <globmapper from="META-INF/LICENSE.txt" to="META-INF/CLI-LICENSE.txt"/>
             <fileset dir="${deploy.lib.dir}">
                 <include name="commons-cli-*.jar"/>
-            </fileset>
-        </unzip>
-        <unzip dest="${stagingDirectory}/netty">
-            <patternset>
-                <exclude name="META-INF/MANIFEST.MF"/>
-            </patternset>
-            <mapper>
-                <globmapper from="META-INF/LICENSE.txt" to="META-INF/NETTY-LICENSE.txt"/>
-                <globmapper from="META-INF/COPYRIGHT.txt" to="META-INF/NETTY-COPYRIGHT.txt"/>
-			</mapper>
-            <fileset dir="${deploy.lib.dir}">
-                <include name="netty-*.jar"/>
             </fileset>
         </unzip>
 	    <unzip dest="${stagingDirectory}/groovypp">
@@ -414,7 +412,6 @@
             <fileset dir="${stagingDirectory}/groovy" />
 	        <fileset dir="${stagingDirectory}/groovypp" />
             <fileset dir="${stagingDirectory}/cli" />
-            <fileset dir="${stagingDirectory}/netty" />
 	        <fileset dir="${stagingDirectory}/junit" />
             <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
             <rule pattern="org.objectweb.**" result="groovyjarjarasm.@1"/>
@@ -481,7 +478,9 @@
 		                    to="lib/groovy-1.8.0*-${version}.jar"/>
 	        </mappedresources>
 
+            <zipfileset dir="Gretty/lib" prefix="lib" />
             <zipfileset file="${jar.name}" prefix="lib"/>
+            <zipfileset file="${gretty.jar.name}" prefix="lib"/>
 			<zipfileset file="${embeddable.jar.name}" prefix="embeddable"/>
 	        <zipfileset dir="tempbin" prefix="bin"/>
         </zip>
