@@ -179,4 +179,25 @@ class CastTest extends GroovyShellTestCase {
               assert a.ints == []
             """
   }
+
+    void testSuperConstructorInMapSyntax () {
+        shell.evaluate """
+                @Typed package p
+
+                class A {
+                  int a, b
+                  A (int a, int b) {
+                      this.a = a
+                      this.b = b
+                  }
+                }
+
+                assert new A(0, 1).b == 1
+
+                A a = [ super: [-1, 1] ]
+
+                assert a.a == -1
+                assert a.b == 1
+              """
+    }
 }
