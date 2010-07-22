@@ -75,18 +75,23 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
     void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         def msg = e.message
         switch(msg) {
-            case HttpRequest:
+            case GrettyHttpRequest:
                 def req = msg
                 server.threadPool.execute {
-                    if(UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION)) && WEBSOCKET.equalsIgnoreCase(req.getHeader(UPGRADE))) {
-                        handleWebSocketRequest(ctx, e)
+                    try {
+                        if(UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION)) && WEBSOCKET.equalsIgnoreCase(req.getHeader(UPGRADE))) {
+                            handleWebSocketRequest(ctx, e)
+                        }
+                        else {
+                            def pseudo = req.getHeader("Pseudo-WebSocket")
+                            if(pseudo)
+                                handlePseudoWebSocket(ctx, e)
+                            else
+                                handleHttpRequest(req, e)
+                        }
                     }
-                    else {
-                        def pseudo = req.getHeader("Pseudo-WebSocket")
-                        if(pseudo)
-                            handlePseudoWebSocket(ctx, e)
-                        else
-                            handleHttpRequest(req, e)
+                    catch(throwable) {
+                        //
                     }
                 }
             break
@@ -97,7 +102,7 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
     }
 
     private ArrayNode fromJson(MessageEvent e) {
-        HttpRequest request = e.message
+        GrettyHttpRequest request = e.message
         ChannelBufferInputStream is = [request.content]
         ArrayNode res
         try {
@@ -112,28 +117,28 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
     }
 
     private void handlePseudoWebSocket(ChannelHandlerContext ctx, MessageEvent e) {
-        HttpRequest req = e.message
-        GrettyResponse response = [req]
-        if (req.method != HttpMethod.POST) {
+        GrettyHttpRequest request = e.message
+        GrettyHttpResponse response = []
+        if (request.method != HttpMethod.POST) {
             e.channel.write(response).addListener(ChannelFutureListener.CLOSE)
         }
 
-        def uri = req.uri
+        def uri = request.uri
         def context = findContext(uri)
         def webSocket = context?.webSockets?.get((uri.substring(context?.webPath?.length())))
         if (!webSocket) {
             e.channel.write(response).addListener(ChannelFutureListener.CLOSE)
         }
         else {
-            def sessionId = req.getHeader("Pseudo-WebSocket")
+            def sessionId = request.getHeader("Pseudo-WebSocket")
             if ('null'.equals(sessionId)) {
                 def client = server.pseudoWebSocketManager.allocateId(webSocket)
                 sessionId = client.sessionId
 
                 response.json = "{\"sessionId\":\"$sessionId\",\"messages\":[]}"
-                completeHttpResponse(e, response)
+                completeHttpResponse(e, request, response)
 
-                client.handler.connect(client, req)
+                client.handler.connect(client, request)
             }
             else {
                 def client = server.pseudoWebSocketManager.getClient(sessionId)
@@ -147,22 +152,22 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
         }
     }
 
-    private void handleHttpRequest(HttpRequest msg, MessageEvent e) {
-        GrettyResponse op = [msg]
-        def uri = msg.uri
+    private void handleHttpRequest(GrettyHttpRequest request, MessageEvent e) {
+        GrettyHttpResponse response = []
+        def uri = request.uri
 
-        findContext(uri)?.handleHttpRequest(op)
+        findContext(uri)?.handleHttpRequest(request, response)
 
-        completeHttpResponse(e, op)
+        completeHttpResponse(e, request, response)
     }
 
-    private def completeHttpResponse(MessageEvent e, GrettyResponse op) {
-        def writeFuture = e.channel.write(op)
-        if (op.responseBody) {
-            writeFuture = e.channel.write(op.responseBody)
+    private def completeHttpResponse(MessageEvent e, GrettyHttpRequest request, GrettyHttpResponse response) {
+        def writeFuture = e.channel.write(response)
+        if (response.responseBody) {
+            writeFuture = e.channel.write(response.responseBody)
         }
 
-        if (!isKeepAlive(op.request) || op.status.code >= 400) {
+        if (!isKeepAlive(request) || response.status.code >= 400) {
             writeFuture.addListener(ChannelFutureListener.CLOSE)
         }
     }
@@ -172,8 +177,8 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
     }
 
     private void handleWebSocketRequest(ChannelHandlerContext ctx, MessageEvent e) {
-        HttpRequest req = e.message
-        GrettyResponse response = [req]
+        GrettyHttpRequest req = e.message
+        GrettyHttpResponse response = []
         if (req.method != HttpMethod.GET) {
             e.channel.write(response.responseBody).addListener(ChannelFutureListener.CLOSE)
         }

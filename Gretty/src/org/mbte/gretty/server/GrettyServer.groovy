@@ -73,7 +73,7 @@ import org.jboss.netty.util.internal.ExecutorUtil
         bootstrap.pipelineFactory = { ->
             def pipeline = Channels.pipeline()
 
-            pipeline.addLast("http.request.decoder",    new HttpRequestDecoder())
+            pipeline.addLast("http.request.decoder",    new GrettyRequestDecoder())
             pipeline.addLast("http.request.encoder",    new HttpResponseEncoder())
 
             pipeline.addLast("chunkedWriter", new ChunkedWriteHandler())

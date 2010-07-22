@@ -164,7 +164,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus
     }
 
     private def post(groovy.util.concurrent.FList<String> toSend, State ns) {
-        GrettyResponse res = []
+        GrettyHttpResponse res = []
         def json = new ObjectNode(JsonNodeFactory.instance)
         json.put("sessionId", sessionId)
         def arr = json.putArray("messages")

@@ -194,7 +194,7 @@ class CastTest extends GroovyShellTestCase {
 
                 assert new A(0, 1).b == 1
 
-                A a = [ super: [-1, 1] ]
+                A a = [ 'super': [-1, 1] ]
 
                 assert a.a == -1
                 assert a.b == 1

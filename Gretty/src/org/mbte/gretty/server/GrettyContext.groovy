@@ -32,32 +32,45 @@ import org.jboss.netty.handler.codec.http.HttpMethod
     ClassLoader          classLoader
     String               classLoaderPath
 
-    GrettyHandler handler
+    GrettyHttpHandler defaultHandler
 
-    Map<String,GrettyWebSocketHandler> webSockets = [:]
+    protected Map<String,GrettyWebSocketHandler> webSockets = [:]
 
-    void handleHttpRequest(GrettyResponse op) {
-        def staticFile = op.request.method == HttpMethod.GET ? findStaticFile(op.request.uri) : null
+    private Map<HttpMethod,List<HandlerMatcher>> handlers = [:]
+
+    void handleHttpRequest(GrettyHttpRequest request, GrettyHttpResponse response) {
+        def localUri = URLDecoder.decode(request.uri, "UTF-8").substring(webPath.length())
+
+        def staticFile = request.method == HttpMethod.GET ? findStaticFile(localUri) : null
         if (staticFile) {
-            op.status = staticFile.second
+            response.status = staticFile.second
             if (staticFile.second.code != 200) {
-                op.setHeader(CONTENT_TYPE, "text/html; charset=UTF-8")
-                op.responseBody = "Failure: ${staticFile.second}\r\n"
+                response.setHeader(CONTENT_TYPE, "text/html; charset=UTF-8")
+                response.responseBody = "Failure: ${staticFile.second}\r\n"
             }
             else {
-                op.responseBody = staticFile.first
+                response.responseBody = staticFile.first
+            }
+            return
+        }
+
+        def methodHandlers = handlers [request.method]
+
+        for(matcher in methodHandlers) {
+            if(matcher.doesMatch (localUri)) {
+                matcher.handler.handle(request, response)
+                return
             }
         }
-        else {
-            if (handler) {
-                handler.handle(op)
-            }
-            else {
-                op.status = NOT_FOUND
-                op.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8")
-                op.responseBody = "Failure: ${NOT_FOUND}\r\n"
-            }
+
+        if (defaultHandler) {
+            defaultHandler.handle(request, response)
+            return
         }
+
+        response.status = NOT_FOUND
+        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8")
+        response.responseBody = "Failure: ${NOT_FOUND}\r\n"
     }
 
     public void initContext (String path) {
@@ -78,12 +91,11 @@ import org.jboss.netty.handler.codec.http.HttpMethod
         }
     }
 
-    private groovy.lang.Pair<File, HttpResponseStatus> findStaticFile(String uri) {
+    private Pair<File, HttpResponseStatus> findStaticFile(String uri) {
         if (!staticFiles)
             return null
 
-        uri = URLDecoder.decode(uri, "UTF-8")
-        uri = uri.replace('/', File.separatorChar).substring(webPath.length())
+        uri = uri.replace('/', File.separatorChar)
 
         if(uri.startsWith('/'))
             uri = uri.substring(1)
@@ -106,9 +118,45 @@ import org.jboss.netty.handler.codec.http.HttpMethod
             if (indexFiles?.length == 1)
                 file = indexFiles[0]
             else
-                return handler ? null : [null,FORBIDDEN]
+                return defaultHandler ? null : [null,FORBIDDEN]
         }
 
         [file,OK]
+    }
+
+    void setDefault (GrettyHttpHandler handler) {
+        defaultHandler = handler
+    }
+
+    void setStatic (String staticFiles) {
+        this.staticFiles = staticFiles
+    }
+
+    void setPublic (GrettyPublicDescription description) {
+        description.context = this
+        description.run ()
+    }
+
+    void addHandler(HttpMethod httpMethod, String match, GrettyHttpHandler handler) {
+        def methodHandlers = handlers [httpMethod]
+        if (!methodHandlers) {
+            methodHandlers = []
+            handlers [httpMethod] = methodHandlers
+        }
+        methodHandlers.add((HandlerMatcher)[match: match, handler: handler])
+    }
+
+    void addWebSocket(String path, GrettyWebSocketHandler handler) {
+        handler.socketPath = path
+        webSockets [path] = handler
+    }
+
+    private static final class HandlerMatcher {
+        String            match
+        GrettyHttpHandler handler
+
+        boolean doesMatch (String uri) {
+            uri == match
+        }
     }
 }

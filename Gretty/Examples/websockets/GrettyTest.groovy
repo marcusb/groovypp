@@ -13,17 +13,17 @@ rootLogger.setLevel(Level.FINE)
 rootLogger.addHandler(new ConsoleHandler(level:Level.FINE))
 
 GrettyServer server = [
-//    logLevel: InternalLogLevel.DEBUG,
+    logLevel: InternalLogLevel.DEBUG,
 
     webContexts: [
         "/" : [
-            staticFiles: "./rootFiles",
+            static: "./rootFiles",
 
-            handler: { op -> op.html = """
+            default: { response.html = """
 <html>
     <body>
         <p>Hello, World!</p>
-        <p>Unfortunately, I have no idea about page <i>${op.request.uri}</i>, which you've requested</p>
+        <p>Unfortunately, I have no idea about page <i>${request.uri}</i>, which you've requested</p>
         <p>Try our <a href='/'>main page</a> please</p>
     </body>
 </html>"""
@@ -31,19 +31,23 @@ GrettyServer server = [
         ],
 
         "/websockets" : [
-            staticFiles: "./webSocketsFiles",
+            static: "./webSocketsFiles",
 
-            webSockets: [
-               "/ws": [
-                   onMessage: { msg ->
-                       socket.send(msg.toUpperCase())
-                   },
+            public: {
+                get("/google/prototype.js") {
+                    redirect "http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js"
+                }
 
-                   onConnect: {
-                       socket.send("Welcome!")
-                   }    
-               ]
-            ]
+                websocket("/ws",[
+                    onMessage: { msg ->
+                        socket.send(msg.toUpperCase())
+                    },
+
+                    onConnect: {
+                        socket.send("Welcome!")
+                    }
+                ])
+            },
         ]
     ]
 ]

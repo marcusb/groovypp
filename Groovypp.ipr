@@ -2559,7 +2559,6 @@
       <module fileurl="file://$PROJECT_DIR$/Examples/Examples.iml" filepath="$PROJECT_DIR$/Examples/Examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/Gretty/Gretty.iml" filepath="$PROJECT_DIR$/Gretty/Gretty.iml" />
       <module fileurl="file://$PROJECT_DIR$/Groovypp.iml" filepath="$PROJECT_DIR$/Groovypp.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Netty/Netty.iml" filepath="$PROJECT_DIR$/Netty/Netty.iml" />
       <module fileurl="file://$PROJECT_DIR$/StdLib/StdLib.iml" filepath="$PROJECT_DIR$/StdLib/StdLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/StdLibTest/StdLibTest.iml" filepath="$PROJECT_DIR$/StdLibTest/StdLibTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" filepath="$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" />
