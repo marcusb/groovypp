@@ -28,6 +28,8 @@ import org.jboss.netty.logging.InternalLogLevel
 import org.jboss.netty.bootstrap.ServerBootstrap
 import java.util.concurrent.Executors
 import org.jboss.netty.util.internal.ExecutorUtil
+import org.jboss.netty.channel.local.LocalAddress
+import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
 
 @Typed class GrettyServer {
     int              ioWorkerCount      = 2*Runtime.getRuntime().availableProcessors()
@@ -35,14 +37,14 @@ import org.jboss.netty.util.internal.ExecutorUtil
 
     InternalLogLevel logLevel
 
-    int              localPort
-    InetAddress      localAddress
+    SocketAddress    localAddress = new InetSocketAddress(8080)
 
     Map<String,GrettyContext> webContexts = [:]
 
     final PseudoWebSocketManager pseudoWebSocketManager = []
 
     protected Executor threadPool
+    protected Channel channel
 
     private void initContexts () {
         webContexts = webContexts.sort { me1, me2 -> me2.key <=> me1.key }
@@ -59,10 +61,9 @@ import org.jboss.netty.util.internal.ExecutorUtil
         def ioExecutor   = Executors.newFixedThreadPool(ioWorkerCount)
         threadPool       = Executors.newFixedThreadPool(serviceWorkerCount)
 
-        NioServerSocketChannelFactory channelFactory = [
-                bossExecutor,
-                ioExecutor
-        ]
+        def isLocal = localAddress instanceof LocalAddress
+
+        def channelFactory = isLocal ? new DefaultLocalServerChannelFactory () : (NioServerSocketChannelFactory )[bossExecutor, ioExecutor]
 
         ServerBootstrap bootstrap = [channelFactory]
         bootstrap.setOption("child.tcpNoDelay", true)
@@ -87,8 +88,13 @@ import org.jboss.netty.util.internal.ExecutorUtil
             pipeline
         }
 
-        bootstrap.bind(new InetSocketAddress(localAddress, localPort ?: 8080)).closeFuture.addListener {
+        channel = bootstrap.bind(localAddress)
+        channel.closeFuture.addListener {
             ExecutorUtil.terminate(bossExecutor, ioExecutor, threadPool) 
         }
+    }
+
+    void stop() {
+        channel?.close ()
     }
 }

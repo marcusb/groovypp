@@ -19,7 +19,32 @@ package org.mbte.gretty.server
 import org.jboss.netty.handler.codec.http.*
 
 @Typed class GrettyHttpRequest extends DefaultHttpRequest {
+
+    private String path
+    private Map<String, List<String>> params
+
     public GrettyHttpRequest(HttpVersion httpVersion, HttpMethod method, String uri) {
         super(httpVersion, method, uri)
+    }
+
+    void setUri(String uri) {
+        super.setUri(uri)
+
+        path = null
+        params = null
+    }
+
+    String getPath () {
+        if(path == null) {
+            def pathEndPos = uri.indexOf('?')
+            path = pathEndPos < 0 ? uri : uri.substring(0, pathEndPos)
+        }
+        path
+    }
+
+    Map<String, List<String>> getParameters() {
+        if(params == null)
+            params = new QueryStringDecoder(uri).parameters
+        params
     }
 }

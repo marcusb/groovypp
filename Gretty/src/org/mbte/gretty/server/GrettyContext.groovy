@@ -39,7 +39,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod
     private Map<HttpMethod,List<HandlerMatcher>> handlers = [:]
 
     void handleHttpRequest(GrettyHttpRequest request, GrettyHttpResponse response) {
-        def localUri = URLDecoder.decode(request.uri, "UTF-8").substring(webPath.length())
+        def localUri = URLDecoder.decode(request.uri, "UTF-8").substring(webPath?.length())
 
         def staticFile = request.method == HttpMethod.GET ? findStaticFile(localUri) : null
         if (staticFile) {
