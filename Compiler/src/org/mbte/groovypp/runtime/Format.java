@@ -50,6 +50,7 @@ public class Format {
 
     public static StringBuilder toListString(Collection arg, StringBuilder sb) {
         boolean first = true;
+        sb.append("[");
         for (Object item : arg) {
             if (first) {
                 first = false;
