@@ -71,7 +71,7 @@ public class StaticMethodBytecode extends StoredBytecodeInstruction {
         }
         catch (Throwable t) {
             clear ();
-            compiler.addError("Internal Error: " + t.getMessage(), methodNode);
+            compiler.addError("Internal Error: " + t.toString(), methodNode);
         }
 
         if (debug != -1)
