@@ -643,6 +643,14 @@ public class MethodSelection {
     }
 
     private static boolean isAssignableOrInference(ClassNode classToTransformTo, ClassNode classToTransformFrom) {
+    	if(classToTransformFrom == null) {
+    		if(!ClassHelper.isPrimitiveType(classToTransformTo) ||
+    				ClassHelper.boolean_TYPE.equals(classToTransformTo))
+    			return true;
+    		else
+    			return false;
+    	}
+    	
         if (TypeUtil.isAssignableFrom(classToTransformTo, classToTransformFrom))
             return true;
 
