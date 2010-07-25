@@ -170,7 +170,7 @@ public class PropertyUtil {
             return res;
         }
 
-        if (!onlyStatic && type.implementsInterface(ClassHelper.MAP_TYPE)) {
+        if (!onlyStatic && (type.implementsInterface(ClassHelper.MAP_TYPE) || type.equals(ClassHelper.MAP_TYPE)) ) {
             return GET_MAP;
         }
         

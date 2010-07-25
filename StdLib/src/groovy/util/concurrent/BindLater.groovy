@@ -157,7 +157,7 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
         }
     }
 
-    protected boolean setException(Throwable t) {
+    public boolean setException(Throwable t) {
         for (;;) {
             def s = getState()
             if (s & S_DONE)
