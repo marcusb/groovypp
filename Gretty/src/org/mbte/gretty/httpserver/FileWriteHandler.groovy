@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.channel.ChannelHandlerContext
 import org.jboss.netty.handler.ssl.SslHandler

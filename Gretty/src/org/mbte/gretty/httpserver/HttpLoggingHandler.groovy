@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.channel.SimpleChannelHandler
 import org.jboss.netty.channel.ChannelHandlerContext
@@ -22,7 +22,7 @@ import org.jboss.netty.channel.MessageEvent
 import org.jboss.netty.logging.InternalLogLevel
 import org.jboss.netty.logging.InternalLogger
 import org.jboss.netty.logging.InternalLoggerFactory
-import org.jboss.netty.buffer.ChannelBuffer
+
 import org.jboss.netty.channel.ChannelEvent
 import org.jboss.netty.channel.ExceptionEvent
 

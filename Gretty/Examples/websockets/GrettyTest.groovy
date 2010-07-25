@@ -1,6 +1,6 @@
 @Typed package gretty
 
-import org.mbte.gretty.server.GrettyServer
+import org.mbte.gretty.httpserver.GrettyServer
 import java.util.logging.Level
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager

@@ -1,4 +1,4 @@
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 abstract class GrettyWebSocketListener {
     void onDisconnect() {}

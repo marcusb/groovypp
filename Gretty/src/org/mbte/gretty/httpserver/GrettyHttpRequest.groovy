@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.handler.codec.http.*
 
@@ -23,7 +23,7 @@ import org.jboss.netty.handler.codec.http.*
     private String path
     private Map<String, List<String>> params
 
-    public GrettyHttpRequest(HttpVersion httpVersion, HttpMethod method, String uri) {
+    public GrettyHttpRequest(HttpVersion httpVersion = HttpVersion.HTTP_1_1, HttpMethod method = HttpMethod.GET, String uri) {
         super(httpVersion, method, uri)
     }
 

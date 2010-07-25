@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.handler.codec.http.HttpVersion
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest
+
 import org.jboss.netty.handler.codec.http.HttpMessage
-import org.jboss.netty.handler.codec.http.HttpMessageDecoder
+
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder
 import org.jboss.netty.handler.codec.http.HttpMethod
 

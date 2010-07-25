@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.handler.codec.http.HttpHeaders
 
@@ -57,14 +57,15 @@ import org.jboss.netty.handler.codec.http.HttpMethod
         def methodHandlers = handlers [request.method]
 
         for(matcher in methodHandlers) {
-            if(matcher.doesMatch (localUri)) {
-                matcher.handler.handle(request, response)
+            def pathArgs = matcher.doesMatch(localUri)
+            if(pathArgs) {
+                matcher.handler.handle(request, response, pathArgs)
                 return
             }
         }
 
         if (defaultHandler) {
-            defaultHandler.handle(request, response)
+            defaultHandler.handle(request, response, Collections.emptyMap())
             return
         }
 
@@ -152,11 +153,60 @@ import org.jboss.netty.handler.codec.http.HttpMethod
     }
 
     private static final class HandlerMatcher {
-        String            match
         GrettyHttpHandler handler
 
-        boolean doesMatch (String uri) {
-            uri == match
+        private List<String> match = []
+
+        Map<String,String> doesMatch (String uri) {
+            Map map = null
+            for(int i = 0; i != match.size(); ++i) {
+                def m = match[i]
+                if(m.charAt(0) == ':') {
+                   if(i == match.size()-1) {
+                       if(map == null)
+                            map = [:]
+                       map[m.substring(1)] = uri
+                       break
+                   }
+                   else {
+                       if(map == null)
+                            map = [:]
+
+                       def next = uri.indexOf(match[++i])
+                       if (next < 0)
+                            return null
+                       map[m.substring(1)] = uri.substring(0, next)
+                       uri = uri.substring(next + match[i].length())
+                   }
+                }
+                else {
+                   if(uri.startsWith(m))
+                      uri = uri.substring(m.length())
+                   else
+                      return null
+                }
+            }
+
+            return map == null ? Collections.emptyMap () : map
+        }
+
+        void setMatch (String match) {
+            def pattern = ~":\\w+"
+            def matcher = pattern.matcher(match)
+            def lastStart = 0
+            while(lastStart < match.length()) {
+                def occur = matcher.find ()
+                if(!occur) {
+                    this.match.add(match.substring(lastStart))
+                    break
+                }
+                else {
+                    def start = matcher.start()
+                    this.match.add(match.substring(lastStart, start))
+                    this.match.add(match.substring(start, matcher.end()))
+                    lastStart = matcher.end ()
+                }
+            }
         }
     }
 }

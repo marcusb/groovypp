@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import org.jboss.netty.handler.codec.http.HttpResponseStatus
-import org.jboss.netty.handler.codec.http.CookieEncoder
-import org.jboss.netty.handler.codec.http.CookieDecoder
-import org.jboss.netty.handler.codec.http.HttpRequest
-import org.jboss.netty.handler.codec.http.HttpResponse
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*
 

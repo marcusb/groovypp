@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.*
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*
@@ -22,7 +22,7 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.*
 
 import org.jboss.netty.channel.ChannelFutureListener
 import org.jboss.netty.channel.MessageEvent
-import org.jboss.netty.handler.codec.http.HttpRequest
+
 import org.jboss.netty.channel.ChannelHandlerContext
 import org.jboss.netty.channel.SimpleChannelHandler
 import org.jboss.netty.handler.codec.http.HttpMethod
@@ -44,7 +44,7 @@ import org.jboss.netty.channel.ChannelStateEvent
 import org.jboss.netty.logging.InternalLoggerFactory
 import org.jboss.netty.logging.InternalLogger
 import org.jboss.netty.logging.InternalLogLevel
-import org.mbte.gretty.server.GrettyWebSocket.Channeled
+import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
 
 @Typed class GrettyAppHandler extends SimpleChannelHandler {
     private static final WEBSOK_OK = new HttpResponseStatus(101,"Web Socket Protocol Handshake")
@@ -154,7 +154,7 @@ import org.mbte.gretty.server.GrettyWebSocket.Channeled
 
     private void handleHttpRequest(GrettyHttpRequest request, MessageEvent e) {
         GrettyHttpResponse response = []
-        def uri = request.uri
+        def uri = request.path
 
         findContext(uri)?.handleHttpRequest(request, response)
 

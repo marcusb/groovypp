@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 @Typed abstract class GrettyHttpHandler implements Cloneable {
     GrettyHttpRequest  request
     GrettyHttpResponse response
 
-    final void handle (GrettyHttpRequest request, GrettyHttpResponse response) {
+    final void handle (GrettyHttpRequest request, GrettyHttpResponse response, Map<String,String> pathArgs) {
         GrettyHttpHandler clone = clone ()
         clone.request  = request
         clone.response = response
-        clone.handle ()
+        clone.handle (pathArgs)
     }
 
     final void redirect(String where) {
         response.redirect(where)
     }
 
-    abstract void handle ()
+    abstract void handle (Map<String,String> pathArguments)
 }

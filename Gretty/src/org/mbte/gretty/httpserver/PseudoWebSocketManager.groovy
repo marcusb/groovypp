@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mbte.gretty.server
+package org.mbte.gretty.httpserver
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
