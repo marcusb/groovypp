@@ -19,10 +19,7 @@ package org.mbte.groovypp.compiler.transformers;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
-import org.codehaus.groovy.ast.expr.ElvisOperatorExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.TernaryExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.mbte.groovypp.compiler.CompilerTransformer;
 import org.mbte.groovypp.compiler.TypeUtil;
 import org.mbte.groovypp.compiler.bytecode.BytecodeExpr;
@@ -34,11 +31,12 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
     public Expression transform(TernaryExpression exp, CompilerTransformer compiler) {
         InnerClassNode newType = new InnerClassNode(compiler.classNode, compiler.getNextClosureName(), ACC_PUBLIC|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         newType.setInterfaces(new ClassNode[] {TypeUtil.TTERNARY});
-        return new UntransformedTernaryExpr(exp, newType);
+        final UntransformedTernaryExpr untransformed = new UntransformedTernaryExpr(exp, newType);
+        return untransformed.improve(compiler);
     }
 
     public static class UntransformedTernaryExpr extends BytecodeExpr {
-        public final TernaryExpression exp;
+        public TernaryExpression exp;
 
         public UntransformedTernaryExpr(TernaryExpression exp, ClassNode type) {
             super(exp, type);
@@ -99,6 +97,29 @@ public class TernaryExpressionTransformer extends ExprTransformer<TernaryExpress
                 }
             }, ClassHelper.boolean_TYPE);
             return new Elvis(ee, eee, brunch);
+        }
+
+        public Expression improve(CompilerTransformer compiler) {
+            if (exp instanceof ElvisOperatorExpression)
+                return transform(compiler);
+
+            final BytecodeExpr trueE  = (BytecodeExpr) compiler.transform(exp.getTrueExpression());
+            final BytecodeExpr falseE = (BytecodeExpr) compiler.transform(exp.getFalseExpression());
+
+            if(trueE instanceof MapExpressionTransformer.UntransformedMapExpr
+            || trueE instanceof ListExpressionTransformer.UntransformedListExpr
+            || trueE instanceof UntransformedTernaryExpr
+            || falseE instanceof MapExpressionTransformer.UntransformedMapExpr
+            || falseE instanceof ListExpressionTransformer.UntransformedListExpr
+            || falseE instanceof UntransformedTernaryExpr) {
+                final TernaryExpression newExp = new TernaryExpression(exp.getBooleanExpression(), trueE, falseE);
+                newExp.setSourcePosition(exp);
+                exp = newExp;
+                return this;
+            }
+            else {
+                return transform(compiler);
+            }
         }
 
         private static class Elvis extends BytecodeExpr {

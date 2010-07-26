@@ -97,13 +97,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             return compiler.castToBoolean((BytecodeExpr)compiler.transform(cast.getExpression()), cast.getType());
         }
 
-        if (cast.getType().equals(ClassHelper.STRING_TYPE)) {
-            if (cast.getExpression() instanceof ListExpression) {
-                return compiler.castToBoolean( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true), cast.getType());
-            }
-            return compiler.castToString((BytecodeExpr)compiler.transform(cast.getExpression()));
-        }
-
         if (cast.getExpression() instanceof ListExpression) {
             ListExpression listExpression = (ListExpression) cast.getExpression();
 
@@ -199,6 +192,13 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             if (doCall != null) {
                 return expr;
             }
+        }
+
+        if (cast.getType().equals(ClassHelper.STRING_TYPE)) {
+            if (cast.getExpression() instanceof ListExpression) {
+                return compiler.castToString( new ListExpressionTransformer.TransformedListExpr( (ListExpression)cast.getExpression(), TypeUtil.ARRAY_LIST_TYPE, compiler, true));
+            }
+            return compiler.castToString((BytecodeExpr)compiler.transform(cast.getExpression()));
         }
 
         if (expr.getType().implementsInterface(TypeUtil.TTHIS)) {
