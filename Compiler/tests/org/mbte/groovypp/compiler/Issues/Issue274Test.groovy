@@ -31,4 +31,24 @@ assert bar(['1234']).substring(1) == '234'
 assert foo('1234') == 1
         """
     }
+
+    void testWithCast () {
+        shell.evaluate """
+        @Typed package p
+
+class Test {
+    def a, b
+    Test(String a, String b) {this.a = a; this.b = b}
+}
+
+def foo(Test[] s){ s }
+
+Object[] ret
+/* 1) - start */
+ret = foo(['a1', 'b1'])
+assert ret.class.array
+assert ret.length == 1
+assert ret[0].dump().contains('a=a1 b=b1')
+"""
+    }
 }
