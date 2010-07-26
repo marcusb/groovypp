@@ -228,11 +228,6 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
     private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
 
-        if ((type.getModifiers() & Opcodes.ACC_FINAL) != 0) {
-            compiler.addError("You are not allowed to overwrite the final class '" + type.getName() + "'", exp);
-            return null;
-        }
-
         final List<MapEntryExpression> list = exp.getMapEntryExpressions();
 
         Expression superArgs = null;
@@ -250,7 +245,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         ClassNode objType = null;
 
         if ((type.getModifiers() & ACC_ABSTRACT) != 0 || type.isInterface()) {
-            objType = createNewType(type, compiler);
+            objType = createNewType(type, exp, compiler);
         }
 
         List<MapEntryExpression> methods = new LinkedList<MapEntryExpression>();
@@ -265,7 +260,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
             if (keyName.equals("super")) {
                 if (objType == null)
-                    objType = createNewType(type, compiler);
+                    objType = createNewType(type, exp, compiler);
                 superArgs = value;
                 continue;
             }
@@ -302,7 +297,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
             else {
                 if (objType == null)
-                    objType = createNewType(type, compiler);
+                    objType = createNewType(type, exp, compiler);
 
                 if (value instanceof ClosureExpression) {
                     ClosureExpression ce = (ClosureExpression) value;
@@ -439,8 +434,13 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
         StaticMethodBytecode.replaceMethodCode(compiler.su, compiler.context, _doCallMethod, compiler.compileStack, compiler.debug == -1 ? -1 : compiler.debug+1, compiler.policy, _doCallMethod.getDeclaringClass().getName());
     }
 
-    private ClassNode createNewType(ClassNode type, CompilerTransformer compiler) {
+    private ClassNode createNewType(ClassNode type, Expression exp, CompilerTransformer compiler) {
         ClassNode objType;
+        if ((type.getModifiers() & Opcodes.ACC_FINAL) != 0) {
+            compiler.addError("You are not allowed to overwrite the final class '" + type.getName() + "'", exp);
+            return null;
+        }
+
         objType = new InnerClassNode(compiler.classNode, compiler.getNextClosureName(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE);
         if (type.isInterface()) {
             objType.setInterfaces(new ClassNode [] {type} );
