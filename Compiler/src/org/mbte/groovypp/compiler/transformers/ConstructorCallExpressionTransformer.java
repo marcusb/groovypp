@@ -179,7 +179,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         }
 
         if (compiler.policy == TypePolicy.STATIC) {
-            compiler.addError("Cannot find constructor", exp);
+            compiler.addError("Cannot find constructor of " + exp.getType().getName(), exp);
             return null;
         } else
             return createDynamicCall(exp, compiler, newArgs);
@@ -247,7 +247,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
 
         final MethodNode constr = findConstructorWithClosureCoercion(superClass, argTypes, compiler, innerClassNode);
         if (constr == null) {
-            compiler.addError("Cannot find constructor", exp);
+            compiler.addError("Cannot find constructor of " + exp.getType().getName(), exp);
             return false;
         }
 
@@ -256,8 +256,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             superArgs.getExpressions().add(new VariableExpression("p$0"));
         }
 
-        final Parameter[] superParams = constr.getParameters();
-        for(int i = 0; i != superParams.length; ++i) {
+        for(int i = 0; i != newArgs.getExpressions().size(); ++i) {
             superArgs.getExpressions().add(new VariableExpression("p$"+(i+additional)));
         }
 
@@ -288,8 +287,13 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
             te.getExpressions().add(pCount, new VariableExpression(var));
         }
 
-        for(int i = 0; i != superParams.length; ++i) {
-            params[additional+i] = new Parameter(superParams[i].getType(), "p$" + (i+additional));
+        final Parameter[] superParams = constr.getParameters();
+        for(int i = 0; i != newArgs.getExpressions().size(); ++i) {
+            params[additional+i] = new Parameter(newArgs.getExpression(i).getType(), "p$" + (i+additional));
+//            params[additional+i] = new Parameter(i < superParams.length-1 ? superParams[i].getType() :
+//                    (superParams[superParams.length-1].getType().isArray() ?
+//                            superParams[superParams.length-1].getType().getComponentType()
+//                    : superParams[superParams.length-1].getType()), "p$" + (i+additional));
         }
 
         ClassNodeCache.clearCache(innerClassNode);
@@ -367,7 +371,7 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
                     (TupleExpression) newArgs, compiler);
         }
 
-        compiler.addError("Cannot find constructor", exp);
+        compiler.addError("Cannot find constructor of " + (exp.isSuperCall() ? exp.getType().getSuperClass().getName() : exp.getType().getName()), exp);
         return null;
     }
 

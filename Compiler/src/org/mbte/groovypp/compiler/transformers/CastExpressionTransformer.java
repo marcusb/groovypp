@@ -332,8 +332,19 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             }
 
             final List<Expression> ll = ((ArgumentListExpression) superArgs).getExpressions();
-            for (int i = 0; i != ll.size(); ++i)
-                ll.set(i, compiler.cast(ll.get(i), constructor.getParameters()[i].getType()));
+            final Parameter[] parameters = constructor.getParameters();
+            if (parameters.length > 0 && parameters[parameters.length-1].getType().isArray()) {
+                for (int i = 0; i != parameters.length-1; ++i)
+                    ll.set(i, compiler.cast(ll.get(i), parameters[i].getType()));
+
+                final ClassNode last = parameters[parameters.length - 1].getType().getComponentType();
+                for (int i = parameters.length-1; i != ll.size(); ++i)
+                    ll.set(i, compiler.cast(ll.get(i), last));
+            }
+            else {
+                for (int i = 0; i != ll.size(); ++i)
+                    ll.set(i, compiler.cast(ll.get(i), parameters[i].getType()));
+            }
 
             for (MapEntryExpression me : fields) {
                 final String keyName = (String) ((ConstantExpression) me.getKeyExpression()).getValue();
