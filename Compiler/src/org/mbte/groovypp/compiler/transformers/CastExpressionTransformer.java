@@ -228,6 +228,11 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
 
     private BytecodeExpr buildClassFromMap(MapExpression exp, ClassNode type, final CompilerTransformer compiler) {
 
+        if ((type.getModifiers() & Opcodes.ACC_FINAL) != 0) {
+            compiler.addError("You are not allowed to overwrite the final class '" + type.getName() + "'", exp);
+            return null;
+        }
+
         final List<MapEntryExpression> list = exp.getMapEntryExpressions();
 
         Expression superArgs = null;
