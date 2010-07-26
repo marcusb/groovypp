@@ -512,6 +512,11 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
         for (int i = 0; i < argTypesCopy.length+1; ++i) {
             foundMethod = compiler.findMethod(type, methodName, argTypesCopy, staticOnly);
             if (foundMethod != null) {
+                // infered lists and maps does not participate in generics calculations
+                for(int j = 0; j != argTypesCopy.length; ++j) {
+                    if (argTypesCopy[j] != null && (TypeUtil.TLIST_NULL.equals(argTypesCopy[j]) || TypeUtil.TMAP_NULL.equals(argTypesCopy[j])))
+                        argTypesCopy[j] = null;
+                }
                 return foundMethodInference(type, foundMethod, changed, argTypesCopy, compiler);
             }
 
@@ -537,6 +542,10 @@ public class MethodCallExpressionTransformer extends ExprTransformer<MethodCallE
                 changed.add(change);
                 argTypesCopy[i] = oarg.implementsInterface(TypeUtil.TCLOSURE) ?
                         TypeUtil.withGenericTypes(TypeUtil.TCLOSURE_NULL,change.original) 
+                        : oarg.implementsInterface(TypeUtil.TMAP) ?
+                        TypeUtil.withGenericTypes(TypeUtil.TMAP_NULL,change.original)
+                        : oarg.implementsInterface(TypeUtil.TLIST) ?
+                        TypeUtil.withGenericTypes(TypeUtil.TLIST_NULL,change.original)
                         : null;
             }
         }

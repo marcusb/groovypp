@@ -18,6 +18,7 @@ package org.mbte.groovypp.compiler;
 
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.util.FastArray;
+import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -210,14 +211,17 @@ public class MethodSelection {
         final ClassNode lastParamType = params[params.length - 1].getType();
         if (params.length == args.length && isAssignableOrInference(lastParamType,
                 args[params.length -1])) {
-            if (!isAssignableDirectly(lastParamType, args[params.length -1])) res++;
+            if (!isAssignableDirectly(lastParamType, args[params.length -1])) {
+                res++;
+                if(lastParamType.isArray() && (args[params.length-1].equals(TypeUtil.TMAP_NULL) || args[params.length-1].equals(TypeUtil.TLIST_NULL)))
+                    res++;
+            }
         } else if (args.length > params.length) {
             ClassNode last;
             if (lastParamType.isArray()) {
                 last = lastParamType.getComponentType();
             } else {
-                last = TypeUtil.getSubstitutedType(ClassHelper.LIST_TYPE.getGenericsTypes()[0].getType(),
-                        ClassHelper.LIST_TYPE, lastParamType);
+                last = TypeUtil.getSubstitutedType(ClassHelper.LIST_TYPE.getGenericsTypes()[0].getType(), ClassHelper.LIST_TYPE, lastParamType);
             }
             for (int i =  params.length - 1; i < args.length;  i++) {
                 if (!isAssignableDirectly(last, args[i])) {
@@ -677,6 +681,14 @@ public class MethodSelection {
                 }
                 return false;
             }
+        }
+
+        if(classToTransformFrom.equals(TypeUtil.TLIST_NULL)) {
+            return true;
+        }
+
+        if(classToTransformFrom.equals(TypeUtil.TMAP_NULL)) {
+            return !classToTransformTo.isArray() && ((classToTransformTo.getModifiers() & Opcodes.ACC_FINAL) == 0);
         }
 
         return false;

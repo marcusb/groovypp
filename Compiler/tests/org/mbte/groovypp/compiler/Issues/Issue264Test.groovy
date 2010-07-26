@@ -17,15 +17,29 @@
 package org.mbte.groovypp.compiler.Issues
 
 import static groovy.CompileTestSupport.shouldNotCompile
+import static groovy.CompileTestSupport.shouldCompile
 
 @Typed
-public class Issue271Test extends GroovyShellTestCase {
+public class Issue264Test extends GroovyShellTestCase {
     void testMe () {
-       shouldNotCompile ("""
-@Typed package p
+       shouldCompile """
+       @Typed package p
        
-def foo(String a) {}
-foo(['a':1])
-""", "Cannot find method Script1.foo(<map>)")
+def foo(String... a) { a }
+def foo(File f) { f }
+
+assert foo('lambda') instanceof String []
+assert foo(['lambda'], 'montana') instanceof String []
+assert foo(['super':'path']) instanceof File
+assert foo(['super':'path']) instanceof File
+assert foo(['path']) instanceof File
+"""
+    }
+
+    void testArray() {
+        shell.evaluate """
+       @Typed package p
+  InetAddress multicastGroup = InetAddress.getByAddress(230,0,0,239)
+        """
     }
 }
