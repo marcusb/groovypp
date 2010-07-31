@@ -175,7 +175,7 @@ new ClientManager(address)
 
                     def increase = System.currentTimeMillis() - last
                     last += increase
-                    logger.info """${server.allConnected.size()} channels. Load: ${osBean.systemLoadAverage}
+                    logger.info """${server.allConnected.size()} channels.
  Heap: ${memBean.heapMemoryUsage}
 NHeap: ${memBean.nonHeapMemoryUsage}
 Sent:  ${ioMonitor.bytesSent.getAndSet(0)*1000.0d/increase}b/s   Received: ${ioMonitor.bytesReceived.getAndSet(0)*1000.0d/increase}b/s"""
