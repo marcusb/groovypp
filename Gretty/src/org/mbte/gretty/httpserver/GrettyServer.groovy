@@ -30,6 +30,9 @@ import java.util.concurrent.Executors
 import org.jboss.netty.util.internal.ExecutorUtil
 import org.jboss.netty.channel.local.LocalAddress
 import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
+import org.jboss.netty.channel.group.DefaultChannelGroup
+import org.mbte.gretty.remote.SimpleChannelHandlerEx
+import org.jboss.netty.buffer.ChannelBuffer
 
 @Typed class GrettyServer {
     int              ioWorkerCount      = 2*Runtime.getRuntime().availableProcessors()
@@ -45,6 +48,8 @@ import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
 
     protected Executor threadPool
     protected Channel channel
+
+    protected final DefaultChannelGroup allConnected = []
 
     private void initContexts () {
         webContexts = webContexts.sort { me1, me2 -> me2.key <=> me1.key }
@@ -72,19 +77,9 @@ import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
         def logger = logLevel ? new HttpLoggingHandler(logLevel) : null
 
         bootstrap.pipelineFactory = { ->
-            def pipeline = Channels.pipeline()
-
-            pipeline.addLast("http.request.decoder",    new GrettyRequestDecoder())
-            pipeline.addLast("http.request.encoder",    new HttpResponseEncoder())
-
-            pipeline.addLast("chunkedWriter", new ChunkedWriteHandler())
-            pipeline.addLast("fileWriter", new FileWriteHandler())
-
+            def pipeline = createPipeline()
             if (logger)
-                pipeline.addLast("http.logger", logger)
-
-            pipeline.addLast("http.application", new GrettyAppHandler(this))
-
+                pipeline.addBefore("http.application", "http.logger", logger)
             pipeline
         }
 
@@ -92,6 +87,24 @@ import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
         channel.closeFuture.addListener {
             ExecutorUtil.terminate(bossExecutor, ioExecutor, threadPool) 
         }
+    }
+
+    protected ChannelPipeline createPipeline() {
+        def pipeline = Channels.pipeline()
+
+        pipeline.addLast("http.request.decoder", new GrettyRequestDecoder())
+        pipeline.addLast("http.request.encoder", new HttpResponseEncoder())
+
+        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler())
+        pipeline.addLast("fileWriter", new FileWriteHandler())
+
+        pipeline.addLast("http.application", new GrettyAppHandler(this))
+
+        pipelineCreated(pipeline)
+        pipeline
+    }
+
+    protected void pipelineCreated (ChannelPipeline pipeline) {
     }
 
     void stop() {

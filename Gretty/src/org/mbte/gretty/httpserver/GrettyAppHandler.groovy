@@ -61,14 +61,15 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
     }
 
     def void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
-        if(logger.isEnabled(InternalLogLevel.DEBUG))
-            logger.debug("${ctx.channel} CONNECTED")
+//        if(logger.isEnabled(InternalLogLevel.DEBUG))
+//            logger.debug("${ctx.channel} CONNECTED")
+        server.allConnected.add(ctx.channel)
         super.channelConnected(ctx, e)
     }
 
     def void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
-        if(logger.isEnabled(InternalLogLevel.DEBUG))
-            logger.debug("${ctx.channel} DISCONNECTED")
+//        if(logger.isEnabled(InternalLogLevel.DEBUG))
+//            logger.debug("${ctx.channel} DISCONNECTED")
         super.channelDisconnected(ctx, e)
     }
 
@@ -238,7 +239,7 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
 
                 def channeled = new Channeled(e.channel)
                 channeled.addListener(webSocket)
-                p.addLast("websocket.handler", channeled)
+                p.replace("http.application", "websocket.handler", channeled)
 
                 webSocket.connect(channeled, req)
             }

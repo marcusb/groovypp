@@ -37,144 +37,31 @@ import groovy.util.concurrent.FQueue
 import java.util.concurrent.Executors
 import org.jboss.netty.channel.ExceptionEvent
 import java.nio.channels.ClosedChannelException
+import org.jboss.netty.channel.ChannelFuture
+import org.mbte.gretty.GrettyShared
+import groovy.util.concurrent.BindLater.Listener
 
-@Typed class GrettyClient extends SimpleChannelHandler {
-    private volatile State state
+@Typed class GrettyClient extends AbstractHttpClient {
+
+    private volatile BindLater<HttpResponse> pendingRequest
 
     GrettyClient(SocketAddress remoteAddress) {
-        state = [queue:FQueue.emptyQueue]
-
-        ClientBootstrap bootstrap = [remoteAddress instanceof LocalAddress ? new DefaultLocalClientChannelFactory() : new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()) ]
-        bootstrap.setOption("tcpNoDelay", true)
-        bootstrap.setOption("keepAlive",  true)
-        bootstrap.pipelineFactory = { ->
-            def pipeline = Channels.pipeline()
-            pipeline.addLast("http.response.decoder", new HttpResponseDecoder())
-            pipeline.addLast("http.response.aggregator", new HttpChunkAggregator(Integer.MAX_VALUE))
-            pipeline.addLast("http.request.encoder", new HttpRequestEncoder())
-            pipeline.addLast("http.application", this)
-            pipeline
-        }
-        bootstrap.connect(remoteAddress).addListener { future ->
-            future.channel.closeFuture.addListener {
-                bootstrap.factory.releaseExternalResources()
-            }
-        }
+        super(remoteAddress)
     }
 
     BindLater<HttpResponse> request(HttpRequest request) {
-        RequestResponse responseFuture = [request]
-        for (;;) {
-            def s = state
-            def ns = s.clone()
-            if(s?.channel?.connected && !s.pendingRequest) {
-                assert s.queue.empty
-                ns.pendingRequest = responseFuture
-                if(state.compareAndSet(s, ns)) {
-                    s.channel.write(request)
-                    return responseFuture
-                }
-            }
-            else {
-                ns.queue = s.queue.addLast(responseFuture)
-                if(state.compareAndSet(s, ns))
-                    return responseFuture
-            }
-        }
+        def later = new BindLater()
+        assert pendingRequest.compareAndSet(null, later)
+        channel.write(request)
+        later
     }
 
-    void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
-        for (;;) {
-            def s = state
-            assert !s.channel
-            assert !s.pendingRequest
-
-            def ns = s.clone()
-            ns.channel = e.channel
-
-            if(s.queue.empty) {
-                if(state.compareAndSet(s, ns))
-                    break
-            }
-            else {
-                def removed = s.queue.removeFirst()
-                ns.queue = removed.second
-                ns.pendingRequest = removed.first
-                if(state.compareAndSet(s, ns)) {
-                    ns.channel.write(ns.pendingRequest)
-                    break
-                }
-            }
-        }
-    }
-
-    void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-        e.channel.close()
-    }
-
-    void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) {
-        for (;;) {
-            def s = state
-            assert s.pendingRequest
-
-            def ns = s.clone()
-            ns.channel = null
-            ns.queue   = FQueue.emptyQueue
-            ns.pendingRequest = null
-
-            if(state.compareAndSet(s, ns)) {
-                def exception = new ClosedChannelException()
-                s.pendingRequest?.setException(exception)
-                for(pr in s.queue) {
-                    pr.setException(exception)
-                }
-                break
-            }
-        }
+    void request(HttpRequest request, BindLater.Listener<HttpResponse> action) {
+        assert pendingRequest.compareAndSet(null, new BindLater().whenBound(action))
+        channel.write(request)
     }
 
     void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-        HttpResponse response = e.message
-        for (;;) {
-            def s = state
-            assert s.pendingRequest
-
-            def ns = s.clone()
-            if(s.queue.empty) {
-                ns.pendingRequest = null
-                if(state.compareAndSet(s, ns)) {
-                    s.pendingRequest.set(response)
-                    break
-                }
-            }
-            else {
-                def removed = s.queue.removeFirst()
-                ns.queue = removed.second
-                ns.pendingRequest = removed.first
-                if(state.compareAndSet(s, ns)) {
-                    s.pendingRequest.set(response)
-                    ns.channel.write(ns.pendingRequest)
-                    break
-                }
-            }
-        }
-    }
-
-    private static class State implements Cloneable {
-        Channel                 channel
-        FQueue<RequestResponse> queue
-        RequestResponse         pendingRequest
-
-        protected State clone() {
-            return super.clone()
-        }
-    }
-
-    static class RequestResponse extends BindLater<HttpResponse> {
-        final HttpRequest  request
-
-        RequestResponse(HttpRequest request) {
-            this.request = request
-        }
+        pendingRequest.getAndSet(null).set((HttpResponse)e.message)
     }
 }

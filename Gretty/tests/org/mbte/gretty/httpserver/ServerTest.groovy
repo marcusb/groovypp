@@ -21,6 +21,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator
 import org.mbte.gretty.httpclient.GrettyClient
+import java.util.concurrent.CountDownLatch
 
 @Typed class ServerTest extends GroovyTestCase {
 
@@ -38,7 +39,7 @@ import org.mbte.gretty.httpclient.GrettyClient
                             response.addHeader("objectId",  it.objectId)
                         }
 
-                        get("/data") {}
+                        get("/data/") {}
                     },
 
                     default: {
@@ -58,32 +59,49 @@ import org.mbte.gretty.httpclient.GrettyClient
     }
 
     void testDefault () {
-        GrettyClient client = [new LocalAddress("test_server")]
-        def response = client.request(new GrettyHttpRequest("/data?msg=12&value=33")).get()
+        doTest("/data?msg=12&value=33") { response ->
+            def bytes = new byte [response.content.readableBytes()]
+            response.content.getBytes(0, bytes)
+            def text = new String(bytes, "UTF-8")
 
-        def bytes = new byte [response.content.readableBytes()]
-        response.content.getBytes(0, bytes)
-        def text = new String(bytes, "UTF-8")
-
-        assertEquals "default: path: /data", text
-        assertEquals "true", response.getHeader("Default")
-        assertEquals "[12]", response.getHeader("msg")
-        assertEquals "[33]", response.getHeader("value")
+            assertEquals "default: path: /data", text
+            assertEquals "true", response.getHeader("Default")
+            assertEquals "[12]", response.getHeader("msg")
+            assertEquals "[33]", response.getHeader("value")
+        }
     }
 
     void testMatch() {
-        GrettyClient client = [new LocalAddress("test_server")]
-        def response = client.request(new GrettyHttpRequest("/data/abracadabra/set/245")).get()
-
-        assertEquals "abracadabra", response.getHeader("mapId")
-        assertEquals "245", response.getHeader("objectId")
+        doTest("/data/abracadabra/set/245") { response ->
+            assertEquals "abracadabra", response.getHeader("mapId")
+            assertEquals "245", response.getHeader("objectId")
+        }
     }
 
     void testNoMatch() {
-        GrettyClient client = [new LocalAddress("test_server")]
-        def response = client.request(new GrettyHttpRequest("/data")).get()
+        doTest("/data") { response ->
+            assertNull response.getHeader("mapId")
+            assertNull response.getHeader("objectId")
+        }
+    }
 
-        assertNull response.getHeader("mapId")
-        assertNull response.getHeader("objectId")
+    private void doTest (String request, Function1<HttpResponse,Void> action) {
+        BindLater cdl = []
+
+        GrettyClient client = [new LocalAddress("test_server")]
+        client.connect{ future ->
+            client.request(new GrettyHttpRequest(request)) { bound ->
+                try {
+                    action(bound.get())
+                    cdl.set("")
+                }
+                catch(e) {
+                    cdl.setException(e)
+                }
+            }
+        }
+
+        cdl.get()
+        client.disconnect ()
     }
 }

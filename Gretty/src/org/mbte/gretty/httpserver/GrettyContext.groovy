@@ -58,7 +58,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod
 
         for(matcher in methodHandlers) {
             def pathArgs = matcher.doesMatch(localUri)
-            if(pathArgs) {
+            if(pathArgs != null) {
                 matcher.handler.handle(request, response, pathArgs)
                 return
             }
