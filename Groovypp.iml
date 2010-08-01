@@ -15,7 +15,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="GROOVY" level="project" />
+    <orderEntry type="library" exported="" name="Groovy" level="application" />
   </component>
   <component name="copyright">
     <Base>

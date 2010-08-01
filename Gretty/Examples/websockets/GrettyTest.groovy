@@ -15,29 +15,21 @@ rootLogger.addHandler(new ConsoleHandler(level:Level.FINE))
 GrettyServer server = [
     logLevel: InternalLogLevel.DEBUG,
 
+    static: "./rootFiles",
+
+    default: { response.html = template("./templates/404.ftl", [user:"Dear Unknow User"]) },
+
+    public: {
+        get("googlib/:path") {
+            redirect "http://ajax.googleapis.com/ajax/libs/" + it.path
+        }
+    },
+
     webContexts: [
-        "/" : [
-            static: "./rootFiles",
-
-            default: { response.html = """
-<html>
-    <body>
-        <p>Hello, World!</p>
-        <p>Unfortunately, I have no idea about page <i>${request.uri}</i>, which you've requested</p>
-        <p>Try our <a href='/'>main page</a> please</p>
-    </body>
-</html>"""
-            }
-        ],
-
         "/websockets" : [
             static: "./webSocketsFiles",
 
             public: {
-                get("/google/prototype.js") {
-                    redirect "http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js"
-                }
-
                 websocket("/ws",[
                     onMessage: { msg ->
                         socket.send(msg.toUpperCase())

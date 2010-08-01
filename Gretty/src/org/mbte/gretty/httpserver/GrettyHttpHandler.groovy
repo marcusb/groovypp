@@ -16,6 +16,9 @@
 
 package org.mbte.gretty.httpserver
 
+import freemarker.template.Configuration
+import freemarker.template.ObjectWrapper
+
 @Typed abstract class GrettyHttpHandler implements Cloneable {
     GrettyHttpRequest  request
     GrettyHttpResponse response
@@ -29,6 +32,26 @@ package org.mbte.gretty.httpserver
 
     final void redirect(String where) {
         response.redirect(where)
+    }
+
+    final String template(String file, Map root, Function1<Map,Void> dataBinding) {
+        root.request = request
+        if (dataBinding) {
+            dataBinding(root)
+        }
+
+        def template = Configuration.getDefaultConfiguration().getTemplate(file)
+        def writer = new StringWriter()
+        template.process (root, writer, ObjectWrapper.BEANS_WRAPPER)
+        writer.toString()
+    }
+
+    final String template(String file, Map root = [:]) {
+        template(file, root, null)
+    }
+
+    final String template(String file, Function1<Map,Void> dataBinding) {
+        template(file, [:], dataBinding)
     }
 
     abstract void handle (Map<String,String> pathArguments)

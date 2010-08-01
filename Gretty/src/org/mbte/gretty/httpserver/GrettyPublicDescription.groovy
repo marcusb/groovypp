@@ -18,7 +18,7 @@ package org.mbte.gretty.httpserver
 
 import org.jboss.netty.handler.codec.http.HttpMethod
 
-abstract class GrettyPublicDescription implements Runnable {
+@Typed abstract class GrettyPublicDescription implements Runnable {
     GrettyContext context
 
     void options(String match, GrettyHttpHandler handler) {

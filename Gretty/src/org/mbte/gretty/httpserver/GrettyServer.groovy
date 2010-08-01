@@ -42,6 +42,8 @@ import org.jboss.netty.buffer.ChannelBuffer
 
     SocketAddress    localAddress = new InetSocketAddress(8080)
 
+    GrettyContext defaultContext
+
     Map<String,GrettyContext> webContexts = [:]
 
     final PseudoWebSocketManager pseudoWebSocketManager = []
@@ -51,7 +53,28 @@ import org.jboss.netty.buffer.ChannelBuffer
 
     protected final DefaultChannelGroup allConnected = []
 
+    void setDefault (GrettyHttpHandler handler) {
+        if(!defaultContext)
+            defaultContext = []
+        defaultContext.default = handler
+    }
+
+    void setStatic (String staticFiles) {
+        if(!defaultContext)
+            defaultContext = []
+        defaultContext.static = staticFiles
+    }
+
+    void setPublic (GrettyPublicDescription description) {
+        if(!defaultContext)
+            defaultContext = []
+        defaultContext.public = description
+    }
+
     private void initContexts () {
+        if(defaultContext) {
+            webContexts["/"] = defaultContext
+        }
         webContexts = webContexts.sort { me1, me2 -> me2.key <=> me1.key }
 
         for(e in webContexts.entrySet()) {
