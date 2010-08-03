@@ -53,7 +53,7 @@ public class PresentationUtil {
             builder.append("[]");
             return;
         } else if (type.isGenericsPlaceHolder()) {
-            getText(type.redirect(), builder);
+            builder.append(type.redirect().getNameWithoutPackage());
             return;
         }
 
@@ -68,29 +68,25 @@ public class PresentationUtil {
             return;
         }
 
-        if (type.isGenericsPlaceHolder()) {
-            builder.append(type.getUnresolvedName());
-        } else {
-            builder.append(type.getNameWithoutPackage());
-            GenericsType[] generics = type.getGenericsTypes();
-            if (generics != null && generics.length > 0) {
-                builder.append("<");
-                for (int i = 0; i < generics.length; i++) {
-                    if (i > 0) builder.append(",");
-                    if (generics[i].isWildcard()) {
-                        if (TypeUtil.isExtends(generics[i])) {
-                            builder.append("? extends ");
-                        } else if (TypeUtil.isSuper(generics[i])) {
-                            builder.append("? super ");
-                        } else {
-                            builder.append("?");
-                            continue;
-                        }
+        builder.append(type.getNameWithoutPackage());
+        GenericsType[] generics = type.getGenericsTypes();
+        if (generics != null && generics.length > 0) {
+            builder.append("<");
+            for (int i = 0; i < generics.length; i++) {
+                if (i > 0) builder.append(",");
+                if (generics[i].isWildcard()) {
+                    if (TypeUtil.isExtends(generics[i])) {
+                        builder.append("? extends ");
+                    } else if (TypeUtil.isSuper(generics[i])) {
+                        builder.append("? super ");
+                    } else {
+                        builder.append("?");
+                        continue;
                     }
-                    getText(generics[i].getType(), builder);
                 }
-                builder.append(">");
+                getText(generics[i].getType(), builder);
             }
+            builder.append(">");
         }
     }
 
