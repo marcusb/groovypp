@@ -27,8 +27,6 @@ class Performance {
 
         AtomicInteger connected = []
 
-        IoMonitor ioMonitor = []
-
         GrettyServer server = [
             webContexts: [
                 "/" : [
@@ -42,6 +40,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.*
 import org.jboss.netty.logging.InternalLoggerFactory
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import org.jboss.netty.channel.*
 
 String address = binding.getProperty("address")
 
@@ -57,8 +57,11 @@ class ClientManager {
     volatile int connected
 
     ClientManager (String address) {
-        for(i in 0..<64000) {
-            startNewClient (i, address)
+        def nioExecutor = Executors.newFixedThreadPool(128)
+        NioClientSocketChannelFactory factory = [nioExecutor, nioExecutor]
+
+        for(i in 0..<1000) {
+            startNewClient (i, address, factory)
         }
         startClockThread ()
         Thread.sleep(24*60*60*1000)
@@ -85,7 +88,7 @@ class ClientManager {
         clockThread.start ()
     }
 
-    void startNewClient (int i, String address) {
+    void startNewClient (int i, String address, ChannelFactory factory) {
         AtomicInteger counter = [0]
         GrettyWebsocketClient client = [
             'super' : [new InetSocketAddress(address, 8080), "/ws"],
@@ -153,11 +156,7 @@ new ClientManager(address)
                         ])
                     }
                 ]
-            ],
-
-            buildPipeline: { pipeline ->
-                pipeline.addFirst ("ioMonitor", ioMonitor)
-            }
+            ]
         ]
         server.start()
 
@@ -178,7 +177,7 @@ new ClientManager(address)
                     logger.info """${server.allConnected.size()} channels.
  Heap: ${memBean.heapMemoryUsage}
 NHeap: ${memBean.nonHeapMemoryUsage}
-Sent:  ${ioMonitor.bytesSent.getAndSet(0)*1000.0d/increase}b/s   Received: ${ioMonitor.bytesReceived.getAndSet(0)*1000.0d/increase}b/s"""
+Sent:  ${server.ioMonitor.bytesSent.getAndSet(0)*1000.0d/increase}b/s   Received: ${server.ioMonitor.bytesReceived.getAndSet(0)*1000.0d/increase}b/s"""
                 }
             }
         ]

@@ -233,12 +233,13 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
             p.remove("fileWriter")
             p.replace("http.request.decoder", "wsdecoder", new WebSocketFrameDecoder())
 
-            e.channel.write(response).addListener {
-                p.replace("http.request.encoder", "wsencoder", new WebSocketFrameEncoder())
+            def channeled = new Channeled(e.channel)
+            channeled.addListener(webSocket)
+            p.addLast("websocket.handler", channeled)
 
-                def channeled = new Channeled(e.channel)
-                channeled.addListener(webSocket)
-                p.replace("http.application", "websocket.handler", channeled)
+            e.channel.write(response).addListener {
+                p.remove("http.application")
+                p.replace("http.request.encoder", "wsencoder", new WebSocketFrameEncoder())
 
                 webSocket.connect(channeled, req)
             }

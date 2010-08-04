@@ -32,8 +32,12 @@ import org.jboss.netty.channel.ChannelHandlerContext
 import org.jboss.netty.channel.ChannelStateEvent
 import org.jboss.netty.channel.Channels
 import org.jboss.netty.channel.ChannelPipelineFactory
+import java.util.concurrent.ExecutorService
+import org.mbte.gretty.httpserver.IoMonitor
 
 @Typed abstract class AbstractServer extends SimpleChannelHandler implements Executor, ChannelPipelineFactory {
+    IoMonitor ioMonitor = []
+
     int              ioWorkerCount      = 2*Runtime.getRuntime().availableProcessors()
     int              serviceWorkerCount = 4*Runtime.getRuntime().availableProcessors()
 
@@ -43,7 +47,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory
 
     final DefaultChannelGroup allConnected = []
 
-    protected Executor threadPool
+    protected ExecutorService threadPool
 
     void start () {
         def bossExecutor = Executors.newCachedThreadPool()
@@ -61,7 +65,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory
 
         channel = bootstrap.bind(localAddress)
         channel.closeFuture.addListener {
-            ExecutorUtil.terminate(bossExecutor, ioExecutor, threadPool)
+            [bossExecutor, ioExecutor, threadPool]*.shutdown()
         }
     }
 
@@ -87,5 +91,6 @@ import org.jboss.netty.channel.ChannelPipelineFactory
 
     protected void buildPipeline(ChannelPipeline pipeline) {
         pipeline.addFirst ("serverItself", this)
+        pipeline.addFirst ("ioMonitor", ioMonitor)
     }
 }

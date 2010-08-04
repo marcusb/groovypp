@@ -38,7 +38,6 @@ import java.util.concurrent.Executors
 import org.jboss.netty.channel.ExceptionEvent
 import java.nio.channels.ClosedChannelException
 import org.jboss.netty.channel.ChannelFuture
-import org.mbte.gretty.GrettyShared
 import groovy.util.concurrent.BindLater.Listener
 
 @Typed class GrettyClient extends AbstractHttpClient {

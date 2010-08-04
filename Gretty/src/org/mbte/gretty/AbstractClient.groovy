@@ -20,20 +20,43 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.local.DefaultLocalClientChannelFactory
 import org.jboss.netty.channel.local.LocalAddress
 import org.jboss.netty.channel.*
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import java.util.concurrent.Executors
+import org.jboss.netty.channel.local.LocalClientChannelFactory
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 
 @Typed class AbstractClient extends SimpleChannelHandler implements ChannelPipelineFactory {
     protected volatile Channel channel
 
-    protected final SocketAddress remoteAddress;
+    protected final SocketAddress remoteAddress
 
-    AbstractClient(SocketAddress remoteAddress) {
+    protected final ChannelFactory channelFactory
+    protected final boolean shouldReleaseResources = true
+
+    AbstractClient(SocketAddress remoteAddress, ChannelFactory channelFactory = null) {
         this.remoteAddress = remoteAddress
+        shouldReleaseResources = (channelFactory == null)
+        if(shouldReleaseResources) {
+            if(remoteAddress instanceof LocalAddress) {
+                channelFactory = new DefaultLocalClientChannelFactory()
+            }
+            else {
+                channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool())
+            }
+        }
+        else {
+            if(remoteAddress instanceof LocalAddress) {
+                assert channelFactory instanceof LocalClientChannelFactory
+            }
+            else {
+                assert channelFactory instanceof NioClientSocketChannelFactory
+            }
+        }
+        this.channelFactory = channelFactory
     }
 
     ChannelFuture connect () {
-        ClientBootstrap bootstrap = [remoteAddress instanceof LocalAddress ?
-            new DefaultLocalClientChannelFactory() :
-            GrettyShared.nioClientFactory ]
+        ClientBootstrap bootstrap = [channelFactory]
         bootstrap.pipelineFactory = this
         bootstrap.setOption("tcpNoDelay", true)
         bootstrap.setOption("keepAlive",  true)
@@ -47,6 +70,12 @@ import org.jboss.netty.channel.*
             else {
                future.channel.close ()
                onConnectFailed ()
+            }
+
+            if(shouldReleaseResources) {
+                future.channel.closeFuture.addListener { future2 ->
+                    future2.channel.factory.releaseExternalResources()
+                }
             }
         }
         connectFuture

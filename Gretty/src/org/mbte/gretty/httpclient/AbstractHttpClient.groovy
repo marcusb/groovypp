@@ -22,13 +22,12 @@ import org.jboss.netty.channel.local.LocalAddress
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator
 import org.jboss.netty.handler.codec.http.HttpRequestEncoder
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder
-import org.mbte.gretty.GrettyShared
 import org.jboss.netty.channel.*
 import org.mbte.gretty.AbstractClient
 
 @Typed class AbstractHttpClient extends AbstractClient {
-    AbstractHttpClient(SocketAddress remoteAddress) {
-        super(remoteAddress)
+    AbstractHttpClient(SocketAddress remoteAddress, ChannelFactory factory = null) {
+        super(remoteAddress, factory)
     }
 
     def ChannelPipeline getPipeline() {

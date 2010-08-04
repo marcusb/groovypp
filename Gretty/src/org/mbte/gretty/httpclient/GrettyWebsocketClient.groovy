@@ -30,12 +30,13 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.*
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder
 import org.jboss.netty.channel.ChannelFuture
+import org.jboss.netty.channel.ChannelFactory
 
 @Typed class GrettyWebsocketClient extends AbstractHttpClient {
     private final String path
 
-    GrettyWebsocketClient(SocketAddress remoteAddress, String path) {
-        super(remoteAddress)
+    GrettyWebsocketClient(SocketAddress remoteAddress, String path, ChannelFactory factory = null) {
+        super(remoteAddress, factory)
         this.path = path
     }
 
