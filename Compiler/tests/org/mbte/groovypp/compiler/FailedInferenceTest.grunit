@@ -1,0 +1,16 @@
+@Typed package org.mbte.groovypp.compiler
+
+class X<O extends X> {
+    O owner
+
+    void foo () {}
+
+
+    static class Y extends X {
+        Y () {
+            owner?.foo ()
+        }
+    }
+}
+
+X.Y y = []

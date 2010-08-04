@@ -17,6 +17,7 @@
 package org.mbte.gretty.remote.inet
 
 import groovy.channels.LoopChannel
+import groovy.channels.SupervisedChannel
 
 @Typed abstract class MulticastChannel extends LoopChannel {
     InetAddress multicastGroup
@@ -49,7 +50,7 @@ import groovy.channels.LoopChannel
               def buffer = new byte[512]
               def packet = new DatagramPacket(buffer, buffer.length)
               socket.receive(packet)
-              (owner ?: this).post(InetDiscoveryInfo.fromBytes(buffer))
+              ((SupervisedChannel)owner).post(InetDiscoveryInfo.fromBytes(buffer))
           } else {
               socket.close()
           }

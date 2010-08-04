@@ -44,6 +44,11 @@ public class ConstructorCallExpressionTransformer extends ExprTransformer<Constr
         MethodNode constructor;
         ClassNode type = exp.getType();
 
+        if((type.getModifiers() & Opcodes.ACC_ABSTRACT) != 0) {
+            compiler.addError("Can't instantiate abstract type " + type.getName(), exp);
+            return null;
+        }
+
         if (type instanceof InnerClassNode) {
             InnerClassNode innerClassNode = (InnerClassNode) type;
 

@@ -24,6 +24,8 @@ import org.codehaus.groovy.control.CompilerConfiguration
     protected FileSystemCompiler compiler
     protected File outputDir, stubDir
 
+    String additionalClasspath
+
     protected void setUp() {
         super.setUp()
 
@@ -37,7 +39,9 @@ import org.codehaus.groovy.control.CompilerConfiguration
 
         def compilerConfiguration = new CompilerConfiguration()
         compilerConfiguration.setTargetDirectory(outputDir)
-        compilerConfiguration.setJointCompilationOptions(["stubDir":stubDir]) 
+        compilerConfiguration.setJointCompilationOptions(["stubDir":stubDir])
+        if(additionalClasspath)
+            compilerConfiguration.setClasspath(additionalClasspath)
         compiler = new FileSystemCompiler (compilerConfiguration)
     }
 
@@ -46,5 +50,5 @@ import org.codehaus.groovy.control.CompilerConfiguration
         outputDir.deleteDir()
         stubDir.deleteDir()
         super.tearDown()
-    } 
+    }
 }

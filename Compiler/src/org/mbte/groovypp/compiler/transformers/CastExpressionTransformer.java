@@ -327,7 +327,7 @@ public class CastExpressionTransformer extends ExprTransformer<CastExpression> {
             final MethodNode constructor = ConstructorCallExpressionTransformer.findConstructorWithClosureCoercion(objType.getSuperClass(), compiler.exprToTypeArray(superArgs), compiler, objType);
 
             if (constructor == null) {
-                compiler.addError ("Cannot find super constructor", objType);
+                compiler.addError ("Cannot find super constructor " + objType.getSuperClass().getName(), exp);
                 return null;
             }
 

@@ -16,42 +16,25 @@
 
 package org.mbte.gretty.httpserver
 
-import java.util.concurrent.Executor
-
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
-
 import org.jboss.netty.channel.*
 import org.jboss.netty.handler.codec.http.*
 import org.jboss.netty.handler.stream.ChunkedWriteHandler
 import org.jboss.netty.logging.InternalLogLevel
 
-import org.jboss.netty.bootstrap.ServerBootstrap
-import java.util.concurrent.Executors
-import org.jboss.netty.util.internal.ExecutorUtil
-import org.jboss.netty.channel.local.LocalAddress
-import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory
-import org.jboss.netty.channel.group.DefaultChannelGroup
-import org.mbte.gretty.remote.SimpleChannelHandlerEx
-import org.jboss.netty.buffer.ChannelBuffer
+import org.mbte.gretty.AbstractServer
 
-@Typed class GrettyServer {
-    int              ioWorkerCount      = 2*Runtime.getRuntime().availableProcessors()
-    int              serviceWorkerCount = 4*Runtime.getRuntime().availableProcessors()
+@Typed class GrettyServer extends AbstractServer {
+    GrettyContext defaultContext
 
     InternalLogLevel logLevel
-
-    SocketAddress    localAddress = new InetSocketAddress(8080)
-
-    GrettyContext defaultContext
 
     Map<String,GrettyContext> webContexts = [:]
 
     final PseudoWebSocketManager pseudoWebSocketManager = []
 
-    protected Executor threadPool
-    protected Channel channel
-
-    protected final DefaultChannelGroup allConnected = []
+    GrettyServer() {
+        localAddress = new InetSocketAddress(8080)
+    }
 
     void setDefault (GrettyHttpHandler handler) {
         if(!defaultContext)
@@ -84,36 +67,11 @@ import org.jboss.netty.buffer.ChannelBuffer
 
     void start () {
         initContexts ()
-
-        def bossExecutor = Executors.newCachedThreadPool()
-        def ioExecutor   = Executors.newFixedThreadPool(ioWorkerCount)
-        threadPool       = Executors.newFixedThreadPool(serviceWorkerCount)
-
-        def isLocal = localAddress instanceof LocalAddress
-
-        def channelFactory = isLocal ? new DefaultLocalServerChannelFactory () : (NioServerSocketChannelFactory )[bossExecutor, ioExecutor]
-
-        ServerBootstrap bootstrap = [channelFactory]
-        bootstrap.setOption("child.tcpNoDelay", true)
-        bootstrap.setOption("child.keepAlive",  true)
-
-        def logger = logLevel ? new HttpLoggingHandler(logLevel) : null
-
-        bootstrap.pipelineFactory = { ->
-            def pipeline = createPipeline()
-            if (logger)
-                pipeline.addBefore("http.application", "http.logger", logger)
-            pipeline
-        }
-
-        channel = bootstrap.bind(localAddress)
-        channel.closeFuture.addListener {
-            ExecutorUtil.terminate(bossExecutor, ioExecutor, threadPool) 
-        }
+        super.start ()
     }
 
-    protected ChannelPipeline createPipeline() {
-        def pipeline = Channels.pipeline()
+     protected void buildPipeline(ChannelPipeline pipeline) {
+        super.buildPipeline(pipeline)
 
         pipeline.addLast("http.request.decoder", new GrettyRequestDecoder())
         pipeline.addLast("http.request.encoder", new HttpResponseEncoder())
@@ -121,16 +79,10 @@ import org.jboss.netty.buffer.ChannelBuffer
         pipeline.addLast("chunkedWriter", new ChunkedWriteHandler())
         pipeline.addLast("fileWriter", new FileWriteHandler())
 
+        def logger = logLevel ? new HttpLoggingHandler(logLevel) : null
+        if (logger)
+            pipeline.addLast("http.logger", logger)
+
         pipeline.addLast("http.application", new GrettyAppHandler(this))
-
-        pipelineCreated(pipeline)
-        pipeline
-    }
-
-    protected void pipelineCreated (ChannelPipeline pipeline) {
-    }
-
-    void stop() {
-        channel?.close ()
     }
 }

@@ -16,51 +16,55 @@
 
 package org.mbte.gretty.remote
 
-import java.util.concurrent.Executors
-
 import groovy.channels.SupervisedChannel
 
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import org.jboss.netty.bootstrap.ClientBootstrap
+import org.mbte.gretty.remote.inet.InetDiscoveryInfo
+import org.mbte.gretty.remote.inet.MulticastChannel
+import org.mbte.gretty.AbstractClient
+import org.jboss.netty.channel.ChannelPipeline
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder
-import org.mbte.gretty.remote.inet.InetDiscoveryInfo
+import org.jboss.netty.channel.group.DefaultChannelGroup
 
-@Typed class ClientConnector extends SupervisedChannel {
-    NioClientSocketChannelFactory clientFactory
+@Typed class ClientConnector extends SupervisedChannel<ClusterNode> {
 
-    ClusterNode clusterNode
+    private final DefaultChannelGroup allConnected = []
 
     public void doStartup() {
         super.doStartup()
-
-        if (!clusterNode) {
-            if(owner instanceof ClusterNode)
-                clusterNode = (ClusterNode)owner
-            else
-                throw new IllegalStateException("ClientConnector requires clusterNode")
+        if (owner.multicastGroup && owner.multicastPort) {
+            startupChild(new MulticastChannel.Receiver([
+                  multicastGroup: owner.multicastGroup,
+                  multicastPort: owner.multicastPort,
+            ]))
         }
-
-        clientFactory = [Executors.newCachedThreadPool(),Executors.newCachedThreadPool()]
     }
 
     public void doShutdown() {
         clients.clear ()
-        clientFactory.releaseExternalResources()
+        allConnected.close()
+
+        super.doShutdown()
     }
 
     protected void doOnMessage(Object msg) {
         switch(msg) {
             case InetDiscoveryInfo:
-                if (!stopped() && msg.clusterId > clusterNode.id) {
+                if (!stopped() && msg.clusterId > owner.id) {
                     synchronized(clients) {
                         if(!clients.containsKey(msg.clusterId)) {
-                            clusterNode.communicationEvents << new ClusterNode.CommunicationEvent.TryingConnect(uuid:msg.clusterId, address:msg.serverAddress)
-                            def client = new NettyClient()
-                            client.address = msg.serverAddress
-                            client.remoteId = msg.clusterId
+                            owner.communicationEvents << new ClusterNode.CommunicationEvent.TryingConnect(uuid:msg.clusterId, address:msg.serverAddress)
+                            def client = new ClusterClient(msg.serverAddress, owner, msg.clusterId)
                             clients.put(msg.clusterId, client)
-                            startupChild(client)
+                            client.connect().addListener { future ->
+                                def channel = future.channel
+                                allConnected.add(channel)
+                                channel.closeFuture.addListener { future2 ->
+                                    synchronized(clients) {
+                                        clients.remove(client.remoteId)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -71,57 +75,5 @@ import org.mbte.gretty.remote.inet.InetDiscoveryInfo
         }
     }
 
-    private HashMap<UUID,NettyClient> clients = [:]
-
-    class NettyClient extends SupervisedChannel {
-        Connection connection
-        SocketAddress address
-        UUID remoteId
-
-        void doStartup() {
-            ClientBootstrap bootstrap = [clientFactory]
-            SimpleChannelHandlerEx handler = [
-                createConnection: { ctx ->
-                    new ClientConnection(channel: ctx.channel, clusterNode:clusterNode)
-                }
-            ]
-
-            bootstrap.pipeline.addLast("object.encoder", new ObjectEncoder())
-            bootstrap.pipeline.addLast("object.decoder", new ObjectDecoder())
-            bootstrap.pipeline.addLast("handler", handler);
-
-            bootstrap.setOption("tcpNoDelay", true);
-            bootstrap.setOption("keepAlive", true);
-
-            bootstrap.connect(address)
-        }
-
-        void doShutdown () {
-            connection?.channel?.close()
-        }
-
-        void onDisconnect() {
-            synchronized(clients) {
-                clients.remove(remoteId)
-            }
-            connection = null
-            shutdown()
-        }
-
-        private static class ClientConnection extends Connection {
-            NettyClient nettyClient
-
-            public void onConnect() {
-                super.onConnect()
-                if (nettyClient)
-                    nettyClient.connection = this
-            }
-
-            public void onDisconnect() {
-                nettyClient?.onDisconnect()
-                nettyClient = null
-                super.onDisconnect();
-            }
-        }
-    }
+    private HashMap<UUID,ClusterClient> clients = [:]
 }

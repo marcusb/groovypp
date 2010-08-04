@@ -32,14 +32,23 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
       size
     }
 
-    final V getAt(K key) { getAt(key, key.hashCode()) }
+    final V getAt(K key) { getAt(key, hash(key)) }
+
+    private static int hash(K key) {
+        def h = key.hashCode()
+        h += ~(h << 9)
+        h ^=  (h >>> 14)
+        h +=  (h << 4)
+        h ^=  (h >>> 10)
+        h
+    }
 
     final FHashMap<K, V> put(K key, V value) {
-        update(0, key, key.hashCode(), value)
+        update(0, key, hash(key), value)
     }
 
     final FHashMap<K, V> remove(K key) {
-        remove(key, key.hashCode())
+        remove(key, hash(key))
     }
 
     private int size = -1

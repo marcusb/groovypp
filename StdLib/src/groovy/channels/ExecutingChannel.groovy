@@ -16,8 +16,10 @@
 
 package groovy.channels
 
-import groovy.util.concurrent.FQueue
 import java.util.concurrent.Executor
+
+import groovy.util.concurrent.FQueue
+import groovy.util.concurrent.CallLater
 
 /**
  * Channel, which asynchronously schedule incoming messages for processing.

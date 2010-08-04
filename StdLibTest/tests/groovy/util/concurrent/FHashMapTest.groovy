@@ -28,12 +28,22 @@ public class FHashMapTest extends GroovyTestCase {
     }
 
     void testInsertMany () {
+        Map<Integer,Integer> data = [:]
+        def clock = System.currentTimeMillis()
+        for(i in 0..<500000) {
+            data[i] = -i
+        }
+        println("Map box & insert: ${System.currentTimeMillis()-clock}")
+
         FHashMap<Integer,Integer> map = FHashMap.emptyMap
 
-        for(i in 0..<500000) {
-            map = map.put(i, -i)
+        clock = System.currentTimeMillis()
+        for(e in data.entrySet()) {
+            map = map.put(e.key, e.value)
         }
-        for(i in 0..<500000) {
+        println("FMap insert: ${System.currentTimeMillis()-clock}")
+
+        for(i in 0..<2500000) {
             map = map.remove(2*i)
         }
         assertEquals 250000, map.size()

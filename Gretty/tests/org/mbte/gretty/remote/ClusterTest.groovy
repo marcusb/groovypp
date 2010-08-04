@@ -16,12 +16,10 @@
 
 package org.mbte.gretty.remote
 
-import org.mbte.gretty.remote.Server
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import org.mbte.gretty.remote.ClientConnector
+
 import groovy.util.concurrent.CallLaterExecutors
-import org.mbte.gretty.remote.inet.MulticastClusterNode
 import java.util.concurrent.atomic.AtomicInteger
 
 @Typed class ClusterTest extends GroovyTestCase {
@@ -32,8 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger
         def disconnectCdl = new CountDownLatch(n*(n-1))
         def pool = CallLaterExecutors.newCachedThreadPool()
         for(i in 0..<n) {
-            def counter = new AtomicInteger(n - 1)
-            MulticastClusterNode cluster = [executor:pool]
+            def counter = new AtomicInteger(n-1)
+            ClusterNode cluster = [executor:pool, multicastPort:4238]
             cluster.communicationEvents.subscribe { msg ->
                 println "${cluster.id} $msg"
             }
@@ -50,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger
             }
             cluster.mainActor = { msg ->
                 println "${cluster.id} received '$msg' $counter"
-                if (counter.dec() == 0) {
+                if (!counter.decrementAndGet()) {
                     println "${cluster.id} stopping"
                     cluster.shutdown {
                         stopCdl.countDown()
@@ -62,7 +60,10 @@ import java.util.concurrent.atomic.AtomicInteger
             cluster.startup()
         }
         assertTrue(connectCdl.await(100,TimeUnit.SECONDS))
+        println "all connections succeeded"
         assertTrue(stopCdl.await(100,TimeUnit.SECONDS))
+        println "all stops succeeded"
         assertTrue(disconnectCdl.await(100,TimeUnit.SECONDS))
+        println "all disconnects succeeded"
     }
 }

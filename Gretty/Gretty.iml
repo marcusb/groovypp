@@ -19,6 +19,7 @@
         <SOURCES>
           <root url="file://$MODULE_DIR$/../../../netty-3.2.1.Final/src/main/java" />
           <root url="file://$MODULE_DIR$/../../../freemarker-2.3.16/src" />
+          <root url="file://$MODULE_DIR$/../../../JGroups-2.10.0.GA.src/src" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>

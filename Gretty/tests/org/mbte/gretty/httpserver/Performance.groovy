@@ -7,7 +7,7 @@ import org.jboss.netty.util.CharsetUtil
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import java.util.logging.*
 import org.jboss.netty.logging.InternalLoggerFactory
-import groovy.util.concurrent.CallLaterExecutors
+
 import java.util.concurrent.Executors
 
 class Performance {
@@ -155,7 +155,7 @@ new ClientManager(address)
                 ]
             ],
 
-            pipelineCreated: { pipeline ->
+            buildPipeline: { pipeline ->
                 pipeline.addFirst ("ioMonitor", ioMonitor)
             }
         ]

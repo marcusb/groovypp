@@ -63,7 +63,6 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
     def void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
 //        if(logger.isEnabled(InternalLogLevel.DEBUG))
 //            logger.debug("${ctx.channel} CONNECTED")
-        server.allConnected.add(ctx.channel)
         super.channelConnected(ctx, e)
     }
 
@@ -78,7 +77,7 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
         switch(msg) {
             case GrettyHttpRequest:
                 def req = msg
-                server.threadPool.execute {
+                server.execute {
                     try {
                         if(UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION)) && WEBSOCKET.equalsIgnoreCase(req.getHeader(UPGRADE))) {
                             handleWebSocketRequest(ctx, e)

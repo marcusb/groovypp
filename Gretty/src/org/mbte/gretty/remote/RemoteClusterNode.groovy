@@ -22,20 +22,20 @@ import groovy.channels.MessageChannel
  * Remote node in the cluster
  */
 @Typed class RemoteClusterNode extends MessageChannel<Serializable> {
-   final RemoteConnection connection
+   final RemoteConnectionHandler handler
 
    final UUID remoteId
 
-   RemoteClusterNode (RemoteConnection connection, UUID remoteId) {
-       this.connection = connection
+   RemoteClusterNode (RemoteConnectionHandler handler, UUID remoteId) {
+       this.handler = handler
        this.remoteId = remoteId
    }
 
    void post(Serializable message) {
-        connection.send(new ToMainActor(payLoad:message))
+        handler.send(new ToMainActor(payLoad:message))
    }
 
-   @Typed public static class ToMainActor extends RemoteMessage {
+   static class ToMainActor extends RemoteMessage {
         Serializable payLoad
    }
 }

@@ -19,7 +19,7 @@ package groovy.channels
 import java.util.concurrent.atomic.AtomicInteger
 import groovy.util.concurrent.FList
 
-@Typed abstract class SupervisedChannel<M> extends ExecutingChannel<M> {
+@Typed abstract class SupervisedChannel<O extends SupervisedChannel> extends ExecutingChannel {
     private static int NOT_STARTED = 0
     private static int STARTING = 1
     private static int STARTED = 2
@@ -28,7 +28,7 @@ import groovy.util.concurrent.FList
     private static int STOPPED = STOP_MASK | 1
     private static int CRASHED = STOP_MASK | 2
 
-    SupervisedChannel owner
+    O owner
 
     private volatile FList<SupervisedChannel> children = FList.emptyList
 

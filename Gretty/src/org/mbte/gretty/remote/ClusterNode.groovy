@@ -20,11 +20,19 @@ import groovy.channels.SupervisedChannel
 
 import groovy.channels.MessageChannel
 import groovy.channels.MultiplexorChannel
+import org.mbte.gretty.remote.inet.InetDiscoveryInfo
+import org.mbte.gretty.remote.inet.MulticastChannel
 
 /**
  * Local node in the cluster.
  */
-@Typed abstract class ClusterNode extends SupervisedChannel {
+@Typed final class ClusterNode extends SupervisedChannel {
+    private InetAddress multicastGroup
+    private int         multicastPort
+
+    List<SocketAddress> seedNodes = []
+
+    SocketAddress       address = new InetSocketAddress(InetAddress.getLocalHost(), findFreePort())
 
     /**
      * Unique id of this node over cluster
@@ -37,38 +45,44 @@ import groovy.channels.MultiplexorChannel
 
     MultiplexorChannel<CommunicationEvent> communicationEvents = []
 
-    final Server server = []
-    final ClientConnector clientConnector = []
+    private ClusterServer server
+
+    private final ClientConnector clientConnector = []
+
+    protected final Timer timer = []
 
     protected final long allocateObjectId () {
         nextObjectId.incrementAndGet ()
-    }
-
-    void onConnect(RemoteClusterNode remoteNode) {
-        communicationEvents << new ClusterNode.CommunicationEvent.Connected(remoteNode:remoteNode)
-    }
-
-    void onDisconnect(RemoteConnection connection) {
-        communicationEvents << new ClusterNode.CommunicationEvent.Disconnected(connection:connection)
-    }
-
-    void onMessage(RemoteClusterNode remoteNode, RemoteMessage message) {
-        switch(message) {
-            case RemoteClusterNode.ToMainActor:
-                    mainActor?.post(message.payLoad)
-                break;
-        }
-    }
-
-    void onException(RemoteConnection connection, Throwable cause) {
-        cause.printStackTrace()
     }
 
     void setMainActor(MessageChannel actor) {
         mainActor = actor.async(executor)
     }
 
-  static class CommunicationEvent {
+    protected void doStartup() {
+        super.doStartup();
+
+        server = [this]
+        server.start ()
+
+        startupChild(clientConnector)
+
+        if (address instanceof InetSocketAddress && multicastGroup && multicastPort) {
+            startupChild (new MulticastChannel.Sender([
+                  multicastGroup: multicastGroup,
+                  multicastPort:  multicastPort,
+                  dataToTransmit: InetDiscoveryInfo.toBytes(id, (InetSocketAddress)address)
+            ]))
+        }
+    }
+
+    protected void doShutdown() {
+        server.stop ()
+
+        super.doShutdown()
+    }
+
+    static class CommunicationEvent {
         static class TryingConnect extends CommunicationEvent{
             UUID uuid
             String address
@@ -87,11 +101,38 @@ import groovy.channels.MultiplexorChannel
         }
 
         static class Disconnected extends CommunicationEvent{
-            RemoteConnection connection
+            UUID remoteId
 
             String toString () {
-                "disconnected from ${connection.remoteNode?.remoteId}"
+                "disconnected from $remoteId"
             }
         }
+    }
+
+    InetAddress getMulticastGroup () {
+        multicastGroup
+    }
+
+    void setMulticastGroup(InetAddress mg) {
+        multicastGroup = mg
+        if(!multicastPort)
+            multicastPort = 4238
+    }
+
+    int getMulticastPort() {
+        multicastPort
+    }
+
+    void setMulticastPort(int port) {
+        multicastPort = port
+        if(!multicastGroup)
+            multicastGroup = InetAddress.getByAddress(230,0,0,239)
+    }
+
+    static int findFreePort() {
+        def server = new ServerSocket(0)
+        def port = server.getLocalPort()
+        server.close()
+        port
     }
 }
