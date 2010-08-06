@@ -23,6 +23,7 @@ package groovy.util.concurrent
  *
  * @author Daniel Spiewak
  * @author Rich Hickey
+ * @author Alex Tkachman
  */
 
 @Typed
@@ -112,6 +113,10 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
         }
     }
 
+    protected static int bitIndex(int bit, int mask) {
+       Integer.bitCount(mask & (bit - 1))
+    }
+
     private static abstract class SingleNode<K,V> extends FHashMap<K,V> {
         final int hash
 
@@ -122,16 +127,23 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
         BitmappedNode bitmap(int shift, int hash, K key, V value) {
             def shift1 = (getHash() >>> shift) & 0x1f
             def shift2 = (hash >>> shift) & 0x1f
-            def table = new FHashMap<K,V>[Math.max(shift1, shift2) + 1]
-            table[shift1] = this
-            def bits1 = 1 << shift1                                 
+
+            def bits1 = 1 << shift1
             def bits2 = 1 << shift2
+
+            def mask = bits1 | bits2
+
+            shift1 = bitIndex(bits1, mask)
+            shift2 = bitIndex(bits2, mask)
+
+            def table = new FHashMap<K,V>[shift1 == shift2 ? 1 : 2]
+            table[shift1] = this
             if (shift1 == shift2) {
                 table[shift2] = table[shift2].update(shift + 5, key, hash, value)
             } else {
                 table[shift2] = new LeafNode(hash, key, value)
             }
-            return new BitmappedNode(shift, bits1 | bits2, table)
+            return new BitmappedNode(shift, mask, table)
         }
     }
 
@@ -139,7 +151,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
         final K key
         final V value
 
-        def LeafNode(int hash, K key, V value) {
+        LeafNode(int hash, K key, V value) {
             super(hash)
             this.@key = key  // todo remove '@'
             this.@value = value
@@ -218,7 +230,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
             if (bucket.isEmpty()) return bucket
             if (bucket.head.key == key) return bucket.tail
             def t = removeBinding(key, bucket.tail)
-            if (t == bucket.getTail()) return bucket else return t + bucket.head
+            t === bucket.tail ? bucket : t + bucket.head
         }
 
         FHashMap<K,V> update(int shift, K key, int hash, V value) {
@@ -232,7 +244,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
         FHashMap<K,V> remove(K key, int hash) {
             if (hash != this.hash) return this
             def b = removeBinding(key, bucket)
-            if (b == this) return this
+            if (b === this) return this
             if (b.size == 1) {
                 return new LeafNode(hash, b.head.key, b.head.value)
             }
@@ -245,7 +257,7 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
         int bits
         FHashMap<K,V> [] table
 
-        def BitmappedNode(int shift, int bits, FHashMap<K,V>[] table) {
+        BitmappedNode(int shift, int bits, FHashMap<K,V>[] table) {
             this.shift = shift;
             this.bits = bits;
             this.table = table;
@@ -261,110 +273,68 @@ abstract class FHashMap<K, V> implements Iterable<Map.Entry<K,V>>, Serializable 
 
         V getAt(K key, int hash) {
             def i = (hash >>> shift) & 0x1f
-            def mask = 1 << i
-            if (bits & mask) return table[i].getAt(key, hash)
+            def bit = 1 << i
+            bits & bit ? table[bitIndex(bit, bits)].getAt(key, hash) : null
         }
 
         FHashMap<K,V> update(int shift, K key, int hash, V value) {
-            def i = (hash >>> shift) & 0x1f
-            def mask = 1 << i
-            if (bits & mask) {
+            int i = (hash >>> shift) & 0x1f
+            int bit = 1 << i
+            if (bits & bit) {
+                i = bitIndex(bit, bits)
                 def node = table[i].update(shift + 5, key, hash, value)
-                if (node == table[i]) return this else {
-                    def newTable = new FHashMap<K,V>[table.length]
-                    System.arraycopy table, 0, newTable, 0, table.length
+                if (node === table[i])
+                    return this
+                else {
+                    FHashMap<K,V>[] newTable = table.clone()
                     newTable[i] = node
                     return new BitmappedNode(shift, bits, newTable)
                 }
             } else {
-                def newTable = new FHashMap<K,V>[Math.max(table.length, i + 1)]
-                System.arraycopy table, 0, newTable, 0, table.length
+                def newBits = bits | bit
+                i = bitIndex(bit, newBits)
+
+                def newTable = new FHashMap<K,V>[table.length+1]
+                if(i > 0)
+                    System.arraycopy table, 0, newTable, 0, i
                 newTable[i] = new LeafNode(hash, key, value)
-                def newBits = bits | mask
-                if (newBits == ~0) {
-                    return new FullNode(shift, newTable)
-                } else {
-                    return new BitmappedNode(shift, newBits, newTable)
-                }
+                if(i < table.length)
+                    System.arraycopy table, i, newTable, i+1, table.length-i
+
+                return new BitmappedNode(shift, newBits, newTable)
             }
         }
 
         FHashMap<K,V> remove(K key, int hash) {
-            def i = (hash >>> shift) & 0x1f
-            def mask = 1 << i
-            if (bits & mask) {
+            int i = (hash >>> shift) & 0x1f
+            int bit = 1 << i
+            if (bits & bit) {
+                i = bitIndex(bit, bits)
                 def node = table[i].remove(key, hash)
-                if (node == table[i]) {
+                if (node === table[i]) {
                     return this
-                } else if (node == emptyMap) {
-                    def adjustedBits = bits & ~mask
-                    if (!adjustedBits) return emptyMap
+                } else if (node === emptyMap) {
+                    int adjustedBits = bits & ~bit
+                    if (!adjustedBits)
+                        return emptyMap
                     if (!(adjustedBits & (adjustedBits - 1))) {
                         // Last one.
-                        for (j in 0..31) {
-                            if (adjustedBits == 1 << j) return table[j]
-                        }
+                        return table[bitIndex(adjustedBits,bits)]
                     }
-                    def newTable = new FHashMap<K,V>[table.length]
-                    System.arraycopy table, 0, newTable, 0, table.length
-                    newTable[i] = null
+                    def newTable = new FHashMap<K,V>[table.length-1]
+                    if(i>0)
+                        System.arraycopy table, 0, newTable, 0, i
+                    if(i<table.length-1)
+                        System.arraycopy table, i+1, newTable, i, table.length-1-i
                     return new BitmappedNode(shift, adjustedBits, newTable)
                 } else {
-                    def newTable = new FHashMap<K,V>[table.length]
-                    System.arraycopy table, 0, newTable, 0, table.length
+                    FHashMap<K,V>[] newTable = table.clone()
                     newTable[i] = node
                     return new BitmappedNode(shift, bits, newTable)
                 }
-            } else return this
-        }
-    }
-
-    private static class FullNode<K,V> extends FHashMap<K,V> {
-        int shift
-        FHashMap<K,V>[] table
-
-        def FullNode(int shift, FHashMap<K,V>[] table) {
-            this.shift = shift
-            this.table = table
-        }
-
-        int size_() {
-            table.foldLeft(0) {e, sum -> sum + e.size() }
-        }
-
-        public Iterator<Map.Entry<K, V>> iterator() {
-            table.iterator().map{it.iterator()}.flatten()
-        }
-
-        V getAt(K key, int hash) {
-            table[(hash >>> shift) & 0x1f].getAt(key, hash)
-        }
-
-        FHashMap<K,V> update(int shift, K key, int hash, V value) {
-            def i = (hash >>> shift) & 0x1f
-            def node = table[i].update(shift + 5, key, hash, value)
-            if (node == table[i]) return this else {
-                def newTable = new FHashMap<K,V>[32]
-                System.arraycopy table, 0, newTable, 0, 32
-                newTable[i] = node
-                return new FullNode(shift, newTable)
             }
-        }
-
-        FHashMap<K,V> remove(K key, int hash) {
-            def i = (hash >>> shift) & 0x1f
-            def node = table[i].remove(key, hash)
-            if (node == table[i]) return this else {
-                def newTable = new FHashMap<K,V>[32]
-                System.arraycopy table, 0, newTable, 0, 32
-                if (node == emptyMap) {
-                    newTable[i] = null
-                    def mask = 1 << i
-                    return new BitmappedNode(shift, ~mask, newTable)
-                } else {
-                    newTable[i] = node
-                    return new FullNode(shift, newTable)
-                }
+            else {
+                return this
             }
         }
     }
