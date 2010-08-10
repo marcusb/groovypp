@@ -1,0 +1,32 @@
+package org.mbte.model;
+
+option optimize_for = LITE_RUNTIME;
+
+message Uuid {
+    required int64 uuidHi = 1;
+    required int64 uuidLo = 2;
+}
+
+message RemoteMessage {
+
+    enum MessageType {
+        Identity = 1;
+        Forward  = 2;
+    }
+
+    required Uuid senderId = 1;
+
+    message Identity {
+    }
+
+    optional Identity identity = 100;
+
+    message Forward {
+        required Uuid          forwardTo = 1;
+        required RemoteMessage payload   = 2;
+    }
+
+    optional Forward forward = 101;
+
+    repeated int32 lambdaList = 102;
+}

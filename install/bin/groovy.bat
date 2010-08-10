@@ -1,7 +1,7 @@
 @if "%DEBUG%" == "" @echo off
 
 @rem 
-@rem $Revision: 2770 $ $Date: 2005-08-29 13:49:42 +0300 (Mon, 29 Aug 2005) $
+@rem $Revision: 19761 $ $Date: 2010-04-05 15:29:23 +0300 (Mon, 05 Apr 2010) $
 @rem 
 
 @rem Set local scope for the variables with windows NT shell
@@ -16,3 +16,4 @@ if "%DIRNAME%" == "" set DIRNAME=.\
 
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal
+%COMSPEC% /C exit /B %ERRORLEVEL%

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Life Game</title>
+    <script type="text/javascript">
+        var cells = {}
+        var editable = true
+        var iterator
+
+        function addArg(arg,method) {
+          return function() {
+            return method(arg)
+          }
+        }
+
+        function init() {
+            var table = document.getElementById('table')
+            for(i = 0; i != 48; i += 1) {
+                cells [i] = {}
+                var tr = document.createElement('tr')
+                tr.style.height = '14px'
+                for(j = 0; j != 48; j += 1) {
+                    var td = document.createElement('td')
+                    cells [i][j] = {x:i, y:j, live:false, td:td}
+                    td.setAttribute('style', 'width: 14px;  border-left:1px solid #5f9ea0; border-top: 1px solid #5f9ea0;')
+                    td.onclick = addArg(cells[i][j],function (cell) {
+                        if(editable) {
+                            cell.live = !cell.live
+                            cell.td.style.backgroundColor = cell.live ? 'blue' : 'aqua'
+                        }
+                    })
+                    tr.appendChild(td)
+                }
+                table.appendChild(tr)
+            }
+        }
+
+        function startStop () {
+            if(iterator) {
+                document.getElementById('startStop').innerHTML = 'Start'
+                clearInterval(iterator)
+                iterator = null
+                return
+            }
+
+            document.getElementById('startStop').innerHTML = 'Pause'
+            iterator = setInterval(function(){
+                for(i = 0; i != 48; i += 1) {
+                    for(j = 0; j != 48; j += 1) {
+                        around = 0
+                        around += i>0&&j>0&&cells [i-1][j-1].live ? 1 : 0
+                        around += i>0&&cells [i-1][j  ].live ? 1 : 0
+                        around += i>0&&j<47&&cells [i-1][j+1].live ? 1 : 0
+                        around += j>0&&cells [i  ][j-1].live ? 1 : 0
+                        around += j<47&&cells [i  ][j+1].live ? 1 : 0
+                        around += i<47&&j>0&&cells [i+1][j-1].live ? 1 : 0
+                        around += i<47&&cells [i+1][j  ].live ? 1 : 0
+                        around += i<47&&j<47&&cells [i+1][j+1].live ? 1 : 0
+
+                        cells[i][j].next = cells[i][j].live
+                        if(around<2||around>3)
+                            cells[i][j].next = false
+                        if(around==3)
+                            cells[i][j].next = true
+                    }
+                }
+
+                for(i = 0; i != 48; i += 1) {
+                    for(j = 0; j != 48; j += 1) {
+                        var cell = cells[i][j];
+                        if(cell.next != cell.live) {
+                            cell.live = cell.next
+                            cell.td.style.backgroundColor = cell.next ? 'blue' : 'aqua'
+                        }
+                    }
+                }
+            },100)
+        }
+    </script>
+</head>
+<body onload="init()">
+    <center>
+        <table>
+            <tr>
+                <td>
+                    <table style="background-color:aqua;" cellpadding="0" cellspacing="0" id="table">
+                    </table>
+                </td>
+                <td valign="top">
+                    <button onclick="startStop()" id="startStop">Start</button>
+                </td>
+            </tr>
+        </table>
+    </center>
+</body>
+</html>

@@ -6,7 +6,7 @@
 @rem ##########################################################################
 
 @rem
-@rem $Revision: 15926 $ $Date: 2009-04-07 16:19:33 +0300 (Tue, 07 Apr 2009) $
+@rem $Revision: 20053 $ $Date: 2010-05-16 07:57:31 +0300 (Sun, 16 May 2010) $
 @rem
 
 @rem Set local scope for the variables with windows NT shell
@@ -167,8 +167,8 @@ if "x1" == "x%_SKIP%" goto skip_1
 
 rem now unescape -q, -s, -d
 set _ARG=%_ARG:-s=*%
-set _ARG=%_ARG:-d=-%
 set _ARG=%_ARG:-q="%
+set _ARG=%_ARG:-d=-%
 
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% %_ARG%
 set _ARG=
@@ -200,7 +200,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GROOVY_HOME%\lib\groovy-1.8.0-beta-1-SNAPSHOT.jar
+set STARTER_CLASSPATH=%GROOVY_HOME%\lib\groovy-1.8.0-beta-2-SNAPSHOT.jar
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
@@ -238,3 +238,4 @@ if "%OS%"=="Windows_NT" endlocal
 
 @rem Optional pause the batch file
 if "%GROOVY_BATCH_PAUSE%" == "on" pause
+%COMSPEC% /C exit /B %ERRORLEVEL%

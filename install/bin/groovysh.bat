@@ -1,7 +1,7 @@
 @if "%DEBUG%" == "" @echo off
 
 @rem 
-@rem $Revision: 9540 $ $Date: 2007-11-29 19:00:39 +0200 (Thu, 29 Nov 2007) $
+@rem $Revision: 19761 $ $Date: 2010-04-05 15:29:23 +0300 (Mon, 05 Apr 2010) $
 @rem
 
 @rem Set local scope for the variables with windows NT shell
@@ -19,3 +19,4 @@ if "%OLDSHELL%" == "" set CLASSNAME=org.codehaus.groovy.tools.shell.Main
 
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal
+%COMSPEC% /C exit /B %ERRORLEVEL%

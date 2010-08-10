@@ -4,7 +4,7 @@
     <head>
         <title>WebSocket Demo</title>
         <script type="text/javascript" src="/googlib/prototype/1.6.1/prototype.js"></script>
-        <script type="text/javascript" src="js/pseudows.js"></script>
+        <script type="text/javascript" src="/js/pseudows.js"></script>
         <script type="text/javascript">
             var conn
 
@@ -22,7 +22,7 @@
                 }
 
                 var timer
-                conn = new WebSocket("ws://" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/ws", "lambada");
+                conn = new WebSocket("ws://" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/ws");
 
                 var sendCount = 0
                 var receiveCount = 0

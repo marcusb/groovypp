@@ -60,4 +60,10 @@ import org.jboss.netty.handler.codec.http.HttpMethod
     void websocket(String match, GrettyWebSocketHandler handler) {
         context.addWebSocket(match, handler)
     }
+
+    void rest(String match, GrettyRestDescription descr) {
+        descr.context = context
+        descr.match = match
+        descr.run ()
+    }
 }

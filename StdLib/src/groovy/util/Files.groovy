@@ -598,4 +598,11 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
         inp.close()
         res
     }
+
+    public static Object fromSerialBytes(byte [] bytes, int offset, int length, ClassLoader loader = null) {
+        def inp = new SerialInputStream(new ByteArrayInputStream(bytes, offset, length), loader)
+        def res = inp.readObject()
+        inp.close()
+        res
+    }
 }

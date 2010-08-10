@@ -25,8 +25,6 @@ class Performance {
         rootLogger.setLevel(Level.FINE)
         rootLogger.addHandler(new ConsoleHandler(level:Level.FINE))
 
-        AtomicInteger connected = []
-
         GrettyServer server = [
             webContexts: [
                 "/" : [

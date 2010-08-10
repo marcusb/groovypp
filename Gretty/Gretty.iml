@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/generated" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -20,8 +21,69 @@
           <root url="file://$MODULE_DIR$/../../../netty-3.2.1.Final/src/main/java" />
           <root url="file://$MODULE_DIR$/../../../freemarker-2.3.16/src" />
           <root url="file://$MODULE_DIR$/../../../JGroups-2.10.0.GA.src/src" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-benchmark/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-json/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-parser/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-core/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-yaml/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-runtime/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model-json/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-yaml/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-core/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-xml/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-maven-plugin/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-xml/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-parser/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-benchmark/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-api/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-runtime/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model-json/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-api/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-compiler/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-codegen/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-json/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-codegen/src/main/java" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/dist" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-api/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-runtime/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-xml/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-xml/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model-json/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-json/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-codegen/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-codegen/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-json/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-api/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model-json/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-benchmark/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-core/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-yaml/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-yaml/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-benchmark/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-core/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-runtime/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-runtime/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-model/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-parser/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-parser/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-api/src/test/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-maven-plugin/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/protostuff-compiler/src/main/java" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/../../../protostuff-1.0.0.M3/dist" recursive="false" />
       </library>
     </orderEntry>
   </component>

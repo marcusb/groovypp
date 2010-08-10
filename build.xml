@@ -144,7 +144,7 @@
 			<include name="asm*.jar"/>
 			<include name="netty-*.jar"/>
 			<include name="commons-cli-*.jar"/>
-			<include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+			<include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
 
 			<exclude name="asm-attr*.jar"/>
 			<exclude name="asm-util*.jar"/>
@@ -164,6 +164,15 @@
                 <istrue value="${forceCoverage}"/>
             </and>
         </condition>
+
+    <target name="gretty.compile.proto">
+      <java classname="com.dyuproject.protostuff.compiler.CompilerMain" fork="true" dir="Gretty">
+        <arg value="proto/proto.properties"/>
+        <classpath>
+          <pathelement location="Gretty/lib/protostuff-compiler-1.0.0.M3-jarjar.jar"/>
+        </classpath>
+      </java>
+    </target>
 
     <taskdef name="groovyc"
          classname="org.codehaus.groovy.ant.Groovyc"
@@ -364,7 +373,7 @@
             </patternset>
             <globmapper from="META-INF/LICENSE.txt" to="META-INF/GROOVY-LICENSE.txt"/>
             <fileset dir="${deploy.lib.dir}">
-                <include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+                <include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
             </fileset>
         </unzip>
         <unzip dest="${stagingDirectory}/cli">
@@ -472,7 +481,7 @@
 
 	        <mappedresources>
 		        <fileset dir="install/lib">
-			        <include name="groovy-1.8.0-beta-1-SNAPSHOT.jar" />
+			        <include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
 		        </fileset>
 		        <globmapper from="groovy-1.8.0*.jar"
 		                    to="lib/groovy-1.8.0*-${version}.jar"/>

@@ -102,6 +102,9 @@ class BindLater<V> extends AbstractQueuedSynchronizer implements Future<V> {
     }
 
     final BindLater<V> whenBound (Listener<V> listener) {
+        if (!listener)
+            return this
+        
         for (;;) {
             def l = bindListeners
             if (l == null) {
