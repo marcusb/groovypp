@@ -6,8 +6,9 @@ import org.jboss.netty.handler.codec.http.HttpResponse
 import org.mbte.gretty.httpclient.GrettyClient
 import org.jboss.netty.handler.codec.http.HttpVersion
 import org.jboss.netty.handler.codec.http.HttpMethod
+import org.jboss.netty.buffer.ChannelBuffers
 
-@Typed class RestTest extends GroovyTestCase {
+@Typed class RestTest extends GroovyTestCase implements HttpRequestHelper {
 
     private GrettyServer server
 
@@ -58,25 +59,5 @@ import org.jboss.netty.handler.codec.http.HttpMethod
             assertEquals "245", response.getHeader("objectId")
             assertEquals "post", response.getHeader("method")
         }
-    }
-
-    private void doTest (GrettyHttpRequest request, Function1<HttpResponse,Void> action) {
-        BindLater cdl = []
-
-        GrettyClient client = [new LocalAddress("test_server")]
-        client.connect{ future ->
-            client.request(request) { bound ->
-                try {
-                    action(bound.get())
-                    cdl.set("")
-                }
-                catch(e) {
-                    cdl.setException(e)
-                }
-            }
-        }
-
-        cdl.get()
-        client.disconnect ()
     }
 }

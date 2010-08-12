@@ -39,6 +39,7 @@ import org.jboss.netty.channel.ExceptionEvent
 import java.nio.channels.ClosedChannelException
 import org.jboss.netty.channel.ChannelFuture
 import groovy.util.concurrent.BindLater.Listener
+import org.mbte.gretty.httpserver.GrettyHttpResponse
 
 @Typed class GrettyClient extends AbstractHttpClient {
 
@@ -55,12 +56,12 @@ import groovy.util.concurrent.BindLater.Listener
         later
     }
 
-    void request(HttpRequest request, BindLater.Listener<HttpResponse> action) {
+    void request(HttpRequest request, BindLater.Listener<GrettyHttpResponse> action) {
         assert pendingRequest.compareAndSet(null, new BindLater().whenBound(action))
         channel.write(request)
     }
 
     void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-        pendingRequest.getAndSet(null).set((HttpResponse)e.message)
+        pendingRequest.getAndSet(null).set((GrettyHttpResponse)e.message)
     }
 }

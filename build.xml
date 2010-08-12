@@ -115,6 +115,14 @@
         <pathelement location="${stdlib.prod.output}"/>
     </path>
 
+    <path id="compile.gretty.classpath2">
+        <path refid="libs"/>
+        <path refid="gretty.libs"/>
+        <pathelement location="${compiler.prod.output}"/>
+        <pathelement location="${stdlib.prod.output}"/>
+        <pathelement location="${gretty.prod.output}"/>
+    </path>
+
     <path id="compile.gretty.tests.classpath">
         <path refid="libs"/>
         <path refid="gretty.libs"/>
@@ -256,7 +264,10 @@
 
     <target name="compile.gretty" depends="compile.stdlib" description="compiles Gretty">
         <mkdir dir="${gretty.prod.output}"/>
-        <groovyc classpathref="compile.gretty.classpath" srcdir="${gretty.src}" destdir="${gretty.prod.output}"
+        <javac classpathref="compile.gretty.classpath" srcdir="${gretty.src}"
+			destdir="${gretty.prod.output}" target="${target.jvm}"
+			debug="yes" debuglevel="lines,vars,source" includeantruntime="no" fork="true"/>
+        <groovyc classpathref="compile.gretty.classpath2" srcdir="${gretty.src}" destdir="${gretty.prod.output}"
         	includeantruntime="no" fork="yes">
         </groovyc >
     </target>

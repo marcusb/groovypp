@@ -17,15 +17,25 @@
 package groovy.util.concurrent
 
 import java.util.concurrent.Executor
+import java.util.concurrent.CountDownLatch
 
 @GrUnit({
     testWithFixedPool(10) {
-        ResourcePool<String> cassandraPool = [
+        ResourcePool<String> rpool = [
             executor: pool,
             initResources: { ["a"] }
         ]
 
-        cassandraPool.execute { it.toUpperCase() } { assert it == 'A' }
+        rpool.execute { it.toUpperCase() } {
+            assert it == 'A'
+        }
+
+        rpool.execute {
+            rpool.add("b")
+            rpool.execute {
+                assert it == 'b'
+            }.get()
+        }
     }
 })
 @Typed abstract class ResourcePool<R> {
@@ -39,12 +49,11 @@ import java.util.concurrent.Executor
      */
     abstract Iterable<R> initResources ()
 
-    abstract static class Action<R,D> extends Function1<R,D> {
-        Function1<D,Object> whenDone
-    }
+    abstract static class Action<R,D> extends BindLater<D> implements Function1<R,D> {}
 
-    final <D> void execute (Action<R,D> action, Function1<D,Object> whenDone = null) {
-        action.whenDone = whenDone
+    final <D> BindLater<D> execute (Action<R,D> action, BindLater.Listener<D> whenDone = null) {
+        action.whenBound(whenDone)
+
         if (state.second == null) {
             initPool ()
         }
@@ -53,7 +62,7 @@ import java.util.concurrent.Executor
             if (s.second.empty) {
                 // no resource available, so put action in to the queue
                 if(state.compareAndSet(s, [s.first.addLast(action), FList.emptyList]))
-                    break
+                    return action
             }
             else {
                 // queue is guaranteed to be empty
@@ -62,37 +71,73 @@ import java.util.concurrent.Executor
                     executor.execute {
                         scheduledAction(action,s.second.head)
                     }
-                    break
+                    return action
                 }
             }
         }
     }
 
     private final <D> Object scheduledAction(Action<R,D> action, R resource) {
-        def res = action(resource)
+        try {
+            action.set(action(resource))
+        }
+        catch(t) {
+            action.setException(t)
+        }
 
         for (;;) {
             def s = state
             if (s.first.empty) {
                 // no more actions => we return resource to the pool
                 if(state.compareAndSet(s, [FQueue.emptyQueue, s.second + resource])) {
-                    return action.whenDone?.call (res)
+                    break
                 }
             }
             else {
                 def removed = s.first.removeFirst()
                 if(state.compareAndSet(s, [removed.second, s.second])) {
-                    if (runFair || action.whenDone) {
+                    if (runFair) {
                         // schedule action
                         executor.execute {
                             scheduledAction(removed.first,resource)
                         }
 
-                        return action.whenDone?.call (res)
+                        break
                     }
                     else {
                         // tail recursion
                         return scheduledAction(removed.first, resource)
+                    }
+                }
+            }
+        }
+    }
+
+    void add(R resource) {
+        if (state.second == null) {
+            initPool ()
+        }
+
+        for(;;) {
+            def s = state
+            if (!s.second.empty) {
+                // we guaranteed that there is no waiting tasks
+                if(state.compareAndSet(s, [FQueue.emptyQueue, s.second + resource])) {
+                    break
+                }
+            }
+            else {
+                if(state.first.empty) {
+                    // no pending tasks
+                    if(state.compareAndSet(s, [FQueue.emptyQueue, s.second + resource])) {
+                        break
+                    }
+                }
+                else {
+                    def removed = s.first.removeFirst()
+                    if(state.compareAndSet(s, [removed.second, FList.emptyList])) {
+                        scheduledAction(removed.first, resource)
+                        break
                     }
                 }
             }

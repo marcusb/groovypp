@@ -24,6 +24,10 @@ import org.jboss.netty.handler.codec.http.HttpRequestEncoder
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder
 import org.jboss.netty.channel.*
 import org.mbte.gretty.AbstractClient
+import org.jboss.netty.handler.codec.http.HttpResponseStatus
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse
+import org.mbte.gretty.httpserver.GrettyHttpResponse
+import org.jboss.netty.handler.codec.http.HttpVersion
 
 @Typed class AbstractHttpClient extends AbstractClient {
     AbstractHttpClient(SocketAddress remoteAddress, ChannelFactory factory = null) {
@@ -35,7 +39,12 @@ import org.mbte.gretty.AbstractClient
 
         pipeline.removeFirst() // remove self
 
-        pipeline.addLast("http.response.decoder", new HttpResponseDecoder())
+        pipeline.addLast("http.response.decoder", (HttpResponseDecoder)[
+            createMessage: { initialLine ->
+                def response = new GrettyHttpResponse(HttpVersion.valueOf(initialLine[0]), new HttpResponseStatus(Integer.valueOf(initialLine[1]), initialLine[2]))
+                return response;
+            }
+        ])
         pipeline.addLast("http.response.aggregator", new HttpChunkAggregator(Integer.MAX_VALUE))
         pipeline.addLast("http.request.encoder", new HttpRequestEncoder())
         pipeline.addLast("http.application", this)

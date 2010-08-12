@@ -30,7 +30,11 @@ testWithFixedPool(10) {
         FList.emptyList + "abcd"
     }]
 
-    rPool.execute { it + "_" }{ it.toUpperCase () }
+    def res = rPool.execute { (it + "_").toUpperCase() }{
+        it.get().toUpperCase ()
+    }.get()
+    println res
+    assert "ABCD_" == res
 }
         """
     }

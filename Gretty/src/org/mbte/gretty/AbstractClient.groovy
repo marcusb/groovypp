@@ -26,7 +26,7 @@ import org.jboss.netty.channel.local.LocalClientChannelFactory
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 
 @Typed class AbstractClient extends SimpleChannelHandler implements ChannelPipelineFactory {
-    protected volatile Channel channel
+    protected Channel channel
 
     protected final SocketAddress remoteAddress
 
@@ -62,14 +62,26 @@ import org.jboss.netty.channel.socket.ClientSocketChannelFactory
         bootstrap.setOption("keepAlive",  true)
 
         def connectFuture = bootstrap.connect(remoteAddress)
+        channel = connectFuture.channel
+        def returnFuture = new DefaultChannelFuture(channel, false)
         connectFuture.addListener { future ->
             if(future.success) {
-                channel = future.channel
-                onConnect ()
+                try {
+                    onConnect ()
+                }
+                catch(Throwable t) {
+                    returnFuture.setFailure(t)
+                }
+                returnFuture.setSuccess()
             }
             else {
                future.channel.close ()
-               onConnectFailed ()
+               try {
+                   onConnectFailed (future.cause)
+               }
+               catch(Throwable ignore) { //
+               }
+               returnFuture.setFailure(future.cause)
             }
 
             if(shouldReleaseResources) {
@@ -78,11 +90,17 @@ import org.jboss.netty.channel.socket.ClientSocketChannelFactory
                 }
             }
         }
-        connectFuture
+        returnFuture
     }
 
-    void connect(ChannelFutureListener listener) {
-        connect().addListener listener
+    ChannelFuture connect(ChannelFutureListener listener) {
+        def future = connect()
+        future.addListener listener
+        future
+    }
+
+    boolean isConnected () {
+        channel?.connected
     }
 
     void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
@@ -102,7 +120,7 @@ import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 
     protected void onConnect () {}
 
-    protected void onConnectFailed () {}
+    protected void onConnectFailed (Throwable cause) {}
 
     protected void onDisconnect () {}
 

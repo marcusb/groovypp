@@ -23,7 +23,7 @@ import org.jboss.netty.handler.codec.http.HttpChunkAggregator
 import org.mbte.gretty.httpclient.GrettyClient
 import java.util.concurrent.CountDownLatch
 
-@Typed class ServerTest extends GroovyTestCase {
+@Typed class ServerTest extends GroovyTestCase implements HttpRequestHelper {
 
     private GrettyServer server
 
@@ -83,25 +83,5 @@ import java.util.concurrent.CountDownLatch
             assertNull response.getHeader("mapId")
             assertNull response.getHeader("objectId")
         }
-    }
-
-    private void doTest (String request, Function1<HttpResponse,Void> action) {
-        BindLater cdl = []
-
-        GrettyClient client = [new LocalAddress("test_server")]
-        client.connect{ future ->
-            client.request(new GrettyHttpRequest(request)) { bound ->
-                try {
-                    action(bound.get())
-                    cdl.set("")
-                }
-                catch(e) {
-                    cdl.setException(e)
-                }
-            }
-        }
-
-        cdl.get()
-        client.disconnect ()
     }
 }

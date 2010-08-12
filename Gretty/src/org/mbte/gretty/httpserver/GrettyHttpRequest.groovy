@@ -47,4 +47,8 @@ import org.jboss.netty.handler.codec.http.*
             params = new QueryStringDecoder(uri).parameters
         params
     }
+    
+    String getContentText () {
+        new String(content.array(), content.arrayOffset(), content.readableBytes())
+    }
 }

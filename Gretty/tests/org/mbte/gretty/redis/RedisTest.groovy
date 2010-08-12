@@ -5,33 +5,7 @@ import groovy.util.concurrent.ResourcePool
 import java.util.concurrent.Semaphore
 import java.util.concurrent.Executors
 
-@Typed class RedisTestManual extends GroovyTestCase {
-
-    RedisClient redis
-
-    protected void setUp() {
-        super.setUp()
-
-        redis = [new InetSocketAddress('localhost',6379)]
-
-        CountDownLatch cdl = [1]
-        redis.connect {
-            println ">>> ${it.success}"
-            if(!it.success) {
-                redis = null
-            }
-            else {
-//                redis.flushDb().get()
-            }
-            cdl.countDown()
-        }
-        cdl.await()
-    }
-
-    protected void tearDown() {
-        redis?.disconnect()
-        super.tearDown()
-    }
+@Typed class RedisTest extends RedisTestBase {
 
     void testGetSet() {
         if(!redis)
@@ -39,7 +13,7 @@ import java.util.concurrent.Executors
 
         def pool = Executors.newFixedThreadPool(Runtime.runtime.availableProcessors())
 
-        def n = 100000
+        def n = 100
         CountDownLatch cdl = [n]
         def start = System.currentTimeMillis()
         for(i in 0..<n) {

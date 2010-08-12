@@ -118,7 +118,7 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
 
     private void handlePseudoWebSocket(ChannelHandlerContext ctx, MessageEvent e) {
         GrettyHttpRequest request = e.message
-        GrettyHttpResponse response = []
+        GrettyHttpResponse response = [e.channel,isKeepAlive(request)]
         if (request.method != HttpMethod.POST) {
             e.channel.write(response).addListener(ChannelFutureListener.CLOSE)
         }
@@ -136,7 +136,7 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
                 sessionId = client.sessionId
 
                 response.json = "{\"sessionId\":\"$sessionId\",\"messages\":[]}"
-                completeHttpResponse(e, request, response)
+                response.complete()
 
                 client.handler.connect(client, request)
             }
@@ -153,23 +153,13 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
     }
 
     private void handleHttpRequest(GrettyHttpRequest request, MessageEvent e) {
-        GrettyHttpResponse response = []
+        GrettyHttpResponse response = [e.channel, isKeepAlive(request)]
         def uri = request.path
 
         findContext(uri)?.handleHttpRequest(request, response)
 
-        completeHttpResponse(e, request, response)
-    }
-
-    private def completeHttpResponse(MessageEvent e, GrettyHttpRequest request, GrettyHttpResponse response) {
-        def writeFuture = e.channel.write(response)
-        if (response.responseBody) {
-            writeFuture = e.channel.write(response.responseBody)
-        }
-
-        if (!isKeepAlive(request) || response.status.code >= 400) {
-            writeFuture.addListener(ChannelFutureListener.CLOSE)
-        }
+        if (!response.async)
+            response.complete()
     }
 
     private GrettyContext findContext(String uri) {
@@ -178,7 +168,7 @@ import org.mbte.gretty.httpserver.GrettyWebSocket.Channeled
 
     private void handleWebSocketRequest(ChannelHandlerContext ctx, MessageEvent e) {
         GrettyHttpRequest req = e.message
-        GrettyHttpResponse response = []
+        GrettyHttpResponse response = [e.channel,isKeepAlive(req)]
         if (req.method != HttpMethod.GET) {
             e.channel.write(response.responseBody).addListener(ChannelFutureListener.CLOSE)
         }

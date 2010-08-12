@@ -1,7 +1,7 @@
 @Typed package org.mbte.gretty.httpserver
 
 import java.lang.management.ManagementFactory
-import java.util.concurrent.atomic.AtomicInteger
+
 import org.mbte.gretty.httpclient.GrettyClient
 import org.jboss.netty.util.CharsetUtil
 import org.jboss.netty.handler.codec.http.HttpHeaders
@@ -205,4 +205,4 @@ Sent:  ${server.ioMonitor.bytesSent.getAndSet(0)*1000.0d/increase}b/s   Received
     }
 }
 
-//java -Xmx6500m -XX:+UseConcMarkSweepGC -server -cp /usr/local/java/classes/production/Groovypp:/usr/local/java/classes/production/StdLib:/usr/local/java/classes/production/cassandra-ec2:/usr/local/java/classes/production/Gretty:/usr/local/java/classes/test/Gretty:/usr/local/java/gpp/lib/*:/usr/local/java/apache-cassandra-0.6.1/lib/*:/usr/local/java/cassandra-ec2-libs/lib/*:/usr/local/java/gretty-libs/lib/*  org.mbte.gretty.httpserver.Performance ec2-184-72-146-4.compute-1.amazonaws.com
+//java -Xmx6500m -XX:+UseConcMarkSweepGC -server -cp /usr/local/java/classes/production/Groovypp:/usr/local/java/classes/production/StdLib:/usr/local/java/classes/production/resource-ec2:/usr/local/java/classes/production/Gretty:/usr/local/java/classes/test/Gretty:/usr/local/java/gpp/lib/*:/usr/local/java/apache-resource-0.6.1/lib/*:/usr/local/java/resource-ec2-libs/lib/*:/usr/local/java/gretty-libs/lib/*  org.mbte.gretty.httpserver.Performance ec2-184-72-146-4.compute-1.amazonaws.com

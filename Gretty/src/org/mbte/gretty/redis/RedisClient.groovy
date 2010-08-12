@@ -94,18 +94,6 @@ import static org.mbte.gretty.redis.RedisCommand.MORE
         }
     }
 
-    protected void onConnect() {
-        super.onConnect()
-    }
-
-    protected void onConnectFailed() {
-        super.onConnectFailed()
-    }
-
-    protected void onDisconnect() {
-        super.onDisconnect()
-    }
-
     public BindLater get(String key, BindLater.Listener listener = null) {
         enqueue(new Get(key:key)).onBound(listener)
     }

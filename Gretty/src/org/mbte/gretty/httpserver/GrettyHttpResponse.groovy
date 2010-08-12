@@ -28,6 +28,9 @@ import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse
 import org.codehaus.groovy.reflection.ReflectionCache
 import org.objectweb.asm.Opcodes
+import org.jboss.netty.channel.Channel
+import org.jboss.netty.channel.ChannelFutureListener
+import org.jboss.netty.handler.codec.http.HttpVersion
 
 @Typed class GrettyHttpResponse extends DefaultHttpResponse {
 
@@ -35,8 +38,38 @@ import org.objectweb.asm.Opcodes
 
     String charset = "UTF-8"
 
-    GrettyHttpResponse () {
+    boolean async
+
+    private volatile Channel channel
+    private boolean keepAlive
+
+    GrettyHttpResponse (Channel channel, boolean keepAlive) {
         super(HTTP_1_1, HttpResponseStatus.FORBIDDEN)
+        this.channel = channel
+        this.keepAlive = keepAlive
+    }
+
+    GrettyHttpResponse (HttpVersion version, HttpResponseStatus status) {
+        super(version, status)
+    }
+
+    void complete() {
+        def channel = this.channel
+
+        async = true
+        if (!channel)
+            return
+
+        this.channel = null
+
+        def writeFuture = channel.write(this)
+        if (responseBody) {
+            writeFuture = channel.write(responseBody)
+        }
+
+        if (!keepAlive || status.code >= 400) {
+            writeFuture.addListener(ChannelFutureListener.CLOSE)
+        }
     }
 
     void setContent(ChannelBuffer obj) {
@@ -158,5 +191,9 @@ import org.objectweb.asm.Opcodes
                 sb << '}'
                 return sb
         }
+    }
+
+    String getContentText () {
+        new String(content.array(), content.arrayOffset(), content.readableBytes())
     }
 }

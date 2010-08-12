@@ -57,13 +57,19 @@ GrettyServer server = [
             default: { response.responseBody = new File("./lifeFiles/life.html") },
 
             public: {
-                rest("/game/:user/:gameId") {
-                    get{ args ->
-                        def user = User.users[userId]
+                rest("/game/:userId/:gameId") {
+                    def checkUser = { Map<String,String> args, Function1<User,Void> action ->
+                        def user = User.users[args.userId]
                         if(!user) {
                             response.json = [error:'No such user $userId']
                         }
                         else {
+                            action(user)
+                        }
+                    }
+
+                    get{ args ->
+                        checkUser(args) {
                             def gameId = args.gameId
                             if(!gameId) {
                                 response.json = user.games
@@ -81,18 +87,12 @@ GrettyServer server = [
                     }
 
                     put{ args ->
-                        def userId = args.user
-                        def user = User.users[userId]
-                        if(!user) {
-                            response.json = [error:'No such user $userId']
-                        }
-                        else {
+                        checkUser(args) {
                             def game = user.games[args.gameId]
                             if(!game) {
                                 response.json = [error:'No such game $userId/$gameId']
                             }
                             else {
-                                game.fromJson(request.)
                             }
                         }
                     }
