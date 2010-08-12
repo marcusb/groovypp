@@ -48,18 +48,20 @@ import org.jboss.netty.buffer.ChannelBuffers
     }
 
     void testSetGet () {
-        GrettyHttpRequest req = [HttpVersion.HTTP_1_1, HttpMethod.POST, "/data/239"]
-        def message = "{code: 245, elements:[0, 4, 6]}"
-        req.content = ChannelBuffers.wrappedBuffer(message.bytes)
-        req.setHeader("Content-Length", req.content.readableBytes())
-        doTest(req) { response ->
-            println response.contentText
-        }
+        if(redis) {
+            GrettyHttpRequest req = [HttpVersion.HTTP_1_1, HttpMethod.POST, "/data/239"]
+            def message = "{code: 245, elements:[0, 4, 6]}"
+            req.content = ChannelBuffers.wrappedBuffer(message.bytes)
+            req.setHeader("Content-Length", req.content.readableBytes())
+            doTest(req) { response ->
+                println response.contentText
+            }
 
-        req = [HttpVersion.HTTP_1_1, HttpMethod.GET, "/data/239"]
-        doTest(req) { response ->
-            println response.contentText
-            assertEquals message, response.contentText
+            req = [HttpVersion.HTTP_1_1, HttpMethod.GET, "/data/239"]
+            doTest(req) { response ->
+                println response.contentText
+                assertEquals message, response.contentText
+            }
         }
     }
 }
