@@ -137,7 +137,7 @@ public class ColumnParent implements TBase<ColumnParent, ColumnParent._Fields>, 
     return new ColumnParent(this);
   }
 
-  @Override
+
   public void clear() {
     this.column_family = null;
     this.super_column = null;
@@ -247,7 +247,7 @@ public class ColumnParent implements TBase<ColumnParent, ColumnParent._Fields>, 
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -281,7 +281,7 @@ public class ColumnParent implements TBase<ColumnParent, ColumnParent._Fields>, 
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -370,7 +370,7 @@ public class ColumnParent implements TBase<ColumnParent, ColumnParent._Fields>, 
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("ColumnParent(");
     boolean first = true;

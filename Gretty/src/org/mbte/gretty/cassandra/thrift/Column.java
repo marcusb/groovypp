@@ -157,7 +157,7 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     return new Column(this);
   }
 
-  @Override
+
   public void clear() {
     this.name = null;
     this.value = null;
@@ -305,7 +305,7 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -348,7 +348,7 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -458,7 +458,7 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("Column(");
     boolean first = true;

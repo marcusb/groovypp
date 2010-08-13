@@ -136,7 +136,7 @@ public class AuthenticationRequest implements TBase<AuthenticationRequest, Authe
     return new AuthenticationRequest(this);
   }
 
-  @Override
+
   public void clear() {
     this.credentials = null;
   }
@@ -219,7 +219,7 @@ public class AuthenticationRequest implements TBase<AuthenticationRequest, Authe
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -244,7 +244,7 @@ public class AuthenticationRequest implements TBase<AuthenticationRequest, Authe
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -330,7 +330,7 @@ public class AuthenticationRequest implements TBase<AuthenticationRequest, Authe
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("AuthenticationRequest(");
     boolean first = true;

@@ -145,7 +145,7 @@ public class Deletion implements TBase<Deletion, Deletion._Fields>, java.io.Seri
     return new Deletion(this);
   }
 
-  @Override
+
   public void clear() {
     setTimestampIsSet(false);
     this.timestamp = 0;
@@ -293,7 +293,7 @@ public class Deletion implements TBase<Deletion, Deletion._Fields>, java.io.Seri
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -336,7 +336,7 @@ public class Deletion implements TBase<Deletion, Deletion._Fields>, java.io.Seri
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -451,7 +451,7 @@ public class Deletion implements TBase<Deletion, Deletion._Fields>, java.io.Seri
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("Deletion(");
     boolean first = true;

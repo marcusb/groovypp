@@ -145,7 +145,7 @@ public class KeySlice implements TBase<KeySlice, KeySlice._Fields>, java.io.Seri
     return new KeySlice(this);
   }
 
-  @Override
+
   public void clear() {
     this.key = null;
     this.columns = null;
@@ -270,7 +270,7 @@ public class KeySlice implements TBase<KeySlice, KeySlice._Fields>, java.io.Seri
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -304,7 +304,7 @@ public class KeySlice implements TBase<KeySlice, KeySlice._Fields>, java.io.Seri
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -409,7 +409,7 @@ public class KeySlice implements TBase<KeySlice, KeySlice._Fields>, java.io.Seri
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("KeySlice(");
     boolean first = true;

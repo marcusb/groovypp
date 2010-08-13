@@ -122,7 +122,7 @@ public class AuthenticationException extends Exception implements TBase<Authenti
     return new AuthenticationException(this);
   }
 
-  @Override
+  
   public void clear() {
     this.why = null;
   }
@@ -194,7 +194,7 @@ public class AuthenticationException extends Exception implements TBase<Authenti
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -219,7 +219,7 @@ public class AuthenticationException extends Exception implements TBase<Authenti
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -285,7 +285,7 @@ public class AuthenticationException extends Exception implements TBase<Authenti
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("AuthenticationException(");
     boolean first = true;

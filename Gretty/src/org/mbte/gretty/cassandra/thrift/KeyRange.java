@@ -173,7 +173,7 @@ public class KeyRange implements TBase<KeyRange, KeyRange._Fields>, java.io.Seri
     return new KeyRange(this);
   }
 
-  @Override
+
   public void clear() {
     this.start_key = null;
     this.end_key = null;
@@ -397,7 +397,7 @@ public class KeyRange implements TBase<KeyRange, KeyRange._Fields>, java.io.Seri
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -458,7 +458,7 @@ public class KeyRange implements TBase<KeyRange, KeyRange._Fields>, java.io.Seri
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -618,7 +618,7 @@ public class KeyRange implements TBase<KeyRange, KeyRange._Fields>, java.io.Seri
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("KeyRange(");
     boolean first = true;

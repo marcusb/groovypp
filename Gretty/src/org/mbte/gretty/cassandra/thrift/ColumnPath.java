@@ -152,7 +152,7 @@ public class ColumnPath implements TBase<ColumnPath, ColumnPath._Fields>, java.i
     return new ColumnPath(this);
   }
 
-  @Override
+
   public void clear() {
     this.column_family = null;
     this.super_column = null;
@@ -300,7 +300,7 @@ public class ColumnPath implements TBase<ColumnPath, ColumnPath._Fields>, java.i
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -343,7 +343,7 @@ public class ColumnPath implements TBase<ColumnPath, ColumnPath._Fields>, java.i
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -455,7 +455,7 @@ public class ColumnPath implements TBase<ColumnPath, ColumnPath._Fields>, java.i
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("ColumnPath(");
     boolean first = true;

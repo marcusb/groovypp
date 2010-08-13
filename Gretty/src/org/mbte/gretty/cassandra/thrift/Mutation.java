@@ -127,7 +127,7 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     return new Mutation(this);
   }
 
-  @Override
+
   public void clear() {
     this.column_or_supercolumn = null;
     this.deletion = null;
@@ -237,7 +237,7 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -271,7 +271,7 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -364,7 +364,7 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("Mutation(");
     boolean first = true;

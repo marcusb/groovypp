@@ -150,7 +150,7 @@ public class TokenRange implements TBase<TokenRange, TokenRange._Fields>, java.i
     return new TokenRange(this);
   }
 
-  @Override
+
   public void clear() {
     this.start_token = null;
     this.end_token = null;
@@ -313,7 +313,7 @@ public class TokenRange implements TBase<TokenRange, TokenRange._Fields>, java.i
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -356,7 +356,7 @@ public class TokenRange implements TBase<TokenRange, TokenRange._Fields>, java.i
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -481,7 +481,7 @@ public class TokenRange implements TBase<TokenRange, TokenRange._Fields>, java.i
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("TokenRange(");
     boolean first = true;

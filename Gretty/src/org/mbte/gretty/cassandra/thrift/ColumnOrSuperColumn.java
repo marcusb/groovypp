@@ -132,7 +132,7 @@ public class ColumnOrSuperColumn implements TBase<ColumnOrSuperColumn, ColumnOrS
     return new ColumnOrSuperColumn(this);
   }
 
-  @Override
+
   public void clear() {
     this.column = null;
     this.super_column = null;
@@ -242,7 +242,7 @@ public class ColumnOrSuperColumn implements TBase<ColumnOrSuperColumn, ColumnOrS
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -276,7 +276,7 @@ public class ColumnOrSuperColumn implements TBase<ColumnOrSuperColumn, ColumnOrS
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -369,7 +369,7 @@ public class ColumnOrSuperColumn implements TBase<ColumnOrSuperColumn, ColumnOrS
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("ColumnOrSuperColumn(");
     boolean first = true;

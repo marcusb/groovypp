@@ -182,7 +182,7 @@ public class SliceRange implements TBase<SliceRange, SliceRange._Fields>, java.i
     return new SliceRange(this);
   }
 
-  @Override
+
   public void clear() {
     this.start = null;
     this.finish = null;
@@ -368,7 +368,7 @@ public class SliceRange implements TBase<SliceRange, SliceRange._Fields>, java.i
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -420,7 +420,7 @@ public class SliceRange implements TBase<SliceRange, SliceRange._Fields>, java.i
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -553,7 +553,7 @@ public class SliceRange implements TBase<SliceRange, SliceRange._Fields>, java.i
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("SliceRange(");
     boolean first = true;

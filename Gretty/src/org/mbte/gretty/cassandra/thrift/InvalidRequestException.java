@@ -123,7 +123,7 @@ public class InvalidRequestException extends Exception implements TBase<InvalidR
     return new InvalidRequestException(this);
   }
 
-  @Override
+
   public void clear() {
     this.why = null;
   }
@@ -195,7 +195,7 @@ public class InvalidRequestException extends Exception implements TBase<InvalidR
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -220,7 +220,7 @@ public class InvalidRequestException extends Exception implements TBase<InvalidR
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -286,7 +286,7 @@ public class InvalidRequestException extends Exception implements TBase<InvalidR
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("InvalidRequestException(");
     boolean first = true;

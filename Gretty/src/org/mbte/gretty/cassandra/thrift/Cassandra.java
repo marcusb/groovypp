@@ -2939,7 +2939,7 @@ public class Cassandra {
       return new login_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.auth_request = null;
@@ -3049,7 +3049,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -3083,7 +3083,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -3171,7 +3171,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("login_args(");
       boolean first = true;
@@ -3323,7 +3323,7 @@ public class Cassandra {
       return new login_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.authnx = null;
       this.authzx = null;
@@ -3433,7 +3433,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -3467,7 +3467,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -3554,7 +3554,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("login_result(");
       boolean first = true;
@@ -3734,7 +3734,7 @@ public class Cassandra {
       return new get_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -3929,7 +3929,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -3981,7 +3981,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -4111,7 +4111,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_args(");
       boolean first = true;
@@ -4321,7 +4321,7 @@ public class Cassandra {
       return new get_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -4545,7 +4545,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -4606,7 +4606,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -4756,7 +4756,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_result(");
       boolean first = true;
@@ -4972,7 +4972,7 @@ public class Cassandra {
       return new get_slice_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -5205,7 +5205,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -5266,7 +5266,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -5418,7 +5418,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_slice_args(");
       boolean first = true;
@@ -5632,7 +5632,7 @@ public class Cassandra {
       return new get_slice_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -5833,7 +5833,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -5885,7 +5885,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -6031,7 +6031,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_slice_result(");
       boolean first = true;
@@ -6232,7 +6232,7 @@ public class Cassandra {
       return new multiget_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.keys = null;
@@ -6442,7 +6442,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -6494,7 +6494,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -6641,7 +6641,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("multiget_args(");
       boolean first = true;
@@ -6853,7 +6853,7 @@ public class Cassandra {
       return new multiget_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -7050,7 +7050,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -7102,7 +7102,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -7251,7 +7251,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("multiget_result(");
       boolean first = true;
@@ -7464,7 +7464,7 @@ public class Cassandra {
       return new multiget_slice_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.keys = null;
@@ -7712,7 +7712,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -7773,7 +7773,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -7942,7 +7942,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("multiget_slice_args(");
       boolean first = true;
@@ -8169,7 +8169,7 @@ public class Cassandra {
       return new multiget_slice_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -8366,7 +8366,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -8418,7 +8418,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -8584,7 +8584,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("multiget_slice_result(");
       boolean first = true;
@@ -8780,7 +8780,7 @@ public class Cassandra {
       return new get_count_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -8975,7 +8975,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -9027,7 +9027,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -9157,7 +9157,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_count_args(");
       boolean first = true;
@@ -9358,7 +9358,7 @@ public class Cassandra {
       return new get_count_result(this);
     }
 
-    @Override
+
     public void clear() {
       setSuccessIsSet(false);
       this.success = 0;
@@ -9544,7 +9544,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -9596,7 +9596,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -9725,7 +9725,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_count_result(");
       boolean first = true;
@@ -9962,7 +9962,7 @@ public class Cassandra {
       return new get_range_slice_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.column_parent = null;
@@ -10273,7 +10273,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -10352,7 +10352,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -10548,7 +10548,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_range_slice_args(");
       boolean first = true;
@@ -10778,7 +10778,7 @@ public class Cassandra {
       return new get_range_slice_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -10979,7 +10979,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -11031,7 +11031,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -11177,7 +11177,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_range_slice_result(");
       boolean first = true;
@@ -11385,7 +11385,7 @@ public class Cassandra {
       return new get_range_slices_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.column_parent = null;
@@ -11618,7 +11618,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -11679,7 +11679,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -11832,7 +11832,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_range_slices_args(");
       boolean first = true;
@@ -12046,7 +12046,7 @@ public class Cassandra {
       return new get_range_slices_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -12247,7 +12247,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -12299,7 +12299,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -12445,7 +12445,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_range_slices_result(");
       boolean first = true;
@@ -12669,7 +12669,7 @@ public class Cassandra {
       return new insert_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -12940,7 +12940,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -13010,7 +13010,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -13184,7 +13184,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("insert_args(");
       boolean first = true;
@@ -13386,7 +13386,7 @@ public class Cassandra {
       return new insert_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.ire = null;
       this.ue = null;
@@ -13534,7 +13534,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -13577,7 +13577,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -13685,7 +13685,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("insert_result(");
       boolean first = true;
@@ -13891,7 +13891,7 @@ public class Cassandra {
       return new batch_insert_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -14097,7 +14097,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -14149,7 +14149,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -14316,7 +14316,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("batch_insert_args(");
       boolean first = true;
@@ -14502,7 +14502,7 @@ public class Cassandra {
       return new batch_insert_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.ire = null;
       this.ue = null;
@@ -14650,7 +14650,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -14693,7 +14693,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -14801,7 +14801,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("batch_insert_result(");
       boolean first = true;
@@ -15004,7 +15004,7 @@ public class Cassandra {
       return new remove_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.key = null;
@@ -15237,7 +15237,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -15298,7 +15298,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -15451,7 +15451,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("remove_args(");
       boolean first = true;
@@ -15639,7 +15639,7 @@ public class Cassandra {
       return new remove_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.ire = null;
       this.ue = null;
@@ -15787,7 +15787,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -15830,7 +15830,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -15938,7 +15938,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("remove_result(");
       boolean first = true;
@@ -16145,7 +16145,7 @@ public class Cassandra {
       return new batch_mutate_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
       this.mutation_map = null;
@@ -16313,7 +16313,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -16356,7 +16356,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -16522,7 +16522,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("batch_mutate_args(");
       boolean first = true;
@@ -16697,7 +16697,7 @@ public class Cassandra {
       return new batch_mutate_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.ire = null;
       this.ue = null;
@@ -16845,7 +16845,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -16888,7 +16888,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -16996,7 +16996,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("batch_mutate_result(");
       boolean first = true;
@@ -17138,7 +17138,7 @@ public class Cassandra {
       return new get_string_property_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.property = null;
     }
@@ -17210,7 +17210,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -17235,7 +17235,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -17301,7 +17301,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_string_property_args(");
       boolean first = true;
@@ -17430,7 +17430,7 @@ public class Cassandra {
       return new get_string_property_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -17502,7 +17502,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -17527,7 +17527,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -17592,7 +17592,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_string_property_result(");
       boolean first = true;
@@ -17718,7 +17718,7 @@ public class Cassandra {
       return new get_string_list_property_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.property = null;
     }
@@ -17790,7 +17790,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -17815,7 +17815,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -17881,7 +17881,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_string_list_property_args(");
       boolean first = true;
@@ -18015,7 +18015,7 @@ public class Cassandra {
       return new get_string_list_property_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -18102,7 +18102,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -18127,7 +18127,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -18209,7 +18209,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("get_string_list_property_result(");
       boolean first = true;
@@ -18316,7 +18316,7 @@ public class Cassandra {
       return new describe_keyspaces_args(this);
     }
 
-    @Override
+
     public void clear() {
     }
 
@@ -18350,7 +18350,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -18366,7 +18366,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -18411,7 +18411,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_keyspaces_args(");
       boolean first = true;
@@ -18535,7 +18535,7 @@ public class Cassandra {
       return new describe_keyspaces_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -18622,7 +18622,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -18647,7 +18647,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -18729,7 +18729,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_keyspaces_result(");
       boolean first = true;
@@ -18836,7 +18836,7 @@ public class Cassandra {
       return new describe_cluster_name_args(this);
     }
 
-    @Override
+
     public void clear() {
     }
 
@@ -18870,7 +18870,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -18886,7 +18886,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -18931,7 +18931,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_cluster_name_args(");
       boolean first = true;
@@ -19050,7 +19050,7 @@ public class Cassandra {
       return new describe_cluster_name_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -19122,7 +19122,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -19147,7 +19147,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -19212,7 +19212,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_cluster_name_result(");
       boolean first = true;
@@ -19319,7 +19319,7 @@ public class Cassandra {
       return new describe_version_args(this);
     }
 
-    @Override
+
     public void clear() {
     }
 
@@ -19353,7 +19353,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -19369,7 +19369,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -19414,7 +19414,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_version_args(");
       boolean first = true;
@@ -19533,7 +19533,7 @@ public class Cassandra {
       return new describe_version_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -19605,7 +19605,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -19630,7 +19630,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -19695,7 +19695,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_version_result(");
       boolean first = true;
@@ -19821,7 +19821,7 @@ public class Cassandra {
       return new describe_ring_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
     }
@@ -19893,7 +19893,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -19918,7 +19918,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -19984,7 +19984,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_ring_args(");
       boolean first = true;
@@ -20130,7 +20130,7 @@ public class Cassandra {
       return new describe_ring_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.ire = null;
@@ -20255,7 +20255,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -20289,7 +20289,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -20393,7 +20393,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_ring_result(");
       boolean first = true;
@@ -20508,7 +20508,7 @@ public class Cassandra {
       return new describe_partitioner_args(this);
     }
 
-    @Override
+
     public void clear() {
     }
 
@@ -20542,7 +20542,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -20558,7 +20558,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -20603,7 +20603,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_partitioner_args(");
       boolean first = true;
@@ -20722,7 +20722,7 @@ public class Cassandra {
       return new describe_partitioner_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -20794,7 +20794,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -20819,7 +20819,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -20884,7 +20884,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_partitioner_result(");
       boolean first = true;
@@ -21010,7 +21010,7 @@ public class Cassandra {
       return new describe_keyspace_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.keyspace = null;
     }
@@ -21082,7 +21082,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -21107,7 +21107,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -21173,7 +21173,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_keyspace_args(");
       boolean first = true;
@@ -21341,7 +21341,7 @@ public class Cassandra {
       return new describe_keyspace_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
       this.nfe = null;
@@ -21462,7 +21462,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -21496,7 +21496,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -21622,7 +21622,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_keyspace_result(");
       boolean first = true;
@@ -21783,7 +21783,7 @@ public class Cassandra {
       return new describe_splits_args(this);
     }
 
-    @Override
+
     public void clear() {
       this.start_token = null;
       this.end_token = null;
@@ -21931,7 +21931,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -21974,7 +21974,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -22084,7 +22084,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_splits_args(");
       boolean first = true;
@@ -22234,7 +22234,7 @@ public class Cassandra {
       return new describe_splits_result(this);
     }
 
-    @Override
+
     public void clear() {
       this.success = null;
     }
@@ -22321,7 +22321,7 @@ public class Cassandra {
       return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
-    @Override
+
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -22346,7 +22346,7 @@ public class Cassandra {
       return true;
     }
 
-    @Override
+
     public int hashCode() {
       return 0;
     }
@@ -22428,7 +22428,7 @@ public class Cassandra {
       oprot.writeStructEnd();
     }
 
-    @Override
+
     public String toString() {
       StringBuilder sb = new StringBuilder("describe_splits_result(");
       boolean first = true;

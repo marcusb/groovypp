@@ -144,7 +144,7 @@ public class SlicePredicate implements TBase<SlicePredicate, SlicePredicate._Fie
     return new SlicePredicate(this);
   }
 
-  @Override
+
   public void clear() {
     this.column_names = null;
     this.slice_range = null;
@@ -269,7 +269,7 @@ public class SlicePredicate implements TBase<SlicePredicate, SlicePredicate._Fie
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -303,7 +303,7 @@ public class SlicePredicate implements TBase<SlicePredicate, SlicePredicate._Fie
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -412,7 +412,7 @@ public class SlicePredicate implements TBase<SlicePredicate, SlicePredicate._Fie
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("SlicePredicate(");
     boolean first = true;

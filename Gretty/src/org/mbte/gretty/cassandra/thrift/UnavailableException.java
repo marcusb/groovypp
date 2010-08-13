@@ -103,7 +103,7 @@ public class UnavailableException extends Exception implements TBase<Unavailable
     return new UnavailableException(this);
   }
 
-  @Override
+
   public void clear() {
   }
 
@@ -137,7 +137,7 @@ public class UnavailableException extends Exception implements TBase<Unavailable
     return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
-  @Override
+
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -153,7 +153,7 @@ public class UnavailableException extends Exception implements TBase<Unavailable
     return true;
   }
 
-  @Override
+
   public int hashCode() {
     return 0;
   }
@@ -198,7 +198,7 @@ public class UnavailableException extends Exception implements TBase<Unavailable
     oprot.writeStructEnd();
   }
 
-  @Override
+
   public String toString() {
     StringBuilder sb = new StringBuilder("UnavailableException(");
     boolean first = true;
