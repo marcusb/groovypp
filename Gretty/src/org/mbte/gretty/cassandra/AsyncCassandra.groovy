@@ -14,8 +14,17 @@ import groovy.util.concurrent.BindLater.Listener
 
 @Typed class AsyncCassandra extends ResourcePool<Cassandra.Client> {
 
-    AsyncCassandra() {
+    AsyncCassandra(List<String> seedHosts = Collections.emptyList()) {
         executor = Executors.newFixedThreadPool(10)
+        for(host in seedHosts) {
+            executor.execute {
+                discover(host, 9160)
+            }
+        }
+    }
+
+    AsyncCassandra(String seedHost) {
+            this([seedHost])
     }
 
     Iterable<Cassandra.Client> initResources () { [] }
@@ -314,8 +323,16 @@ import groovy.util.concurrent.BindLater.Listener
     private final HashSet<HostPort> connected = []
 
     protected void discover(String host, int port) {
+        InetAddress ip
+        try {
+            ip = InetAddress.getByName(host)
+        }
+        catch(UnknownHostException e) {
+            return
+        }
+
         synchronized(connected) {
-            HostPort hp = [host:host, port:port]
+            HostPort hp = [host:ip, port:port]
 
             if (!connected.contains(hp)) {
                 try {
@@ -335,7 +352,7 @@ import groovy.util.concurrent.BindLater.Listener
     }
 
     private static class HostPort {
-        String host
+        InetAddress host
         int    port
 
         boolean equals(o) {
@@ -343,12 +360,8 @@ import groovy.util.concurrent.BindLater.Listener
 
             if (getClass() != o.class) return false;
 
-            HostPort hostPort = (HostPort) o;
-
-            if (port != hostPort.port) return false;
-            if (host != hostPort.host) return false;
-
-            return true;
+            HostPort hostPort = o
+            return port == hostPort.port && host == hostPort.port
         }
 
         int hashCode() {

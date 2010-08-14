@@ -17,6 +17,7 @@
 package groovy.util.concurrent
 
 import groovy.channels.ExecutingChannel
+import java.util.concurrent.CountDownLatch
 
 @Typed final class Agent<T> extends ExecutingChannel {
     private volatile T ref

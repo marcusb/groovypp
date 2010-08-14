@@ -592,11 +592,30 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
         bos.toByteArray()
     }
 
-    public static Object fromSerialBytes(byte [] bytes, ClassLoader loader = null) {
-        def inp = new SerialInputStream(new ByteArrayInputStream(bytes), loader)
+    public static def fromSerialBytes(InputStream input, ClassLoader loader = null) {
+        def inp = new SerialInputStream(input, loader)
         def res = inp.readObject()
         inp.close()
         res
+    }
+
+    public static def fromSerialBytes(byte [] bytes, ClassLoader loader = null) {
+        fromSerialBytes(new ByteArrayInputStream(bytes), loader)
+    }
+
+    public static def fromSerialBytes(ByteBuffer byteBuffer, ClassLoader loader = null) {
+        fromSerialBytes(byteBuffer.asInputStream(), loader)
+    }
+
+    public static  InputStream asInputStream(ByteBuffer byteBuffer) {
+        if(byteBuffer.hasArray()) {
+            new ByteArrayInputStream(byteBuffer.array(), byteBuffer.arrayOffset() + byteBuffer.position(), byteBuffer.remaining())
+        }
+        else {
+            def bytes = new byte [byteBuffer.remaining()]
+            byteBuffer.get(bytes)
+            new ByteArrayInputStream(bytes)
+        }
     }
 
     public static Object fromSerialBytes(byte [] bytes, int offset, int length, ClassLoader loader = null) {

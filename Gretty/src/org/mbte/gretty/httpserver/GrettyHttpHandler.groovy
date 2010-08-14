@@ -18,8 +18,11 @@ package org.mbte.gretty.httpserver
 
 import freemarker.template.Configuration
 import freemarker.template.ObjectWrapper
+import org.codehaus.jackson.map.ObjectMapper
 
 @Typed abstract class GrettyHttpHandler implements Cloneable {
+    private static final ObjectMapper mapper = []
+
     GrettyHttpRequest  request
     GrettyHttpResponse response
 
@@ -54,5 +57,20 @@ import freemarker.template.ObjectWrapper
         template(file, [:], dataBinding)
     }
 
-    abstract void handle (Map<String,String> pathArguments)
+    static <T> T fromJson(Class<T> clazz, String jsonText) {
+        try {
+            mapper.readValue(jsonText, clazz)
+        }
+        catch(t) {
+            return null
+        }
+    }
+
+    static <T> String toJson(T object) {
+        def writer = new StringWriter()
+        mapper.writeValue(writer, object)
+        writer.toString()
+    }
+
+    abstract void handle(Map<String,String> pathArguments)
 }

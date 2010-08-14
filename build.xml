@@ -152,7 +152,7 @@
 			<include name="asm*.jar"/>
 			<include name="netty-*.jar"/>
 			<include name="commons-cli-*.jar"/>
-			<include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
+			<include name="groovy-1.7.5-SNAPSHOT.jar" />
 
 			<exclude name="asm-attr*.jar"/>
 			<exclude name="asm-util*.jar"/>
@@ -384,7 +384,7 @@
             </patternset>
             <globmapper from="META-INF/LICENSE.txt" to="META-INF/GROOVY-LICENSE.txt"/>
             <fileset dir="${deploy.lib.dir}">
-                <include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
+                <include name="groovy-1.7.5-SNAPSHOT.jar" />
             </fileset>
         </unzip>
         <unzip dest="${stagingDirectory}/cli">
@@ -476,8 +476,8 @@
 			<fileset dir="install/bin" />
 		</copy>
 
-		<replaceregexp match="groovy-1.8.0(.*).jar"
-				replace="groovy-1.8.0\1-${version}.jar"
+		<replaceregexp match="groovy-1.7.5(.*).jar"
+				replace="groovy-1.7.5\1-${version}.jar"
 				byline="true">
 			<fileset dir="tempbin" includes="startGroovy*"/>
 		</replaceregexp>
@@ -486,16 +486,16 @@
              comment="The Groovy++ binary distribution.">
 	        <zipfileset dir="install" prefix="" >
 		        <exclude name="embeddable/**" />
-		        <exclude name="lib/groovy-1.8.0*.jar" />
+		        <exclude name="lib/groovy-1.7.5*.jar" />
 		        <exclude name="bin/**" />
 	        </zipfileset>
 
 	        <mappedresources>
 		        <fileset dir="install/lib">
-			        <include name="groovy-1.8.0-beta-2-SNAPSHOT.jar" />
+			        <include name="groovy-1.7.5-SNAPSHOT.jar" />
 		        </fileset>
-		        <globmapper from="groovy-1.8.0*.jar"
-		                    to="lib/groovy-1.8.0*-${version}.jar"/>
+		        <globmapper from="groovy-1.7.5*.jar"
+		                    to="lib/groovy-1.7.5*-${version}.jar"/>
 	        </mappedresources>
 
             <zipfileset dir="Gretty/lib" prefix="lib" />

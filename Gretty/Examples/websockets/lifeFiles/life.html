@@ -3,95 +3,72 @@
 <html>
 <head>
     <title>Life Game</title>
-    <script type="text/javascript">
-        var cells = {}
-        var editable = true
-        var iterator
-
-        function addArg(arg,method) {
-          return function() {
-            return method(arg)
-          }
-        }
-
-        function init() {
-            var table = document.getElementById('table')
-            for(i = 0; i != 48; i += 1) {
-                cells [i] = {}
-                var tr = document.createElement('tr')
-                tr.style.height = '14px'
-                for(j = 0; j != 48; j += 1) {
-                    var td = document.createElement('td')
-                    cells [i][j] = {x:i, y:j, live:false, td:td}
-                    td.setAttribute('style', 'width: 14px;  border-left:1px solid #5f9ea0; border-top: 1px solid #5f9ea0;')
-                    td.onclick = addArg(cells[i][j],function (cell) {
-                        if(editable) {
-                            cell.live = !cell.live
-                            cell.td.style.backgroundColor = cell.live ? 'blue' : 'aqua'
-                        }
-                    })
-                    tr.appendChild(td)
-                }
-                table.appendChild(tr)
-            }
-        }
-
-        function startStop () {
-            if(iterator) {
-                document.getElementById('startStop').innerHTML = 'Start'
-                clearInterval(iterator)
-                iterator = null
-                return
-            }
-
-            document.getElementById('startStop').innerHTML = 'Pause'
-            iterator = setInterval(function(){
-                for(i = 0; i != 48; i += 1) {
-                    for(j = 0; j != 48; j += 1) {
-                        around = 0
-                        around += i>0&&j>0&&cells [i-1][j-1].live ? 1 : 0
-                        around += i>0&&cells [i-1][j  ].live ? 1 : 0
-                        around += i>0&&j<47&&cells [i-1][j+1].live ? 1 : 0
-                        around += j>0&&cells [i  ][j-1].live ? 1 : 0
-                        around += j<47&&cells [i  ][j+1].live ? 1 : 0
-                        around += i<47&&j>0&&cells [i+1][j-1].live ? 1 : 0
-                        around += i<47&&cells [i+1][j  ].live ? 1 : 0
-                        around += i<47&&j<47&&cells [i+1][j+1].live ? 1 : 0
-
-                        cells[i][j].next = cells[i][j].live
-                        if(around<2||around>3)
-                            cells[i][j].next = false
-                        if(around==3)
-                            cells[i][j].next = true
-                    }
-                }
-
-                for(i = 0; i != 48; i += 1) {
-                    for(j = 0; j != 48; j += 1) {
-                        var cell = cells[i][j];
-                        if(cell.next != cell.live) {
-                            cell.live = cell.next
-                            cell.td.style.backgroundColor = cell.next ? 'blue' : 'aqua'
-                        }
-                    }
-                }
-            },100)
-        }
-    </script>
+    <script type="text/javascript" src="/googlib/prototype/1.6.1/prototype.js"></script>
+    <script type="text/javascript" src="/js/pseudows.js"></script>
+    <script type="text/javascript" src="/life/js/life.js"></script>
 </head>
 <body onload="init()">
-    <center>
-        <table>
-            <tr>
-                <td>
-                    <table style="background-color:aqua;" cellpadding="0" cellspacing="0" id="table">
-                    </table>
-                </td>
-                <td valign="top">
-                    <button onclick="startStop()" id="startStop">Start</button>
-                </td>
-            </tr>
-        </table>
-    </center>
+    <div id="gameForm">
+        <center>
+            <table>
+                <tr>
+                    <td>
+                        <table style="background-color:aqua;" cellpadding="0" cellspacing="0" id="table">
+                        </table>
+                    </td>
+                    <td valign="top">
+                        <div style="display: none; background-color:#ee0000; padding:3px; padding-bottom: 5px; color:yellow;" id="supported"><span>Web sockets are not supported by your browser yet.</span><br/><span>We will emulate it with long polling.</span></div>
+                        <div id="loginForm" style="font-size:smaller; display:none;">
+                            <table>
+                                <tr>
+                                    <td align="right">Login</td>
+                                    <td><input type="text" id="userName"></td>
+                                </tr>
+                                <tr>
+                                    <td align="right">Password</td>
+                                    <td><input type="password" id="password"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" align="right">
+                                        <button onclick="onLogin()">Login</button>
+                                        <a href="#" onclick="showRegister()">Register</a>
+                                        <a href="#" onclick="cancelLogin()">Cancel</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div id="registerForm" style="display:none;">
+                            <table>
+                                <tr>
+                                    <td align="right">Login</td>
+                                    <td><input type="text" id="userName"></td>
+                                </tr>
+                                <tr>
+                                    <td align="right">Password</td>
+                                    <td><input type="password" id="password"></td>
+                                </tr>
+                                <tr>
+                                    <td align="right">Confirm Password</td>
+                                    <td><input type="password" id="confirmPassword"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" align="right">
+                                        <button onclick="onRegister()">Register</button>
+                                        <a href="#" onclick="showLogin()">Login</a>
+                                        <a href="#" onclick="cancelRegister()">Cancel</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div>
+                            <button onclick="startStop()" id="startStop">Start</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
 </body>
 </html>

@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.codehaus.groovy</groupId>
     <artifactId>groovy</artifactId>
-    <version>1.8.0-beta-1-SNAPSHOT-gpp-@version@</version>
+    <version>1.7.5-SNAPSHOT-gpp-@version@</version>
     <packaging>pom</packaging>
     <name>Groovy++: groovy</name>
 
@@ -36,7 +36,7 @@
 
 
     <properties>
-        <file>${project.basedir}/../../../install/lib/groovy-1.8.0-beta-2-SNAPSHOT.jar</file>
+        <file>${project.basedir}/../../../install/lib/groovy-1.7.5-SNAPSHOT.jar</file>
     </properties>
 
 </project>

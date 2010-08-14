@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>1.8.0-beta-1-SNAPSHOT-gpp-@version@</version>
+            <version>1.7.5-SNAPSHOT-gpp-@version@</version>
         </dependency>
         <dependency>
             <groupId>asm</groupId>

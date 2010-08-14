@@ -202,8 +202,14 @@ import org.jboss.netty.handler.codec.http.HttpMethod
                 }
                 else {
                     def start = matcher.start()
-                    this.match.add(match.substring(lastStart, start))
-                    this.match.add(match.substring(start, matcher.end()))
+                    if(start != lastStart) {
+                        this.match.add(match.substring(lastStart, start))
+                        this.match.add(match.substring(start, matcher.end()))
+                    }
+                    else {
+                        this.match.add(match.substring(start))
+                        break
+                    }
                     lastStart = matcher.end ()
                 }
             }

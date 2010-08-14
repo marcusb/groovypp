@@ -655,7 +655,7 @@ public class MethodSelection {
     			return false;
     	}
     	
-        if (TypeUtil.isAssignableFrom(classToTransformTo, classToTransformFrom))
+        if(TypeUtil.isAssignableFrom(classToTransformTo, classToTransformFrom))
             return true;
 
         if(classToTransformFrom.equals(TypeUtil.TCLOSURE_NULL)) {

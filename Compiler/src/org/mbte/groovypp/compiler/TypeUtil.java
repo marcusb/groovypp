@@ -131,6 +131,13 @@ public class TypeUtil {
         classToTransformFrom = TypeUtil.wrapSafely(classToTransformFrom);
         if (classToTransformTo == classToTransformFrom) return true;
 
+        if(classToTransformFrom.equals(ClassHelper.CLASS_Type)) {
+            final GenericsType[] gt = classToTransformFrom.getGenericsTypes();
+            if(gt != null && TypeUtil.isAssignableFrom(classToTransformTo, gt[0].getType())) {
+                return true;
+            }
+        }
+
         if (TypeUtil.isNumericalType(classToTransformTo)) {
             if (TypeUtil.isNumericalType(classToTransformFrom)
                     || classToTransformFrom.equals(STRING_TYPE) || classToTransformFrom.equals(Character_TYPE))
