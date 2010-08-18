@@ -15,6 +15,10 @@ import groovy.util.concurrent.BindLater
         this.keyspace = name
     }
 
+    AsyncColumnPath getColumnPath(String column_family, String column) {
+        [this, column_family, column]
+    }
+
     BindLater<Void> login(AuthenticationRequest auth_request, BindLater.Listener<Void> listener = null) {
         resource.login(keyspace, auth_request, listener)
     }

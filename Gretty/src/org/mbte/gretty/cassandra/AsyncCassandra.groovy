@@ -27,6 +27,10 @@ import groovy.util.concurrent.BindLater.Listener
             this([seedHost])
     }
 
+    AsyncKeyspace getKeyspace(String keyspace) {
+        [this, keyspace]
+    }
+
     Iterable<Cassandra.Client> initResources () { [] }
 
     BindLater<Void> login(String keyspace, AuthenticationRequest auth_request, BindLater.Listener<Void> listener = null) {
