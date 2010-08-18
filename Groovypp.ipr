@@ -1307,6 +1307,16 @@
               <directory url="file://$PROJECT_DIR$/../../cometd-2.0.0.RC2/cometd-demo/overlays" />
             </directories>
           </module>
+          <module name="GroovyppPlugin">
+            <files>
+              <file url="file://$PROJECT_DIR$/GroovyppPlugin/web-app/WEB-INF/applicationContext.xml" />
+            </files>
+          </module>
+          <module name="GrailsExample">
+            <files>
+              <file url="file://$PROJECT_DIR$/GrailsExample/web-app/WEB-INF/applicationContext.xml" />
+            </files>
+          </module>
         </modules>
       </facet-type>
       <facet-type id="web">
@@ -1989,7 +1999,6 @@
       <module fileurl="file://$PROJECT_DIR$/Gretty/Gretty.iml" filepath="$PROJECT_DIR$/Gretty/Gretty.iml" />
       <module fileurl="file://$PROJECT_DIR$/Groovypp.iml" filepath="$PROJECT_DIR$/Groovypp.iml" />
       <module fileurl="file://$PROJECT_DIR$/StdLib/StdLib.iml" filepath="$PROJECT_DIR$/StdLib/StdLib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/StdLibTest/StdLibTest.iml" filepath="$PROJECT_DIR$/StdLibTest/StdLibTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" filepath="$PROJECT_DIR$/ZookeeperTest/ZookeeperTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../cassandra-ec2/cassandra-ec2.iml" filepath="$PROJECT_DIR$/../../cassandra-ec2/cassandra-ec2.iml" />
     </modules>

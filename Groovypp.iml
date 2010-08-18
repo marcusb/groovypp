@@ -10,7 +10,6 @@
       <excludeFolder url="file://$MODULE_DIR$/Examples" />
       <excludeFolder url="file://$MODULE_DIR$/JetLangSample" />
       <excludeFolder url="file://$MODULE_DIR$/StdLib" />
-      <excludeFolder url="file://$MODULE_DIR$/StdLibTest" />
       <excludeFolder url="file://$MODULE_DIR$/ZookeeperTest" />
     </content>
     <orderEntry type="inheritedJdk" />

@@ -15,6 +15,8 @@
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/lib" />
+          <root url="file://$MODULE_DIR$/../../../apache-tomcat-7.0.0-src/output/classes" />
+          <root url="jar://$MODULE_DIR$/../../../clojure-1.2.0-RC1/clojure.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
@@ -24,6 +26,8 @@
           <root url="jar://$MODULE_DIR$/lib/libthrift.jar!/" />
           <root url="file://$MODULE_DIR$/../../../jackson-src-1.5.4/src/java" />
           <root url="file://$MODULE_DIR$/../../../jackson-src-1.5.4/src/mapper/java" />
+          <root url="file://$MODULE_DIR$/../../../apache-tomcat-7.0.0-src/java" />
+          <root url="file://$MODULE_DIR$/../../../clojure-1.2.0-RC1/src/jvm" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>

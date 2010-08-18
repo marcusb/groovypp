@@ -28,7 +28,6 @@
 
     <property name="compiler.module.name" value="Groovypp" />
     <property name="stdlib.module.name" value="StdLib" />
-    <property name="stdlibtest.module.name" value="StdLibTest" />
     <property name="examples.module.name" value="Examples" />
     <property name="gretty.module.name" value="Gretty" />
 
@@ -43,15 +42,12 @@
     <property name="gretty.src" location="${gretty.module.name}/src" />
     <property name="gretty.tests" location="${gretty.module.name}/tests" />
     <property name="stdlib.tests" location="${stdlib.module.name}/tests" />
-    <property name="stdlibtest.tests" location="${stdlibtest.module.name}/tests" />
     <property name="examples.src" location="${examples.module.name}/src" />
 
     <property name="compiler.prod.output" location="${output.dir}/production/${compiler.module.name}" />
     <property name="compiler.test.output" location="${output.dir}/test/${compiler.module.name}" />
     <property name="stdlib.prod.output" location="${output.dir}/production/${stdlib.module.name}" />
     <property name="stdlib.test.output" location="${output.dir}/test/${stdlib.module.name}" />
-    <property name="stdlibtest.prod.output" location="${output.dir}/production/${stdlibtest.module.name}" />
-    <property name="stdlibtest.test.output" location="${output.dir}/test/${stdlibtest.module.name}" />
     <property name="gretty.prod.output" location="${output.dir}/production/${gretty.module.name}" />
     <property name="gretty.test.output" location="${output.dir}/test/${gretty.module.name}" />
     <property name="examples.prod.output" location="${output.dir}/production/${examples.module.name}" />
@@ -94,12 +90,6 @@
         <pathelement location="${stdlib.prod.output}"/>
     </path>
 
-    <path id="compile.stdlibtest.tests.classpath">
-        <path refid="libs"/>
-        <pathelement location="${compiler.prod.output}"/>
-        <pathelement location="${stdlib.prod.output}"/>
-    </path>
-
     <path id="compile.examples.classpath">
         <path refid="libs"/>
         <path refid="gretty.libs"/>
@@ -135,7 +125,6 @@
         <path refid="libs"/>
         <pathelement location="${compiler.prod.output}"/>
         <pathelement location="${stdlib.prod.output}"/>
-        <pathelement location="${stdlibtest.test.output}"/>
         <pathelement location="${stdlib.test.output}"/>
         <pathelement location="${compiler.test.output}"/>
         <pathelement location="${gretty.test.output}"/>
@@ -254,14 +243,6 @@
         </groovyc >
     </target>
 
-    <target name="compile.tests.stdlibtest"  depends="compile.stdlib,compile.tests.stdlib,compile.tests.compiler">
-        <mkdir dir="${stdlibtest.test.output}"/>
-        <groovyc classpathref="compile.stdlibtest.tests.classpath" srcdir="${stdlibtest.tests}" fork="yes" includeantruntime="no"
-            destdir="${stdlibtest.test.output}" verbose="true">
-            <javac sourcepath="${stdlibtest.tests}"/>
-        </groovyc >
-    </target>
-
     <target name="compile.gretty" depends="compile.stdlib" description="compiles Gretty">
         <mkdir dir="${gretty.prod.output}"/>
         <javac classpathref="compile.gretty.classpath" srcdir="${gretty.src}"
@@ -289,7 +270,7 @@
 
     <target name="clean-test" depends="clean,test" description="run unit tests"/>
 
-    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.stdlibtest,compile.tests.gretty"
+    <target name="test" depends="coverage-instrument,compile.tests.compiler,compile.tests.stdlib,compile.tests.gretty"
             description="run unit tests" unless="_skipTests_">
         <mkdir dir="${test.reports}"/>
         <junit printsummary="yes" fork="yes" forkmode="perBatch" includeantruntime="no">
@@ -307,7 +288,6 @@
                     <fileset dir="install/lib" includes="*.jar"/>
                 </path>
                 <path refid="gretty.libs"/>
-                <pathelement location="${stdlibtest.test.output}"/>
                 <pathelement location="${stdlib.test.output}"/>
                 <pathelement location="${compiler.test.output}"/>
                 <pathelement location="${gretty.test.output}"/>
@@ -318,9 +298,6 @@
                     <include name="**/*Test.class"/>
                 </fileset>
                 <fileset dir="${stdlib.test.output}">
-                    <include name="**/*Test.class"/>
-                </fileset>
-                <fileset dir="${stdlibtest.test.output}">
                     <include name="**/*Test.class"/>
                 </fileset>
                 <fileset dir="${gretty.test.output}">
@@ -515,7 +492,6 @@
 		<include name="maven/"/>
 		<include name="Compiler/"/>
 		<include name="StdLib/"/>
-		<include name="StdLibTest/"/>
         <include name="Gretty/"/>
 		<include name="Examples/"/>
 		<include name="build.properties"/>
